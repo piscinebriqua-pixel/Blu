@@ -50,26 +50,26 @@ const ClientsList: React.FC = () => {
     return (
         <div className="page-container pb-24">
             {/* Premium Navigation Header */}
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-6">
-                    <button onClick={() => navigate('/')} className="btn-pill btn-outline" style={{ padding: '0.6rem 1.2rem', fontSize: '0.75rem' }}>
-                        <ArrowLeft size={16} className="mr-2" /> RETOUR
+            <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+                <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+                    <button onClick={() => navigate('/')} className="btn-pill btn-outline shrink-0" style={{ padding: '0.6rem 1rem', fontSize: '0.7rem' }}>
+                        <ArrowLeft size={16} /> <span className="hidden xs:inline ml-2">RETOUR</span>
                     </button>
-                    <div className="hidden sm:block h-8 w-[1px] bg-white/10"></div>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400">
-                            <Plus size={24} />
+                        <div className="w-9 h-9 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
+                            <Plus size={20} />
                         </div>
                         <div>
-                            <h1 className="welcome-text" style={{ fontSize: '1.2rem', marginBottom: '0' }}>GESTION CLIENTS</h1>
-                            <p className="date-text" style={{ fontSize: '0.65rem' }}>FICHIER & COMPTES</p>
+                            <h1 className="welcome-text" style={{ fontSize: '1.1rem', marginBottom: '0', whiteSpace: 'nowrap' }}>GESTION CLIENTS</h1>
+                            <p className="date-text" style={{ fontSize: '0.6rem' }}>FICHIER & COMPTES</p>
                         </div>
                     </div>
+                    <div className="sm:hidden w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center text-[10px] font-black text-white shrink-0">KH</div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="hidden sm:flex items-center gap-4">
                     {/* Current Time Display */}
-                    <div className="premium-card hidden md:flex items-center gap-2" style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-pill)', background: 'rgba(255,255,255,0.03)' }}>
+                    <div className="premium-card hidden lg:flex items-center gap-2" style={{ padding: '0.5rem 1rem', borderRadius: 'var(--radius-pill)', background: 'rgba(255,255,255,0.03)' }}>
                         <ClockIcon size={14} className="text-blue-400" />
                         <TimeDisplay className="text-xs font-black" />
                     </div>
@@ -80,54 +80,54 @@ const ClientsList: React.FC = () => {
                 </div>
             </div>
 
-            {/* Main Action Bar (Matches Screenshot) */}
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6 mb-10">
-                <div className="relative w-full lg:w-96">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted" size={18} />
+            {/* Main Action Bar */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-8">
+                <div className="relative w-full md:w-80 lg:w-96">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={16} />
                     <input
                         type="text"
-                        placeholder="Rechercher une cliente..."
+                        placeholder="Rechercher..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="search-input-premium w-full"
                         style={{
-                            paddingLeft: '3.5rem',
-                            borderRadius: '16px',
+                            paddingLeft: '3rem',
+                            borderRadius: '14px',
                             background: 'rgba(255,255,255,0.03)',
-                            height: '48px',
-                            fontSize: '0.85rem'
+                            height: '44px',
+                            fontSize: '0.8rem'
                         }}
                     />
                 </div>
 
-                <div className="flex items-center gap-4 w-full lg:w-auto justify-end">
+                <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto no-scrollbar pb-1 md:pb-0">
                     {/* View Switchers Group */}
-                    <div className="control-group">
-                        <button className="control-item active"><LayoutList size={18} /></button>
-                        <button className="control-item"><LayoutGrid size={18} /></button>
-                        <button className="control-item"><Grid3X3 size={18} /></button>
+                    <div className="control-group shrink-0">
+                        <button className="control-item active"><LayoutList size={16} /></button>
+                        <button className="control-item"><LayoutGrid size={16} /></button>
+                        <button className="control-item"><Grid3X3 size={16} /></button>
                     </div>
 
                     {/* QR Code Button */}
-                    <button className="control-group bg-transparent hover:bg-white/5 transition-all" style={{ padding: '0.5rem' }}>
-                        <div className="control-item" style={{ width: '40px', height: '40px' }}>
-                            <QrCode size={20} />
+                    <button className="control-group bg-transparent hover:bg-white/5 transition-all shrink-0" style={{ padding: '0.4rem' }}>
+                        <div className="control-item" style={{ width: '36px', height: '36px' }}>
+                            <QrCode size={18} />
                         </div>
                     </button>
 
                     {/* Add Button */}
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="btn-pill btn-primary"
+                        className="btn-pill btn-primary ml-auto md:ml-0 shrink-0"
                         style={{
-                            height: '48px',
-                            padding: '0 2rem',
-                            fontSize: '0.85rem',
+                            height: '44px',
+                            padding: '0 1.25rem',
+                            fontSize: '0.75rem',
                             background: 'linear-gradient(135deg, #5856D6, #AF52DE)',
-                            boxShadow: '0 10px 30px -5px rgba(88, 86, 214, 0.4)'
+                            boxShadow: '0 8px 20px -5px rgba(88, 86, 214, 0.4)'
                         }}
                     >
-                        <Plus size={18} className="mr-2" /> NOUVELLE CLIENTE
+                        <Plus size={16} className="mr-1.5" /> <span className="whitespace-nowrap">NOUVELLE CLIENTE</span>
                     </button>
                 </div>
             </div>

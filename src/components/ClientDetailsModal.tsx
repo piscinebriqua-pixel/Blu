@@ -83,51 +83,52 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
     return (
         <div className="modal-premium-backdrop" onClick={onClose}>
             <div className="modal-premium-content" onClick={e => e.stopPropagation()}>
-                {/* Header Section */}
-                <div className="modal-header-premium flex flex-col md:flex-row justify-between items-center gap-8 relative" style={{ padding: '3.5rem' }}>
+                <div className="modal-header-premium p-6 md:p-14 border-b border-white/5 relative bg-gradient-to-b from-white/5 to-transparent">
                     {/* Integrated Close Button */}
                     <button
                         onClick={onClose}
-                        className="absolute top-6 right-6 w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all z-20"
+                        className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white"
                     >
-                        <X size={20} />
+                        <X size={18} />
                     </button>
 
-                    <div className="flex items-center gap-8">
-                        <div className="w-24 h-24 rounded-[32px] bg-blue-600 flex items-center justify-center text-3xl font-black text-white shadow-2xl overflow-hidden border-4 border-white/10">
-                            {getInitials(client.first_name, client.last_name)}
-                        </div>
-                        <div>
-                            <h2 className="text-3xl font-black text-white mb-4 tracking-tight uppercase">{client.first_name} {client.last_name}</h2>
-                            <div className="flex flex-wrap gap-3">
-                                <div className="badge-premium badge-grey">
-                                    <Phone size={14} />
-                                    {client.phone}
+                    <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
+                        <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[28px] sm:rounded-[32px] bg-blue-600 flex items-center justify-center text-2xl sm:text-3xl font-black text-white shadow-2xl border-4 border-white/10 shrink-0">
+                                {getInitials(client.first_name, client.last_name)}
+                            </div>
+                            <div>
+                                <h2 className="text-2xl sm:text-3xl font-black text-white mb-3 tracking-tight uppercase whitespace-nowrap">{client.first_name} {client.last_name}</h2>
+                                <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                                    <div className="badge-premium badge-grey py-1.5 px-3">
+                                        <Phone size={12} />
+                                        <span className="text-[10px]">{client.phone}</span>
+                                    </div>
+                                    <button className="badge-premium badge-whatsapp py-1.5 px-3">
+                                        <MessageCircle size={12} /> <span className="text-[10px]">WHATSAPP</span>
+                                    </button>
+                                    <button className="badge-premium badge-pin py-1.5 px-3">
+                                        <Key size={12} /> <span className="text-[10px]">PIN</span>
+                                    </button>
                                 </div>
-                                <button className="badge-premium badge-whatsapp">
-                                    <MessageCircle size={14} /> WHATSAPP
-                                </button>
-                                <button className="badge-premium badge-pin">
-                                    <Key size={14} /> PIN
-                                </button>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="flex items-center gap-12 mr-8">
-                        <div className="text-right">
-                            <p className="stat-label-premium">BASSINS</p>
-                            <p className="text-3xl font-black text-white">{pools.length}</p>
-                        </div>
-                        <div className="text-right">
-                            <p className="stat-label-premium">VISITES</p>
-                            <p className="text-3xl font-black text-white">{interventions.length}</p>
-                        </div>
-                        <div className="solde-badge-premium" style={{ minWidth: '140px' }}>
-                            <p className="stat-label-premium" style={{ color: 'var(--accent-green)', opacity: 0.8 }}>SOLDE</p>
-                            <p className="stat-value-premium" style={{ color: 'var(--accent-green)', fontSize: '1.8rem' }}>
-                                {client.balance.toFixed(0)} <span className="text-xs opacity-60">DT</span>
-                            </p>
+                        <div className="flex items-center gap-6 sm:gap-10">
+                            <div className="text-center sm:text-right">
+                                <p className="stat-label-premium">BASSINS</p>
+                                <p className="text-xl sm:text-2xl font-black text-white">{pools.length}</p>
+                            </div>
+                            <div className="text-center sm:text-right">
+                                <p className="stat-label-premium">VISITES</p>
+                                <p className="text-xl sm:text-2xl font-black text-white">{interventions.length}</p>
+                            </div>
+                            <div className="solde-badge-premium min-w-[100px] sm:min-w-[140px] py-2 sm:py-3 px-4 sm:px-6">
+                                <p className="stat-label-premium" style={{ color: 'var(--accent-green)', opacity: 0.8 }}>SOLDE</p>
+                                <p className="stat-value-premium" style={{ color: 'var(--accent-green)', fontSize: '1.4rem' }}>
+                                    {client.balance.toFixed(0)} <span className="text-[10px] opacity-60">DT</span>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -149,7 +150,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                 </div>
 
                 {/* Tab Content */}
-                <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-8 md:p-12 custom-scrollbar">
                     {activeTab === 'bassins' && (
                         <div className="space-y-8">
                             <div className="flex justify-between items-center">
