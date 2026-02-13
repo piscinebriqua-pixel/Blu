@@ -55,7 +55,7 @@ const Dashboard: React.FC = () => {
                         <span className="font-black text-sm">{new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                     <ThemeToggle />
-                    <button className="btn-pill bg-white text-black hover:bg-gray-100 border-none transition-all">
+                    <button className="btn-pill btn-admin transition-all">
                         <Settings size={18} /> ADMIN
                     </button>
                 </div>
@@ -81,58 +81,70 @@ const Dashboard: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex items-center gap-2 mb-8">
-                <Droplets size={20} className="text-blue-500" />
-                <h2 style={{ fontSize: '1.1rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Centre depilotage</h2>
+            <div className="flex items-center gap-3 mb-8">
+                <Droplets size={24} className="text-blue-500 animate-pulse" />
+                <h2 style={{ fontSize: '1.25rem', fontWeight: '950', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-main)' }}>Centre de pilotage</h2>
             </div>
 
             {/* Main Nav Grid */}
             <div className="nav-grid">
                 <Link to="/settings/services" className="nav-card" style={{ background: 'linear-gradient(135deg, #5856D6, #AF52DE)', boxShadow: '0 10px 40px -10px rgba(88, 86, 214, 0.4)' }}>
-                    <div className="nav-card-icon"><Scissors size={24} /></div>
-                    <div>
-                        <h3 className="welcome-text" style={{ fontSize: '1.4rem', background: 'none', WebkitTextFillColor: 'white' }}>CATALOGUE</h3>
-                        <p className="date-text" style={{ color: 'rgba(255,255,255,0.8)' }}>Services & Tarifs</p>
-                    </div>
-                    <div className="flex justify-between items-end">
-                        <span className="text-2xl font-black text-white">54 Prestat.</span>
-                        <ArrowRight size={24} className="text-white opacity-50" />
+                    <div className="nav-card-glow" />
+                    <div className="nav-card-inner">
+                        <div className="nav-card-icon"><Scissors size={28} /></div>
+                        <div>
+                            <h3 className="welcome-text" style={{ fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'white', marginBottom: '0.25rem' }}>CATALOGUE</h3>
+                            <p className="date-text" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>Services & Tarifs</p>
+                        </div>
+                        <div className="flex justify-between items-end">
+                            <span className="text-xl font-black text-white">54 Prestat.</span>
+                            <ArrowRight size={24} className="text-white opacity-50" />
+                        </div>
                     </div>
                 </Link>
 
                 <Link to="/clients" className="nav-card" style={{ background: 'linear-gradient(135deg, #007AFF, #5AC8FA)', boxShadow: '0 10px 40px -10px rgba(0, 122, 255, 0.4)' }}>
-                    <div className="nav-card-icon"><Calendar size={24} /></div>
-                    <div>
-                        <h3 className="welcome-text" style={{ fontSize: '1.4rem', background: 'none', WebkitTextFillColor: 'white' }}>PLANNING</h3>
-                        <p className="date-text" style={{ color: 'rgba(255,255,255,0.8)' }}>Suivi technique</p>
-                    </div>
-                    <div className="flex justify-between items-end">
-                        <span className="text-2xl font-black text-white">{stats.interventionsToday} Visites</span>
-                        <ArrowRight size={24} className="text-white opacity-50" />
+                    <div className="nav-card-glow" />
+                    <div className="nav-card-inner">
+                        <div className="nav-card-icon"><Calendar size={28} /></div>
+                        <div>
+                            <h3 className="welcome-text" style={{ fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'white', marginBottom: '0.25rem' }}>PLANNING</h3>
+                            <p className="date-text" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>Suivi technique</p>
+                        </div>
+                        <div className="flex justify-between items-end">
+                            <span className="text-xl font-black text-white">{stats.interventionsToday} Visites</span>
+                            <ArrowRight size={24} className="text-white opacity-50" />
+                        </div>
                     </div>
                 </Link>
 
                 <Link to="/technicians" className="nav-card" style={{ background: 'linear-gradient(135deg, #FF9500, #FFCC00)', boxShadow: '0 10px 40px -10px rgba(255, 149, 0, 0.4)' }}>
-                    <div className="nav-card-icon"><Users size={24} /></div>
-                    <div>
-                        <h3 className="welcome-text" style={{ fontSize: '1.4rem', background: 'none', WebkitTextFillColor: 'white' }}>ÉQUIPE</h3>
-                        <p className="date-text" style={{ color: 'rgba(255,255,255,0.8)' }}>Gestion personnel</p>
-                    </div>
-                    <div className="flex justify-between items-end">
-                        <span className="text-2xl font-black text-white">12 Membres</span>
-                        <ArrowRight size={24} className="text-white opacity-50" />
+                    <div className="nav-card-glow" />
+                    <div className="nav-card-inner">
+                        <div className="nav-card-icon"><Users size={28} /></div>
+                        <div>
+                            <h3 className="welcome-text" style={{ fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'white', marginBottom: '0.25rem' }}>ÉQUIPE</h3>
+                            <p className="date-text" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>Gestion personnel</p>
+                        </div>
+                        <div className="flex justify-between items-end">
+                            <span className="text-xl font-black text-white">12 Membres</span>
+                            <ArrowRight size={24} className="text-white opacity-50" />
+                        </div>
                     </div>
                 </Link>
 
                 <Link to="/clients" className="nav-card" style={{ background: 'linear-gradient(135deg, #34C759, #32D74B)', boxShadow: '0 10px 40px -10px rgba(52, 199, 89, 0.4)' }}>
-                    <div className="nav-card-icon"><Users size={24} /></div>
-                    <div>
-                        <h3 className="welcome-text" style={{ fontSize: '1.4rem', background: 'none', WebkitTextFillColor: 'white' }}>CLIENTS</h3>
-                        <p className="date-text" style={{ color: 'rgba(255,255,255,0.8)' }}>Base de données</p>
-                    </div>
-                    <div className="flex justify-between items-end">
-                        <span className="text-2xl font-black text-white">{stats.totalClients} fiches</span>
-                        <ArrowRight size={24} className="text-white opacity-50" />
+                    <div className="nav-card-glow" />
+                    <div className="nav-card-inner">
+                        <div className="nav-card-icon"><Users size={28} /></div>
+                        <div>
+                            <h3 className="welcome-text" style={{ fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'white', marginBottom: '0.25rem' }}>CLIENTS</h3>
+                            <p className="date-text" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>Base de données</p>
+                        </div>
+                        <div className="flex justify-between items-end">
+                            <span className="text-xl font-black text-white">{stats.totalClients} fiches</span>
+                            <ArrowRight size={24} className="text-white opacity-50" />
+                        </div>
                     </div>
                 </Link>
             </div>

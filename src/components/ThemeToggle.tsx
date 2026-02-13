@@ -18,10 +18,12 @@ const ThemeToggle: React.FC = () => {
     return (
         <button
             onClick={toggleTheme}
-            className="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-orange-400 hover:bg-white/10 transition-all cursor-pointer"
+            className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 text-orange-400 hover:bg-orange-500 hover:text-white transition-all duration-500 cursor-pointer shadow-lg backdrop-blur-md group"
             title={`Passer en mode ${theme === 'light' ? 'sombre' : 'clair'}`}
         >
-            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            <div className="group-hover:rotate-180 transition-transform duration-700">
+                {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
+            </div>
         </button>
     );
 };
