@@ -1,16 +1,12 @@
 :root {
+  /* Common Variables */
   --primary: #007AFF;
   --primary-dark: #0056b3;
-  --bg-deep: #050505;
-  --bg-surface: rgba(255, 255, 255, 0.05);
-  --bg-input: rgba(255, 255, 255, 0.03);
-  --text-main: #ffffff;
-  --text-secondary: #94a3b8;
-  --border-glass: rgba(255, 255, 255, 0.08);
   --accent-blue: #007AFF;
   --accent-purple: #AF52DE;
   --accent-green: #34C759;
   --accent-pink: #FF2D55;
+
   --radius-sm: 12px;
   --radius-md: 16px;
   --radius-lg: 24px;
@@ -23,19 +19,38 @@
   --font-lg: clamp(1.1rem, 1rem + 0.5vw, 1.4rem);
   --font-xl: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
 
-  /* Gradients */
-  --grad-ocean: radial-gradient(circle at top, var(--bg-ocean), var(--bg-deep));
-  --grad-blue: linear-gradient(135deg, #0a84ff, #0055ff);
-  --grad-purple: linear-gradient(135deg, #bf5af2, #8e2de2);
-
-  /* Radii */
-  --radius-pill: 50px;
-  --radius-xl: 24px;
-  --radius-lg: 18px;
-  --radius-md: 12px;
-
   --font-main: 'Outfit', 'Inter', system-ui, sans-serif;
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Theme Defaults (Dark) */
+:root,
+[data-theme="dark"] {
+  --bg-deep: #050505;
+  --bg-ocean: #0a0b14;
+  --bg-surface: rgba(255, 255, 255, 0.05);
+  --bg-input: rgba(255, 255, 255, 0.03);
+  --text-main: #ffffff;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --shadow-premium: 0 20px 50px rgba(0, 0, 0, 0.5);
+  --grad-main: radial-gradient(circle at top, #0a0b14, #050505);
+  --glass-header: rgba(255, 255, 255, 0.03);
+}
+
+/* Light Theme */
+[data-theme="light"] {
+  --bg-deep: #f1f5f9;
+  --bg-ocean: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-input: #f8fafc;
+  --text-main: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-glass: rgba(0, 0, 0, 0.05);
+  --shadow-premium: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --grad-main: radial-gradient(circle at top, #ffffff, #f1f5f9);
+  --glass-header: #f8fafc;
 }
 
 * {
@@ -47,8 +62,8 @@
 }
 
 body {
-  background: var(--grad-ocean);
-  color: var(--text-primary);
+  background: var(--grad-main);
+  color: var(--text-main);
   min-height: 100vh;
   background-attachment: fixed;
 }
@@ -70,7 +85,7 @@ body {
   font-size: var(--font-xl);
   font-weight: 900;
   letter-spacing: -0.04em;
-  background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0.5));
+  background: linear-gradient(to right, var(--text-main), var(--text-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1.1;
@@ -99,9 +114,9 @@ body {
 
 .premium-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(30, 41, 59, 1);
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  border-color: var(--primary);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-premium);
 }
 
 /* Pill Buttons */
@@ -292,7 +307,7 @@ body {
   border: 1px solid var(--border-glass);
   border-radius: 24px;
   overflow-x: auto;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-premium);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -312,7 +327,7 @@ body {
 }
 
 .premium-table th {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass-header);
   padding: 1.25rem 1.5rem;
   text-align: left;
   font-size: 0.7rem;
@@ -355,20 +370,21 @@ body {
 }
 
 .initials-avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 900;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 950;
   color: white;
+  flex-shrink: 0;
   text-transform: uppercase;
 }
 
 .badge-pill-table {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
   padding: 0.25rem 0.75rem;
   border-radius: 8px;
   font-size: 0.65rem;
@@ -428,14 +444,14 @@ body {
 }
 
 .modal-premium-content {
-  background: #111827;
+  background: var(--bg-ocean);
   width: 1000px;
   height: 650px;
   max-width: 95vw;
   max-height: 95vh;
   border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-premium);
   overflow: hidden;
   position: relative;
   display: flex;
@@ -532,7 +548,7 @@ body {
 .stat-value-premium {
   font-size: 1.1rem;
   font-weight: 900;
-  color: white;
+  color: var(--text-main);
 }
 
 .solde-badge-premium {
@@ -544,8 +560,8 @@ body {
 }
 
 .ticket-card-premium {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--bg-input);
+  border: 1px solid var(--border-glass);
   border-radius: 24px;
   padding: 1.5rem 2.5rem;
   display: flex;
@@ -556,8 +572,9 @@ body {
 }
 
 .ticket-card-premium:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-surface);
   transform: translateY(-2px);
+  border-color: var(--primary);
 }
 
 .icon-box-premium {

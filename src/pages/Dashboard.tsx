@@ -11,6 +11,7 @@ import {
     ArrowRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 
 const Dashboard: React.FC = () => {
     const [stats, setStats] = useState({ totalClients: 0, totalPools: 0, interventionsToday: 0, balance: 0 });
@@ -53,6 +54,7 @@ const Dashboard: React.FC = () => {
                         <Clock size={16} className="text-blue-400" />
                         <span className="font-black text-sm">{new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
+                    <ThemeToggle />
                     <button className="btn-pill bg-white text-black hover:bg-gray-100 border-none transition-all">
                         <Settings size={18} /> ADMIN
                     </button>

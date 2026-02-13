@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import AddClientModal from '../components/AddClientModal';
 import ClientDetailsModal from '../components/ClientDetailsModal';
+import ThemeToggle from '../components/ThemeToggle';
 
 const ClientsList: React.FC = () => {
     const [clients, setClients] = useState<any[]>([]);
@@ -74,9 +75,7 @@ const ClientsList: React.FC = () => {
                         <ClockIcon size={14} className="text-blue-400" />
                         <TimeDisplay className="text-xs font-black" />
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-orange-400">
-                        <Settings size={18} />
-                    </div>
+                    <ThemeToggle />
                     <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-xs font-black text-white">KH</div>
                 </div>
             </div>
