@@ -1,23 +1,27 @@
 :root {
-  /* Ocean Deep Palette */
-  --bg-deep: #020617;
-  --bg-ocean: #0f172a;
-  --bg-surface: rgba(30, 41, 59, 0.7);
-  --bg-input: rgba(15, 23, 42, 0.8);
-
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(59, 130, 246, 0.5);
-
-  --text-primary: #ffffff;
+  --primary: #007AFF;
+  --primary-dark: #0056b3;
+  --bg-deep: #050505;
+  --bg-surface: rgba(255, 255, 255, 0.05);
+  --bg-input: rgba(255, 255, 255, 0.03);
+  --text-main: #ffffff;
   --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --accent-blue: #007AFF;
+  --accent-purple: #AF52DE;
+  --accent-green: #34C759;
+  --accent-pink: #FF2D55;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 100px;
 
-  /* Electric Accents */
-  --accent-blue: #0a84ff;
-  --accent-purple: #bf5af2;
-  --accent-pink: #ff2d55;
-  --accent-green: #30d158;
-  --accent-orange: #ff9f0a;
+  /* Fluid Typography */
+  --font-xs: clamp(0.65rem, 0.6rem + 0.25vw, 0.75rem);
+  --font-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.9rem);
+  --font-base: clamp(0.9rem, 0.85rem + 0.25vw, 1rem);
+  --font-lg: clamp(1.1rem, 1rem + 0.5vw, 1.4rem);
+  --font-xl: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
 
   /* Gradients */
   --grad-ocean: radial-gradient(circle at top, var(--bg-ocean), var(--bg-deep));
@@ -63,19 +67,22 @@ body {
 
 /* Typography */
 .welcome-text {
-  font-size: 2.25rem;
+  font-size: var(--font-xl);
   font-weight: 900;
-  letter-spacing: -0.03em;
-  background: linear-gradient(to bottom, #fff, #94a3b8);
+  letter-spacing: -0.04em;
+  background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0.5));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
 }
 
 .date-text {
+  font-size: var(--font-sm);
   color: var(--text-secondary);
-  font-size: 0.9rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 /* Glass Cards */
@@ -93,7 +100,8 @@ body {
 .premium-card:hover {
   transform: translateY(-4px);
   border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(30, 41, 59, 0.85);
+  background: rgba(30, 41, 59, 1);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
 }
 
 /* Pill Buttons */
@@ -239,47 +247,29 @@ body {
   color: white;
 }
 
-/* Nav Grid Layout */
+/* Responsive Layout Grids */
 .nav-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(280px, 100%, 400px), 1fr));
+  gap: clamp(1rem, 2vw, 2rem);
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(250px, 100%, 350px), 1fr));
   gap: 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .nav-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .nav-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 .mini-stat-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .mini-stat-grid {
     grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-/* Cards Grid Layout (Clients, Techs, etc) */
-.cards-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-}
-
-@media (min-width: 640px) {
-  .cards-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -347,8 +337,21 @@ body {
 }
 
 .premium-table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.05);
   color: white;
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .hidden-desktop {
+    display: none !important;
+  }
 }
 
 .initials-avatar {

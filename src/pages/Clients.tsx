@@ -26,6 +26,7 @@ const ClientsList: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+    const [viewMode, setViewMode] = useState<'list' | 'grid' | 'compact'>('list');
     const navigate = useNavigate();
 
     useEffect(() => { fetchClients(); }, []);
@@ -103,9 +104,24 @@ const ClientsList: React.FC = () => {
                 <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto no-scrollbar pb-1 md:pb-0">
                     {/* View Switchers Group */}
                     <div className="control-group shrink-0">
-                        <button className="control-item active"><LayoutList size={16} /></button>
-                        <button className="control-item"><LayoutGrid size={16} /></button>
-                        <button className="control-item"><Grid3X3 size={16} /></button>
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`control-item ${viewMode === 'list' ? 'active' : ''}`}
+                        >
+                            <LayoutList size={16} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={`control-item ${viewMode === 'grid' ? 'active' : ''}`}
+                        >
+                            <LayoutGrid size={16} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('compact')}
+                            className={`control-item ${viewMode === 'compact' ? 'active' : ''}`}
+                        >
+                            <Grid3X3 size={16} />
+                        </button>
                     </div>
 
                     {/* QR Code Button */}
@@ -135,54 +151,111 @@ const ClientsList: React.FC = () => {
             {loading ? (
                 <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-500" size={48} /></div>
             ) : (
-                <div className="premium-table-container">
-                    <table className="premium-table">
-                        <thead>
-                            <tr>
-                                <th>CLIENTE <ChevronDown size={12} className="inline ml-1 opacity-50" /></th>
-                                <th className="hidden md:table-cell">TYPE <ChevronDown size={12} className="inline ml-1 opacity-50" /></th>
-                                <th className="hidden lg:table-cell">NIVEAU <ChevronDown size={12} className="inline ml-1 opacity-50" /></th>
-                                <th className="hidden sm:table-cell text-right">POINTS <ChevronDown size={12} className="inline ml-1 opacity-50" /></th>
-                                <th className="text-right">CHIFFRE D'AFFAIRES <ChevronDown size={12} className="inline ml-1 opacity-50" /></th>
-                                <th className="text-right">ACTIONS <ChevronDown size={12} className="inline ml-1 opacity-50" /></th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <div className="w-full">
+                    {/* List View (Table - Hidden on mobile by default unless forced) */}
+                    {viewMode === 'list' && (
+                        <div className="premium-table-container">
+                            <table className="premium-table">
+                                <thead>
+                                    <tr>
+                                        <th>CLIENTE <ChevronDown size={12} className="inline ml-1 opacity-50" /></th>
+                                        <th className="hidden md:table-cell">TYPE</th>
+                                        <th className="hidden lg:table-cell">SOLDE</th>
+                                        <th className="text-right">ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filtered.map(client => (
+                                        <tr key={client.id} className="cursor-pointer group" onClick={() => setSelectedClientId(client.id)}>
+                                            <td>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="initials-avatar" style={{ background: 'linear-gradient(135deg, #5856D6, #AF52DE)' }}>
+                                                        {getInitials(client.first_name, client.last_name)}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="font-black text-white">{client.first_name} {client.last_name}</span>
+                                                        <span className="text-[10px] text-muted sm:hidden">{client.phone}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="hidden md:table-cell">
+                                                <span className="badge-pill-table">NORMAL</span>
+                                            </td>
+                                            <td className="hidden lg:table-cell">
+                                                <span className="font-black text-green-400">
+                                                    {client.balance.toFixed(0)} <span className="text-[10px] opacity-60">TND</span>
+                                                </span>
+                                            </td>
+                                            <td className="text-right" onClick={(e) => e.stopPropagation()}>
+                                                <div className="flex justify-end gap-3 opacity-40 group-hover:opacity-100 transition-all">
+                                                    <Edit2 size={16} className="text-blue-400" />
+                                                    <Trash2 size={16} className="text-pink-500" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                    {/* Grid View (Cards - Great for all devices) */}
+                    {viewMode === 'grid' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {filtered.map(client => (
-                                <tr key={client.id} className="cursor-pointer group" onClick={() => setSelectedClientId(client.id)}>
-                                    <td>
-                                        <div className="flex items-center gap-4">
-                                            <div className="initials-avatar" style={{ background: 'linear-gradient(135deg, #5856D6, #AF52DE)' }}>
-                                                {getInitials(client.first_name, client.last_name)}
-                                            </div>
-                                            <span className="font-black text-white">{client.first_name} {client.last_name}</span>
+                                <div
+                                    key={client.id}
+                                    onClick={() => setSelectedClientId(client.id)}
+                                    className="premium-card group cursor-pointer hover:scale-[1.02] transition-all relative overflow-hidden"
+                                >
+                                    <div className="flex items-start justify-between mb-6">
+                                        <div className="initials-avatar w-14 h-14 text-lg" style={{ background: 'linear-gradient(135deg, #5856D6, #AF52DE)', borderRadius: '18px' }}>
+                                            {getInitials(client.first_name, client.last_name)}
                                         </div>
-                                    </td>
-                                    <td className="hidden md:table-cell">
-                                        <span className="badge-pill-table">NORMAL</span>
-                                    </td>
-                                    <td className="hidden lg:table-cell">
-                                        <span className="text-muted font-bold">Bronze</span>
-                                    </td>
-                                    <td className="hidden sm:table-cell text-right">
-                                        <span className="font-black text-blue-400">120 pts</span>
-                                    </td>
-                                    <td className="text-right">
-                                        <span className="font-black text-green-400">
-                                            {client.balance.toFixed(0)} <span className="text-[10px] opacity-60">TND</span>
-                                        </span>
-                                    </td>
-                                    <td className="text-right" onClick={(e) => e.stopPropagation()}>
-                                        <div className="flex justify-end gap-3 opacity-40 group-hover:opacity-100 transition-all">
-                                            <ShieldCheck size={16} className="text-orange-500" />
-                                            <Edit2 size={16} className="text-blue-400" />
-                                            <Trash2 size={16} className="text-pink-500" />
+                                        <div className="text-right">
+                                            <span className="badge-pill-table mb-2 block">CLIENTE</span>
+                                            <p className="font-black text-green-400">{client.balance.toFixed(0)} <span className="text-[10px] opacity-60">TND</span></p>
                                         </div>
-                                    </td>
-                                </tr>
+                                    </div>
+                                    <h3 className="text-lg font-black text-white mb-1 uppercase">{client.first_name} {client.last_name}</h3>
+                                    <p className="text-muted text-sm font-bold mb-4">{client.phone || 'Pas de téléphone'}</p>
+                                    <div className="flex items-center gap-2 pt-4 border-t border-white/5">
+                                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                                            <Search size={14} />
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted group-hover:text-white transition-all">Voir la fiche</span>
+                                    </div>
+                                </div>
                             ))}
-                        </tbody>
-                    </table>
+                        </div>
+                    )}
+
+                    {/* Compact View (Small items - for mobile) */}
+                    {viewMode === 'compact' && (
+                        <div className="space-y-3">
+                            {filtered.map(client => (
+                                <div
+                                    key={client.id}
+                                    onClick={() => setSelectedClientId(client.id)}
+                                    className="premium-card flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-all"
+                                    style={{ borderRadius: '16px' }}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="initials-avatar w-10 h-10 text-xs" style={{ background: 'linear-gradient(135deg, #5856D6, #AF52DE)', borderRadius: '12px' }}>
+                                            {getInitials(client.first_name, client.last_name)}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-black text-white uppercase text-sm">{client.first_name} {client.last_name}</h4>
+                                            <p className="text-[10px] text-muted font-bold">{client.phone}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-black text-green-400 text-sm">{client.balance.toFixed(0)} DT</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
