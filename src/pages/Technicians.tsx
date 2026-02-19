@@ -120,8 +120,7 @@ const Technicians: React.FC = () => {
                             // eslint-disable-next-line
                             <div
                                 key={tech.id}
-                                className="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 dark:border-slate-700 flex flex-col gap-4 group animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards hover:border-blue-200 dark:hover:border-blue-700 transition-all cursor-pointer"
-                                style={{ animationDelay: `${idx * 50}ms` }}
+                                className={`bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 dark:border-slate-700 flex flex-col gap-4 group animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards hover:border-blue-200 dark:hover:border-blue-700 transition-all cursor-pointer ${idx < 10 ? `stagger-${idx + 1}` : ''}`}
                                 onClick={() => setSelectedTechId(tech.id)}
                             >
                                 <div className="flex items-center gap-4">

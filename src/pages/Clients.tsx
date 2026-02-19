@@ -126,8 +126,7 @@ const ClientsList: React.FC = () => {
                             <div
                                 key={client.id}
                                 onClick={() => navigate(`/client/${client.id}`)}
-                                className="bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 dark:border-slate-700 flex flex-col gap-3 active:scale-[0.98] transition-all cursor-pointer group animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards"
-                                style={{ animationDelay: `${idx * 50}ms` }}
+                                className={`bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 dark:border-slate-700 flex flex-col gap-3 active:scale-[0.98] transition-all cursor-pointer group animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards ${idx < 10 ? `stagger-${idx + 1}` : ''}`}
                             >
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-center gap-3">
