@@ -89,7 +89,7 @@ function App() {
   }
 
   // Protection & Role Logic
-  const ProtectedRoute = ({ children, requireAdmin = false }: { children: JSX.Element, requireAdmin?: boolean }) => {
+  const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
     if (!session) return <Navigate to="/login" />;
 
     // If profile is still missing after loading (e.g. trigger failed), we might allow them in or block?
