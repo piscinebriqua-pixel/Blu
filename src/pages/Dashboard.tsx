@@ -9,13 +9,15 @@ import {
     CheckCircle2,
     Calendar,
     LogOut,
-    Activity
+    Activity,
+    Shield
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
     const [counts, setCounts] = useState({ clients: 0, technicians: 0 });
+    const [isAdmin, setIsAdmin] = useState(false);
 
     const handleLogout = async () => {
         const { error } = await supabase.auth.signOut();
@@ -26,6 +28,16 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', session.user.id)
+                        .single();
+                    if (profile?.role === 'admin') setIsAdmin(true);
+                }
+
                 const [clientsRes, techRes] = await Promise.all([
                     supabase.from('clients').select('id', { count: 'exact', head: true }),
                     supabase.from('technicians').select('id', { count: 'exact', head: true })
@@ -52,6 +64,15 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
+                    {isAdmin && (
+                        <button
+                            onClick={() => navigate('/admin/users')}
+                            title="Administration Utilisateurs"
+                            className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md"
+                        >
+                            <Shield size={20} />
+                        </button>
+                    )}
                     <ThemeToggle />
                     <button title="Déconnexion" onClick={handleLogout} className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md">
                         <LogOut size={20} />

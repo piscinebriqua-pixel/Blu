@@ -35,7 +35,7 @@ const MockupShowcase: React.FC = () => {
                             <button className="text-primary bg-primary-light/30 px-4 py-1 rounded-full text-xs">View Map</button>
                         </div>
                         <div className="progress-bar-bg">
-                            <div className="progress-bar-fill" style={{ width: '50%' }}></div>
+                            <div className="progress-bar-fill w-1/2"></div>
                         </div>
                     </div>
 

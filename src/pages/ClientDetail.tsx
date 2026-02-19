@@ -252,7 +252,7 @@ const ClientDetail: React.FC = () => {
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                             {pools.map((pool, idx) => (
                                 // eslint-disable-next-line
-                                <div key={pool.id} style={{ '--enter-delay': `${idx * 100}ms` } as React.CSSProperties} className="animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-backwards [animation-delay:var(--enter-delay)] bg-white rounded-3xl p-5 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 hover:border-blue-200 transition-all group/pool relative overflow-hidden">
+                                <div key={pool.id} className="animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-backwards bg-white rounded-3xl p-5 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 hover:border-blue-200 transition-all group/pool relative overflow-hidden" style={{ animationDelay: `${idx * 100}ms` }}>
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full opacity-50" />
 
                                     <div className="flex flex-col gap-4 relative z-10">
@@ -305,7 +305,7 @@ const ClientDetail: React.FC = () => {
                         <div className="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-slate-200 before:to-transparent before:content-['']">
                             {interventions.map((inter, idx) => (
                                 // eslint-disable-next-line
-                                <div key={inter.id} style={{ '--enter-delay': `${idx * 150}ms` } as React.CSSProperties} className="animate-in fade-in slide-in-from-right-8 duration-700 fill-mode-backwards [animation-delay:var(--enter-delay)] relative pl-14 group/inter">
+                                <div key={inter.id} className="animate-in fade-in slide-in-from-right-8 duration-700 fill-mode-backwards relative pl-14 group/inter" style={{ animationDelay: `${idx * 150}ms` }}>
                                     {/* Timeline Dot */}
                                     <div className="absolute left-[21px] top-6 w-2.5 h-2.5 rounded-full bg-white border-[3px] border-slate-300 group-hover/inter:border-violet-500 group-hover/inter:scale-125 transition-all z-10" />
 
