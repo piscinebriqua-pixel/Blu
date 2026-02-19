@@ -7,12 +7,11 @@ import {
     Phone,
     History,
     Calendar,
-    ChevronRight,
     Waves,
     Plus,
     ExternalLink
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import ModalLayout from './ModalLayout';
 import Button from './ui/Button';
 import NewIntervention from './NewIntervention';
@@ -29,6 +28,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
     const [interventions, setInterventions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'bassins' | 'journal'>('bassins');
+    const navigate = useNavigate();
 
     const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null);
     const [isInterventionModalOpen, setIsInterventionModalOpen] = useState(false);
@@ -96,7 +96,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                     </Button>
                     <Button
                         variant="primary"
-                        onClick={() => window.location.href = `/clients/${client.id}`}
+                        onClick={() => navigate(`/client/${client.id}`)}
                         className="flex-[2]"
                     >
                         <ExternalLink size={18} className="mr-2" />

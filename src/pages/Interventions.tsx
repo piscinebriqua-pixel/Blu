@@ -6,7 +6,6 @@ import { supabase } from '../lib/supabase';
 import {
     Search,
     Calendar,
-    Filter,
     ChevronRight,
     FileText,
     UserCheck,

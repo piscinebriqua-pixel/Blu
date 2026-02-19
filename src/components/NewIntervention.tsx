@@ -17,6 +17,7 @@ import {
     User
 } from 'lucide-react';
 import ModalLayout from './ModalLayout';
+import TechnicianSelectionModal from './TechnicianSelectionModal';
 
 interface Service { id: string; name: string; price: number; }
 interface Technician { id: string; full_name: string; }
@@ -40,6 +41,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({ poolId, clientId, onC
     // Auth & Permissions
 
     const [isTechnician, setIsTechnician] = useState(false);
+    const [isTechModalOpen, setIsTechModalOpen] = useState(false);
 
     const [selectedServices, setSelectedServices] = useState<Record<string, number>>({});
     const [referencePrices, setReferencePrices] = useState<Record<string, number>>({});
@@ -275,19 +277,21 @@ const NewIntervention: React.FC<NewInterventionProps> = ({ poolId, clientId, onC
                         <div className="flex-column gap-5">
                             <div className="flex-column gap-2">
                                 <label className="text-[10px] font-black text-muted uppercase tracking-widest ml-1">Technicien</label>
-                                <div className="relative">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} />
-                                    <select
-                                        className={`search-input !pl-12 ${isTechnician ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
-                                        required
-                                        value={formData.technician_id}
-                                        onChange={e => setFormData({ ...formData, technician_id: e.target.value })}
-                                        title="Sélectionner un technicien"
-                                        disabled={isTechnician}
-                                    >
-                                        <option value="" className="bg-bg-card">Sélectionner un agent...</option>
-                                        {dbTechnicians.map(t => <option key={t.id} value={t.id} className="bg-bg-card text-white">{t.full_name}</option>)}
-                                    </select>
+                                <div
+                                    onClick={() => !isTechnician && setIsTechModalOpen(true)}
+                                    className={`relative w-full p-3 bg-white/5 border border-white/10 rounded-xl flex items-center gap-3 transition-all ${!isTechnician ? 'cursor-pointer hover:bg-white/10 hover:border-primary/50' : 'opacity-70 cursor-not-allowed'}`}
+                                >
+                                    <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary">
+                                        <User size={20} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-[9px] font-bold text-muted uppercase tracking-wider">Technicien assigné</p>
+                                        <p className="text-sm font-black text-white">
+                                            {dbTechnicians.find(t => t.id === formData.technician_id)?.full_name || 'Sélectionner un technicien...'}
+                                        </p>
+                                    </div>
+                                    {!isTechnician && <Plus size={18} className="text-muted" />}
+
                                     {isTechnician && (
                                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
                                             <span className="text-[9px] font-bold text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20">AUTO</span>
@@ -295,6 +299,18 @@ const NewIntervention: React.FC<NewInterventionProps> = ({ poolId, clientId, onC
                                     )}
                                 </div>
                             </div>
+
+
+                            <TechnicianSelectionModal
+                                isOpen={isTechModalOpen}
+                                onClose={() => setIsTechModalOpen(false)}
+                                onSelect={(id) => {
+                                    setFormData({ ...formData, technician_id: id });
+                                    setIsTechModalOpen(false);
+                                }}
+                                selectedTechId={formData.technician_id}
+                            />
+
 
                             <div className="data-grid grid-2 !gap-4">
                                 <div className="flex-column gap-2">
@@ -340,183 +356,188 @@ const NewIntervention: React.FC<NewInterventionProps> = ({ poolId, clientId, onC
                             </div>
                         </div>
                     )}
-
-                    {tab === 'services' && (
-                        <div className="flex-column gap-4">
-                            {/* Add Service Section */}
-                            <div className="flex gap-2">
-                                <select
-                                    className="search-input cursor-pointer flex-1"
-                                    value={serviceToAdd}
-                                    onChange={(e) => setServiceToAdd(e.target.value)}
-                                    title="Sélectionner un service à ajouter"
-                                >
-                                    <option value="">Sélectionner un service...</option>
-                                    {dbServices
-                                        .filter(s => selectedServices[s.id] === undefined) // Only show unselected services
-                                        .map(s => (
-                                            <option key={s.id} value={s.id}>{s.name} ({s.price} DT)</option>
-                                        ))}
-                                </select>
-                                <button
-                                    type="button"
-                                    disabled={!serviceToAdd}
-                                    onClick={() => {
-                                        if (serviceToAdd) {
-                                            const s = dbServices.find(srv => srv.id === serviceToAdd);
-                                            if (s) {
-                                                setSelectedServices(prev => ({
-                                                    ...prev,
-                                                    [s.id]: referencePrices[s.id] ?? s.price
-                                                }));
-                                                setServiceToAdd('');
+                    {
+                        tab === 'services' && (
+                            <div className="flex-column gap-4">
+                                {/* Add Service Section */}
+                                <div className="flex gap-2">
+                                    <select
+                                        className="search-input cursor-pointer flex-1"
+                                        value={serviceToAdd}
+                                        onChange={(e) => setServiceToAdd(e.target.value)}
+                                        title="Sélectionner un service à ajouter"
+                                    >
+                                        <option value="">Sélectionner un service...</option>
+                                        {dbServices
+                                            .filter(s => selectedServices[s.id] === undefined) // Only show unselected services
+                                            .map(s => (
+                                                <option key={s.id} value={s.id}>{s.name} ({s.price} DT)</option>
+                                            ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        disabled={!serviceToAdd}
+                                        onClick={() => {
+                                            if (serviceToAdd) {
+                                                const s = dbServices.find(srv => srv.id === serviceToAdd);
+                                                if (s) {
+                                                    setSelectedServices(prev => ({
+                                                        ...prev,
+                                                        [s.id]: referencePrices[s.id] ?? s.price
+                                                    }));
+                                                    setServiceToAdd('');
+                                                }
                                             }
-                                        }
-                                    }}
-                                    className="btn-primary px-4 !h-[42px] disabled:opacity-50 disabled:grayscale"
-                                    title="Ajouter le service sélectionné"
-                                >
-                                    <Plus size={20} />
-                                </button>
-                            </div>
+                                        }}
+                                        className="btn-primary px-4 !h-[42px] disabled:opacity-50 disabled:grayscale"
+                                        title="Ajouter le service sélectionné"
+                                    >
+                                        <Plus size={20} />
+                                    </button>
+                                </div>
 
-                            {/* Selected Services List */}
-                            <div className="flex-column gap-2">
-                                {Object.entries(selectedServices).length === 0 ? (
-                                    <div className="p-8 text-center border border-dashed border-white/10 rounded-2xl">
-                                        <p className="text-xs text-muted font-bold uppercase tracking-wider">Aucun service sélectionné</p>
-                                    </div>
-                                ) : (
-                                    Object.entries(selectedServices).map(([sId, price]) => {
-                                        const s = dbServices.find(srv => srv.id === sId);
-                                        if (!s) return null;
-                                        const isModified = price !== s.price;
+                                {/* Selected Services List */}
+                                <div className="flex-column gap-2">
+                                    {Object.entries(selectedServices).length === 0 ? (
+                                        <div className="p-8 text-center border border-dashed border-white/10 rounded-2xl">
+                                            <p className="text-xs text-muted font-bold uppercase tracking-wider">Aucun service sélectionné</p>
+                                        </div>
+                                    ) : (
+                                        Object.entries(selectedServices).map(([sId, price]) => {
+                                            const s = dbServices.find(srv => srv.id === sId);
+                                            if (!s) return null;
+                                            const isModified = price !== s.price;
 
-                                        return (
-                                            <div
-                                                key={sId}
-                                                className="flex flex-col p-4 rounded-2xl border bg-primary/20 border-primary shadow-lg transition-all"
-                                            >
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <div className="flex items-center gap-4 flex-1 overflow-hidden">
-                                                        <div className="w-8 h-8 rounded-lg flex-center shrink-0 bg-primary text-white">
-                                                            <Check size={18} />
+                                            return (
+                                                <div
+                                                    key={sId}
+                                                    className="flex flex-col p-4 rounded-2xl border bg-primary/20 border-primary shadow-lg transition-all"
+                                                >
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <div className="flex items-center gap-4 flex-1 overflow-hidden">
+                                                            <div className="w-8 h-8 rounded-lg flex-center shrink-0 bg-primary text-white">
+                                                                <Check size={18} />
+                                                            </div>
+                                                            <div className="flex-column overflow-hidden">
+                                                                <span className="text-xs font-black uppercase text-white truncate">{s.name}</span>
+                                                                <span className="text-[8px] font-bold text-muted uppercase">Service technique</span>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex-column overflow-hidden">
-                                                            <span className="text-xs font-black uppercase text-white truncate">{s.name}</span>
-                                                            <span className="text-[8px] font-bold text-muted uppercase">Service technique</span>
+
+                                                        <div className="flex items-center gap-2 shrink-0">
+                                                            <input
+                                                                type="number"
+                                                                className="w-20 bg-black/20 border border-white/10 rounded-lg px-2 py-1 text-right text-xs font-black text-white focus:border-primary outline-none"
+                                                                value={price}
+                                                                onChange={(e) => {
+                                                                    const val = parseFloat(e.target.value);
+                                                                    if (!isNaN(val)) {
+                                                                        setSelectedServices(prev => ({ ...prev, [sId]: val }));
+                                                                    }
+                                                                }}
+                                                                title={`Prix pour ${s.name}`}
+                                                            />
+                                                            <span className="text-[10px] font-bold text-muted">DT</span>
+
+                                                            <button
+                                                                onClick={() => {
+                                                                    const { [sId]: _, ...rest } = selectedServices;
+                                                                    setSelectedServices(rest);
+                                                                }}
+                                                                className="w-8 h-8 flex-center rounded-lg hover:bg-white/10 text-muted hover:text-red-400 transition-colors ml-2"
+                                                                title="Retirer ce service"
+                                                            >
+                                                                <Minus size={18} />
+                                                            </button>
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex items-center gap-2 shrink-0">
-                                                        <input
-                                                            type="number"
-                                                            className="w-20 bg-black/20 border border-white/10 rounded-lg px-2 py-1 text-right text-xs font-black text-white focus:border-primary outline-none"
-                                                            value={price}
-                                                            onChange={(e) => {
-                                                                const val = parseFloat(e.target.value);
-                                                                if (!isNaN(val)) {
-                                                                    setSelectedServices(prev => ({ ...prev, [sId]: val }));
-                                                                }
-                                                            }}
-                                                            title={`Prix pour ${s.name}`}
-                                                        />
-                                                        <span className="text-[10px] font-bold text-muted">DT</span>
-
-                                                        <button
-                                                            onClick={() => {
-                                                                const { [sId]: _, ...rest } = selectedServices;
-                                                                setSelectedServices(rest);
-                                                            }}
-                                                            className="w-8 h-8 flex-center rounded-lg hover:bg-white/10 text-muted hover:text-red-400 transition-colors ml-2"
-                                                            title="Retirer ce service"
-                                                        >
-                                                            <Minus size={18} />
-                                                        </button>
-                                                    </div>
+                                                    {(isModified || (referencePrices[sId] !== undefined && referencePrices[sId] !== s.price)) && (
+                                                        <div className="mt-2 pl-12 flex gap-2">
+                                                            {isModified && (
+                                                                <span className="text-[9px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+                                                                    Prix modifié (Base: {s.price} DT)
+                                                                </span>
+                                                            )}
+                                                            {!isModified && referencePrices[sId] !== undefined && referencePrices[sId] !== s.price && (
+                                                                <span className="text-[9px] font-bold text-blue-300">
+                                                                    Prix habituel client: {referencePrices[sId]} DT
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+                            </div>
+                        )
+                    }
 
-                                                {(isModified || (referencePrices[sId] !== undefined && referencePrices[sId] !== s.price)) && (
-                                                    <div className="mt-2 pl-12 flex gap-2">
-                                                        {isModified && (
-                                                            <span className="text-[9px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
-                                                                Prix modifié (Base: {s.price} DT)
-                                                            </span>
-                                                        )}
-                                                        {!isModified && referencePrices[sId] !== undefined && referencePrices[sId] !== s.price && (
-                                                            <span className="text-[9px] font-bold text-blue-300">
-                                                                Prix habituel client: {referencePrices[sId]} DT
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                )}
+                    {
+                        tab === 'products' && (
+                            <div className="flex-column gap-3">
+                                {dbProducts.map(p => (
+                                    <div key={p.id} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                                        <div className="flex-column">
+                                            <p className="font-black text-xs text-white uppercase truncate max-w-[140px]">{p.name}</p>
+                                            <p className="text-[9px] text-primary font-black mt-1">{p.price_per_unit.toFixed(2)} DT / {p.unit}</p>
+                                        </div>
+                                        <div className="flex items-center gap-4 bg-secondary/30 rounded-xl px-3 py-1.5">
+                                            <button type="button" onClick={() => handleProductQty(p.id, -1)} className="p-1 hover:text-status-red transition-colors text-muted" title="Diminuer quantité"><Minus size={18} /></button>
+                                            <span className="font-black min-w-[20px] text-center text-sm text-white">{usedProducts[p.id] || 0}</span>
+                                            <button type="button" onClick={() => handleProductQty(p.id, 1)} className="p-1 hover:text-primary transition-colors text-muted" title="Augmenter quantité"><Plus size={18} /></button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )
+                    }
+
+                    {
+                        tab === 'summary' && (
+                            <div className="flex-column gap-6">
+                                <div className="card-premium grad-violet vibrant items-center py-8">
+                                    <Calculator className="text-white/30 absolute left-4 top-4" size={40} />
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-white/70">Coût d'intervention</p>
+                                    <p className="text-5xl font-black text-white mt-2">{totalAmount.toFixed(0)} <span className="text-xl">DT</span></p>
+                                </div>
+
+                                <div className="flex-column gap-3">
+                                    <h4 className="text-[10px] font-black text-muted uppercase tracking-widest border-b border-border-subtle pb-2">Résumé des coûts</h4>
+                                    {Object.entries(selectedServices).map(([sId, price]) => {
+                                        const s = dbServices.find(srv => srv.id === sId);
+                                        return (
+                                            <div key={sId} className="flex justify-between items-center text-[10px]">
+                                                <span className="text-muted font-bold uppercase">{s?.name}</span>
+                                                <span className="font-black text-white">{price.toFixed(0)} DT</span>
                                             </div>
                                         );
-                                    })
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {tab === 'products' && (
-                        <div className="flex-column gap-3">
-                            {dbProducts.map(p => (
-                                <div key={p.id} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                                    <div className="flex-column">
-                                        <p className="font-black text-xs text-white uppercase truncate max-w-[140px]">{p.name}</p>
-                                        <p className="text-[9px] text-primary font-black mt-1">{p.price_per_unit.toFixed(2)} DT / {p.unit}</p>
-                                    </div>
-                                    <div className="flex items-center gap-4 bg-secondary/30 rounded-xl px-3 py-1.5">
-                                        <button type="button" onClick={() => handleProductQty(p.id, -1)} className="p-1 hover:text-status-red transition-colors text-muted" title="Diminuer quantité"><Minus size={18} /></button>
-                                        <span className="font-black min-w-[20px] text-center text-sm text-white">{usedProducts[p.id] || 0}</span>
-                                        <button type="button" onClick={() => handleProductQty(p.id, 1)} className="p-1 hover:text-primary transition-colors text-muted" title="Augmenter quantité"><Plus size={18} /></button>
-                                    </div>
+                                    })}
+                                    {Object.entries(usedProducts).map(([pId, qty]) => {
+                                        const p = dbProducts.find(prod => prod.id === pId);
+                                        return (
+                                            <div key={pId} className="flex justify-between items-center text-[10px]">
+                                                <span className="text-muted font-bold uppercase">{p?.name} (x{qty})</span>
+                                                <span className="font-black text-white">{((p?.price_per_unit || 0) * qty).toFixed(0)} DT</span>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            ))}
-                        </div>
-                    )}
 
-                    {tab === 'summary' && (
-                        <div className="flex-column gap-6">
-                            <div className="card-premium grad-violet vibrant items-center py-8">
-                                <Calculator className="text-white/30 absolute left-4 top-4" size={40} />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-white/70">Coût d'intervention</p>
-                                <p className="text-5xl font-black text-white mt-2">{totalAmount.toFixed(0)} <span className="text-xl">DT</span></p>
+                                <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20 flex gap-3">
+                                    <Wallet size={18} className="text-primary shrink-0" />
+                                    <p className="text-[9px] font-bold text-primary leading-relaxed uppercase">
+                                        L'enregistrement du rapport déduira automatiquement <strong>{totalAmount.toFixed(0)} DT</strong> du solde client.
+                                    </p>
+                                </div>
                             </div>
-
-                            <div className="flex-column gap-3">
-                                <h4 className="text-[10px] font-black text-muted uppercase tracking-widest border-b border-border-subtle pb-2">Résumé des coûts</h4>
-                                {Object.entries(selectedServices).map(([sId, price]) => {
-                                    const s = dbServices.find(srv => srv.id === sId);
-                                    return (
-                                        <div key={sId} className="flex justify-between items-center text-[10px]">
-                                            <span className="text-muted font-bold uppercase">{s?.name}</span>
-                                            <span className="font-black text-white">{price.toFixed(0)} DT</span>
-                                        </div>
-                                    );
-                                })}
-                                {Object.entries(usedProducts).map(([pId, qty]) => {
-                                    const p = dbProducts.find(prod => prod.id === pId);
-                                    return (
-                                        <div key={pId} className="flex justify-between items-center text-[10px]">
-                                            <span className="text-muted font-bold uppercase">{p?.name} (x{qty})</span>
-                                            <span className="font-black text-white">{((p?.price_per_unit || 0) * qty).toFixed(0)} DT</span>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="p-4 bg-primary/10 rounded-2xl border border-primary/20 flex gap-3">
-                                <Wallet size={18} className="text-primary shrink-0" />
-                                <p className="text-[9px] font-bold text-primary leading-relaxed uppercase">
-                                    L'enregistrement du rapport déduira automatiquement <strong>{totalAmount.toFixed(0)} DT</strong> du solde client.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </ModalLayout>
+                        )
+                    }
+                </div >
+            </div >
+        </ModalLayout >
     );
 };
 

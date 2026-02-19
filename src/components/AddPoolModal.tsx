@@ -112,6 +112,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                             className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-700 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer"
                             value={formData.treatment_method}
                             onChange={e => setFormData({ ...formData, treatment_method: e.target.value })}
+                            title="Méthode de traitement"
                         >
                             <option value="chlorine">🧪 Traitement au Chlore</option>
                             <option value="salt">🧂 Électrolyse au Sel</option>

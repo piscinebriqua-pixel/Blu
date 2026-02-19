@@ -3,11 +3,9 @@ import { supabase } from '../lib/supabase';
 import {
     Loader2,
     MapPin,
-    Wallet,
     Phone,
     History,
     Calendar,
-    ChevronRight,
     Wrench,
     TrendingUp,
     CheckCircle2

@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase';
 import Login from './pages/Login';
@@ -9,6 +9,11 @@ import Technicians from './pages/Technicians';
 import ServicesManager from './pages/ServicesManager';
 import Interventions from './pages/Interventions';
 import './index.css';
+
+const ClientRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={`/client/${id}`} replace />;
+};
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -63,6 +68,7 @@ function App() {
               <Navigate to="/login" />
             )}
           />
+          <Route path="/clients/:id" element={<ClientRedirect />} />
           <Route
             path="/technicians"
             element={session ? (

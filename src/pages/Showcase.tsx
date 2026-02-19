@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import {
-    Users,
     Check,
     AlertTriangle,
-    ChevronRight,
     MapPin,
     Camera,
     FlaskConical,

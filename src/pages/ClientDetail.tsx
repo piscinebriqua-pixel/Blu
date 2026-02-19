@@ -6,18 +6,12 @@ import {
     MessageCircle,
     Navigation,
     Edit2,
-    CheckCircle2,
     MapPin,
-    Phone,
     User,
-    ArrowRight,
     Waves,
     History,
     Wallet,
-    Mail,
-    Calendar,
-    ChevronRight,
-    Search
+    Mail
 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import NewIntervention from '../components/NewIntervention';
@@ -164,153 +158,200 @@ const ClientDetail: React.FC = () => {
             <div className="flex-column gap-6">
 
                 {/* 1. Header Card - Premium Identity */}
-                <div className="card-premium grad-blue vibrant !p-6 relative overflow-hidden group">
-                    <div className="absolute -right-10 -top-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
-                        <User size={200} />
+                <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0B2347] to-[#1e3a8a] p-8 shadow-2xl transition-all duration-500 hover:shadow-blue-900/20 group">
+                    {/* Background Elements */}
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+                    <div className="absolute -right-8 -top-8 opacity-[0.03] rotate-12 transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-6">
+                        <User size={300} />
                     </div>
 
-                    <div className="relative z-10 flex-column gap-6">
-                        <div className="flex items-center gap-5">
-                            <div className="w-20 h-20 rounded-3xl bg-white/20 flex-center text-white border border-white/20 font-black text-3xl shadow-2xl backdrop-blur-sm">
-                                {client?.first_name.charAt(0)}{client?.last_name.charAt(0)}
+                    <div className="relative z-10 flex flex-col gap-8">
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                            <div className="relative">
+                                <div className="w-24 h-24 rounded-3xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 font-black text-4xl shadow-xl ring-4 ring-white/5">
+                                    {client?.first_name.charAt(0)}{client?.last_name.charAt(0)}
+                                </div>
+                                <div className={`absolute -bottom-2 -right-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border-2 border-[#0B2347] ${client?.balance && client.balance < 0 ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
+                                    {client?.balance && client.balance < 0 ? 'Dû' : 'Ok'}
+                                </div>
                             </div>
-                            <div className="flex-column gap-1">
-                                <h1 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">
-                                    {client?.first_name} {client?.last_name}
+
+                            <div className="flex-1 space-y-2">
+                                <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none drop-shadow-lg">
+                                    {client?.first_name} <span className="text-blue-300">{client?.last_name}</span>
                                 </h1>
-                                <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-white/70">
-                                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
-                                        <MapPin size={12} className="text-white/50" /> {client?.city || 'Tunisie'}
+                                <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-blue-100/80">
+                                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">
+                                        <MapPin size={12} className="text-cyan-300" /> {client?.city || 'Tunisie'}
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
-                                        <Mail size={12} className="text-white/50" /> {client?.email || 'Pas d\'email'}
+                                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">
+                                        <Mail size={12} className="text-cyan-300" /> {client?.email || 'Pas d\'email'}
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Quick Metrics */}
-                        <div className="grid grid-cols-3 gap-3">
-                            <div className="bg-black/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 flex-column">
-                                <span className="text-[8px] font-black text-white/50 uppercase tracking-widest leading-none">Solde</span>
-                                <span className={`text-sm font-black mt-2 ${client && client.balance < 0 ? 'text-red-300' : 'text-green-300'}`}>
-                                    {client?.balance.toFixed(0)} <span className="text-[10px]">DT</span>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="bg-black/20 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/5 transition-colors group/stat">
+                                <span className="flex items-center gap-2 text-[9px] font-black text-blue-300 uppercase tracking-widest mb-1">
+                                    <Wallet size={12} /> Solde Actuel
+                                </span>
+                                <span className={`text-2xl font-black block tracking-tight ${client && client.balance < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                                    {client?.balance.toFixed(0)} <span className="text-xs opacity-60 font-bold">DT</span>
                                 </span>
                             </div>
-                            <div className="bg-black/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 flex-column">
-                                <span className="text-[8px] font-black text-white/50 uppercase tracking-widest leading-none">Bassins</span>
-                                <span className="text-sm font-black text-white mt-2">{pools.length}</span>
-                            </div>
-                            <div className="bg-black/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 flex-column">
-                                <span className="text-[8px] font-black text-white/50 uppercase tracking-widest leading-none">Dernier</span>
-                                <span className="text-sm font-black text-white mt-2 truncate">
-                                    {interventions[0] ? new Date(interventions[0].created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) : '--/--'}
+
+                            <div className="bg-black/20 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/5 transition-colors group/stat">
+                                <span className="flex items-center gap-2 text-[9px] font-black text-blue-300 uppercase tracking-widest mb-1">
+                                    <Waves size={12} /> Bassins
+                                </span>
+                                <span className="text-2xl font-black text-white block tracking-tight">
+                                    {pools.length} <span className="text-xs opacity-60 font-bold text-blue-200">Unités</span>
                                 </span>
                             </div>
+
+                            <div className="bg-black/20 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/5 transition-colors group/stat">
+                                <span className="flex items-center gap-2 text-[9px] font-black text-blue-300 uppercase tracking-widest mb-1">
+                                    <History size={12} /> Dernière visite
+                                </span>
+                                <span className="text-2xl font-black text-white block tracking-tight">
+                                    {interventions[0] ? new Date(interventions[0].created_at).getDate() : '--'} <span className="text-xs opacity-60 font-bold text-blue-200 uppercase">{interventions[0] ? new Date(interventions[0].created_at).toLocaleDateString('fr-FR', { month: 'short' }) : ''}</span>
+                                </span>
+                            </div>
+
+                            <button onClick={() => setIsEditClientModalOpen(true)} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:bg-white/20 transition-all active:scale-95 group/btn flex flex-col justify-center items-center gap-2 text-center">
+                                <span className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-200 group-hover/btn:scale-110 transition-transform">
+                                    <Edit2 size={16} />
+                                </span>
+                                <span className="text-[9px] font-black text-white uppercase tracking-widest">Modifier Profil</span>
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <div className="data-grid grid-1 md:grid-2 !gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* 2. Bassins Section */}
-                    <div className="flex-column gap-4">
-                        <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-5">
+                        <div className="flex items-center justify-between px-2">
                             <div className="flex items-center gap-3">
-                                <div className="w-1 h-4 bg-primary rounded-full shadow-glow-primary" />
-                                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white">Équipements & Bassins</h3>
+                                <div className="w-1.5 h-6 bg-gradient-to-b from-blue-500 to-cyan-400 rounded-full" />
+                                <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-800">Parc & Équipements</h3>
                             </div>
                             <button
                                 onClick={() => setIsPoolModalOpen(true)}
-                                className="btn-icon !w-9 !h-9 !border-primary/20 bg-primary/10 text-primary hover:bg-primary hover:text-white"
+                                className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95"
                                 title="Ajouter une structure"
                             >
-                                <Plus size={18} />
+                                <Plus size={16} strokeWidth={3} />
                             </button>
                         </div>
 
-                        <div className="flex-column gap-3">
-                            {pools.map(pool => (
-                                <div key={pool.id} className="card-premium !bg-secondary/10 hover:border-primary/40 border-white/5 transition-all group/pool !p-4">
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-11 h-11 rounded-xl bg-primary/10 flex-center text-primary border border-primary/20 group-hover/pool:scale-105 transition-transform">
-                                                <Waves size={20} />
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                            {pools.map((pool, idx) => (
+                                // eslint-disable-next-line
+                                <div key={pool.id} style={{ '--enter-delay': `${idx * 100}ms` } as React.CSSProperties} className="animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-backwards [animation-delay:var(--enter-delay)] bg-white rounded-3xl p-5 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 hover:border-blue-200 transition-all group/pool relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full opacity-50" />
+
+                                    <div className="flex flex-col gap-4 relative z-10">
+                                        <div className="flex justify-between items-start">
+                                            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner group-hover/pool:scale-110 transition-transform duration-500">
+                                                <Waves size={24} />
                                             </div>
-                                            <div className="flex-column gap-0.5">
-                                                <h4 className="text-xs font-black uppercase text-white tracking-tight">{pool.name}</h4>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[9px] font-bold text-muted uppercase">{pool.volume_m3} m³</span>
-                                                    <span className="text-[8px] opacity-20 text-white">•</span>
-                                                    <span className="text-[9px] font-bold text-primary uppercase">{pool.treatment_method}</span>
-                                                </div>
+                                            <button
+                                                onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
+                                                className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-600 transition-colors shadow-lg shadow-slate-900/10"
+                                            >
+                                                Rapport
+                                            </button>
+                                        </div>
+
+                                        <div>
+                                            <h4 className="text-base font-black text-slate-800 leading-tight mb-1">{pool.name}</h4>
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                <span className="px-2 py-1 rounded-md bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                                                    {pool.volume_m3} m³
+                                                </span>
+                                                <span className="px-2 py-1 rounded-md bg-blue-50 border border-blue-100 text-[10px] font-bold text-blue-600 uppercase tracking-wide">
+                                                    {pool.treatment_method}
+                                                </span>
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
-                                            className="btn-primary !h-[38px] !px-4 !text-[9px] font-black group-hover/pool:translate-x-1 transition-transform"
-                                        >
-                                            RAPPORT <ArrowRight size={14} className="ml-1" />
-                                        </button>
                                     </div>
                                 </div>
                             ))}
 
-                            {pools.length === 0 && (
-                                <button
-                                    onClick={() => setIsPoolModalOpen(true)}
-                                    className="flex-center flex-column py-12 border-2 border-dashed border-white/5 rounded-3xl text-muted hover:border-primary/30 hover:text-primary transition-all gap-3 bg-white/2"
-                                >
-                                    <Plus size={30} className="opacity-20" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Ajouter le premier bassin</span>
-                                </button>
-                            )}
+                            <button
+                                onClick={() => setIsPoolModalOpen(true)}
+                                className="min-h-[160px] flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/50 transition-all group/add"
+                            >
+                                <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center group-hover/add:scale-110 transition-transform">
+                                    <Plus size={24} />
+                                </div>
+                                <span className="text-xs font-black uppercase tracking-widest">Nouveau Bassin</span>
+                            </button>
                         </div>
                     </div>
 
                     {/* 3. Journal d'activités Section */}
-                    <div className="flex-column gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-1 h-4 bg-status-violet rounded-full shadow-glow-violet" />
-                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white">Derniers Facturables</h3>
+                    <div className="flex flex-col gap-5">
+                        <div className="flex items-center gap-3 px-2">
+                            <div className="w-1.5 h-6 bg-gradient-to-b from-violet-500 to-fuchsia-400 rounded-full" />
+                            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-800">Journal d'Activité</h3>
                         </div>
 
-                        <div className="flex-column gap-3">
-                            {interventions.map(inter => (
-                                <div key={inter.id} className="card-premium !bg-secondary/10 border-white/5 hover:border-status-violet/30 transition-all !p-4">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-11 h-11 rounded-xl bg-status-violet/10 flex-center text-status-violet border border-status-violet/10">
-                                                <Calendar size={18} />
+                        <div className="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-slate-200 before:to-transparent before:content-['']">
+                            {interventions.map((inter, idx) => (
+                                // eslint-disable-next-line
+                                <div key={inter.id} style={{ '--enter-delay': `${idx * 150}ms` } as React.CSSProperties} className="animate-in fade-in slide-in-from-right-8 duration-700 fill-mode-backwards [animation-delay:var(--enter-delay)] relative pl-14 group/inter">
+                                    {/* Timeline Dot */}
+                                    <div className="absolute left-[21px] top-6 w-2.5 h-2.5 rounded-full bg-white border-[3px] border-slate-300 group-hover/inter:border-violet-500 group-hover/inter:scale-125 transition-all z-10" />
+
+                                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:shadow-md hover:border-violet-100 transition-all">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-black text-slate-800 uppercase tracking-wide">
+                                                    {new Date(inter.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                </span>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                                                    {inter.pool_name}
+                                                </span>
                                             </div>
-                                            <div className="flex-column gap-0.5">
-                                                <p className="text-xs font-black text-white uppercase">
-                                                    {new Date(inter.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' })}
-                                                </p>
-                                                <p className="text-[9px] text-muted font-bold uppercase tracking-wider">{inter.pool_name}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex-column items-end gap-1">
-                                            <div className="flex gap-1.5">
-                                                {inter.ph_level && <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-lg text-[8px] font-black border border-primary/10">PH {inter.ph_level}</span>}
-                                                {inter.chlorine_level && <span className="bg-status-violet/10 text-status-violet px-2 py-0.5 rounded-lg text-[8px] font-black border border-status-violet/10">CL {inter.chlorine_level}</span>}
-                                            </div>
-                                            <span className={`text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-widest ${inter.status === 'completed' ? 'text-status-green bg-status-green/10' : 'text-status-orange bg-status-orange/10'}`}>
+                                            <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${inter.status === 'completed' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-orange-50 text-orange-600 border border-orange-100'}`}>
                                                 {inter.status}
                                             </span>
                                         </div>
-                                    </div>
-                                    {inter.notes && (
-                                        <div className="mt-3 p-3 bg-black/20 rounded-xl border-l-2 border-primary/40">
-                                            <p className="text-[10px] text-muted font-medium italic leading-relaxed">"{inter.notes}"</p>
+
+                                        <div className="flex items-center gap-2">
+                                            {inter.ph_level && (
+                                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 border border-slate-100">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                                    <span className="text-[10px] font-bold text-slate-600">PH <span className="text-slate-900">{inter.ph_level}</span></span>
+                                                </div>
+                                            )}
+                                            {inter.chlorine_level && (
+                                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 border border-slate-100">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
+                                                    <span className="text-[10px] font-bold text-slate-600">CL <span className="text-slate-900">{inter.chlorine_level}</span></span>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
+
+                                        {inter.notes && (
+                                            <div className="mt-3 pt-3 border-t border-slate-50 text-xs text-slate-500 italic">
+                                                "{inter.notes}"
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
 
                             {interventions.length === 0 && (
-                                <div className="flex-center flex-column py-12 border-2 border-dashed border-white/5 rounded-3xl text-muted gap-3 bg-white/2">
-                                    <History size={30} className="opacity-20" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Aucune intervention réglée</span>
+                                <div className="ml-14 py-8 px-6 bg-slate-50 rounded-3xl border border-dashed border-slate-200 flex flex-col items-center gap-2 text-slate-400">
+                                    <History size={24} className="opacity-50" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Aucune activité récente</span>
                                 </div>
                             )}
                         </div>
