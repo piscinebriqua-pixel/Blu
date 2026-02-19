@@ -2,16 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
-    ArrowLeft,
-    Droplets,
     Plus,
     MessageCircle,
     Navigation,
-    Loader2,
     Edit2,
     CheckCircle2,
-    MapPin
+    MapPin,
+    Phone,
+    User,
+    ArrowRight,
+    Waves,
+    History,
+    Wallet,
+    Mail,
+    Calendar,
+    ChevronRight,
+    Search
 } from 'lucide-react';
+import PageLayout from '../components/PageLayout';
 import NewIntervention from '../components/NewIntervention';
 import AddPoolModal from '../components/AddPoolModal';
 import EditClientModal from '../components/EditClientModal';
@@ -26,6 +34,7 @@ interface Pool {
 interface Intervention {
     id: string;
     visit_date: string;
+    created_at: string;
     notes: string;
     ph_level: number;
     chlorine_level: number;
@@ -80,24 +89,32 @@ const ClientDetail: React.FC = () => {
             const { data: poolData } = await supabase.from('pools').select('*').eq('client_id', id);
             setPools(poolData || []);
 
-            if (poolData && poolData.length > 0) {
-                const poolIds = poolData.map(p => p.id);
-                const { data: interData } = await supabase
-                    .from('interventions')
-                    .select('id, visit_date, notes, ph_level, chlorine_level, status, pools(name), intervention_products(quantity, inventory_products(name, unit))')
-                    .in('pool_id', poolIds)
-                    .order('visit_date', { ascending: false })
-                    .limit(10);
+            const { data: interData } = await supabase
+                .from('interventions')
+                .select(`
+                    id, 
+                    visit_date, 
+                    created_at,
+                    notes, 
+                    ph_level, 
+                    chlorine_level, 
+                    status, 
+                    pool:pools(name), 
+                    intervention_products(quantity, inventory_products(name, unit))
+                `)
+                .in('pool_id', poolData?.map(p => p.id) || [])
+                .order('created_at', { ascending: false })
+                .limit(10);
 
-                const formattedInters = interData?.map((i: any) => ({
-                    ...i,
-                    pool_name: i.pools?.name
-                })) || [];
-                setInterventions(formattedInters);
-            }
+            const formattedInters = interData?.map((i: any) => ({
+                ...i,
+                pool_name: i.pool?.name
+            })) || [];
+            setInterventions(formattedInters);
+
         } catch (error) {
             console.error('Erreur:', error);
-            navigate('/');
+            navigate('/clients');
         } finally {
             setLoading(false);
         }
@@ -105,7 +122,7 @@ const ClientDetail: React.FC = () => {
 
     const openWhatsApp = () => {
         if (client?.phone) {
-            const formattedPhone = client.phone.replace(/\s/g, '');
+            const formattedPhone = client.phone.replace(/\s/g, '').replace('+', '');
             window.open(`https://wa.me/${formattedPhone}`, '_blank');
         }
     };
@@ -118,148 +135,225 @@ const ClientDetail: React.FC = () => {
         }
     };
 
-    if (loading || !client) {
-        return (
-            <div className="flex justify-center items-center h-screen bg-[#020617]">
-                <Loader2 className="animate-spin text-blue-500" size={48} />
-            </div>
-        );
-    }
+    if (!client && !loading) return null;
 
-    return (
-        <div className="page-container pb-28">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
-                <div className="flex items-center gap-6">
-                    <button onClick={() => navigate('/clients')} className="btn-pill btn-outline" style={{ padding: '0.75rem' }}>
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="welcome-text" style={{ fontSize: '1.75rem' }}>Fiche Client</h1>
-                        <p className="date-text">IDENTIFIANT: {client.id.slice(0, 8).toUpperCase()}</p>
-                    </div>
-                </div>
-                <button onClick={() => setIsEditClientModalOpen(true)} className="btn-pill btn-outline">
-                    <Edit2 size={16} /> MODIFIER PROFIL
+    const toolbar = (
+        <div className="flex items-center justify-between w-full gap-3">
+            <div className="flex items-center gap-2">
+                <button onClick={openWhatsApp} className="btn-icon !bg-[#25D366] !text-white !border-none !w-10 !h-10 shadow-lg shadow-green-500/20" title="WhatsApp">
+                    <MessageCircle size={18} />
+                </button>
+                <button onClick={openGPS} className="btn-icon !bg-orange-500 !text-white !border-none !w-10 !h-10 shadow-lg shadow-orange-500/20" title="Navigation">
+                    <Navigation size={18} />
                 </button>
             </div>
+            <button onClick={() => setIsEditClientModalOpen(true)} className="btn-secondary !h-[40px] !px-4 !text-[10px] font-black">
+                <Edit2 size={14} /> <span className="hidden sm:inline">MODIFIER PROFIL</span>
+            </button>
+        </div>
+    );
 
-            {/* Hero Card */}
-            <div className="premium-card mb-10 overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-10 opacity-10">
-                    <Droplets size={120} />
-                </div>
-                <div className="relative z-10 flex flex-col md:flex-row items-center gap-10">
-                    <div className="w-32 h-32 rounded-[40px] bg-blue-500 flex items-center justify-center text-5xl font-black text-white shadow-[0_20px_40px_rgba(10,132,255,0.4)]">
-                        {client.first_name.charAt(0)}{client.last_name.charAt(0)}
+    return (
+        <PageLayout
+            title="Dossier Client"
+            subtitle={`${client?.first_name} ${client?.last_name}`}
+            showBackButton={true}
+            toolbar={toolbar}
+            loading={loading}
+        >
+            <div className="flex-column gap-6">
+
+                {/* 1. Header Card - Premium Identity */}
+                <div className="card-premium grad-blue vibrant !p-6 relative overflow-hidden group">
+                    <div className="absolute -right-10 -top-10 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                        <User size={200} />
                     </div>
-                    <div className="flex-1 text-center md:text-left">
-                        <h2 className="welcome-text" style={{ fontSize: '2.5rem', background: 'none', WebkitTextFillColor: 'white' }}>{client.first_name} {client.last_name}</h2>
-                        <p className="text-secondary flex items-center justify-center md:justify-start gap-2 mt-4 font-bold">
-                            <MapPin size={18} className="text-blue-500" />
-                            {client.address} {client.city ? `(${client.city})` : ''}
-                        </p>
-                        <div className="flex justify-center md:justify-start gap-4 mt-8">
-                            <button onClick={openWhatsApp} className="btn-pill" style={{ background: '#25D366', color: 'white', padding: '0.8rem 2rem' }}>
-                                <MessageCircle size={20} /> WHATSAPP
-                            </button>
-                            <button onClick={openGPS} className="btn-pill btn-outline" style={{ borderColor: 'var(--accent-orange)', color: 'var(--accent-orange)' }}>
-                                <Navigation size={20} /> NAVIGUER
-                            </button>
+
+                    <div className="relative z-10 flex-column gap-6">
+                        <div className="flex items-center gap-5">
+                            <div className="w-20 h-20 rounded-3xl bg-white/20 flex-center text-white border border-white/20 font-black text-3xl shadow-2xl backdrop-blur-sm">
+                                {client?.first_name.charAt(0)}{client?.last_name.charAt(0)}
+                            </div>
+                            <div className="flex-column gap-1">
+                                <h1 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">
+                                    {client?.first_name} {client?.last_name}
+                                </h1>
+                                <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-white/70">
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
+                                        <MapPin size={12} className="text-white/50" /> {client?.city || 'Tunisie'}
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider">
+                                        <Mail size={12} className="text-white/50" /> {client?.email || 'Pas d\'email'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Quick Metrics */}
+                        <div className="grid grid-cols-3 gap-3">
+                            <div className="bg-black/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 flex-column">
+                                <span className="text-[8px] font-black text-white/50 uppercase tracking-widest leading-none">Solde</span>
+                                <span className={`text-sm font-black mt-2 ${client && client.balance < 0 ? 'text-red-300' : 'text-green-300'}`}>
+                                    {client?.balance.toFixed(0)} <span className="text-[10px]">DT</span>
+                                </span>
+                            </div>
+                            <div className="bg-black/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 flex-column">
+                                <span className="text-[8px] font-black text-white/50 uppercase tracking-widest leading-none">Bassins</span>
+                                <span className="text-sm font-black text-white mt-2">{pools.length}</span>
+                            </div>
+                            <div className="bg-black/10 backdrop-blur-md rounded-2xl p-3 border border-white/10 flex-column">
+                                <span className="text-[8px] font-black text-white/50 uppercase tracking-widest leading-none">Dernier</span>
+                                <span className="text-sm font-black text-white mt-2 truncate">
+                                    {interventions[0] ? new Date(interventions[0].created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) : '--/--'}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <div className="text-center md:text-right">
-                        <p className="mini-stat-label">Solde Actuel</p>
-                        <p className="text-5xl font-black" style={{ color: client.balance < 0 ? 'var(--accent-pink)' : 'var(--accent-green)' }}>
-                            {client.balance.toFixed(0)} <span className="text-xl">DT</span>
-                        </p>
-                    </div>
                 </div>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                {/* Left Column: Bassins */}
-                <div>
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="welcome-text" style={{ fontSize: '1.2rem', background: 'none', WebkitTextFillColor: 'white' }}>Structures & Bassins</h3>
-                        <button onClick={() => setIsPoolModalOpen(true)} className="btn-pill btn-outline" style={{ fontSize: '0.7rem' }}>
-                            <Plus size={14} /> AJOUTER
-                        </button>
-                    </div>
-
-                    <div className="space-y-4">
-                        {pools.map(pool => (
-                            <div key={pool.id} className="premium-card flex justify-between items-center" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                                <div>
-                                    <h4 className="font-black text-white uppercase tracking-tight text-lg">{pool.name}</h4>
-                                    <div className="flex gap-3 mt-1">
-                                        <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">{pool.volume_m3} m³</span>
-                                        <span className="text-[10px] font-black text-purple-400 uppercase tracking-widest">{pool.treatment_method}</span>
-                                    </div>
-                                </div>
-                                <button onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }} className="btn-pill btn-primary" style={{ padding: '0.6rem 1.25rem', fontSize: '0.7rem' }}>
-                                    RAPPORT
-                                </button>
+                <div className="data-grid grid-1 md:grid-2 !gap-6">
+                    {/* 2. Bassins Section */}
+                    <div className="flex-column gap-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-1 h-4 bg-primary rounded-full shadow-glow-primary" />
+                                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white">Équipements & Bassins</h3>
                             </div>
-                        ))}
-                    </div>
-                </div>
+                            <button
+                                onClick={() => setIsPoolModalOpen(true)}
+                                className="btn-icon !w-9 !h-9 !border-primary/20 bg-primary/10 text-primary hover:bg-primary hover:text-white"
+                                title="Ajouter une structure"
+                            >
+                                <Plus size={18} />
+                            </button>
+                        </div>
 
-                {/* Right Column: History */}
-                <div>
-                    <h3 className="welcome-text mb-6" style={{ fontSize: '1.2rem', background: 'none', WebkitTextFillColor: 'white' }}>Journal d'activités</h3>
-                    <div className="space-y-4">
-                        {interventions.map(inter => (
-                            <div key={inter.id} className="premium-card" style={{ background: 'rgba(255,255,255,0.03)', padding: '1.25rem' }}>
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-500 border border-green-500/20">
-                                            <CheckCircle2 size={24} />
-                                        </div>
-                                        <div>
-                                            <p className="font-black text-white text-base">
-                                                {new Date(inter.visit_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
-                                            </p>
-                                            <p className="text-[10px] text-muted font-black tracking-widest uppercase">{inter.pool_name}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        {inter.ph_level && <span className="bg-[#1c222d] text-blue-400 px-3 py-1.5 rounded-xl text-[10px] font-black border border-white/5">pH {inter.ph_level}</span>}
-                                        {inter.chlorine_level && <span className="bg-[#1c222d] text-purple-400 px-3 py-1.5 rounded-xl text-[10px] font-black border border-white/5">CL {inter.chlorine_level}</span>}
-                                    </div>
-                                </div>
-
-                                {inter.intervention_products && inter.intervention_products.length > 0 && (
-                                    <div className="mb-4 flex flex-wrap gap-2 pt-4 border-t border-white/5">
-                                        {inter.intervention_products.map((ip: any, idx: number) => (
-                                            <div key={idx} className="bg-white/5 px-2 py-1 rounded-lg border border-white/5 text-[10px] font-black text-blue-400">
-                                                {ip.inventory_products.name} x{ip.quantity}
+                        <div className="flex-column gap-3">
+                            {pools.map(pool => (
+                                <div key={pool.id} className="card-premium !bg-secondary/10 hover:border-primary/40 border-white/5 transition-all group/pool !p-4">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-11 h-11 rounded-xl bg-primary/10 flex-center text-primary border border-primary/20 group-hover/pool:scale-105 transition-transform">
+                                                <Waves size={20} />
                                             </div>
-                                        ))}
+                                            <div className="flex-column gap-0.5">
+                                                <h4 className="text-xs font-black uppercase text-white tracking-tight">{pool.name}</h4>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[9px] font-bold text-muted uppercase">{pool.volume_m3} m³</span>
+                                                    <span className="text-[8px] opacity-20 text-white">•</span>
+                                                    <span className="text-[9px] font-bold text-primary uppercase">{pool.treatment_method}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
+                                            className="btn-primary !h-[38px] !px-4 !text-[9px] font-black group-hover/pool:translate-x-1 transition-transform"
+                                        >
+                                            RAPPORT <ArrowRight size={14} className="ml-1" />
+                                        </button>
                                     </div>
-                                )}
+                                </div>
+                            ))}
 
-                                {inter.notes && (
-                                    <div className="bg-black/20 p-4 rounded-2xl">
-                                        <p className="text-xs text-secondary leading-relaxed font-medium italic">"{inter.notes}"</p>
+                            {pools.length === 0 && (
+                                <button
+                                    onClick={() => setIsPoolModalOpen(true)}
+                                    className="flex-center flex-column py-12 border-2 border-dashed border-white/5 rounded-3xl text-muted hover:border-primary/30 hover:text-primary transition-all gap-3 bg-white/2"
+                                >
+                                    <Plus size={30} className="opacity-20" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Ajouter le premier bassin</span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 3. Journal d'activités Section */}
+                    <div className="flex-column gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-1 h-4 bg-status-violet rounded-full shadow-glow-violet" />
+                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-white">Derniers Facturables</h3>
+                        </div>
+
+                        <div className="flex-column gap-3">
+                            {interventions.map(inter => (
+                                <div key={inter.id} className="card-premium !bg-secondary/10 border-white/5 hover:border-status-violet/30 transition-all !p-4">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-11 h-11 rounded-xl bg-status-violet/10 flex-center text-status-violet border border-status-violet/10">
+                                                <Calendar size={18} />
+                                            </div>
+                                            <div className="flex-column gap-0.5">
+                                                <p className="text-xs font-black text-white uppercase">
+                                                    {new Date(inter.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' })}
+                                                </p>
+                                                <p className="text-[9px] text-muted font-bold uppercase tracking-wider">{inter.pool_name}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex-column items-end gap-1">
+                                            <div className="flex gap-1.5">
+                                                {inter.ph_level && <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-lg text-[8px] font-black border border-primary/10">PH {inter.ph_level}</span>}
+                                                {inter.chlorine_level && <span className="bg-status-violet/10 text-status-violet px-2 py-0.5 rounded-lg text-[8px] font-black border border-status-violet/10">CL {inter.chlorine_level}</span>}
+                                            </div>
+                                            <span className={`text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-widest ${inter.status === 'completed' ? 'text-status-green bg-status-green/10' : 'text-status-orange bg-status-orange/10'}`}>
+                                                {inter.status}
+                                            </span>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
-                        ))}
+                                    {inter.notes && (
+                                        <div className="mt-3 p-3 bg-black/20 rounded-xl border-l-2 border-primary/40">
+                                            <p className="text-[10px] text-muted font-medium italic leading-relaxed">"{inter.notes}"</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {interventions.length === 0 && (
+                                <div className="flex-center flex-column py-12 border-2 border-dashed border-white/5 rounded-3xl text-muted gap-3 bg-white/2">
+                                    <History size={30} className="opacity-20" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Aucune intervention réglée</span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
+
+                {/* 4. Notes Générales / Footer */}
+                {client?.notes && (
+                    <div className="card-premium !bg-secondary/30 !border-white/5 !p-5">
+                        <div className="flex items-center gap-3 mb-3">
+                            <History size={14} className="text-muted" />
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted">Notes Internes</h4>
+                        </div>
+                        <p className="text-xs text-muted leading-relaxed italic">{client.notes}</p>
+                    </div>
+                )}
+
             </div>
 
+            {/* Modals */}
             {isInterventionModalOpen && selectedPoolId && (
-                <NewIntervention poolId={selectedPoolId} clientId={id!} onClose={() => setIsInterventionModalOpen(false)} onSuccess={fetchClientData} />
+                <NewIntervention
+                    poolId={selectedPoolId}
+                    clientId={id!}
+                    onClose={() => setIsInterventionModalOpen(false)}
+                    onSuccess={fetchClientData}
+                />
             )}
             {isPoolModalOpen && (
-                <AddPoolModal clientId={id!} onClose={() => setIsPoolModalOpen(false)} onSuccess={fetchClientData} />
+                <AddPoolModal
+                    clientId={id!}
+                    onClose={() => setIsPoolModalOpen(false)}
+                    onSuccess={fetchClientData}
+                />
             )}
             {isEditClientModalOpen && (
-                <EditClientModal client={client} onClose={() => setIsEditClientModalOpen(false)} onSuccess={fetchClientData} />
+                <EditClientModal
+                    client={client}
+                    onClose={() => setIsEditClientModalOpen(false)}
+                    onSuccess={fetchClientData}
+                />
             )}
-        </div>
+        </PageLayout>
     );
 };
 

@@ -1,153 +1,148 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
     Users,
-    Droplets,
+    Wrench,
+    ChevronRight,
+    TrendingUp,
+    CheckCircle2,
     Calendar,
-    Settings,
-    Scissors,
-    Loader2,
-    Clock,
-    ArrowRight
+    LogOut,
+    Activity
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 
 const Dashboard: React.FC = () => {
-    const [stats, setStats] = useState({ totalClients: 0, totalPools: 0, interventionsToday: 0, balance: 0 });
-    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    const [counts, setCounts] = useState({ clients: 0, technicians: 0 });
 
-    useEffect(() => { fetchDashboardData(); }, []);
-
-    const fetchDashboardData = async () => {
-        try {
-            setLoading(true);
-            const { count: c } = await supabase.from('clients').select('*', { count: 'exact', head: true });
-            const { count: p } = await supabase.from('pools').select('*', { count: 'exact', head: true });
-            const today = new Date(); today.setHours(0, 0, 0, 0);
-            const { count: i } = await supabase.from('interventions').select('*', { count: 'exact', head: true }).gte('visit_date', today.toISOString());
-            const { data: b } = await supabase.from('clients').select('balance');
-            const totalB = b?.reduce((acc, curr) => acc + (curr.balance || 0), 0) || 0;
-
-            setStats({ totalClients: c || 0, totalPools: p || 0, interventionsToday: i || 0, balance: totalB });
-        } finally { setLoading(false); }
+    const handleLogout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) console.error('Erreur déconnexion:', error.message);
+        navigate('/login');
     };
 
-    const todayStr = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-
-    if (loading) return (
-        <div className="flex justify-center items-center h-screen">
-            <Loader2 className="animate-spin text-blue-500" size={48} />
-        </div>
-    );
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const [clientsRes, techRes] = await Promise.all([
+                    supabase.from('clients').select('id', { count: 'exact', head: true }),
+                    supabase.from('technicians').select('id', { count: 'exact', head: true })
+                ]);
+                setCounts({
+                    clients: clientsRes.count || 0,
+                    technicians: techRes.count || 0
+                });
+            } catch (error) {
+                console.error('Erreur stats:', error);
+            }
+        };
+        fetchStats();
+    }, []);
 
     return (
-        <div className="page-container pb-28">
-            {/* Header */}
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-6">
+        <div className="gabarit-wrapper">
+            <header className="header-gradient flex justify-between items-start">
                 <div>
-                    <h1 className="welcome-text">Bienvenue ! 👋</h1>
-                    <p className="date-text">Nous sommes le <span style={{ color: 'var(--accent-blue)', fontWeight: '700' }}>{todayStr}</span></p>
-                </div>
-                <div className="flex gap-4">
-                    <div className="premium-card flex items-center gap-3" style={{ padding: '0.75rem 1.5rem', borderRadius: 'var(--radius-pill)' }}>
-                        <Clock size={16} className="text-blue-400" />
-                        <span className="font-black text-sm">{new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                    <h1>DeepBlue</h1>
+                    <div className="flex flex-row items-center gap-2 opacity-80">
+                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+                        <p>Système Actif</p>
                     </div>
+                </div>
+                <div className="flex items-center gap-3">
                     <ThemeToggle />
-                    <button className="btn-pill btn-admin transition-all">
-                        <Settings size={18} /> ADMIN
+                    <button title="Déconnexion" onClick={handleLogout} className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md">
+                        <LogOut size={20} />
                     </button>
                 </div>
             </header>
 
-            {/* Mini Stat Row */}
-            <div className="mini-stat-grid mb-12">
-                <div className="mini-stat-card">
-                    <p className="mini-stat-label">Solde Clients</p>
-                    <p className="mini-stat-value" style={{ color: 'var(--accent-green)' }}>{stats.balance.toFixed(0)} <span className="text-xs">DT</span></p>
-                </div>
-                <div className="mini-stat-card">
-                    <p className="mini-stat-label">Interventions</p>
-                    <p className="mini-stat-value">{stats.interventionsToday}</p>
-                </div>
-                <div className="mini-stat-card">
-                    <p className="mini-stat-label">Prestations</p>
-                    <p className="mini-stat-value">54</p>
-                </div>
-                <div className="mini-stat-card">
-                    <p className="mini-stat-label">Bassins</p>
-                    <p className="mini-stat-value">{stats.totalPools}</p>
-                </div>
-            </div>
+            <main className="main-container">
 
-            <div className="flex items-center gap-3 mb-8">
-                <Droplets size={24} className="text-blue-500 animate-pulse" />
-                <h2 style={{ fontSize: '1.25rem', fontWeight: '950', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-main)' }}>Centre de pilotage</h2>
-            </div>
+                {/* Main Stats Summary */}
 
-            {/* Main Nav Grid */}
-            <div className="nav-grid">
-                <Link to="/settings/services" className="nav-card" style={{ background: 'linear-gradient(135deg, #5856D6, #AF52DE)', boxShadow: '0 10px 40px -10px rgba(88, 86, 214, 0.4)' }}>
-                    <div className="nav-card-glow" />
-                    <div className="nav-card-inner">
-                        <div className="nav-card-icon"><Scissors size={28} /></div>
-                        <div>
-                            <h3 className="welcome-text" style={{ fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'white', marginBottom: '0.25rem' }}>CATALOGUE</h3>
-                            <p className="date-text" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>Services & Tarifs</p>
+                <div className="progress-container animate-slide-up">
+                    <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                            <Activity size={18} className="text-primary" />
+                            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Objectif Quotidien</span>
                         </div>
-                        <div className="flex justify-between items-end">
-                            <span className="text-xl font-black text-white">54 Prestat.</span>
-                            <ArrowRight size={24} className="text-white opacity-50" />
-                        </div>
+                        <span className="text-lg font-black text-primary">80%</span>
                     </div>
-                </Link>
-
-                <Link to="/clients" className="nav-card" style={{ background: 'linear-gradient(135deg, #007AFF, #5AC8FA)', boxShadow: '0 10px 40px -10px rgba(0, 122, 255, 0.4)' }}>
-                    <div className="nav-card-glow" />
-                    <div className="nav-card-inner">
-                        <div className="nav-card-icon"><Calendar size={28} /></div>
-                        <div>
-                            <h3 className="welcome-text" style={{ fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'white', marginBottom: '0.25rem' }}>PLANNING</h3>
-                            <p className="date-text" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>Suivi technique</p>
-                        </div>
-                        <div className="flex justify-between items-end">
-                            <span className="text-xl font-black text-white">{stats.interventionsToday} Visites</span>
-                            <ArrowRight size={24} className="text-white opacity-50" />
-                        </div>
+                    <div className="progress-bar-bg">
+                        <div className="progress-bar-fill w-[80%]"></div>
                     </div>
-                </Link>
+                </div>
 
-                <Link to="/technicians" className="nav-card" style={{ background: 'linear-gradient(135deg, #FF9500, #FFCC00)', boxShadow: '0 10px 40px -10px rgba(255, 149, 0, 0.4)' }}>
-                    <div className="nav-card-glow" />
-                    <div className="nav-card-inner">
-                        <div className="nav-card-icon"><Users size={28} /></div>
-                        <div>
-                            <h3 className="welcome-text" style={{ fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'white', marginBottom: '0.25rem' }}>ÉQUIPE</h3>
-                            <p className="date-text" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>Gestion personnel</p>
+                <div className="dashboard-grid">
+                    <div onClick={() => navigate('/clients')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-50 text-blue-600 mb-2">
+                            <Users size={24} />
                         </div>
-                        <div className="flex justify-between items-end">
-                            <span className="text-xl font-black text-white">12 Membres</span>
-                            <ArrowRight size={24} className="text-white opacity-50" />
-                        </div>
+                        <span className="mt-1">Fiches Clients</span>
+                        <p className="text-xl font-bold text-slate-800">{counts.clients} <span className="text-[10px] font-normal text-slate-400">clients</span></p>
                     </div>
-                </Link>
 
-                <Link to="/clients" className="nav-card" style={{ background: 'linear-gradient(135deg, #34C759, #32D74B)', boxShadow: '0 10px 40px -10px rgba(52, 199, 89, 0.4)' }}>
-                    <div className="nav-card-glow" />
-                    <div className="nav-card-inner">
-                        <div className="nav-card-icon"><Users size={28} /></div>
-                        <div>
-                            <h3 className="welcome-text" style={{ fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'white', marginBottom: '0.25rem' }}>CLIENTS</h3>
-                            <p className="date-text" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>Base de données</p>
+                    <div className="action-item cursor-pointer hover:scale-[1.02] transition-transform relative overflow-hidden">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-cyan-50 text-cyan-600 mb-2">
+                            <Calendar size={24} />
                         </div>
-                        <div className="flex justify-between items-end">
-                            <span className="text-xl font-black text-white">{stats.totalClients} fiches</span>
-                            <ArrowRight size={24} className="text-white opacity-50" />
-                        </div>
+                        <span className="mt-1">Planning RDV</span>
+                        <p className="text-xl font-bold text-slate-800">12 <span className="text-[10px] font-normal text-slate-400">active</span></p>
+                        <div className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
                     </div>
-                </Link>
-            </div>
+
+                    <div className="action-item cursor-pointer hover:scale-[1.02] transition-transform">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-indigo-50 text-indigo-600 mb-2">
+                            <Wrench size={24} />
+                        </div>
+                        <span className="mt-1">Interventions</span>
+                        <p className="text-xl font-bold text-slate-800">{counts.technicians} <span className="text-[10px] font-normal text-slate-400">équipes</span></p>
+                    </div>
+
+                    <div className="action-item cursor-pointer hover:scale-[1.02] transition-transform">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-teal-50 text-teal-600 mb-2">
+                            <TrendingUp size={24} />
+                        </div>
+                        <span className="mt-1">Rapports</span>
+                        <p className="text-xl font-bold text-slate-800">OK</p>
+                    </div>
+
+                    <div onClick={() => navigate('/technicians')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-50 text-purple-600 mb-2">
+                            <Users size={24} />
+                        </div>
+                        <span className="mt-1">Techniciens</span>
+                        <p className="text-xl font-bold text-slate-800">{counts.technicians} <span className="text-[10px] font-normal text-slate-400">membres</span></p>
+                    </div>
+                </div>
+
+                {/* Logs Feed */}
+                <div className="mt-12">
+                    <div className="flex justify-between items-center mb-4 px-1">
+                        <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Flux d'activité</h3>
+                        <div className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[9px] font-bold text-slate-500">LIVE</div>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="flow-card animate-slide-up hover:scale-[1.01] transition-transform cursor-pointer">
+                                <div className="flex items-center gap-4">
+                                    <div className="status-dot bg-green-100 text-green-600">
+                                        <CheckCircle2 size={16} />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Point de mesure #{100 + i * 15}</p>
+                                        <p className="text-xs text-slate-400">Validation technique • Agent {['M. Hamdi', 'M. Saleh', 'M. Younes'][i - 1]}</p>
+                                    </div>
+                                </div>
+                                <ChevronRight size={18} className="text-slate-300" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </main>
         </div>
     );
 };

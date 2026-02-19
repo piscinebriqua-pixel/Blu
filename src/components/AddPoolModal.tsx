@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { X, Droplets, Save, Loader2, Waves } from 'lucide-react';
+import { Droplets, Waves } from 'lucide-react';
+import ModalLayout from './ModalLayout';
+import Input from './ui/Input';
+import Button from './ui/Button';
 
 interface AddPoolModalProps {
     clientId: string;
@@ -45,71 +48,83 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
         }
     };
 
-    return (
-        <div className="modal-overlay">
-            <div className="modal-content" style={{ maxWidth: '450px' }}>
-                <button className="bg-[#242b38] p-2 rounded-lg text-muted hover:text-white transition-colors border-none absolute top-8 right-8 cursor-pointer" onClick={onClose}>
-                    <X size={24} />
-                </button>
+    const actions = (
+        <div className="flex gap-2 w-full">
+            <Button
+                type="button"
+                variant="secondary"
+                onClick={onClose}
+                className="flex-1"
+                disabled={loading}
+            >
+                ANNULER
+            </Button>
+            <Button
+                type="submit"
+                form="add-pool-form"
+                className="flex-[2]"
+                loading={loading}
+            >
+                AJOUTER LE BASSIN
+            </Button>
+        </div>
+    );
 
-                <div className="flex items-center gap-4 mb-10">
-                    <div className="w-12 h-12 bg-cyan-500/10 rounded-xl flex items-center justify-center border border-cyan-500/20">
-                        <Waves className="text-cyan-500" size={24} />
+    return (
+        <ModalLayout
+            title="NOUVEAU BASSIN"
+            onClose={onClose}
+            actions={actions}
+        >
+            <form id="add-pool-form" onSubmit={handleSubmit} className="flex flex-col gap-6 p-4">
+                <div className="flex items-center gap-4 mb-2 p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
+                        <Waves size={24} />
                     </div>
-                    <h2 className="welcome-text" style={{ fontSize: '1.25rem', margin: 0 }}>Nouveau Bassin</h2>
+                    <div className="flex flex-col">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Configuration technique</p>
+                        <h3 className="text-lg font-bold uppercase text-slate-800 leading-none">Détails du bassin</h3>
+                    </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                        <label className="mini-stat-label">Nom du bassin</label>
-                        <input
-                            type="text"
-                            className="form-input"
-                            required
-                            placeholder="Piscine Principale, Spa, etc."
-                            value={formData.name}
-                            onChange={e => setFormData({ ...formData, name: e.target.value })}
-                            style={{ paddingLeft: '1.25rem' }}
-                        />
-                    </div>
+                <Input
+                    label="Nom du bassin"
+                    required
+                    placeholder="Piscine Principale, Spa, etc."
+                    value={formData.name}
+                    onChange={e => setFormData({ ...formData, name: e.target.value })}
+                />
 
-                    <div className="space-y-2">
-                        <label className="mini-stat-label">Volume d'eau (m³)</label>
-                        <div className="relative">
-                            <Droplets className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} />
-                            <input
-                                type="number"
-                                className="form-input"
-                                required
-                                style={{ paddingLeft: '3.5rem' }}
-                                placeholder="Ex: 45"
-                                value={formData.volume_m3}
-                                onChange={e => setFormData({ ...formData, volume_m3: e.target.value })}
-                            />
-                        </div>
-                    </div>
+                <Input
+                    label="Volume d'eau (m³)"
+                    icon={Droplets}
+                    type="number"
+                    required
+                    placeholder="Ex: 45"
+                    value={formData.volume_m3}
+                    onChange={e => setFormData({ ...formData, volume_m3: e.target.value })}
+                />
 
-                    <div className="space-y-2">
-                        <label className="mini-stat-label">Méthode de traitement</label>
+                <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Méthode de traitement</label>
+                    <div className="relative">
                         <select
-                            className="form-input"
+                            className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-700 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer"
                             value={formData.treatment_method}
                             onChange={e => setFormData({ ...formData, treatment_method: e.target.value })}
-                            style={{ paddingLeft: '1.25rem' }}
                         >
                             <option value="chlorine">🧪 Traitement au Chlore</option>
                             <option value="salt">🧂 Électrolyse au Sel</option>
                             <option value="bromine">💎 Traitement au Brome</option>
                             <option value="active_oxygen">💨 Oxygène Actif</option>
                         </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                        </div>
                     </div>
-
-                    <button type="submit" className="btn-primary w-full h-14 mt-4" disabled={loading} style={{ background: 'var(--blue)' }}>
-                        {loading ? <Loader2 className="animate-spin" size={24} /> : <><Save size={20} /> AJOUTER LA STRUCTURE</>}
-                    </button>
-                </form>
-            </div>
-        </div>
+                </div>
+            </form>
+        </ModalLayout>
     );
 };
 

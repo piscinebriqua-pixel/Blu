@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import PageLayout from '../components/PageLayout';
+import ModalLayout from '../components/ModalLayout';
 import { supabase } from '../lib/supabase';
 import {
-    Plus,
-    Search,
     Loader2,
     Edit2,
     Trash2,
     Scissors,
-    Zap,
-    ArrowLeft,
-    ChevronRight
+    Plus,
+    Search as SearchIcon,
+    Wallet
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 interface Service {
     id: string;
@@ -26,7 +25,6 @@ const ServicesManager: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingService, setEditingService] = useState<Service | null>(null);
     const [formData, setFormData] = useState({ name: '', price: '' });
-    const navigate = useNavigate();
 
     useEffect(() => { fetchServices(); }, []);
 
@@ -94,71 +92,65 @@ const ServicesManager: React.FC = () => {
         s.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    return (
-        <div className="page-container pb-24">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
-                <div className="flex items-center gap-6">
-                    <button onClick={() => navigate('/')} className="btn-pill btn-outline" style={{ padding: '0.75rem' }}>
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="welcome-text" style={{ fontSize: '1.75rem' }}>Catalogue Services</h1>
-                        <p className="date-text">GESTION DES TARIFS & PRESTATIONS</p>
-                    </div>
-                </div>
-                <div className="flex gap-3">
-                    <button onClick={() => handleOpenModal()} className="btn-pill btn-outline" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                        <Plus size={18} /> NOUVEAU
-                    </button>
-                    <button className="btn-pill btn-primary" style={{ background: 'var(--grad-purple)', border: 'none' }}>
-                        <Zap size={18} /> ACTION RAPIDE
-                    </button>
-                </div>
-            </div>
-
-            <div className="relative mb-10">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted" size={20} />
+    const toolbar = (
+        <div className="flex items-center justify-between w-full gap-3">
+            <div className="relative flex-1">
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
                 <input
                     type="text"
-                    placeholder="Rechercher une prestation..."
+                    placeholder="Rechercher un service..."
+                    className="search-input !pl-10 h-[44px]"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="search-input-premium"
-                    style={{ paddingLeft: '4rem', borderRadius: 'var(--radius-pill)', background: 'rgba(255,255,255,0.03)' }}
                 />
             </div>
+            <button className="btn-primary h-[44px] !px-4" onClick={() => handleOpenModal()}>
+                <Plus size={18} />
+                <span className="hidden sm:inline">AJOUTER</span>
+            </button>
+        </div>
+    );
 
-            <div className="space-y-4">
-                {loading && services.length === 0 ? (
-                    <div className="flex justify-center py-12"><Loader2 className="animate-spin text-blue-500" size={40} /></div>
-                ) : filteredServices.map(service => (
-                    <div key={service.id} className="premium-card flex justify-between items-center group">
-                        <div className="flex items-center gap-5">
-                            <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300">
-                                <Scissors size={24} />
+    return (
+        <PageLayout
+            title="CATALOGUE"
+            subtitle={`${filteredServices.length} prestations enregistrées`}
+            toolbar={toolbar}
+            loading={loading && services.length === 0}
+            showBackButton={true}
+        >
+            <div className="data-grid grid-2 !gap-3">
+                {filteredServices.map(service => (
+                    <div key={service.id} className="card-premium group hover:border-primary/50 transition-all">
+                        <div className="flex justify-between items-start mb-2">
+                            <div className="w-10 h-10 rounded-xl bg-primary-glow flex-center text-primary border border-primary/20 group-hover:bg-primary group-hover:text-white transition-all">
+                                <Scissors size={18} />
                             </div>
-                            <div>
-                                <h4 className="font-black text-white text-base uppercase tracking-tight">{service.name}</h4>
-                                <p className="text-[10px] text-muted font-black tracking-widest mt-1">ID: {service.id.slice(0, 8).toUpperCase()}</p>
+                            <div className="flex gap-1">
+                                <button onClick={() => handleOpenModal(service)} className="btn-icon !w-8 !h-8 !border-none" title="Modifier">
+                                    <Edit2 size={14} className="text-primary" />
+                                </button>
+                                <button onClick={() => handleDelete(service.id, service.name)} className="btn-icon !w-8 !h-8 !border-none" title="Supprimer">
+                                    <Trash2 size={14} className="text-status-red" />
+                                </button>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-8">
-                            <div className="hidden lg:block">
-                                <p className="text-[10px] text-muted font-black uppercase tracking-widest mb-1">Status</p>
-                                <span className="text-[10px] font-black py-1 px-3 bg-green-500/10 text-green-500 rounded-full border border-green-500/20">ACTIF</span>
+                        <div className="flex-column mb-3">
+                            <h4 className="text-xs font-black text-white uppercase leading-tight truncate">{service.name}</h4>
+                            <p className="text-[8px] text-muted font-bold tracking-widest mt-0.5">#{service.id.slice(0, 8).toUpperCase()}</p>
+                        </div>
+
+                        <div className="pt-3 border-t border-border-subtle flex justify-between items-end">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-status-green animate-pulse" />
+                                <span className="text-[8px] font-black text-muted uppercase">Disponible</span>
                             </div>
-                            <div className="text-right min-w-[100px]">
-                                <p className="text-[10px] text-muted font-black uppercase tracking-widest mb-1">Prix Unitaire</p>
-                                <p className="font-black text-xl text-white">{service.price.toFixed(0)} <span className="text-xs">DT</span></p>
-                            </div>
-                            <div className="flex gap-2">
-                                <button onClick={() => handleOpenModal(service)} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-muted hover:bg-white/10 hover:text-white transition-all">
-                                    <Edit2 size={16} />
-                                </button>
-                                <button onClick={() => handleDelete(service.id, service.name)} className="w-10 h-10 rounded-full bg-pink-500/5 flex items-center justify-center text-pink-500/50 hover:bg-pink-500/20 hover:text-pink-500 transition-all">
-                                    <Trash2 size={16} />
-                                </button>
+                            <div className="text-right">
+                                <div className="flex items-center gap-1 text-white">
+                                    <p className="text-sm font-black">{service.price.toFixed(0)}</p>
+                                    <span className="text-[9px] font-bold opacity-60">DT</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -166,35 +158,51 @@ const ServicesManager: React.FC = () => {
             </div>
 
             {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content" style={{ maxWidth: '450px', padding: '2.5rem' }}>
-                        <h2 className="welcome-text mb-8" style={{ fontSize: '1.5rem', background: 'none', webkitTextFillColor: 'white' }}>{editingService ? 'Modifier Service' : 'Nouveau Service'}</h2>
-                        <form onSubmit={handleSave} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="mini-stat-label">Libellé de la prestation</label>
+                <ModalLayout
+                    title={editingService ? 'Modifier Service' : 'Nouveau Service'}
+                    onClose={() => setIsModalOpen(false)}
+                    actions={
+                        <button
+                            type="submit"
+                            form="service-form"
+                            className="btn-primary w-full h-[54px]"
+                            disabled={loading}
+                        >
+                            {loading ? <Loader2 className="animate-spin" /> : 'ENREGISTRER LA PRESTATION'}
+                        </button>
+                    }
+                >
+                    <form id="service-form" onSubmit={handleSave} className="flex-column gap-6">
+                        <div className="flex-column gap-2">
+                            <label className="text-[10px] font-black text-muted uppercase tracking-widest ml-1">Libellé de la prestation</label>
+                            <input
+                                type="text"
+                                className="search-input"
+                                required
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                placeholder="Ex: Nettoyage Filtre"
+                            />
+                        </div>
+                        <div className="flex-column gap-2">
+                            <label className="text-[10px] font-black text-muted uppercase tracking-widest ml-1">Tarif de base (TND)</label>
+                            <div className="relative">
+                                <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} />
                                 <input
-                                    type="text" className="form-input" required
-                                    value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    placeholder="Ex: Nettoyage Filtre"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="mini-stat-label">Tarif de base (TND)</label>
-                                <input
-                                    type="number" step="1" className="form-input" required
-                                    value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })}
+                                    type="number"
+                                    step="1"
+                                    className="search-input !pl-12"
+                                    required
+                                    value={formData.price}
+                                    onChange={e => setFormData({ ...formData, price: e.target.value })}
                                     placeholder="0"
                                 />
                             </div>
-                            <div className="flex gap-4 pt-6">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="btn-pill btn-outline flex-1">Annuler</button>
-                                <button type="submit" className="btn-pill btn-primary flex-1">Enregistrer</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+                        </div>
+                    </form>
+                </ModalLayout>
             )}
-        </div>
+        </PageLayout>
     );
 };
 

@@ -1,18 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import PageLayout from '../components/PageLayout';
 import { supabase } from '../lib/supabase';
-import {
-    Plus,
-    Search,
-    Phone,
-    Loader2,
-    Edit2,
-    CheckCircle2,
-    XCircle,
-    ArrowLeft,
-    Mail,
-    ShieldAlert
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Plus, Search as SearchIcon } from 'lucide-react';
+import PersonCard from '../components/PersonCard';
+import type { Person } from '../components/PersonCard';
+import TechnicianModal from '../components/TechnicianModal';
+import Button from '../components/ui/Button';
+import TechnicianDetailsModal from '../components/TechnicianDetailsModal';
+
+// Adapt Technician to Person interface
+const toPerson = (tech: any): Person => ({
+    id: tech.id,
+    full_name: tech.full_name,
+    phone: tech.phone,
+    email: tech.email,
+    active: tech.active,
+    photo_url: tech.photo_url
+});
 
 interface Technician {
     id: string;
@@ -29,14 +33,9 @@ const Technicians: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTech, setEditingTech] = useState<Technician | null>(null);
-    const navigate = useNavigate();
+    const [modalLoading, setModalLoading] = useState(false);
 
-    const [formData, setFormData] = useState({
-        full_name: '',
-        phone: '',
-        email: '',
-        active: true
-    });
+    const [selectedTechId, setSelectedTechId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchTechnicians();
@@ -60,29 +59,13 @@ const Technicians: React.FC = () => {
     };
 
     const handleOpenModal = (tech: Technician | null = null) => {
-        if (tech) {
-            setEditingTech(tech);
-            setFormData({
-                full_name: tech.full_name,
-                phone: tech.phone || '',
-                email: tech.email || '',
-                active: tech.active
-            });
-        } else {
-            setEditingTech(null);
-            setFormData({
-                full_name: '',
-                phone: '',
-                email: '',
-                active: true
-            });
-        }
+        setEditingTech(tech);
         setIsModalOpen(true);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleFormSubmit = async (e: React.FormEvent, formData: any) => {
         e.preventDefault();
-        setLoading(true);
+        setModalLoading(true);
         try {
             if (editingTech) {
                 const { error } = await supabase.from('technicians').update(formData).eq('id', editingTech.id);
@@ -94,18 +77,23 @@ const Technicians: React.FC = () => {
             setIsModalOpen(false);
             fetchTechnicians();
         } catch (error: any) {
-            alert(error.message);
+            console.error('Erreur:', error);
+            alert(error.message || 'Une erreur est survenue');
         } finally {
-            setLoading(false);
+            setModalLoading(false);
         }
     };
 
-    const toggleStatus = async (tech: Technician) => {
+    const toggleStatus = async (person: Person) => {
+        const tech = person as unknown as Technician;
         try {
             const { error } = await supabase.from('technicians').update({ active: !tech.active }).eq('id', tech.id);
             if (error) throw error;
             fetchTechnicians();
-        } catch (error: any) { alert(error.message); }
+        } catch (error: any) {
+            console.error('Erreur:', error);
+            alert("Erreur lors de la mise à jour du statut");
+        }
     };
 
     const filteredTechnicians = technicians.filter(t =>
@@ -113,123 +101,80 @@ const Technicians: React.FC = () => {
         (t.phone && t.phone.includes(searchTerm))
     );
 
-    return (
-        <div className="page-container pb-24">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
-                <div className="flex items-center gap-6">
-                    <button onClick={() => navigate('/')} className="btn-pill btn-outline" style={{ padding: '0.75rem' }}>
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="welcome-text" style={{ fontSize: '1.75rem' }}>L'Équipe</h1>
-                        <p className="date-text">{technicians.length} TECHNICIENS ACTIFS</p>
-                    </div>
-                </div>
-                <button className="btn-pill btn-primary" onClick={() => handleOpenModal()}>
-                    <Plus size={20} /> Ajouter un Membre
-                </button>
-            </div>
+    const activeCount = technicians.filter(t => t.active).length;
 
-            <div className="relative mb-10">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-muted" size={20} />
+    const toolbar = (
+        <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
+            <div className="relative w-full sm:w-96">
+                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
                 <input
                     type="text"
-                    placeholder="Rechercher un technicien..."
+                    placeholder="Rechercher par nom ou téléphone..."
+                    className="w-full h-12 bg-white border border-slate-200 rounded-xl pl-12 pr-4 font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="search-input-premium"
-                    style={{ paddingLeft: '4rem', borderRadius: 'var(--radius-pill)', background: 'rgba(255,255,255,0.03)' }}
                 />
             </div>
+            <Button
+                onClick={() => handleOpenModal()}
+                icon={Plus}
+                className="w-full sm:w-auto"
+            >
+                NOUVEAU MEMBRE
+            </Button>
+        </div>
+    );
 
-            {loading && technicians.length === 0 ? (
-                <div className="flex justify-center py-20">
-                    <Loader2 className="animate-spin text-blue-500" size={48} />
-                </div>
-            ) : (
-                <div className="cards-grid">
+    return (
+        <PageLayout
+            title="ÉQUIPE TECHNIQUE"
+            subtitle={`${activeCount} MEMBRES ACTIFS • ${technicians.length} TOTAL`}
+            toolbar={toolbar}
+            loading={loading && technicians.length === 0}
+            showBackButton={true}
+        >
+            {filteredTechnicians.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-20">
                     {filteredTechnicians.map(tech => (
-                        <div key={tech.id} className="premium-card relative group" style={{ opacity: tech.active ? 1 : 0.6 }}>
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center text-xl font-black text-orange-500 border border-orange-500/20 group-hover:bg-orange-500 group-hover:text-white transition-all">
-                                    {tech.full_name.charAt(0).toUpperCase()}
-                                </div>
-                                <div className="flex flex-col gap-2">
-                                    <button onClick={() => toggleStatus(tech)} className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 text-muted hover:text-white transition-all border-none cursor-pointer">
-                                        {tech.active ? <CheckCircle2 size={16} style={{ color: 'var(--accent-green)' }} /> : <XCircle size={16} style={{ color: 'var(--accent-pink)' }} />}
-                                    </button>
-                                    <button onClick={() => handleOpenModal(tech)} className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 text-muted hover:text-white transition-all border-none cursor-pointer">
-                                        <Edit2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <h3 className="font-black uppercase tracking-tight text-white mb-2">{tech.full_name}</h3>
-
-                            <div className="space-y-2 mb-6">
-                                <div className="flex items-center gap-2 text-muted text-xs font-bold">
-                                    <Phone size={12} className="text-blue-400" />
-                                    <span>{tech.phone || 'Non renseigné'}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-muted text-xs font-bold">
-                                    <Mail size={12} className="text-purple-400" />
-                                    <span>{tech.email || 'Pas d\'email'}</span>
-                                </div>
-                            </div>
-
-                            <div className="pt-4 border-t border-white/5 flex justify-between items-center">
-                                <span className={`text-[10px] font-black tracking-[0.2em] ${tech.active ? 'text-blue-400' : 'text-muted'}`}>
-                                    {tech.active ? 'OPÉRATIONNEL' : 'HORS LIGNE'}
-                                </span>
-                                <ShieldAlert size={14} className={tech.active ? 'text-green-500' : 'text-pink-500'} />
-                            </div>
-                        </div>
+                        <PersonCard
+                            key={tech.id}
+                            person={toPerson(tech)}
+                            type="technician"
+                            onEdit={() => handleOpenModal(tech)}
+                            onToggleStatus={toggleStatus}
+                            onClick={() => setSelectedTechId(tech.id)}
+                        />
                     ))}
                 </div>
+            ) : (
+                !loading && (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                            <SearchIcon size={32} className="text-slate-400" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-700">Aucun technicien trouvé</h3>
+                        <p className="text-slate-500 max-w-xs mx-auto mt-2">
+                            Essayez de modifier vos critères de recherche ou ajoutez un nouveau membre à l'équipe.
+                        </p>
+                    </div>
+                )
             )}
 
-            {isModalOpen && (
-                <div className="modal-overlay">
-                    <div className="modal-content" style={{ maxWidth: '450px', padding: '2.5rem' }}>
-                        <h2 className="welcome-text mb-8" style={{ fontSize: '1.5rem', background: 'none', WebkitTextFillColor: 'white' }}>{editingTech ? 'Détails Membre' : 'Nouveau Membre'}</h2>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="space-y-2">
-                                <label className="mini-stat-label">Identité Complète</label>
-                                <input
-                                    type="text" className="form-input" required
-                                    value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                                    placeholder="Nom & Prénom"
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 gap-4">
-                                <div className="space-y-2">
-                                    <label className="mini-stat-label">Contact Téléphone</label>
-                                    <input
-                                        type="tel" className="form-input"
-                                        value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                        placeholder="+216"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="mini-stat-label">Adresse Email</label>
-                                    <input
-                                        type="email" className="form-input"
-                                        value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                        placeholder="email@blu.com"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4 pt-4">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="btn-pill btn-outline flex-1">Fermer</button>
-                                <button type="submit" className="btn-pill btn-primary flex-1" disabled={loading}>
-                                    {loading ? <Loader2 className="animate-spin" /> : 'Enregistrer'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
+            <TechnicianModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSubmit={handleFormSubmit}
+                technician={editingTech}
+                loading={modalLoading}
+            />
+
+            {selectedTechId && (
+                <TechnicianDetailsModal
+                    technicianId={selectedTechId}
+                    onClose={() => setSelectedTechId(null)}
+                />
             )}
-        </div>
+        </PageLayout>
     );
 };
 

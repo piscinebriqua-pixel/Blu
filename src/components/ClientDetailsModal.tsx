@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import {
-    X,
-    Droplets,
-    Plus,
-    MessageCircle,
-    Key,
-    CheckCircle2,
-    Calendar,
-    Waves,
     Loader2,
+    MapPin,
+    Wallet,
+    Phone,
+    History,
+    Calendar,
     ChevronRight,
-    Phone
+    Waves,
+    Plus,
+    ExternalLink
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import ModalLayout from './ModalLayout';
+import Button from './ui/Button';
 import NewIntervention from './NewIntervention';
 import AddPoolModal from './AddPoolModal';
 
@@ -26,14 +28,14 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
     const [pools, setPools] = useState<any[]>([]);
     const [interventions, setInterventions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('bassins');
+    const [activeTab, setActiveTab] = useState<'bassins' | 'journal'>('bassins');
 
     const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null);
     const [isInterventionModalOpen, setIsInterventionModalOpen] = useState(false);
     const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
 
     useEffect(() => {
-        fetchClientData();
+        if (clientId) fetchClientData();
     }, [clientId]);
 
     const fetchClientData = async () => {
@@ -49,9 +51,10 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                 const poolIds = poolData.map(p => p.id);
                 const { data: interData } = await supabase
                     .from('interventions')
-                    .select('id, visit_date, notes, ph_level, chlorine_level, status, pools(name), intervention_products(quantity, inventory_products(name, unit))')
+                    .select('*, pools(name)')
                     .in('pool_id', poolIds)
-                    .order('visit_date', { ascending: false });
+                    .order('created_at', { ascending: false })
+                    .limit(5);
 
                 const formattedInters = interData?.map((i: any) => ({
                     ...i,
@@ -60,173 +63,171 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                 setInterventions(formattedInters);
             }
         } catch (error) {
-            console.error('Error fetching client data:', error);
+            console.error('Error:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const getInitials = (first: string, last: string) => {
-        return `${(first || '').charAt(0)}${(last || '').charAt(0)}`.toUpperCase();
-    };
-
-    if (loading || !client) {
+    if (loading) {
         return (
-            <div className="modal-premium-backdrop">
-                <div className="modal-premium-content items-center justify-center">
-                    <Loader2 className="animate-spin text-blue-500" size={48} />
+            <ModalLayout title="CHARGEMENT..." onClose={onClose}>
+                <div className="flex justify-center items-center h-40">
+                    <Loader2 className="animate-spin text-slate-400" size={32} />
                 </div>
-            </div>
+            </ModalLayout>
         );
     }
 
-    return (
-        <div className="modal-premium-backdrop" onClick={onClose}>
-            <div className="modal-premium-content" onClick={e => e.stopPropagation()}>
-                <div className="modal-header-premium p-6 md:p-14 border-b border-white/5 relative bg-gradient-to-b from-white/5 to-transparent">
-                    {/* Integrated Close Button */}
-                    <button
-                        onClick={onClose}
-                        className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white"
-                    >
-                        <X size={18} />
-                    </button>
+    if (!client) return null; // Keep this check in case client data fails to load
 
-                    <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
-                        <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
-                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[28px] sm:rounded-[32px] bg-blue-600 flex items-center justify-center text-2xl sm:text-3xl font-black text-white shadow-2xl border-4 border-white/10 shrink-0">
-                                {getInitials(client.first_name, client.last_name)}
-                            </div>
-                            <div>
-                                <h2 className="text-2xl sm:text-3xl font-black text-white mb-3 tracking-tight uppercase whitespace-nowrap">{client.first_name} {client.last_name}</h2>
-                                <div className="flex flex-wrap justify-center sm:justify-start gap-2">
-                                    <div className="badge-premium badge-grey py-1.5 px-3">
-                                        <Phone size={12} />
-                                        <span className="text-[10px]">{client.phone}</span>
-                                    </div>
-                                    <button className="badge-premium badge-whatsapp py-1.5 px-3">
-                                        <MessageCircle size={12} /> <span className="text-[10px]">WHATSAPP</span>
-                                    </button>
-                                    <button className="badge-premium badge-pin py-1.5 px-3">
-                                        <Key size={12} /> <span className="text-[10px]">PIN</span>
-                                    </button>
-                                </div>
+    return (
+        <ModalLayout
+            title="APERÇU CLIENT"
+            onClose={onClose}
+            actions={
+                <div className="flex gap-2 w-full">
+                    <Button
+                        variant="secondary"
+                        onClick={onClose}
+                        className="flex-1"
+                    >
+                        FERMER
+                    </Button>
+                    <Button
+                        variant="primary"
+                        onClick={() => window.location.href = `/clients/${client.id}`}
+                        className="flex-[2]"
+                    >
+                        <ExternalLink size={18} className="mr-2" />
+                        DOSSIER COMPLET
+                    </Button>
+                </div>
+            }
+        >
+            <div className="flex flex-col gap-6 p-4">
+                {/* Identity Card */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
+                    <div className="flex justify-between items-start relative z-10">
+                        <div>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-1">
+                                {client.first_name} {client.last_name}
+                            </h2>
+                            <div className="flex items-center text-slate-500 text-sm gap-2">
+                                <MapPin size={14} />
+                                <span>{client.address}, {client.city}</span>
                             </div>
                         </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-bold border ${client.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'}`}>
+                            {client.status === 'active' ? 'ACTIF' : 'INACTIF'}
+                        </div>
+                    </div>
 
-                        <div className="flex items-center gap-6 sm:gap-10">
-                            <div className="text-center sm:text-right">
-                                <p className="stat-label-premium">BASSINS</p>
-                                <p className="text-xl sm:text-2xl font-black text-white">{pools.length}</p>
+                    <div className="grid grid-cols-2 gap-4 mt-6">
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <div className="flex items-center gap-2 mb-1 text-slate-400">
+                                <Wallet size={14} />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Solde</span>
                             </div>
-                            <div className="text-center sm:text-right">
-                                <p className="stat-label-premium">VISITES</p>
-                                <p className="text-xl sm:text-2xl font-black text-white">{interventions.length}</p>
+                            <p className={`text-lg font-bold ${client.balance < 0 ? 'text-red-500' : 'text-green-500'}`}>
+                                {client.balance?.toFixed(0)} <span className="text-xs text-slate-400">DT</span>
+                            </p>
+                        </div>
+
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <div className="flex items-center gap-2 mb-1 text-slate-400">
+                                <Phone size={14} />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Contact</span>
                             </div>
-                            <div className="solde-badge-premium min-w-[100px] sm:min-w-[140px] py-2 sm:py-3 px-4 sm:px-6">
-                                <p className="stat-label-premium" style={{ color: 'var(--accent-green)', opacity: 0.8 }}>SOLDE</p>
-                                <p className="stat-value-premium" style={{ color: 'var(--accent-green)', fontSize: '1.4rem' }}>
-                                    {client.balance.toFixed(0)} <span className="text-[10px] opacity-60">DT</span>
-                                </p>
-                            </div>
+                            <p className="text-sm font-bold text-slate-700">
+                                {client.phone || '-----'}
+                            </p>
+                            <p className="text-[10px] text-slate-400 truncate">
+                                {client.email || '-----'}
+                            </p>
                         </div>
                     </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="tab-bar-premium">
+                {/* Tabs Selector */}
+                <div className="flex p-1 bg-slate-100 rounded-xl">
                     <button
-                        className={`tab-btn-premium ${activeTab === 'bassins' ? 'active' : ''}`}
                         onClick={() => setActiveTab('bassins')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${activeTab === 'bassins' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                     >
-                        <Waves size={16} /> BASSINS ({pools.length})
+                        <Waves size={14} /> Bassins ({pools.length})
                     </button>
                     <button
-                        className={`tab-btn-premium ${activeTab === 'journal' ? 'active' : ''}`}
                         onClick={() => setActiveTab('journal')}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${activeTab === 'journal' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
                     >
-                        <Calendar size={16} /> JOURNAL ({interventions.length})
+                        <History size={14} /> Journal ({interventions.length})
                     </button>
                 </div>
 
-                {/* Tab Content */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-8 md:p-12 custom-scrollbar">
+                {/* List Content */}
+                <div className="flex flex-col gap-3 min-h-[200px]">
                     {activeTab === 'bassins' && (
-                        <div className="space-y-8">
-                            <div className="flex justify-between items-center">
-                                <h4 className="text-[11px] font-black text-muted uppercase tracking-[0.3em]">Structures Enregistrées</h4>
-                                <button
-                                    onClick={() => setIsPoolModalOpen(true)}
-                                    className="btn-pill btn-outline text-[10px] px-6 py-3 border-white/10 hover:border-white/20"
-                                >
-                                    + AJOUTER UN BASSIN
-                                </button>
-                            </div>
-
-                            {pools.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {pools.map(pool => (
-                                        <div key={pool.id} className="ticket-card-premium group" style={{ padding: '1.5rem 2rem' }}>
-                                            <div className="flex items-center gap-6">
-                                                <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/10 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
-                                                    <Droplets size={28} />
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-black text-white text-lg mb-1 uppercase tracking-tight">{pool.name}</h4>
-                                                    <p className="text-[10px] text-white/30 font-black tracking-widest uppercase">{pool.volume_m3} m³ • {pool.treatment_method}</p>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
-                                                className="btn-pill btn-primary text-[10px] px-8 py-3 bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-500/20"
-                                            >
-                                                RAPPORT
-                                            </button>
+                        <div className="flex flex-col gap-3">
+                            {pools.length > 0 ? pools.map(pool => (
+                                <div key={pool.id} className="bg-white border border-slate-100 rounded-xl p-3 flex items-center justify-between group hover:border-blue-200 transition-all shadow-sm">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
+                                            <Waves size={20} />
                                         </div>
-                                    ))}
+                                        <div>
+                                            <h5 className="text-sm font-bold text-slate-700">{pool.name}</h5>
+                                            <p className="text-xs text-slate-400">{pool.volume_m3}m³ • {pool.treatment_method}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
+                                        className="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 transition-all"
+                                        title="Nouvelle intervention"
+                                    >
+                                        <Plus size={18} />
+                                    </button>
                                 </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-20 opacity-20 border-2 border-dashed border-white/5 rounded-3xl">
-                                    <Waves size={64} className="mb-4" />
-                                    <p className="font-black uppercase tracking-widest text-sm">Aucun bassin enregistré</p>
+                            )) : (
+                                <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                    <Waves className="mx-auto mb-2 opacity-50" size={24} />
+                                    <p className="text-xs">Aucun bassin enregistré</p>
                                 </div>
                             )}
+                            <button
+                                onClick={() => setIsPoolModalOpen(true)}
+                                className="w-full py-3 border border-dashed border-slate-300 rounded-xl text-xs font-bold text-slate-500 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all uppercase tracking-wider flex items-center justify-center gap-2"
+                            >
+                                <Plus size={14} /> Ajouter un bassin
+                            </button>
                         </div>
                     )}
 
                     {activeTab === 'journal' && (
-                        <div className="space-y-6">
-                            <h4 className="text-[11px] font-black text-muted uppercase tracking-[0.3em] mb-4">Historique des interventions</h4>
-                            {interventions.length > 0 ? (
-                                interventions.map((inter) => (
-                                    <div key={inter.id} className="ticket-card-premium" style={{ padding: '1.5rem 2.5rem' }}>
-                                        <div className="flex items-center gap-8">
-                                            <div className="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center text-green-500 border border-green-500/10">
-                                                <CheckCircle2 size={28} />
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center gap-4 mb-2">
-                                                    <h4 className="font-black text-white text-lg uppercase">{new Date(inter.visit_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</h4>
-                                                    <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-lg text-[9px] font-black uppercase border border-green-500/20">Terminée</span>
-                                                </div>
-                                                <p className="text-[11px] text-white/30 font-bold uppercase tracking-widest">{inter.pool_name}</p>
-                                            </div>
+                        <div className="flex flex-col gap-3">
+                            {interventions.length > 0 ? interventions.map(inter => (
+                                <div key={inter.id} className="bg-white border border-slate-100 rounded-xl p-3 flex items-center justify-between shadow-sm">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500">
+                                            <Calendar size={20} />
                                         </div>
-                                        <div className="flex gap-4 items-center">
-                                            <div className="flex gap-3">
-                                                {inter.ph_level && <div className="bg-white/5 text-blue-400 px-3 py-1.5 rounded-xl text-[10px] font-black border border-white/5">pH {inter.ph_level}</div>}
-                                                {inter.chlorine_level && <div className="bg-white/5 text-purple-400 px-3 py-1.5 rounded-xl text-[10px] font-black border border-white/5">CL {inter.chlorine_level}</div>}
-                                            </div>
-                                            <button className="text-white/20 hover:text-white transition-all ml-4">
-                                                <ChevronRight size={20} />
-                                            </button>
+                                        <div>
+                                            <p className="text-xs font-bold text-slate-700">
+                                                {new Date(inter.created_at || inter.visit_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                                            </p>
+                                            <p className="text-[10px] text-slate-400 uppercase tracking-wide font-bold">{inter.pool_name}</p>
                                         </div>
                                     </div>
-                                ))
-                            ) : (
-                                <div className="flex flex-col items-center justify-center py-20 opacity-20 border-2 border-dashed border-white/5 rounded-3xl">
-                                    <Calendar size={64} className="mb-4" />
-                                    <p className="font-black uppercase tracking-widest text-sm">Aucun historique de visite</p>
+                                    {inter.ph_level && (
+                                        <span className="bg-slate-100 text-slate-600 px-2 py-1 rounded-md text-[10px] font-bold border border-slate-200">
+                                            PH {inter.ph_level}
+                                        </span>
+                                    )}
+                                </div>
+                            )) : (
+                                <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                    <History className="mx-auto mb-2 opacity-50" size={24} />
+                                    <p className="text-xs">Aucune intervention récente</p>
                                 </div>
                             )}
                         </div>
@@ -240,7 +241,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
             {isPoolModalOpen && (
                 <AddPoolModal clientId={clientId} onClose={() => setIsPoolModalOpen(false)} onSuccess={fetchClientData} />
             )}
-        </div>
+        </ModalLayout>
     );
 };
 

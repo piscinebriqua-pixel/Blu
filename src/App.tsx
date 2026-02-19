@@ -7,6 +7,7 @@ import ClientDetail from './pages/ClientDetail';
 import Dashboard from './pages/Dashboard';
 import Technicians from './pages/Technicians';
 import ServicesManager from './pages/ServicesManager';
+import Interventions from './pages/Interventions';
 import './index.css';
 
 function App() {
@@ -87,6 +88,16 @@ function App() {
             element={session ? (
               <div className="app-container">
                 <ClientDetail />
+              </div>
+            ) : (
+              <Navigate to="/login" />
+            )}
+          />
+          <Route
+            path="/interventions"
+            element={session ? (
+              <div className="app-container">
+                <Interventions />
               </div>
             ) : (
               <Navigate to="/login" />

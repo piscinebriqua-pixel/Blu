@@ -2,29 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { Sun, Moon } from 'lucide-react';
 
 const ThemeToggle: React.FC = () => {
-    const [theme, setTheme] = useState<'light' | 'dark'>(
-        (localStorage.getItem('theme') as 'light' | 'dark') || 'dark'
-    );
+    const [isDark, setIsDark] = useState(false);
 
     useEffect(() => {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-    }, [theme]);
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            setIsDark(true);
+        }
+    }, []);
 
     const toggleTheme = () => {
-        setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+        const newTheme = isDark ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        setIsDark(!isDark);
     };
 
     return (
-        <button
-            onClick={toggleTheme}
-            className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/5 border border-white/10 text-orange-400 hover:bg-orange-500 hover:text-white transition-all duration-500 cursor-pointer shadow-lg backdrop-blur-md group"
-            title={`Passer en mode ${theme === 'light' ? 'sombre' : 'clair'}`}
-        >
-            <div className="group-hover:rotate-180 transition-transform duration-700">
-                {theme === 'light' ? <Moon size={22} /> : <Sun size={22} />}
+        <div className="theme-toggle" onClick={toggleTheme} title="Changer le mode">
+            <div className="theme-toggle-dot">
+                {isDark ? <Moon size={12} /> : <Sun size={12} />}
             </div>
-        </button>
+        </div>
     );
 };
 
