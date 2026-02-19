@@ -12,6 +12,7 @@ export interface Person {
     city?: string;
     address?: string; // Added address field
     balance?: number;
+    pin_code?: string; // Added pin_code
 }
 
 interface PersonCardProps {
@@ -38,7 +39,7 @@ const PersonCard: React.FC<PersonCardProps> = ({
         <div
             onClick={() => onClick && onClick(person)}
             className={`
-                group relative bg-white rounded-3xl p-6 shadow-sm border border-slate-100
+                group relative bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700
                 hover:shadow-lg hover:-translate-y-1 transition-all duration-300
                 ${!isActive ? 'opacity-75 grayscale-[0.8] hover:grayscale-0' : ''}
                 ${onClick ? 'cursor-pointer' : ''}
@@ -50,7 +51,7 @@ const PersonCard: React.FC<PersonCardProps> = ({
                     <Button
                         variant="icon"
                         size="icon"
-                        className="!bg-slate-50 !text-slate-500 hover:!bg-blue-500 hover:!text-white shadow-sm"
+                        className="!bg-slate-50 dark:!bg-slate-700 !text-slate-500 dark:!text-slate-400 hover:!bg-blue-500 hover:!text-white shadow-sm"
                         onClick={(e) => { e.stopPropagation(); onEdit(person); }}
                         title="Modifier"
                     >
@@ -61,7 +62,7 @@ const PersonCard: React.FC<PersonCardProps> = ({
                     <Button
                         variant="icon"
                         size="icon"
-                        className={`shadow-sm ${isActive ? '!bg-slate-50 !text-green-600 hover:!bg-red-500 hover:!text-white' : '!bg-slate-50 !text-slate-400 hover:!bg-green-500 hover:!text-white'}`}
+                        className={`shadow-sm ${isActive ? '!bg-slate-50 dark:!bg-slate-700 !text-green-600 dark:!text-green-400 hover:!bg-red-500 hover:!text-white' : '!bg-slate-50 dark:!bg-slate-700 !text-slate-400 hover:!bg-green-500 hover:!text-white'}`}
                         onClick={(e) => { e.stopPropagation(); onToggleStatus(person); }}
                         title={isActive ? "Désactiver" : "Activer"}
                     >
@@ -72,7 +73,7 @@ const PersonCard: React.FC<PersonCardProps> = ({
                     <Button
                         variant="icon"
                         size="icon"
-                        className="!bg-slate-50 !text-red-400 hover:!bg-red-500 hover:!text-white shadow-sm"
+                        className="!bg-slate-50 dark:!bg-slate-700 !text-red-400 hover:!bg-red-500 hover:!text-white shadow-sm"
                         onClick={(e) => { e.stopPropagation(); onDelete(person); }}
                         title="Supprimer"
                     >
@@ -89,28 +90,28 @@ const PersonCard: React.FC<PersonCardProps> = ({
                         ? (type === 'client'
                             ? 'bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-blue-200'
                             : 'bg-gradient-to-br from-primary to-primary-dark text-white shadow-sky-200')
-                        : 'bg-slate-100 text-slate-400'}
+                        : 'bg-slate-100 dark:bg-slate-700 text-slate-400'}
                 `}>
                     {initial}
                 </div>
 
                 <div className="flex-1 min-w-0 pt-1">
-                    <h3 className="text-lg font-bold text-slate-800 truncate pr-20">{person.full_name}</h3>
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-white truncate pr-20">{person.full_name}</h3>
 
                     <div className="flex flex-col gap-2 mt-3">
                         {/* Phone Badge */}
-                        <div className="flex items-center gap-2 text-slate-600">
-                            <div className="w-6 h-6 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                                <Phone size={14} className="text-green-600" />
+                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                            <div className="w-6 h-6 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                                <Phone size={14} className="text-green-600 dark:text-green-400" />
                             </div>
                             <span className="text-sm font-medium">{person.phone || 'N/A'}</span>
                         </div>
 
                         {/* Email Badge (Technician) */}
                         {type === 'technician' && (
-                            <div className="flex items-center gap-2 text-slate-600">
-                                <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                                    <Mail size={14} className="text-blue-600" />
+                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                                <div className="w-6 h-6 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                                    <Mail size={14} className="text-blue-600 dark:text-blue-400" />
                                 </div>
                                 <span className="text-sm font-medium truncate">{person.email || 'N/A'}</span>
                             </div>
@@ -118,9 +119,9 @@ const PersonCard: React.FC<PersonCardProps> = ({
 
                         {/* Address/City Badge (Client) */}
                         {type === 'client' && (
-                            <div className="flex items-center gap-2 text-slate-600">
-                                <div className="w-6 h-6 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                                    <MapPin size={14} className="text-indigo-600" />
+                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                                <div className="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
+                                    <MapPin size={14} className="text-indigo-600 dark:text-indigo-400" />
                                 </div>
                                 <span className="text-sm font-medium truncate">
                                     {person.address ? person.address : (person.city || 'Adresse non renseignée')}
@@ -132,7 +133,7 @@ const PersonCard: React.FC<PersonCardProps> = ({
             </div>
 
             {/* Status Line */}
-            <div className={`mt-5 h-1 w-full rounded-full ${isActive ? 'bg-gradient-to-r from-transparent via-slate-200 to-transparent opacity-50' : 'bg-transparent'}`} />
+            <div className={`mt-5 h-1 w-full rounded-full ${isActive ? 'bg-gradient-to-r from-transparent via-slate-200 to-transparent dark:via-slate-700 opacity-50' : 'bg-transparent'}`} />
         </div>
     );
 };

@@ -252,29 +252,29 @@ const ClientDetail: React.FC = () => {
                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                             {pools.map((pool, idx) => (
                                 // eslint-disable-next-line
-                                <div key={pool.id} className="animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-backwards bg-white rounded-3xl p-5 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 hover:border-blue-200 transition-all group/pool relative overflow-hidden" style={{ animationDelay: `${idx * 100}ms` }}>
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full opacity-50" />
+                                <div key={pool.id} className="animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-backwards bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-700 transition-all group/pool relative overflow-hidden" style={{ animationDelay: `${idx * 100}ms` }}>
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-900/20 rounded-bl-full opacity-50" />
 
                                     <div className="flex flex-col gap-4 relative z-10">
                                         <div className="flex justify-between items-start">
-                                            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-inner group-hover/pool:scale-110 transition-transform duration-500">
+                                            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-inner group-hover/pool:scale-110 transition-transform duration-500">
                                                 <Waves size={24} />
                                             </div>
                                             <button
                                                 onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
-                                                className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-600 transition-colors shadow-lg shadow-slate-900/10"
+                                                className="px-3 py-1.5 bg-slate-900 dark:bg-slate-700 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-600 transition-colors shadow-lg shadow-slate-900/10"
                                             >
                                                 Rapport
                                             </button>
                                         </div>
 
                                         <div>
-                                            <h4 className="text-base font-black text-slate-800 leading-tight mb-1">{pool.name}</h4>
+                                            <h4 className="text-base font-black text-slate-800 dark:text-white leading-tight mb-1">{pool.name}</h4>
                                             <div className="flex flex-wrap gap-2 mt-2">
-                                                <span className="px-2 py-1 rounded-md bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+                                                <span className="px-2 py-1 rounded-md bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600 text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wide">
                                                     {pool.volume_m3} m³
                                                 </span>
-                                                <span className="px-2 py-1 rounded-md bg-blue-50 border border-blue-100 text-[10px] font-bold text-blue-600 uppercase tracking-wide">
+                                                <span className="px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
                                                     {pool.treatment_method}
                                                 </span>
                                             </div>
@@ -285,9 +285,9 @@ const ClientDetail: React.FC = () => {
 
                             <button
                                 onClick={() => setIsPoolModalOpen(true)}
-                                className="min-h-[160px] flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-slate-400 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50/50 transition-all group/add"
+                                className="min-h-[160px] flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all group/add"
                             >
-                                <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center group-hover/add:scale-110 transition-transform">
+                                <div className="w-12 h-12 rounded-full bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center group-hover/add:scale-110 transition-transform">
                                     <Plus size={24} />
                                 </div>
                                 <span className="text-xs font-black uppercase tracking-widest">Nouveau Bassin</span>
@@ -302,45 +302,45 @@ const ClientDetail: React.FC = () => {
                             <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-800">Journal d'Activité</h3>
                         </div>
 
-                        <div className="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-slate-200 before:to-transparent before:content-['']">
+                        <div className="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-slate-200 before:to-transparent dark:before:from-slate-700 before:content-['']">
                             {interventions.map((inter, idx) => (
                                 // eslint-disable-next-line
                                 <div key={inter.id} className="animate-in fade-in slide-in-from-right-8 duration-700 fill-mode-backwards relative pl-14 group/inter" style={{ animationDelay: `${idx * 150}ms` }}>
                                     {/* Timeline Dot */}
-                                    <div className="absolute left-[21px] top-6 w-2.5 h-2.5 rounded-full bg-white border-[3px] border-slate-300 group-hover/inter:border-violet-500 group-hover/inter:scale-125 transition-all z-10" />
+                                    <div className="absolute left-[21px] top-6 w-2.5 h-2.5 rounded-full bg-white dark:bg-slate-800 border-[3px] border-slate-300 dark:border-slate-600 group-hover/inter:border-violet-500 group-hover/inter:scale-125 transition-all z-10" />
 
-                                    <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:shadow-md hover:border-violet-100 transition-all">
+                                    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md hover:border-violet-100 dark:hover:border-violet-900 transition-all">
                                         <div className="flex justify-between items-start mb-3">
                                             <div className="flex flex-col">
-                                                <span className="text-xs font-black text-slate-800 uppercase tracking-wide">
+                                                <span className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wide">
                                                     {new Date(inter.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                                 </span>
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">
                                                     {inter.pool_name}
                                                 </span>
                                             </div>
-                                            <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${inter.status === 'completed' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-orange-50 text-orange-600 border border-orange-100'}`}>
+                                            <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${inter.status === 'completed' ? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800' : 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800'}`}>
                                                 {inter.status}
                                             </span>
                                         </div>
 
                                         <div className="flex items-center gap-2">
                                             {inter.ph_level && (
-                                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 border border-slate-100">
+                                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                                                    <span className="text-[10px] font-bold text-slate-600">PH <span className="text-slate-900">{inter.ph_level}</span></span>
+                                                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">PH <span className="text-slate-900 dark:text-white">{inter.ph_level}</span></span>
                                                 </div>
                                             )}
                                             {inter.chlorine_level && (
-                                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 border border-slate-100">
+                                                <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-                                                    <span className="text-[10px] font-bold text-slate-600">CL <span className="text-slate-900">{inter.chlorine_level}</span></span>
+                                                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">CL <span className="text-slate-900 dark:text-white">{inter.chlorine_level}</span></span>
                                                 </div>
                                             )}
                                         </div>
 
                                         {inter.notes && (
-                                            <div className="mt-3 pt-3 border-t border-slate-50 text-xs text-slate-500 italic">
+                                            <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 italic">
                                                 "{inter.notes}"
                                             </div>
                                         )}

@@ -149,11 +149,11 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
                 />
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <FileText size={12} className="text-slate-400" /> Notes Internes
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <FileText size={12} className="text-slate-400 dark:text-slate-500" /> Notes Internes
                     </label>
                     <textarea
-                        className="w-full min-h-[100px] p-4 bg-slate-50 border border-slate-200 rounded-2xl font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-y"
+                        className="w-full min-h-[100px] p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-medium text-slate-700 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-y"
                         placeholder="Client intéressé par la rénovation du bassin..."
                         value={formData.notes}
                         onChange={e => setFormData({ ...formData, notes: e.target.value })}

@@ -27,7 +27,7 @@ function App() {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        fetchProfileWithRetry(session.user.id);
       } else {
         setLoading(false);
       }
@@ -38,7 +38,7 @@ function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        fetchProfileWithRetry(session.user.id);
       } else {
         setUserProfile(null);
         setLoading(false);
@@ -48,30 +48,44 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
-    try {
-      // Timeout promise
-      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000));
+  // The original fetchProfile function is replaced by the new retry logic.
+  // The user provided two versions, the second one (fetchProfileWithRetry) is explicitly
+  // marked as "Revised fetchProfile to handle async retries better" and uses a while loop,
+  // which is generally preferred over recursion for retries in JS to avoid stack depth issues.
+  // The instruction also mentions increasing timeout to 15s, which is incorporated below.
 
-      // Fetch promise
-      const fetchPromise = supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+  // Revised fetchProfile to handle async retries better
+  const fetchProfileWithRetry = async (userId: string) => {
+    let attempts = 3;
+    while (attempts > 0) {
+      try {
+        // Timeout promise (15s to be safe)
+        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000));
 
-      const { data, error } = await Promise.race([fetchPromise, timeout]) as any;
+        // Fetch promise
+        const fetchPromise = supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
 
-      if (error) throw error;
-      if (data) setUserProfile(data);
+        const { data, error } = await Promise.race([fetchPromise, timeout]) as any;
 
-    } catch (e) {
-      console.error("Error fetching profile", e);
-      // If error, force logout if it's a 500 or timeout to avoid loop? 
-      // Or just let them in as "Guest"? No, ProtectedRoute will block.
-    } finally {
-      setLoading(false);
+        if (error) throw error;
+        if (data) {
+          setUserProfile(data);
+          setLoading(false); // Success, stop loading
+          return; // Success
+        }
+      } catch (e) {
+        console.error(`Profile fetch error (attempts left: ${attempts - 1})`, e);
+        attempts--;
+        if (attempts > 0) {
+          await new Promise(r => setTimeout(r, 2000)); // Wait 2 seconds before retrying
+        }
+      }
     }
+    setLoading(false); // Done trying, stop loading (failed)
   };
 
   if (loading) {

@@ -73,7 +73,7 @@ const TechnicianDetailsModal: React.FC<TechnicianDetailsModalProps> = ({ technic
     }
 
     const footer = (
-        <button onClick={onClose} className="w-full py-4 bg-white/5 text-slate-500 font-bold rounded-2xl uppercase tracking-widest text-xs hover:bg-slate-100 transition-colors">
+        <button onClick={onClose} className="w-full py-4 bg-white/5 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold rounded-2xl uppercase tracking-widest text-xs hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
             Fermer
         </button>
     );
@@ -141,20 +141,20 @@ const TechnicianDetailsModal: React.FC<TechnicianDetailsModalProps> = ({ technic
 
                 {/* Recent History */}
                 <div>
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                         <History size={14} /> Dernières Activités
                     </h3>
 
                     <div className="flex flex-col gap-3">
                         {interventions.length > 0 ? (
                             interventions.map((inter: any) => (
-                                <div key={inter.id} className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                                <div key={inter.id} className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl p-4 flex items-center justify-between shadow-sm">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center">
+                                        <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center">
                                             <Calendar size={18} />
                                         </div>
                                         <div className="flex flex-col">
-                                            <p className="text-xs font-bold text-slate-700 uppercase leading-none">
+                                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase leading-none">
                                                 {inter.pool?.name || 'Bassin Inconnu'}
                                             </p>
                                             <p className="text-[10px] text-slate-400 font-medium mt-1">
@@ -162,13 +162,13 @@ const TechnicianDetailsModal: React.FC<TechnicianDetailsModalProps> = ({ technic
                                             </p>
                                         </div>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${inter.status === 'completed' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>
+                                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${inter.status === 'completed' ? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'}`}>
                                         {inter.status === 'completed' ? 'Terminé' : 'En cours'}
                                     </span>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-8 text-slate-400 text-xs italic bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                            <div className="text-center py-8 text-slate-400 text-xs italic bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
                                 Aucune intervention récente
                             </div>
                         )}

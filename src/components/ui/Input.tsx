@@ -30,9 +30,9 @@ const Input: React.FC<InputProps> = ({
                 )}
                 <input
                     className={`
-                        w-full h-14 bg-slate-50 border border-slate-200 rounded-2xl 
+                        w-full h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl 
                         ${Icon ? 'pl-12' : 'pl-4'} pr-4 
-                        font-semibold text-slate-800 placeholder:text-slate-400 
+                        font-semibold text-slate-800 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500
                         focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 
                         transition-all disabled:opacity-50 disabled:cursor-not-allowed
                         ${className}

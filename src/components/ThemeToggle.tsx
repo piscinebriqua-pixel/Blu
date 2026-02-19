@@ -8,6 +8,7 @@ const ThemeToggle: React.FC = () => {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
             document.documentElement.setAttribute('data-theme', 'dark');
+            document.documentElement.classList.add('dark');
             setIsDark(true);
         }
     }, []);
@@ -15,16 +16,23 @@ const ThemeToggle: React.FC = () => {
     const toggleTheme = () => {
         const newTheme = isDark ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', newTheme);
+        if (newTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
         localStorage.setItem('theme', newTheme);
         setIsDark(!isDark);
     };
 
     return (
-        <div className="theme-toggle" onClick={toggleTheme} title="Changer le mode">
-            <div className="theme-toggle-dot">
-                {isDark ? <Moon size={12} /> : <Sun size={12} />}
-            </div>
-        </div>
+        <button
+            onClick={toggleTheme}
+            title="Changer le mode"
+            className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md"
+        >
+            {isDark ? <Moon size={20} /> : <Sun size={20} />}
+        </button>
     );
 };
 

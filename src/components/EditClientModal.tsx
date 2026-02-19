@@ -21,7 +21,8 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
         email: client.email || '',
         address: client.address || '',
         city: client.city || '',
-        notes: client.notes || ''
+        notes: client.notes || '',
+        status: client.status || 'active'
     });
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -38,7 +39,8 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                     email: formData.email,
                     address: formData.address,
                     city: formData.city,
-                    notes: formData.notes
+                    notes: formData.notes,
+                    status: formData.status
                 })
                 .eq('id', client.id);
 
@@ -150,15 +152,25 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                 />
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <FileText size={12} className="text-slate-400" /> Notes Internes
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <FileText size={12} className="text-slate-400 dark:text-slate-500" /> Notes Internes
                     </label>
                     <textarea
-                        className="w-full min-h-[100px] p-4 bg-slate-50 border border-slate-200 rounded-2xl font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-y"
+                        className="w-full min-h-[100px] p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-medium text-slate-700 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-y"
                         placeholder="Notes concernant le client..."
                         value={formData.notes}
                         onChange={e => setFormData({ ...formData, notes: e.target.value })}
                     />
+                </div>
+
+                <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 cursor-pointer" onClick={() => setFormData({ ...formData, status: formData.status === 'active' ? 'inactive' : 'active' })}>
+                    <div className={`w-10 h-6 rounded-full relative transition-colors ${formData.status === 'active' ? 'bg-green-500' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                        <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all shadow-sm ${formData.status === 'active' ? 'left-[22px]' : 'left-1'}`} />
+                    </div>
+                    <div>
+                        <p className="text-sm font-bold text-slate-700 dark:text-white">Compte Actif</p>
+                        <p className="text-xs text-slate-400">Le client peut être sélectionné pour des interventions</p>
+                    </div>
                 </div>
             </form>
         </ModalLayout>

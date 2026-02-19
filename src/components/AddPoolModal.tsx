@@ -77,13 +77,13 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
             actions={actions}
         >
             <form id="add-pool-form" onSubmit={handleSubmit} className="flex flex-col gap-6 p-4">
-                <div className="flex items-center gap-4 mb-2 p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary shadow-sm">
+                <div className="flex items-center gap-4 mb-2 p-4 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/10 dark:border-primary/20">
+                    <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-primary shadow-sm">
                         <Waves size={24} />
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Configuration technique</p>
-                        <h3 className="text-lg font-bold uppercase text-slate-800 leading-none">Détails du bassin</h3>
+                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Configuration technique</p>
+                        <h3 className="text-lg font-bold uppercase text-slate-800 dark:text-white leading-none">Détails du bassin</h3>
                     </div>
                 </div>
 
@@ -106,10 +106,10 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                 />
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Méthode de traitement</label>
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Méthode de traitement</label>
                     <div className="relative">
                         <select
-                            className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-700 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer"
+                            className="w-full h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-700 dark:text-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer"
                             value={formData.treatment_method}
                             onChange={e => setFormData({ ...formData, treatment_method: e.target.value })}
                             title="Méthode de traitement"
