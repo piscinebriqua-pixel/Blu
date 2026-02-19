@@ -31,44 +31,49 @@ const Login: React.FC = () => {
     };
 
     return (
-        <div className="login-container">
-            <div className="login-header-section px-flow">
-                <div className="login-logo-glow float-animation">
-                    <Droplets size={40} className="text-white" />
-                </div>
-                <h1 className="text-4xl font-black text-white tracking-tighter mb-2">DeepBlue</h1>
-                <p className="text-white/60 font-medium tracking-widest uppercase text-xs">Entretien Piscine Premium</p>
+        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 relative overflow-hidden">
+            {/* Background Accent */}
+            <div className="absolute top-0 w-full h-[50vh] bg-gradient-to-br from-primary to-primary-dark rounded-b-[60px] z-0 shadow-lg" />
 
-                <div className="login-waves">
-                    <svg className="login-wave-svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
-                        <path fill="var(--wave-fill)" fillOpacity="1" d="M0,192L48,197.3C96,203,192,213,288,192C384,171,480,117,576,112C672,107,768,149,864,165.3C960,181,1056,171,1152,149.3C1248,128,1344,96,1392,80L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-                    </svg>
-                </div>
-            </div>
+            {/* Content Wrapper */}
+            <div className="z-10 w-full max-w-sm px-6 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
 
-            <div className="login-card-wrapper px-flow">
-                <div className="card-white p-8 animate-slide-up shadow-2xl">
-                    <div className="mb-8">
-                        <h2 className="text-2xl font-black text-slate-800 dark:text-white">Bon retour</h2>
-                        <p className="text-sm text-slate-400 dark:text-slate-500 font-medium">Veuillez entrer vos identifiants pour continuer.</p>
+                {/* Header / Logo */}
+                <div className="flex flex-col items-center text-center gap-2">
+                    <div className="w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-4 shadow-2xl ring-1 ring-white/20">
+                        <Droplets size={40} className="text-white drop-shadow-md" />
+                    </div>
+                    <h1 className="text-4xl font-black text-white tracking-tight">DeepBlue</h1>
+                    <p className="text-blue-100 font-bold tracking-[0.2em] uppercase text-xs opacity-80">
+                        Entretien Piscine Premium
+                    </p>
+                </div>
+
+                {/* Login Card */}
+                <div className="bg-white rounded-[32px] p-8 shadow-2xl shadow-blue-900/10">
+                    <div className="mb-8 text-center">
+                        <h2 className="text-2xl font-black text-slate-800">Bon retour</h2>
+                        <p className="text-sm text-slate-400 font-medium mt-1">
+                            Veuillez vous identifier pour continuer.
+                        </p>
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 border border-red-100 p-4 rounded-xl flex items-center gap-3 mb-6 animate-in fade-in duration-300">
-                            <AlertCircle size={18} className="text-red-500" />
-                            <p className="text-red-600 text-xs font-semibold">{error}</p>
+                        <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-3 mb-6 animate-in fade-in zoom-in-95 duration-200">
+                            <AlertCircle size={20} className="text-red-500 shrink-0" />
+                            <p className="text-red-600 text-xs font-bold">{error}</p>
                         </div>
                     )}
 
-                    <form onSubmit={handleLogin} className="flex flex-col gap-6">
-                        <div className="input-group">
-                            <label className="input-label">Adresse Email</label>
+                    <form onSubmit={handleLogin} className="flex flex-col gap-5">
+                        <div className="space-y-2">
+                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide ml-3">Email</label>
                             <div className="relative">
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                                 <input
                                     type="email"
                                     required
-                                    className="input-field !pl-12"
+                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-300"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     placeholder="nom@entreprise.com"
@@ -76,14 +81,14 @@ const Login: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="input-group">
-                            <label className="input-label">Mot de passe</label>
+                        <div className="space-y-2">
+                            <label className="text-xs font-black text-slate-700 uppercase tracking-wide ml-3">Mot de passe</label>
                             <div className="relative">
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                                 <input
                                     type="password"
                                     required
-                                    className="input-field !pl-12"
+                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-slate-300"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
@@ -91,17 +96,22 @@ const Login: React.FC = () => {
                             </div>
                         </div>
 
-                        <button type="submit" className="btn-flow btn-primary h-[60px] text-lg mt-2" disabled={loading}>
-                            {loading ? <Loader2 className="animate-spin" size={24} /> : "Se Connecter"}
+                        <button
+                            type="submit"
+                            className="w-full py-4 mt-4 rounded-2xl font-black bg-primary text-white shadow-xl shadow-primary/30 active:scale-[0.98] hover:bg-primary-dark transition-all flex items-center justify-center gap-2"
+                            disabled={loading}
+                        >
+                            {loading ? <Loader2 className="animate-spin" size={20} /> : "SE CONNECTER"}
                         </button>
                     </form>
                 </div>
-            </div>
 
-            <div className="login-footer-text px-flow">
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">
-                    Conception et développement par M.A.K
-                </p>
+                {/* Footer */}
+                <div className="text-center">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] opacity-60">
+                        Conception et développement par M.A.K
+                    </p>
+                </div>
             </div>
         </div>
     );
