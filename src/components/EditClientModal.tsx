@@ -48,8 +48,8 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
 
             onSuccess();
             onClose();
-        } catch (error: any) {
-            alert(error.message);
+        } catch (error: unknown) {
+            alert(error instanceof Error ? error.message : 'Une erreur est survenue');
         } finally {
             setLoading(false);
         }

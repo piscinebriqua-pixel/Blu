@@ -108,9 +108,9 @@ const NewIntervention: React.FC<NewInterventionProps> = ({ poolId, clientId, onC
             const history: Record<string, number> = {};
             // Iterate in reverse to let newer overwrite older (though we fetched desc, we want the *first* occurrence found)
             // Actually, we want the MOST RECENT usage. data is desc.
-            data.forEach((intervention: any) => {
+            data.forEach((intervention) => {
                 if (intervention.intervention_services) {
-                    intervention.intervention_services.forEach((is: any) => {
+                    intervention.intervention_services.forEach((is: { service_id: string; price_at_time: number }) => {
                         // If we haven't seen this service yet, it's the most recent one
                         if (history[is.service_id] === undefined) {
                             history[is.service_id] = is.price_at_time;
@@ -204,8 +204,8 @@ const NewIntervention: React.FC<NewInterventionProps> = ({ poolId, clientId, onC
 
             onSuccess();
             onClose();
-        } catch (error: any) {
-            alert(error.message);
+        } catch (error: unknown) {
+            alert(error instanceof Error ? error.message : 'Une erreur est survenue');
         } finally {
             setLoading(false);
         }
@@ -252,7 +252,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({ poolId, clientId, onC
             <div className="flex-column gap-6">
                 {/* Custom Tabs Slider */}
                 <div className="flex gap-1 p-1 bg-secondary/30 rounded-xl overflow-x-auto no-scrollbar">
-                    {['tech', 'services', 'products', 'summary'].map((t: any) => (
+                    {(['tech', 'services', 'products', 'summary'] as const).map((t) => (
                         <button
                             key={t}
                             onClick={() => {

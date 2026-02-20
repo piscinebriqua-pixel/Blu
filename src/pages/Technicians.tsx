@@ -65,9 +65,9 @@ const Technicians: React.FC = () => {
             }
             setIsAddModalOpen(false);
             fetchTechnicians();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Erreur:', error);
-            alert(error.message || 'Une erreur est survenue');
+            alert(error instanceof Error ? error.message : 'Une erreur est survenue');
         } finally {
             setModalLoading(false);
         }

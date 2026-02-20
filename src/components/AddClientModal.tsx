@@ -45,8 +45,8 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
 
             onSuccess();
             onClose();
-        } catch (error: any) {
-            alert(error.message);
+        } catch (error: unknown) {
+            alert(error instanceof Error ? error.message : 'Une erreur est survenue');
         } finally {
             setLoading(false);
         }
