@@ -29,7 +29,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         <div className="gabarit-wrapper dark:bg-[#0F172A] min-h-screen flex flex-col animate-in fade-in duration-500">
             {/* Header */}
             <header className="header-gradient px-6 pt-12 pb-24 md:pb-32 shadow-lg relative z-10 transition-all duration-300">
-                <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         {showBackButton && (
                             <button

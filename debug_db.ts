@@ -17,16 +17,18 @@ const supabase = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_ANON_KEY,
 });
 
 async function check() {
-    console.log("Testing connection to 'profiles'...");
-    const { data, error } = await supabase.from('profiles').select('*').limit(1);
+    const { data: svc, error: e1 } = await supabase.from('services').select('*').limit(1);
+    const { data: prod, error: e2 } = await supabase.from('products').select('*').limit(1);
+    const { data: inv, error: e3 } = await supabase.from('inventory_products').select('*').limit(1);
 
-    if (error) {
-        console.error("❌ ERROR accessing profiles:", error);
-        console.log("Suggestion: Run 'reset_profiles_table.sql' in Supabase SQL Editor.");
-    } else {
-        console.log("✅ Success! Profiles table is accessible.");
-        console.log("Data sample:", data);
-    }
+    if (e1) console.error("❌ ERROR accessing services:", e1);
+    else console.log("✅ Success! services table is accessible.");
+
+    if (e2) console.error("❌ ERROR accessing products:", e2);
+    else console.log("✅ Success! products table is accessible.");
+
+    if (e3) console.error("❌ ERROR accessing inventory_products:", e3);
+    else console.log("✅ Success! inventory_products table is accessible.");
 }
 
 check();

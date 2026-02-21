@@ -6,17 +6,19 @@ interface ModalLayoutProps {
     onClose: () => void;
     actions?: React.ReactNode;
     children: React.ReactNode;
+    className?: string;
 }
 
 const ModalLayout: React.FC<ModalLayoutProps> = ({
     title,
     onClose,
     actions,
-    children
+    children,
+    className = ""
 }) => {
     return (
         <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-container bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 shadow-2xl animate-in slide-in-from-bottom-full duration-300" onClick={e => e.stopPropagation()}>
+            <div className={`modal-container bg-white dark:bg-slate-900 border border-transparent dark:border-slate-800 shadow-2xl animate-in slide-in-from-bottom-full duration-300 ${className}`} onClick={e => e.stopPropagation()}>
                 {/* 1. Modal Header */}
                 <header className="modal-header border-b border-slate-100 dark:border-slate-800">
                     <h2 className="text-lg font-black tracking-tight text-slate-900 dark:text-white">{title}</h2>

@@ -4,6 +4,9 @@ import { User, Phone, MapPin, Mail, Globe, FileText } from 'lucide-react';
 import ModalLayout from './ModalLayout';
 import Input from './ui/Input';
 import Button from './ui/Button';
+import Combobox from './ui/Combobox';
+import MapPicker from './MapPicker';
+import { TUNISIAN_CITIES } from '../lib/constants';
 
 interface EditClientModalProps {
     client: any;
@@ -18,9 +21,12 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
         first_name: client.first_name || '',
         last_name: client.last_name || '',
         phone: client.phone || '',
+        phone2: client.phone2 || '',
         email: client.email || '',
         address: client.address || '',
         city: client.city || '',
+        gps_lat: client.gps_lat?.toString() || '',
+        gps_lng: client.gps_lng?.toString() || '',
         notes: client.notes || '',
         status: client.status || 'active'
     });
@@ -36,9 +42,12 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                     first_name: formData.first_name,
                     last_name: formData.last_name,
                     phone: formData.phone,
+                    phone2: formData.phone2,
                     email: formData.email,
                     address: formData.address,
                     city: formData.city,
+                    gps_lat: formData.gps_lat ? parseFloat(formData.gps_lat) : null,
+                    gps_lng: formData.gps_lng ? parseFloat(formData.gps_lng) : null,
                     notes: formData.notes,
                     status: formData.status
                 })
@@ -107,7 +116,7 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                 <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center w-full">
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
-                            <Phone size={12} className="text-slate-400" /> Téléphone
+                            <Phone size={12} className="text-slate-400" /> Téléphones
                         </label>
                         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setIsWhatsAppEnabled(!isWhatsAppEnabled)}>
                             <span className="text-[10px] text-slate-400">WhatsApp enabled</span>
@@ -116,12 +125,22 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
-                        type="tel"
-                        required
-                        placeholder="+33 6 12 34 56 78"
+                        label="Téléphone 1"
+                        icon={Phone}
+                        placeholder="20 123 456"
                         value={formData.phone}
                         onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                    />
+                    <Input
+                        label="Téléphone 2 (Optionnel)"
+                        icon={Phone}
+                        placeholder="50 987 654"
+                        value={formData.phone2}
+                        onChange={e => setFormData({ ...formData, phone2: e.target.value })}
                     />
                 </div>
 
@@ -134,22 +153,37 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                 />
 
-                <Input
-                    label="Ville"
-                    icon={Globe}
-                    placeholder="Paris"
-                    value={formData.city}
-                    onChange={e => setFormData({ ...formData, city: e.target.value })}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Combobox
+                        label="Ville"
+                        icon={Globe}
+                        options={TUNISIAN_CITIES}
+                        value={formData.city}
+                        onChange={value => setFormData({ ...formData, city: value })}
+                    />
+                    <Input
+                        label="Adresse"
+                        icon={MapPin}
+                        placeholder="Ex: Avenue Habib Bourguiba"
+                        value={formData.address}
+                        onChange={e => setFormData({ ...formData, address: e.target.value })}
+                    />
+                </div>
 
-                <Input
-                    label="Adresse"
-                    icon={MapPin}
-                    required
-                    placeholder="123 Rue de la Piscine, 75001"
-                    value={formData.address}
-                    onChange={e => setFormData({ ...formData, address: e.target.value })}
-                />
+                <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <Globe size={12} className="text-slate-400" /> Géolocalisation
+                    </label>
+                    <MapPicker
+                        lat={formData.gps_lat ? parseFloat(formData.gps_lat) : null}
+                        lng={formData.gps_lng ? parseFloat(formData.gps_lng) : null}
+                        onPositionChange={(lat, lng) => setFormData({
+                            ...formData,
+                            gps_lat: lat.toString(),
+                            gps_lng: lng.toString()
+                        })}
+                    />
+                </div>
 
                 <div className="flex flex-col gap-2">
                     <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1 flex items-center gap-1">

@@ -10,6 +10,7 @@ import ServicesManager from './pages/ServicesManager';
 import Interventions from './pages/Interventions';
 import PendingApproval from './pages/PendingApproval';
 import AdminUsers from './pages/AdminUsers';
+import TechnicianPortal from './pages/TechnicianPortal';
 import './index.css';
 
 const ClientRedirect = () => {
@@ -109,13 +110,7 @@ function App() {
     // If profile is still missing after loading (e.g. trigger failed), we might allow them in or block?
     // Let's block to be safe and ask to contact admin.
     if (!userProfile) {
-      // Retry fetch or show error?
-      return (
-        <div className="flex flex-col items-center justify-center h-screen text-slate-500">
-          <p>Profil utilisateur introuvable.</p>
-          <button onClick={() => supabase.auth.signOut()} className="text-primary font-bold mt-4">Se déconnecter</button>
-        </div>
-      );
+      return <ProfileNotFound />;
     }
 
     if (!userProfile.is_approved || userProfile.role === 'pending') {
@@ -188,11 +183,46 @@ function App() {
               <div className="app-container"><Interventions /></div>
             </ProtectedRoute>
           } />
+          <Route path="/technician-portal" element={
+            <ProtectedRoute>
+              <div className="app-container"><TechnicianPortal /></div>
+            </ProtectedRoute>
+          } />
 
+          {/* Catch-all redirect */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
     </Router>
   );
 }
+
+const ProfileNotFound = () => {
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-slate-50 p-6 text-center">
+      <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center text-red-500 mb-6 shadow-sm border border-red-100">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="17" y1="8" x2="22" y2="13" /><line x1="22" y1="8" x2="17" y2="13" /></svg>
+      </div>
+      <h2 className="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tight">Profil introuvable</h2>
+      <p className="text-slate-500 text-sm max-w-xs leading-relaxed mb-8">
+        Votre compte est bien authentifié mais votre profil de base n'a pas pu être chargé. Veuillez contacter un administrateur.
+      </p>
+      <div className="flex flex-col gap-3 w-full max-w-xs">
+        <button
+          onClick={() => window.location.reload()}
+          className="w-full py-4 bg-primary text-white rounded-2xl font-black shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95 text-xs tracking-widest uppercase"
+        >
+          Réessayer
+        </button>
+        <button
+          onClick={() => supabase.auth.signOut()}
+          className="w-full py-4 bg-white text-slate-400 rounded-2xl font-black border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 text-xs tracking-widest uppercase"
+        >
+          Se déconnecter
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default App;

@@ -24,6 +24,15 @@ const BottomNav: React.FC = () => {
                 )}
             </NavLink>
 
+            <NavLink to="/interventions" className={({ isActive }) => `nav-item-premium ${isActive ? 'active' : ''}`}>
+                {({ isActive }) => (
+                    <>
+                        <Scissors size={22} strokeWidth={isActive ? 2.5 : 2} />
+                        <span>Planning</span>
+                    </>
+                )}
+            </NavLink>
+
             <NavLink to="/settings/services" className={({ isActive }) => `nav-item-premium ${isActive ? 'active' : ''}`}>
                 {({ isActive }) => (
                     <>
@@ -42,7 +51,7 @@ const BottomNav: React.FC = () => {
                 )}
             </NavLink>
 
-            <button onClick={() => supabase.auth.signOut()} className="nav-item-premium" style={{ background: 'none', border: 'none', color: 'var(--pink)' }}>
+            <button onClick={() => supabase.auth.signOut()} className="nav-item-premium text-[#F472B6]">
                 <LogOut size={22} />
                 <span>Sortir</span>
             </button>

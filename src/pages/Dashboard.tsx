@@ -115,12 +115,25 @@ const Dashboard: React.FC = () => {
                         <div className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
                     </div>
 
-                    <div className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800 dark:border-slate-700">
+                    <div onClick={() => navigate('/interventions')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800 dark:border-slate-700">
                         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-indigo-50 text-indigo-600 mb-2 dark:bg-indigo-900/30 dark:text-indigo-400">
                             <Wrench size={24} />
                         </div>
                         <span className="mt-1 dark:text-slate-300">Interventions</span>
-                        <p className="text-xl font-bold text-slate-800 dark:text-white">{counts.technicians} <span className="text-[10px] font-normal text-slate-400">équipes</span></p>
+                        <p className="text-xl font-bold text-slate-800 dark:text-white">Planning <span className="text-[10px] font-normal text-slate-400">suivi</span></p>
+                    </div>
+
+
+
+                    <div
+                        onClick={() => navigate('/technician-portal')}
+                        className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-orange-50/50 border-orange-100 dark:bg-orange-900/10 dark:border-orange-800/20"
+                    >
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-white text-orange-600 mb-2 dark:bg-orange-900/50 dark:text-orange-400">
+                            <Activity size={24} />
+                        </div>
+                        <span className="mt-1 dark:text-orange-300 font-bold">Ma Tournée</span>
+                        <p className="text-xs text-orange-600/60 dark:text-orange-400/60 uppercase font-black">Espace Tech</p>
                     </div>
 
                     <div className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800 dark:border-slate-700">
@@ -163,8 +176,8 @@ const Dashboard: React.FC = () => {
                         ))}
                     </div>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 };
 

@@ -4,6 +4,9 @@ import { Phone, MapPin, User, Mail, Globe, FileText } from 'lucide-react';
 import ModalLayout from './ModalLayout';
 import Input from './ui/Input';
 import Button from './ui/Button';
+import Combobox from './ui/Combobox';
+import MapPicker from './MapPicker';
+import { TUNISIAN_CITIES } from '../lib/constants';
 
 interface AddClientModalProps {
     onClose: () => void;
@@ -17,9 +20,12 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
         first_name: '',
         last_name: '',
         phone: '',
+        phone2: '',
         email: '',
         city: '',
         address: '',
+        gps_lat: '',
+        gps_lng: '',
         notes: ''
     });
 
@@ -34,9 +40,12 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
                     first_name: formData.first_name,
                     last_name: formData.last_name,
                     phone: formData.phone,
+                    phone2: formData.phone2,
                     email: formData.email,
                     city: formData.city,
                     address: formData.address,
+                    gps_lat: formData.gps_lat ? parseFloat(formData.gps_lat) : null,
+                    gps_lng: formData.gps_lng ? parseFloat(formData.gps_lng) : null,
                     notes: formData.notes,
                     balance: 0
                 }]);
@@ -103,9 +112,8 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
                 <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center w-full">
                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
-                            <Phone size={12} className="text-slate-400" /> Téléphone
+                            <Phone size={12} className="text-slate-400" /> Téléphones
                         </label>
-                        {/* Custom switch can remain or be standardized later */}
                         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setIsWhatsAppEnabled(!isWhatsAppEnabled)}>
                             <span className="text-[10px] text-slate-400">WhatsApp enabled</span>
                             <div className={`w-8 h-4 rounded-full relative transition-colors ${isWhatsAppEnabled ? 'bg-green-500' : 'bg-slate-300'}`}>
@@ -113,12 +121,22 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
                             </div>
                         </div>
                     </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
-                        type="tel"
-                        required
-                        placeholder="+33 6 12 34 56 78"
+                        label="Téléphone 1"
+                        icon={Phone}
+                        placeholder="20 123 456"
                         value={formData.phone}
                         onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                    />
+                    <Input
+                        label="Téléphone 2 (Optionnel)"
+                        icon={Phone}
+                        placeholder="50 987 654"
+                        value={formData.phone2}
+                        onChange={e => setFormData({ ...formData, phone2: e.target.value })}
                     />
                 </div>
 
@@ -131,22 +149,37 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                 />
 
-                <Input
-                    label="Ville"
-                    icon={Globe}
-                    placeholder="Paris"
-                    value={formData.city}
-                    onChange={e => setFormData({ ...formData, city: e.target.value })}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Combobox
+                        label="Ville"
+                        icon={Globe}
+                        options={TUNISIAN_CITIES}
+                        value={formData.city}
+                        onChange={value => setFormData({ ...formData, city: value })}
+                    />
+                    <Input
+                        label="Adresse"
+                        icon={MapPin}
+                        placeholder="Ex: Avenue Habib Bourguiba"
+                        value={formData.address}
+                        onChange={e => setFormData({ ...formData, address: e.target.value })}
+                    />
+                </div>
 
-                <Input
-                    label="Adresse"
-                    icon={MapPin}
-                    required
-                    placeholder="123 Rue de la Piscine, 75001"
-                    value={formData.address}
-                    onChange={e => setFormData({ ...formData, address: e.target.value })}
-                />
+                <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <Globe size={12} className="text-slate-400" /> Géolocalisation
+                    </label>
+                    <MapPicker
+                        lat={formData.gps_lat ? parseFloat(formData.gps_lat) : null}
+                        lng={formData.gps_lng ? parseFloat(formData.gps_lng) : null}
+                        onPositionChange={(lat, lng) => setFormData({
+                            ...formData,
+                            gps_lat: lat.toString(),
+                            gps_lng: lng.toString()
+                        })}
+                    />
+                </div>
 
                 <div className="flex flex-col gap-2">
                     <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1 flex items-center gap-1">

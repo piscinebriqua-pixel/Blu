@@ -1,366 +1,580 @@
-import React, { useEffect, useState } from 'react';
-import PageLayout from '../components/PageLayout';
-import ModalLayout from '../components/ModalLayout';
-import NewIntervention from '../components/NewIntervention';
-import { supabase } from '../lib/supabase';
+import React, { useEffect, useState } from "react";
+import PageLayout from "../components/PageLayout";
+import ModalLayout from "../components/ModalLayout";
+import NewIntervention from "../components/NewIntervention";
+import { supabase } from "../lib/supabase";
 import {
-    Search,
-    Calendar,
-    ChevronRight,
-    FileText,
-    UserCheck,
-    Droplets,
-    Clock,
-    CreditCard,
-    Plus,
-    User,
-    ArrowRight
-} from 'lucide-react';
+  Search,
+  Calendar,
+  ChevronRight,
+  FileText,
+  Droplets,
+  Clock,
+  CreditCard,
+  Plus,
+  Edit2,
+} from "lucide-react";
 
 interface Intervention {
-    id: string;
-    visit_date: string;
-    created_at: string;
-    ph_level: number;
-    chlorine_level: number;
-    water_temp: number;
-    notes: string;
-    technician: { full_name: string };
-    pool: {
-        name: string;
-        client: { id: string; first_name: string; last_name: string }
+  id: string;
+  pool_id: string;
+  visit_date: string;
+  created_at: string;
+  ph_level: number;
+  chlorine_level: number;
+  water_temp: number;
+  notes: string;
+  status: "pending" | "scheduled" | "in_progress" | "completed" | "cancelled";
+  scheduled_date: string;
+  technician: { full_name: string };
+  pool?: {
+    name: string;
+    client?: {
+      id: string;
+      first_name: string;
+      last_name: string;
+      balance: number;
     };
-    services: { price_at_time: number }[];
-    products: { total_price: number }[];
+  };
+  services: { price_at_time: number; service: { name: string } }[];
+  products: {
+    total_price: number;
+    quantity: number;
+    product: { name: string; unit: string };
+  }[];
+  photo_before_url?: string;
+  photo_after_url?: string;
 }
 
 const Interventions: React.FC = () => {
-    const [interventions, setInterventions] = useState<Intervention[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedIntervention, setSelectedIntervention] = useState<Intervention | null>(null);
+  const [interventions, setInterventions] = useState<Intervention[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState<"planning" | "history">(
+    "planning",
+  );
+  const [selectedIntervention, setSelectedIntervention] =
+    useState<Intervention | null>(null);
+  const [editingId, setEditingId] = useState<string | undefined>(undefined);
+  const [isNewInterventionModalOpen, setIsNewInterventionModalOpen] =
+    useState(false);
+  const [selClient, setSelClient] = useState<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    balance: number;
+  } | null>(null);
+  const [selPoolId, setSelPoolId] = useState<string | null>(null);
 
-    // Add Intervention State
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [clients, setClients] = useState<any[]>([]);
-    const [selClient, setSelClient] = useState<any>(null);
-    const [pools, setPools] = useState<any[]>([]);
-    const [selPoolId, setSelPoolId] = useState<string | null>(null);
-    const [isNewInterventionModalOpen, setIsNewInterventionModalOpen] = useState(false);
+  useEffect(() => {
+    fetchInterventions();
+  }, []);
 
-    useEffect(() => {
-        fetchInterventions();
-    }, []);
-
-    const fetchInterventions = async () => {
-        try {
-            setLoading(true);
-            const { data, error } = await supabase
-                .from('interventions')
-                .select(`
+  const fetchInterventions = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("interventions")
+        .select(
+          `
                     *,
-                    technician:technicians(full_name),
+                    technician:technicians!technician_id(full_name),
                     pool:pools(
                         name,
-                        client:clients(id, first_name, last_name)
+                        client:clients(id, first_name, last_name, balance)
                     ),
-                    services:intervention_services(price_at_time),
-                    products:intervention_products(total_price)
-                `)
-                .order('created_at', { ascending: false });
+                    services:intervention_services(price_at_time, service:services(name)),
+                    products:intervention_products(quantity, total_price, product:inventory_products(name, unit))
+                `,
+        )
+        .order("created_at", { ascending: false });
 
-            if (error) throw error;
-            setInterventions(data || []);
-        } catch (error) {
-            console.error('Erreur:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+      if (error) throw error;
+      setInterventions(data || []);
+    } catch (error) {
+      console.error("Erreur:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const fetchClients = async () => {
-        const { data } = await supabase.from('clients').select('id, first_name, last_name').order('last_name');
-        setClients(data || []);
-    };
+  const handleOpenAddModal = () => {
+    setEditingId(undefined);
+    setIsNewInterventionModalOpen(true);
+  };
 
-    const fetchPools = async (clientId: string) => {
-        const { data } = await supabase.from('pools').select('id, name').eq('client_id', clientId);
-        setPools(data || []);
-    };
+  const calculateTotal = (inter: Intervention) => {
+    const sTotal =
+      inter.services?.reduce((acc, s) => acc + (s.price_at_time || 0), 0) || 0;
+    const pTotal =
+      inter.products?.reduce((acc, p) => acc + (p.total_price || 0), 0) || 0;
+    return sTotal + pTotal;
+  };
 
-    const handleOpenAddModal = () => {
-        fetchClients();
-        setIsAddModalOpen(true);
-    };
+  const filteredInterventions = interventions.filter((i) => {
+    const clientName =
+      `${i.pool?.client?.first_name} ${i.pool?.client?.last_name}`.toLowerCase();
+    const techName = i.technician?.full_name?.toLowerCase() || "";
 
-    const handleSelectClient = (client: any) => {
-        setSelClient(client);
-        fetchPools(client.id);
-    };
+    const isCorrectTab =
+      activeTab === "planning"
+        ? ["pending", "scheduled", "in_progress"].includes(i.status)
+        : ["completed", "cancelled"].includes(i.status);
 
-    const handleStartIntervention = () => {
-        if (selPoolId) {
-            setIsAddModalOpen(false);
-            setIsNewInterventionModalOpen(true);
-        }
-    };
-
-    const calculateTotal = (inter: Intervention) => {
-        const sTotal = inter.services?.reduce((acc, s) => acc + (s.price_at_time || 0), 0) || 0;
-        const pTotal = inter.products?.reduce((acc, p) => acc + (p.total_price || 0), 0) || 0;
-        return sTotal + pTotal;
-    };
-
-    const filteredInterventions = interventions.filter(i => {
-        const clientName = `${i.pool?.client?.first_name} ${i.pool?.client?.last_name}`.toLowerCase();
-        const techName = i.technician?.full_name?.toLowerCase() || '';
-        return clientName.includes(searchTerm.toLowerCase()) || techName.includes(searchTerm.toLowerCase());
-    });
-
-    const toolbar = (
-        <div className="flex items-center justify-between w-full gap-3">
-            <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
-                <input
-                    type="text"
-                    placeholder="Filtrer..."
-                    className="search-input !pl-10 h-[44px]"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-            <button className="btn-primary h-[44px] !px-4" onClick={handleOpenAddModal}>
-                <Plus size={18} />
-                <span className="hidden sm:inline">NOUVEAU</span>
-            </button>
-        </div>
-    );
-
-    const todayInterventions = interventions.filter(i => {
-        const today = new Date().toISOString().split('T')[0];
-        const interDate = (i.visit_date || i.created_at).split('T')[0];
-        return interDate === today;
-    });
-
-    const totalRevenue = interventions.reduce((acc, i) => acc + calculateTotal(i), 0);
+    if (!isCorrectTab) return false;
 
     return (
-        <PageLayout
-            title="HISTORIQUE"
-            subtitle={`${interventions.length} RAPPORTS`}
-            toolbar={toolbar}
-            loading={loading && interventions.length === 0}
-            showBackButton={true}
-        >
-            {/* Stats Overview */}
-            <div className="data-grid grid-2 !gap-3 mb-6">
-                <div className="card-premium vibrant grad-blue !p-4">
-                    <div className="flex justify-between items-start">
-                        <div className="flex-column">
-                            <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">Aujourd'hui</span>
-                            <span className="text-2xl font-black text-white">{todayInterventions.length}</span>
-                        </div>
-                        <Calendar size={20} className="text-white/30" />
-                    </div>
-                </div>
-                <div className="card-premium vibrant grad-violet !p-4">
-                    <div className="flex justify-between items-start">
-                        <div className="flex-column">
-                            <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">Valeur</span>
-                            <span className="text-2xl font-black text-white">{totalRevenue.toFixed(0)} <span className="text-xs">DT</span></span>
-                        </div>
-                        <CreditCard size={20} className="text-white/30" />
-                    </div>
-                </div>
-            </div>
-
-            {/* List */}
-            <div className="flex-column gap-3">
-                {filteredInterventions.map(inter => (
-                    <button
-                        key={inter.id}
-                        className="card-premium group !flex-row !items-center !gap-4 text-left hover:border-primary/50 transition-all cursor-pointer"
-                        onClick={() => setSelectedIntervention(inter)}
-                    >
-                        <div className="w-11 h-11 rounded-2xl bg-primary-glow flex-center text-primary border border-primary/20 shrink-0 group-hover:scale-105 transition-transform">
-                            <FileText size={18} />
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-start">
-                                <h4 className="text-xs font-black text-white uppercase truncate">
-                                    {inter.pool?.client?.first_name} {inter.pool?.client?.last_name}
-                                </h4>
-                                <span className="text-[11px] font-black text-primary ml-2">
-                                    {calculateTotal(inter).toFixed(0)} DT
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-muted mt-1">
-                                <UserCheck size={10} className="text-status-green" />
-                                <span className="text-[9px] font-bold uppercase truncate">{inter.technician?.full_name}</span>
-                                <span className="text-[8px] opacity-30">•</span>
-                                <Clock size={10} />
-                                <span className="text-[9px] font-bold uppercase">{new Date(inter.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}</span>
-                            </div>
-                        </div>
-
-                        <ChevronRight size={16} className="text-muted group-hover:text-primary transition-colors" />
-                    </button>
-                ))}
-            </div>
-
-            {/* Selection Modal for adding */}
-            {isAddModalOpen && (
-                <ModalLayout
-                    title="Nouvelle Intervention"
-                    onClose={() => setIsAddModalOpen(false)}
-                    actions={
-                        <button
-                            className="btn-primary w-full h-[50px]"
-                            disabled={!selPoolId}
-                            onClick={handleStartIntervention}
-                        >
-                            SUIVANT <ArrowRight size={18} />
-                        </button>
-                    }
-                >
-                    <div className="flex-column gap-5">
-                        <div className="flex-column gap-2">
-                            <label className="text-[10px] font-black text-muted uppercase tracking-widest ml-1">Choisir un Client</label>
-                            <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={18} />
-                                <select
-                                    className="search-input !pl-12 cursor-pointer"
-                                    onChange={(e) => {
-                                        const c = clients.find(cl => cl.id === e.target.value);
-                                        if (c) handleSelectClient(c);
-                                    }}
-                                    value={selClient?.id || ''}
-                                    title="Sélectionner un client"
-                                >
-                                    <option value="">Sélectionner un client...</option>
-                                    {clients.map(c => (
-                                        <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        {selClient && (
-                            <div className="flex-column gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                <label className="text-[10px] font-black text-muted uppercase tracking-widest ml-1">Choisir un Bassin</label>
-                                <div className="data-grid grid-1 !gap-2">
-                                    {pools.length > 0 ? pools.map(p => (
-                                        <button
-                                            key={p.id}
-                                            onClick={() => setSelPoolId(p.id)}
-                                            className={`flex items-center justify-between p-4 rounded-xl border transition-all ${selPoolId === p.id ? 'bg-primary/20 border-primary text-white' : 'bg-white/5 border-white/5 text-muted hover:bg-white/10'}`}
-                                        >
-                                            <span className="text-xs font-black uppercase">{p.name}</span>
-                                            {selPoolId === p.id && <Droplets size={16} className="text-primary" />}
-                                        </button>
-                                    )) : (
-                                        <p className="text-[10px] text-status-orange font-bold uppercase p-4 bg-status-orange/10 rounded-xl border border-status-orange/20">
-                                            Aucun bassin enregistré pour ce client.
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </ModalLayout>
-            )}
-
-            {/* New Intervention Form */}
-            {isNewInterventionModalOpen && selClient && selPoolId && (
-                <NewIntervention
-                    clientId={selClient.id}
-                    poolId={selPoolId}
-                    onClose={() => {
-                        setIsNewInterventionModalOpen(false);
-                        setSelClient(null);
-                        setSelPoolId(null);
-                    }}
-                    onSuccess={() => {
-                        setIsNewInterventionModalOpen(false);
-                        setSelClient(null);
-                        setSelPoolId(null);
-                        fetchInterventions();
-                    }}
-                />
-            )}
-
-            {/* Details Modal */}
-            {selectedIntervention && (
-                <ModalLayout
-                    title="Détails Rapport"
-                    onClose={() => setSelectedIntervention(null)}
-                >
-                    <div className="flex-column gap-6">
-                        <div className="card-premium !bg-white/5 !p-4 flex-column items-center">
-                            <p className="text-[10px] font-black text-muted uppercase tracking-widest">Montant Total</p>
-                            <p className="text-4xl font-black text-white mt-2">{calculateTotal(selectedIntervention).toFixed(0)} <span className="text-base">DT</span></p>
-                        </div>
-
-                        <div className="flex-column gap-4">
-                            <h5 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/20 pb-2">Informations</h5>
-                            <div className="data-grid grid-2 !gap-3">
-                                <div className="flex-column gap-1">
-                                    <span className="text-[8px] font-bold text-muted uppercase">Client</span>
-                                    <span className="text-xs font-black text-white uppercase truncate">{selectedIntervention.pool?.client?.first_name} {selectedIntervention.pool?.client?.last_name}</span>
-                                </div>
-                                <div className="flex-column gap-1 text-right">
-                                    <span className="text-[8px] font-bold text-muted uppercase">Bassin</span>
-                                    <span className="text-xs font-black text-white uppercase truncate">{selectedIntervention.pool?.name}</span>
-                                </div>
-                                <div className="flex-column gap-1">
-                                    <span className="text-[8px] font-bold text-muted uppercase">Agent</span>
-                                    <span className="text-xs font-black text-white uppercase truncate">{selectedIntervention.technician?.full_name}</span>
-                                </div>
-                                <div className="flex-column gap-1 text-right">
-                                    <span className="text-[8px] font-bold text-muted uppercase">Date</span>
-                                    <span className="text-xs font-black text-white uppercase truncate">{new Date(selectedIntervention.created_at).toLocaleString('fr-FR')}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex-column gap-4">
-                            <h5 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-primary/20 pb-2">Mesures Techniques</h5>
-                            <div className="data-grid grid-2 !gap-3">
-                                <div className="card-premium !bg-white/5 !p-3 flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-status-violet/10 flex-center text-status-violet">
-                                        <Droplets size={16} />
-                                    </div>
-                                    <div className="flex-column">
-                                        <span className="text-[8px] font-bold text-muted uppercase">pH</span>
-                                        <span className="text-sm font-black text-white">{selectedIntervention.ph_level || '-'}</span>
-                                    </div>
-                                </div>
-                                <div className="card-premium !bg-white/5 !p-3 flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-status-blue/10 flex-center text-primary">
-                                        <Droplets size={16} />
-                                    </div>
-                                    <div className="flex-column">
-                                        <span className="text-[8px] font-bold text-muted uppercase">Chlore</span>
-                                        <span className="text-sm font-black text-white">{selectedIntervention.chlorine_level || '-'}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {selectedIntervention.notes && (
-                            <div className="flex-column gap-2">
-                                <h5 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Observations</h5>
-                                <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-                                    <p className="text-[11px] leading-relaxed text-muted italic">"{selectedIntervention.notes}"</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </ModalLayout>
-            )}
-        </PageLayout>
+      clientName.includes(searchTerm.toLowerCase()) ||
+      techName.includes(searchTerm.toLowerCase())
     );
+  });
+
+  const toolbar = (
+    <button
+      className="btn-primary w-10 h-10 md:w-auto md:h-[44px] !p-0 md:!px-4 flex items-center justify-center gap-2 shadow-lg hover:scale-105 transition-all"
+      onClick={handleOpenAddModal}
+    >
+      <Plus size={20} />
+      <span className="hidden md:inline font-black uppercase text-[10px] tracking-widest">
+        Nouveau
+      </span>
+    </button>
+  );
+
+  const searchBar = (
+    <div className="relative mb-6 animate-in fade-in slide-in-from-top-2 duration-500">
+      <Search
+        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"
+        size={18}
+      />
+      <input
+        type="text"
+        placeholder="Rechercher un client ou un technicien..."
+        className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-800 rounded-2xl border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none text-slate-800 dark:text-white font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-sm"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+    </div>
+  );
+
+  const todayInterventions = interventions.filter((i) => {
+    const today = new Date().toISOString().split("T")[0];
+    const interDate = (i.visit_date || i.created_at).split("T")[0];
+    return interDate === today;
+  });
+
+  const totalRevenue = interventions.reduce(
+    (acc, i) => acc + calculateTotal(i),
+    0,
+  );
+
+  return (
+    <PageLayout
+      title="ENTRETIENS"
+      subtitle={`${interventions.length} TOTAL`}
+      toolbar={toolbar}
+      loading={loading && interventions.length === 0}
+      showBackButton={true}
+    >
+      {searchBar}
+
+      {/* Custom Tabs */}
+      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-2xl mb-8">
+        <button
+          onClick={() => setActiveTab("planning")}
+          className={`flex-1 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === "planning" ? "bg-primary text-white shadow-lg shadow-blue-500/20" : "text-slate-400 hover:text-slate-600 dark:hover:text-white"}`}
+        >
+          Plannification
+        </button>
+        <button
+          onClick={() => setActiveTab("history")}
+          className={`flex-1 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === "history" ? "bg-primary text-white shadow-lg shadow-blue-500/20" : "text-slate-400 hover:text-slate-600 dark:hover:text-white"}`}
+        >
+          Historique
+        </button>
+      </div>
+      {/* Stats Overview */}
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="card-premium vibrant grad-blue shadow-blue-500/20">
+          <div className="flex justify-between items-start">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">
+                Aujourd'hui
+              </span>
+              <span className="text-3xl font-black text-white leading-none">
+                {todayInterventions.length}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
+              <Calendar size={20} className="text-white" />
+            </div>
+          </div>
+        </div>
+        <div className="card-premium vibrant grad-violet shadow-indigo-500/20">
+          <div className="flex justify-between items-start">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">
+                Valeur
+              </span>
+              <span className="text-3xl font-black text-white leading-none">
+                {totalRevenue.toFixed(0)}{" "}
+                <span className="text-xs opacity-60">DT</span>
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
+              <CreditCard size={20} className="text-white" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* List Section */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between px-2 mb-2">
+          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+            Rapports d'interventions
+          </h3>
+          <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800 mx-4 opacity-50" />
+        </div>
+
+        {filteredInterventions.map((inter) => (
+          <button
+            key={inter.id}
+            className="card-white !flex-row !items-center !gap-4 !p-5 text-left hover:scale-[1.01] transition-all"
+            onClick={() => setSelectedIntervention(inter)}
+          >
+            <div className="w-12 h-12 rounded-2xl bg-primary-glow flex items-center justify-center text-primary shrink-0 transition-transform">
+              <FileText size={22} />
+            </div>
+
+            <div className="flex-1 min-w-0 flex flex-col gap-1">
+              <div className="flex justify-between items-start">
+                <h4 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight truncate">
+                  {inter.pool?.client?.first_name}{" "}
+                  {inter.pool?.client?.last_name}
+                </h4>
+                <span className="text-xs font-black text-primary bg-primary/5 px-2 py-1 rounded-lg">
+                  {calculateTotal(inter).toFixed(0)} DT
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 text-slate-400">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div
+                    className={`w-1.5 h-1.5 rounded-full ${inter.status === "completed" ? "bg-emerald-500" : "bg-blue-400"}`}
+                  />
+                  <span className="text-[10px] font-bold uppercase tracking-widest truncate">
+                    {inter.technician?.full_name || "Non assigné"}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Clock size={12} className="opacity-50" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">
+                    {inter.status === "scheduled" || inter.status === "pending"
+                      ? inter.scheduled_date
+                        ? new Date(inter.scheduled_date).toLocaleDateString(
+                          "fr-FR",
+                          { day: "2-digit", month: "2-digit" },
+                        )
+                        : "À planifier"
+                      : new Date(inter.created_at).toLocaleDateString("fr-FR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                      })}
+                  </span>
+                </div>
+              </div>
+
+              {inter.status !== "completed" && inter.status !== "cancelled" && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span
+                    className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-full border ${inter.status === "scheduled"
+                      ? "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 text-blue-600"
+                      : inter.status === "in_progress"
+                        ? "bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800 text-orange-600"
+                        : "bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700 text-slate-500"
+                      }`}
+                  >
+                    {inter.status === "scheduled"
+                      ? "Planifié"
+                      : inter.status === "in_progress"
+                        ? "En Cours"
+                        : "En Attente"}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col items-end gap-3">
+              <ChevronRight size={18} className="text-slate-300" />
+              {inter.status === "scheduled" && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelPoolId(inter.pool_id);
+                    setSelClient(inter.pool?.client || null);
+                    setEditingId(inter.id);
+                    setIsNewInterventionModalOpen(true);
+                  }}
+                  className="px-3 py-1.5 bg-primary text-white text-[9px] font-black uppercase rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-blue-500/20"
+                >
+                  DÉMARRER
+                </button>
+              )}
+            </div>
+          </button>
+        ))}
+
+        {filteredInterventions.length === 0 && (
+          <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3 bg-slate-50/50 dark:bg-slate-800/20 rounded-[2rem] border-2 border-dashed border-slate-100 dark:border-slate-800">
+            <FileText size={48} className="opacity-10" />
+            <p className="text-[10px] font-black uppercase tracking-[0.2em]">
+              Aucun rapport trouvé
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Selection Modal for adding */}
+
+      {/* New Intervention Form */}
+      {isNewInterventionModalOpen && (
+        <NewIntervention
+          clientId={selClient?.id}
+          poolId={selPoolId || undefined}
+          interventionId={editingId}
+          onClose={() => {
+            setIsNewInterventionModalOpen(false);
+            setSelClient(null);
+            setSelPoolId(null);
+            setEditingId(undefined);
+          }}
+          onSuccess={() => {
+            setIsNewInterventionModalOpen(false);
+            setSelClient(null);
+            setSelPoolId(null);
+            setEditingId(undefined);
+            fetchInterventions();
+          }}
+        />
+      )}
+
+      {/* Details Modal */}
+      {selectedIntervention && (
+        <ModalLayout
+          title="Détails Rapport"
+          onClose={() => setSelectedIntervention(null)}
+          className="max-w-2xl"
+        >
+          <div className="flex-column gap-8 p-2">
+            {/* Header / Summary Card */}
+            <div className="card-premium relative overflow-hidden !p-8 flex flex-col items-center gap-2 text-center group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-400/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+
+              <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-1">Montant Total de l'Intervention</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-6xl font-black text-slate-800 dark:text-white tracking-tighter drop-shadow-sm">
+                  {calculateTotal(selectedIntervention).toFixed(0)}
+                </span>
+                <span className="text-xl font-bold text-primary dark:text-blue-400">DT</span>
+              </div>
+
+              {/* Client Info Badge */}
+              <div className="mt-4 flex flex-col items-center gap-1">
+                <span className="text-xs font-black text-slate-800 dark:text-white uppercase px-4 py-1.5 bg-white/40 dark:bg-white/5 rounded-full backdrop-blur-md border border-white/20 shadow-sm">
+                  {selectedIntervention.pool?.client?.first_name} {selectedIntervention.pool?.client?.last_name}
+                </span>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Compte Client:</span>
+                  <span className={`text-[10px] font-black uppercase ${selectedIntervention.pool?.client?.balance && selectedIntervention.pool?.client?.balance < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                    {selectedIntervention.pool?.client?.balance?.toFixed(0) || 0} DT
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Info Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
+                <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Bassin</span>
+                <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">{selectedIntervention.pool?.name}</span>
+              </div>
+              <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
+                <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Agent</span>
+                <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">{selectedIntervention.technician?.full_name || "Non assigné"}</span>
+              </div>
+              <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
+                <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Date</span>
+                <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase">
+                  {new Date(selectedIntervention.created_at).toLocaleDateString('fr-FR')}
+                </span>
+              </div>
+              <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
+                <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Statut</span>
+                <span className={`text-[10px] font-black uppercase text-center rounded-lg py-0.5 ${selectedIntervention.status === "completed" ? "bg-emerald-500/10 text-emerald-500" :
+                  selectedIntervention.status === "scheduled" ? "bg-blue-500/10 text-blue-500" :
+                    "bg-slate-200 dark:bg-white/10 text-slate-500"
+                  }`}>
+                  {selectedIntervention.status === "completed" ? "Terminé" : selectedIntervention.status}
+                </span>
+              </div>
+            </div>
+
+            {/* Technical Measures Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
+                <h5 className="text-[10px] font-black text-primary dark:text-blue-400 uppercase tracking-[0.3em]">Mesures Techniques</h5>
+                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-4 p-5 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-primary/30 transition-all">
+                  <div className="w-12 h-12 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 flex-center text-cyan-500 group-hover:scale-110 transition-transform">
+                    <Droplets size={24} />
+                  </div>
+                  <div className="flex-column">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Potentiel Hydrogène (pH)</span>
+                    <span className="text-2xl font-black text-slate-800 dark:text-white">
+                      {selectedIntervention.ph_level !== null && selectedIntervention.ph_level !== undefined ? selectedIntervention.ph_level : "-"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 p-5 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-blue-400/30 transition-all">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex-center text-blue-500 group-hover:scale-110 transition-transform">
+                    <Droplets size={24} />
+                  </div>
+                  <div className="flex-column">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Taux de Chlore (ppm)</span>
+                    <span className="text-2xl font-black text-slate-800 dark:text-white">
+                      {selectedIntervention.chlorine_level !== null && selectedIntervention.chlorine_level !== undefined ? selectedIntervention.chlorine_level : "-"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Photos Section */}
+            {(selectedIntervention.photo_before_url || selectedIntervention.photo_after_url) && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
+                  <h5 className="text-[10px] font-black text-primary dark:text-blue-400 uppercase tracking-[0.3em]">Reportage Visuel</h5>
+                  <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Avant Intervention</span>
+                    <div className="aspect-video rounded-[1.5rem] overflow-hidden border-2 border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/5 shadow-inner group cursor-zoom-in">
+                      {selectedIntervention.photo_before_url ? (
+                        <img src={selectedIntervention.photo_before_url} alt="Avant" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center opacity-30 grayscale"><Droplets size={24} /></div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Après Intervention</span>
+                    <div className="aspect-video rounded-[1.5rem] overflow-hidden border-2 border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/5 shadow-inner group cursor-zoom-in">
+                      {selectedIntervention.photo_after_url ? (
+                        <img src={selectedIntervention.photo_after_url} alt="Après" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center opacity-30 grayscale"><Droplets size={24} /></div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Billing / Details Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
+                <h5 className="text-[10px] font-black text-primary dark:text-blue-400 uppercase tracking-[0.3em]">Services & Consommables</h5>
+                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
+              </div>
+
+              <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-6 border border-slate-100 dark:border-white/5 space-y-4">
+                {selectedIntervention.services?.length === 0 && selectedIntervention.products?.length === 0 ? (
+                  <p className="text-center text-[10px] font-bold text-slate-400 uppercase">Aucun service ou produit enregistré</p>
+                ) : (
+                  <>
+                    <div className="space-y-3">
+                      {selectedIntervention.services?.map((s, i) => (
+                        <div key={i} className="flex justify-between items-center bg-white/50 dark:bg-white/5 p-3 rounded-2xl">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight">
+                              {s.service?.name || "Service Technique"}
+                            </span>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase">Service Main d'œuvre</span>
+                          </div>
+                          <span className="text-sm font-black text-slate-800 dark:text-white">{s.price_at_time} DT</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="space-y-3">
+                      {selectedIntervention.products?.map((p, i) => (
+                        <div key={i} className="flex justify-between items-center bg-white/50 dark:bg-white/5 p-3 rounded-2xl">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight">
+                              {p.product?.name || "Produit Utilisé"}
+                            </span>
+                            <span className="text-[9px] font-bold text-slate-400 uppercase">
+                              Quantité: {p.quantity} {p.product?.unit || 'unités'}
+                            </span>
+                          </div>
+                          <span className="text-sm font-black text-slate-800 dark:text-white">{p.total_price} DT</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Observations */}
+            {selectedIntervention.notes && (
+              <div className="space-y-3">
+                <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Observations Techniques</h5>
+                <div className="bg-slate-50 dark:bg-white/5 rounded-2xl p-6 border border-slate-100 dark:border-white/5 relative">
+                  <div className="absolute top-0 left-6 w-8 h-1 bg-primary/20 rounded-full" />
+                  <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400 italic font-medium">
+                    "{selectedIntervention.notes}"
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-4 pt-4">
+              <button
+                className="flex-1 btn-flow btn-primary !h-16 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                onClick={() => {
+                  const inter = selectedIntervention;
+                  setSelectedIntervention(null);
+                  setSelPoolId(inter.pool_id);
+                  setSelClient(inter.pool?.client as any);
+                  setEditingId(inter.id);
+                  setIsNewInterventionModalOpen(true);
+                }}
+              >
+                <Edit2 size={20} strokeWidth={2.5} />
+                <span className="font-black uppercase tracking-[0.2em] text-xs">Modifier le rapport</span>
+              </button>
+              <button
+                onClick={() => setSelectedIntervention(null)}
+                className="px-8 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-all active:scale-95"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </ModalLayout>
+      )}
+    </PageLayout>
+  );
 };
 
 export default Interventions;

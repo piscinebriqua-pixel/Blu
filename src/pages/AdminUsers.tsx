@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { UserCheck, Shield, UserPlus, ArrowLeft, ChevronDown } from 'lucide-react';
+import { UserCheck, Shield, UserPlus, ArrowLeft, ChevronDown, X } from 'lucide-react';
 
 interface Profile {
     id: string;
@@ -35,22 +35,21 @@ const AdminUsers: React.FC = () => {
 
     // Modal State
     const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-    const [actionType, setActionType] = useState<'link_technician' | 'link_client' | 'create_technician' | 'create_client' | 'make_admin' | null>(null);
+    const [actionType, setActionType] = useState<'link_technician' | 'link_client' | 'create_technician' | 'create_client' | 'make_admin' | 'change_role' | null>(null);
     const [selectedLinkId, setSelectedLinkId] = useState<string>('');
-
-    useEffect(() => {
-        fetchData();
-    }, []);
+    const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
+    const [newRole, setNewRole] = useState<string>('');
 
     const fetchData = async () => {
         setLoading(true);
-        // Fetch pending profiles
-        const { data: profs } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('is_approved', false)
-            .order('created_at', { ascending: false });
+        // Fetch profiles based on active tab
+        let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
 
+        if (activeTab === 'pending') {
+            query = query.eq('is_approved', false);
+        }
+
+        const { data: profs } = await query;
         if (profs) setProfiles(profs);
 
         // Fetch Technicians for linking
@@ -59,10 +58,14 @@ const AdminUsers: React.FC = () => {
 
         // Fetch Clients for linking
         const { data: cli } = await supabase.from('clients').select('*').order('last_name');
-        if (cli) setClients(cli); // Note: might need to form full_name manually
+        if (cli) setClients(cli);
 
         setLoading(false);
     };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
 
     const handleApproval = async () => {
         if (!selectedProfile || !actionType) return;
@@ -75,15 +78,12 @@ const AdminUsers: React.FC = () => {
         else if (actionType === 'link_technician') {
             updateData.role = 'technician';
             updateData.technician_id = selectedLinkId;
-            // Determine if we need to update the technician record with the user's email? Maybe.
         }
         else if (actionType === 'link_client') {
             updateData.role = 'client';
             updateData.client_id = selectedLinkId;
         }
         else if (actionType === 'create_technician') {
-            // Transaction-like logic needed: Create tech then update profile.
-            // Simplified: 
             const { data: newTech, error } = await supabase.from('technicians').insert({
                 full_name: selectedProfile.full_name || selectedProfile.email,
                 email: selectedProfile.email
@@ -96,6 +96,9 @@ const AdminUsers: React.FC = () => {
             updateData.role = 'technician';
             updateData.technician_id = newTech.id;
         }
+        else if (actionType === 'change_role') {
+            updateData.role = newRole;
+        }
 
         const { error } = await supabase.from('profiles').update(updateData).eq('id', selectedProfile.id);
 
@@ -103,8 +106,26 @@ const AdminUsers: React.FC = () => {
         else {
             setSelectedProfile(null);
             setActionType(null);
+            setNewRole('');
             fetchData();
         }
+    };
+
+    const handleRevoke = async (profileId: string) => {
+        if (!window.confirm("Voulez-vous vraiment révoquer l'accès de cet utilisateur ?")) return;
+        const { error } = await supabase.from('profiles').update({ is_approved: false }).eq('id', profileId);
+        if (error) alert("Erreur revocation: " + error.message);
+        else fetchData();
+    };
+
+    const handleDelete = async (profileId: string) => {
+        if (!window.confirm("Voulez-vous vraiment supprimer définitivement ce compte ?")) return;
+        // In Supabase, deleting from auth.users requires admin/service role. 
+        // We can delete from public.profiles, but auth user remains.
+        // For now, let's just delete the profile record.
+        const { error } = await supabase.from('profiles').delete().eq('id', profileId);
+        if (error) alert("Erreur suppression: " + error.message);
+        else fetchData();
     };
 
     if (loading) return <div className="p-8 text-center text-slate-500 dark:text-slate-400">Chargement...</div>;
@@ -132,14 +153,29 @@ const AdminUsers: React.FC = () => {
             </header>
 
             <main className="main-container">
+                <div className="flex gap-4 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-fit border border-slate-200 dark:border-slate-700 mb-8">
+                    <button
+                        onClick={() => setActiveTab('pending')}
+                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'pending' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                    >
+                        En Attente
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('all')}
+                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'all' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                    >
+                        Tous les comptes
+                    </button>
+                </div>
+
                 {profiles.length === 0 ? (
                     <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 text-center shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col items-center gap-4 transition-colors">
-                        <div className="w-16 h-16 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center text-green-500 mb-2">
+                        <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-500 mb-2">
                             <UserCheck size={32} />
                         </div>
                         <div>
-                            <h3 className="text-lg font-black text-slate-800 dark:text-white">Tout est à jour !</h3>
-                            <p className="text-slate-400 text-sm">Aucune demande en attente pour le moment.</p>
+                            <h3 className="text-lg font-black text-slate-800 dark:text-white">Aucun profil</h3>
+                            <p className="text-slate-400 text-sm">Il n'y a aucun compte dans cette catégorie.</p>
                         </div>
                     </div>
                 ) : (
@@ -154,34 +190,83 @@ const AdminUsers: React.FC = () => {
                         {profiles.map(profile => (
                             <div key={profile.id} className="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center text-slate-500 dark:text-slate-300 font-bold text-lg">
-                                        {profile.full_name ? profile.full_name.charAt(0).toUpperCase() : '?'}
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg ${profile.role === 'admin' ? 'bg-slate-900 dark:bg-slate-700 text-white' :
+                                        profile.role === 'technician' ? 'bg-blue-500 text-white' :
+                                            'bg-slate-100 dark:bg-slate-700 text-slate-500'
+                                        }`}>
+                                        {profile.role === 'admin' ? <Shield size={18} /> : (profile.full_name ? profile.full_name.charAt(0).toUpperCase() : '?')}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-slate-800 dark:text-white">{profile.full_name || 'Sans nom'}</h3>
-                                        <p className="text-slate-400 text-sm font-mono">{profile.email}</p>
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-bold text-slate-800 dark:text-white">{profile.full_name || 'Sans nom'}</h3>
+                                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${profile.role === 'admin' ? 'bg-slate-900 text-white' :
+                                                profile.role === 'technician' ? 'bg-blue-100 text-blue-600' :
+                                                    'bg-slate-100 text-slate-500'
+                                                }`}>
+                                                {profile.role}
+                                            </span>
+                                        </div>
+                                        <p className="text-slate-400 text-xs font-medium">{profile.email}</p>
                                     </div>
                                 </div>
 
                                 <div className="flex flex-wrap gap-2">
-                                    <button
-                                        onClick={() => { setSelectedProfile(profile); setActionType('link_technician'); }}
-                                        className="px-4 py-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-bold text-xs hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors uppercase tracking-wide"
-                                    >
-                                        + Technicien
-                                    </button>
-                                    <button
-                                        onClick={() => { setSelectedProfile(profile); setActionType('link_client'); }}
-                                        className="px-4 py-2.5 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl font-bold text-xs hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors uppercase tracking-wide"
-                                    >
-                                        + Client
-                                    </button>
-                                    <button
-                                        onClick={() => { setSelectedProfile(profile); setActionType('make_admin'); handleApproval(); }}
-                                        className="px-4 py-2.5 bg-slate-800 dark:bg-slate-700 text-slate-200 dark:text-slate-300 rounded-xl font-bold text-xs hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors uppercase tracking-wide flex items-center gap-2"
-                                    >
-                                        <Shield size={14} /> Admin
-                                    </button>
+                                    {activeTab === 'pending' ? (
+                                        <>
+                                            <button
+                                                onClick={() => { setSelectedProfile(profile); setActionType('link_technician'); }}
+                                                className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-bold text-xs hover:bg-blue-100 transition-colors uppercase"
+                                            >
+                                                + Tech
+                                            </button>
+                                            <button
+                                                onClick={() => { setSelectedProfile(profile); setActionType('link_client'); }}
+                                                className="px-4 py-2 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl font-bold text-xs hover:bg-purple-100 transition-colors uppercase"
+                                            >
+                                                + Client
+                                            </button>
+                                            <button
+                                                onClick={() => { setSelectedProfile(profile); setActionType('make_admin'); handleApproval(); }}
+                                                className="px-4 py-2 bg-slate-800 text-white rounded-xl font-bold text-xs hover:bg-slate-700 transition-colors uppercase"
+                                            >
+                                                Admin
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button
+                                                onClick={() => { setSelectedProfile(profile); setActionType('change_role'); setNewRole(profile.role); }}
+                                                className="px-4 py-2 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-xs hover:bg-slate-100 transition-colors uppercase"
+                                            >
+                                                Rôle
+                                            </button>
+                                            {profile.is_approved ? (
+                                                <button
+                                                    onClick={() => handleRevoke(profile.id)}
+                                                    className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors uppercase"
+                                                >
+                                                    Révoquer
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={async () => {
+                                                        const { error } = await supabase.from('profiles').update({ is_approved: true }).eq('id', profile.id);
+                                                        if (error) alert(error.message); else fetchData();
+                                                    }}
+                                                    className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs hover:bg-emerald-100 transition-colors uppercase"
+                                                >
+                                                    Approuver
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => handleDelete(profile.id)}
+                                                className="w-10 h-10 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl flex items-center justify-center hover:bg-red-100 transition-all"
+                                                title="Supprimer le compte"
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -222,7 +307,7 @@ const AdminUsers: React.FC = () => {
 
                             <div className="relative py-2 text-center">
                                 <span className="bg-white dark:bg-slate-800 px-2 text-xs font-bold text-slate-300 uppercase relative z-10 transition-colors">OU</span>
-                                <div className="absolute top-1/2 left-0 w-full h-px bg-slate-100 dark:bg-slate-700"></div>
+                                <div className="absolute top-1/2 left-0 w-full h-px bg-slate-100 dark:border-slate-700"></div>
                             </div>
 
                             <button
@@ -243,6 +328,40 @@ const AdminUsers: React.FC = () => {
                                 Valider et Lier
                             </button>
 
+                            <button onClick={() => setSelectedProfile(null)} className="w-full py-2 text-slate-400 font-bold text-xs hover:text-slate-600 uppercase tracking-widest">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {selectedProfile && actionType === 'change_role' && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-[32px] p-8 max-w-md w-full animate-in fade-in zoom-in-95 shadow-2xl border border-slate-100 dark:border-slate-700 transition-colors text-center">
+                        <h2 className="text-xl font-black text-slate-800 dark:text-white">Changer le rôle</h2>
+                        <p className="text-slate-400 text-sm mb-6">{selectedProfile.email}</p>
+
+                        <div className="flex flex-col gap-3">
+                            {['admin', 'technician', 'client', 'pending'].map(role => (
+                                <button
+                                    key={role}
+                                    onClick={() => setNewRole(role)}
+                                    className={`py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all border-2 ${newRole === role
+                                        ? 'bg-primary/5 border-primary text-primary'
+                                        : 'bg-slate-50 dark:bg-slate-700 border-transparent text-slate-500 hover:bg-slate-100'
+                                        }`}
+                                >
+                                    {role}
+                                </button>
+                            ))}
+
+                            <button
+                                onClick={handleApproval}
+                                className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 mt-4 active:scale-95 transition-transform"
+                            >
+                                Mettre à jour
+                            </button>
                             <button onClick={() => setSelectedProfile(null)} className="w-full py-2 text-slate-400 font-bold text-xs hover:text-slate-600 uppercase tracking-widest">
                                 Annuler
                             </button>

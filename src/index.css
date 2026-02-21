@@ -156,12 +156,13 @@ body {
   background: var(--card-bg);
   width: 100%;
   max-width: 600px;
+  min-height: 70vh;
   max-height: 90vh;
   border-radius: var(--radius-lg);
   box-shadow: var(--card-shadow);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   border: var(--card-border);
 }
 
@@ -177,7 +178,9 @@ body {
 .modal-body {
   padding: 24px;
   overflow-y: auto;
+  overflow-x: visible;
   flex: 1;
+  min-height: 50vh;
 }
 
 .modal-footer {
@@ -230,6 +233,46 @@ body {
   box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
+/* --- PREMIUM VIBRANT CARDS --- */
+.card-premium {
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--radius-std);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--card-shadow);
+}
+
+.card-premium.vibrant {
+  border: none;
+  color: white;
+}
+
+.grad-blue {
+  background: linear-gradient(135deg, #0077B6, #023E8A);
+}
+
+.grad-violet {
+  background: linear-gradient(135deg, #7B61FF, #4F39F2);
+}
+
+.grad-emerald {
+  background: linear-gradient(135deg, #10B981, #059669);
+}
+
+.bg-primary-glow {
+  background: rgba(0, 119, 182, 0.1);
+  border: 1px solid rgba(0, 119, 182, 0.2);
+}
+
+[data-theme='dark'] .bg-primary-glow {
+  background: rgba(144, 224, 239, 0.1);
+  border-color: rgba(144, 224, 239, 0.2);
+}
+
 /* --- DASHBOARD SPECIFIC --- */
 .dashboard-grid {
   display: grid;
@@ -276,6 +319,11 @@ body {
   color: var(--text-main);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   transition: all 0.3s;
+}
+
+[data-theme='dark'] .search-input {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .btn-back-flow,
