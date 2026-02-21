@@ -48,8 +48,8 @@ const GlobalMap: React.FC<GlobalMapProps> = ({ clients }) => {
     }
 
     return (
-        <div className={`relative transition-all duration-500 ease-in-out ${isExpanded ? 'z-50' : 'z-0'}`}>
-            <div className="bg-white dark:bg-slate-800 p-2 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700">
+        <div className={`relative transition-all duration-500 ease-in-out ${isExpanded ? 'fixed inset-0 z-[100] bg-white dark:bg-slate-900' : 'z-0'}`}>
+            <div className={`${isExpanded ? 'h-full w-full' : 'bg-white dark:bg-slate-800 p-2 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700'}`}>
                 <GoogleMap
                     mapContainerStyle={containerStyle}
                     center={center}

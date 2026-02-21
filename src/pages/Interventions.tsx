@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from "react";
 import PageLayout from "../components/PageLayout";
-import ModalLayout from "../components/ModalLayout";
 import NewIntervention from "../components/NewIntervention";
+import InterventionDetailsModal from "../components/InterventionDetailsModal";
 import { supabase } from "../lib/supabase";
 import {
   Search,
   Calendar,
   ChevronRight,
   FileText,
-  Droplets,
   Clock,
   CreditCard,
   Plus,
-  Edit2,
 } from "lucide-react";
 
 interface Intervention {
@@ -81,7 +79,7 @@ const Interventions: React.FC = () => {
                     technician:technicians!technician_id(full_name),
                     pool:pools(
                         name,
-                        client:clients(id, first_name, last_name, balance)
+                        client:clients(id, first_name, last_name, balance, phone)
                     ),
                     services:intervention_services(price_at_time, service:services(name)),
                     products:intervention_products(quantity, total_price, product:inventory_products(name, unit))
@@ -361,217 +359,17 @@ const Interventions: React.FC = () => {
 
       {/* Details Modal */}
       {selectedIntervention && (
-        <ModalLayout
-          title="Détails Rapport"
+        <InterventionDetailsModal
+          intervention={selectedIntervention as any}
           onClose={() => setSelectedIntervention(null)}
-          className="max-w-2xl"
-        >
-          <div className="flex-column gap-8 p-2">
-            {/* Header / Summary Card */}
-            <div className="card-premium relative overflow-hidden !p-8 flex flex-col items-center gap-2 text-center group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-blue-400/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
-
-              <p className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] mb-1">Montant Total de l'Intervention</p>
-              <div className="flex items-baseline gap-2">
-                <span className="text-6xl font-black text-slate-800 dark:text-white tracking-tighter drop-shadow-sm">
-                  {calculateTotal(selectedIntervention).toFixed(0)}
-                </span>
-                <span className="text-xl font-bold text-primary dark:text-blue-400">DT</span>
-              </div>
-
-              {/* Client Info Badge */}
-              <div className="mt-4 flex flex-col items-center gap-1">
-                <span className="text-xs font-black text-slate-800 dark:text-white uppercase px-4 py-1.5 bg-white/40 dark:bg-white/5 rounded-full backdrop-blur-md border border-white/20 shadow-sm">
-                  {selectedIntervention.pool?.client?.first_name} {selectedIntervention.pool?.client?.last_name}
-                </span>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Compte Client:</span>
-                  <span className={`text-[10px] font-black uppercase ${selectedIntervention.pool?.client?.balance && selectedIntervention.pool?.client?.balance < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
-                    {selectedIntervention.pool?.client?.balance?.toFixed(0) || 0} DT
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Info Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
-                <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Bassin</span>
-                <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">{selectedIntervention.pool?.name}</span>
-              </div>
-              <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
-                <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Agent</span>
-                <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">{selectedIntervention.technician?.full_name || "Non assigné"}</span>
-              </div>
-              <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
-                <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Date</span>
-                <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase">
-                  {new Date(selectedIntervention.created_at).toLocaleDateString('fr-FR')}
-                </span>
-              </div>
-              <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
-                <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Statut</span>
-                <span className={`text-[10px] font-black uppercase text-center rounded-lg py-0.5 ${selectedIntervention.status === "completed" ? "bg-emerald-500/10 text-emerald-500" :
-                  selectedIntervention.status === "scheduled" ? "bg-blue-500/10 text-blue-500" :
-                    "bg-slate-200 dark:bg-white/10 text-slate-500"
-                  }`}>
-                  {selectedIntervention.status === "completed" ? "Terminé" : selectedIntervention.status}
-                </span>
-              </div>
-            </div>
-
-            {/* Technical Measures Section */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
-                <h5 className="text-[10px] font-black text-primary dark:text-blue-400 uppercase tracking-[0.3em]">Mesures Techniques</h5>
-                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-4 p-5 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-primary/30 transition-all">
-                  <div className="w-12 h-12 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 flex-center text-cyan-500 group-hover:scale-110 transition-transform">
-                    <Droplets size={24} />
-                  </div>
-                  <div className="flex-column">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Potentiel Hydrogène (pH)</span>
-                    <span className="text-2xl font-black text-slate-800 dark:text-white">
-                      {selectedIntervention.ph_level !== null && selectedIntervention.ph_level !== undefined ? selectedIntervention.ph_level : "-"}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 p-5 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-blue-400/30 transition-all">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex-center text-blue-500 group-hover:scale-110 transition-transform">
-                    <Droplets size={24} />
-                  </div>
-                  <div className="flex-column">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Taux de Chlore (ppm)</span>
-                    <span className="text-2xl font-black text-slate-800 dark:text-white">
-                      {selectedIntervention.chlorine_level !== null && selectedIntervention.chlorine_level !== undefined ? selectedIntervention.chlorine_level : "-"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Photos Section */}
-            {(selectedIntervention.photo_before_url || selectedIntervention.photo_after_url) && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
-                  <h5 className="text-[10px] font-black text-primary dark:text-blue-400 uppercase tracking-[0.3em]">Reportage Visuel</h5>
-                  <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Avant Intervention</span>
-                    <div className="aspect-video rounded-[1.5rem] overflow-hidden border-2 border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/5 shadow-inner group cursor-zoom-in">
-                      {selectedIntervention.photo_before_url ? (
-                        <img src={selectedIntervention.photo_before_url} alt="Avant" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center opacity-30 grayscale"><Droplets size={24} /></div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">Après Intervention</span>
-                    <div className="aspect-video rounded-[1.5rem] overflow-hidden border-2 border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/5 shadow-inner group cursor-zoom-in">
-                      {selectedIntervention.photo_after_url ? (
-                        <img src={selectedIntervention.photo_after_url} alt="Après" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center opacity-30 grayscale"><Droplets size={24} /></div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Billing / Details Section */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
-                <h5 className="text-[10px] font-black text-primary dark:text-blue-400 uppercase tracking-[0.3em]">Services & Consommables</h5>
-                <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
-              </div>
-
-              <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-6 border border-slate-100 dark:border-white/5 space-y-4">
-                {selectedIntervention.services?.length === 0 && selectedIntervention.products?.length === 0 ? (
-                  <p className="text-center text-[10px] font-bold text-slate-400 uppercase">Aucun service ou produit enregistré</p>
-                ) : (
-                  <>
-                    <div className="space-y-3">
-                      {selectedIntervention.services?.map((s, i) => (
-                        <div key={i} className="flex justify-between items-center bg-white/50 dark:bg-white/5 p-3 rounded-2xl">
-                          <div className="flex flex-col">
-                            <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight">
-                              {s.service?.name || "Service Technique"}
-                            </span>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase">Service Main d'œuvre</span>
-                          </div>
-                          <span className="text-sm font-black text-slate-800 dark:text-white">{s.price_at_time} DT</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="space-y-3">
-                      {selectedIntervention.products?.map((p, i) => (
-                        <div key={i} className="flex justify-between items-center bg-white/50 dark:bg-white/5 p-3 rounded-2xl">
-                          <div className="flex flex-col">
-                            <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight">
-                              {p.product?.name || "Produit Utilisé"}
-                            </span>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase">
-                              Quantité: {p.quantity} {p.product?.unit || 'unités'}
-                            </span>
-                          </div>
-                          <span className="text-sm font-black text-slate-800 dark:text-white">{p.total_price} DT</span>
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Observations */}
-            {selectedIntervention.notes && (
-              <div className="space-y-3">
-                <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Observations Techniques</h5>
-                <div className="bg-slate-50 dark:bg-white/5 rounded-2xl p-6 border border-slate-100 dark:border-white/5 relative">
-                  <div className="absolute top-0 left-6 w-8 h-1 bg-primary/20 rounded-full" />
-                  <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-400 italic font-medium">
-                    "{selectedIntervention.notes}"
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-4 pt-4">
-              <button
-                className="flex-1 btn-flow btn-primary !h-16 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                onClick={() => {
-                  const inter = selectedIntervention;
-                  setSelectedIntervention(null);
-                  setSelPoolId(inter.pool_id);
-                  setSelClient(inter.pool?.client as any);
-                  setEditingId(inter.id);
-                  setIsNewInterventionModalOpen(true);
-                }}
-              >
-                <Edit2 size={20} strokeWidth={2.5} />
-                <span className="font-black uppercase tracking-[0.2em] text-xs">Modifier le rapport</span>
-              </button>
-              <button
-                onClick={() => setSelectedIntervention(null)}
-                className="px-8 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-all active:scale-95"
-              >
-                Fermer
-              </button>
-            </div>
-          </div>
-        </ModalLayout>
+          onEdit={(inter) => {
+            setSelectedIntervention(null);
+            setSelPoolId(inter.pool_id!);
+            setSelClient(inter.pool?.client as any);
+            setEditingId(inter.id);
+            setIsNewInterventionModalOpen(true);
+          }}
+        />
       )}
     </PageLayout>
   );

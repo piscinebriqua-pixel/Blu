@@ -106,7 +106,7 @@ const ClientsList: React.FC = () => {
                 </div>
             </header>
 
-            <main className="main-container relative z-0">
+            <main className={`main-container relative z-0 ${viewMode === 'map' ? '!mt-0 !p-0 !max-w-none !h-full' : ''}`}>
                 {/* Search & Filters */}
                 <div className="sticky top-0 z-20 pb-4 pt-1">
                     <div className="flex gap-2 mb-4">

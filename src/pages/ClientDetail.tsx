@@ -22,6 +22,7 @@ import AddPoolModal from '../components/AddPoolModal';
 import EditClientModal from '../components/EditClientModal';
 import RecordPaymentModal from '../components/RecordPaymentModal';
 import EditPoolModal from '../components/EditPoolModal';
+import InterventionDetailsModal from '../components/InterventionDetailsModal';
 
 interface Pool {
     id: string;
@@ -82,6 +83,7 @@ const ClientDetail: React.FC = () => {
     const [isEditPoolModalOpen, setIsEditPoolModalOpen] = useState(false);
     const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null);
     const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
+    const [selectedInterventionForView, setSelectedInterventionForView] = useState<any | null>(null);
 
     useEffect(() => {
         if (id) {
@@ -109,8 +111,18 @@ const ClientDetail: React.FC = () => {
                     ph_level, 
                     chlorine_level, 
                     status, 
-                    pool:pools(name), 
-                    intervention_products(quantity, inventory_products(name, unit))
+                    photo_before_url,
+                    photo_after_url,
+                    pool:pools(name, client:clients(id, first_name, last_name, balance, phone)), 
+                    services:intervention_services(
+                        price_at_time,
+                        service:services(name)
+                    ),
+                    products:intervention_products(
+                        quantity,
+                        total_price,
+                        product:inventory_products(name, unit)
+                    )
                 `)
                 .in('pool_id', poolData?.map(p => p.id) || [])
                 .order('created_at', { ascending: false })
@@ -386,8 +398,11 @@ const ClientDetail: React.FC = () => {
 
                                 <div className="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-slate-200 before:to-transparent dark:before:from-slate-700 before:content-['']">
                                     {interventions.map((inter, idx) => (
-                                        // eslint-disable-next-line
-                                        <div key={inter.id} className={`animate-in fade-in slide-in-from-right-8 duration-700 fill-mode-backwards relative pl-14 group/inter ${idx < 10 ? `stagger-${idx + 1}` : ''}`}>
+                                        <div
+                                            key={inter.id}
+                                            onClick={() => setSelectedInterventionForView(inter)}
+                                            className={`animate-in fade-in slide-in-from-right-8 duration-700 fill-mode-backwards relative pl-14 group/inter cursor-pointer ${idx < 10 ? `stagger-${idx + 1}` : ''}`}
+                                        >
                                             {/* Timeline Dot */}
                                             <div className="absolute left-[21px] top-6 w-2.5 h-2.5 rounded-full bg-white dark:bg-slate-800 border-[3px] border-slate-300 dark:border-slate-600 group-hover/inter:border-violet-500 group-hover/inter:scale-125 transition-all z-10" />
 
@@ -550,6 +565,12 @@ const ClientDetail: React.FC = () => {
                     pool={selectedPool}
                     onClose={() => { setIsEditPoolModalOpen(false); setSelectedPool(null); }}
                     onSuccess={fetchClientData}
+                />
+            )}
+            {selectedInterventionForView && (
+                <InterventionDetailsModal
+                    intervention={selectedInterventionForView}
+                    onClose={() => setSelectedInterventionForView(null)}
                 />
             )}
         </PageLayout>
