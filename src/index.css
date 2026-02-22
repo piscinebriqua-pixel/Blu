@@ -67,6 +67,36 @@ body {
   padding-right: var(--side-margin) !important;
 }
 
+/* --- MOBILE ACCESSIBILITY: MINIMUM FONT SIZES & TOUCH TARGETS --- */
+/* Prevent iOS Safari from auto-zooming on input focus */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
+/* All form labels must be readable */
+label {
+  font-size: 12px;
+}
+
+/* Ensure all tap targets meet Apple/Google 44px minimum */
+button,
+a,
+[role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Inline/icon-only buttons override (they can be smaller visually but wrapper stays 44px) */
+.btn-icon-sm {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* --- MASTER CONTAINERS --- */
 .app-shell,
 .app-wrapper,
@@ -314,7 +344,7 @@ body {
   border-radius: 18px;
   border: 1px solid rgba(0, 0, 0, 0.05);
   background: white;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text-main);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
@@ -328,8 +358,10 @@ body {
 
 .btn-back-flow,
 .btn-icon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.15);
   border: none;
