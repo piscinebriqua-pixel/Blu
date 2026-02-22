@@ -197,7 +197,7 @@ const Interventions: React.FC = () => {
         <div className="card-premium vibrant grad-blue p-6 flex flex-col gap-4 shadow-lg border-white/10">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1.5">
-              <span className="text-premium-label !text-white/60">
+              <span className="text-xs font-bold text-white/90 uppercase tracking-widest">
                 Aujourd'hui
               </span>
               <span className="text-4xl font-black text-white leading-none">
@@ -212,12 +212,12 @@ const Interventions: React.FC = () => {
         <div className="card-premium vibrant grad-violet p-6 flex flex-col gap-4 shadow-lg border-white/10">
           <div className="flex justify-between items-start">
             <div className="flex flex-col gap-1.5">
-              <span className="text-premium-label !text-white/60">
+              <span className="text-xs font-bold text-white/90 uppercase tracking-widest">
                 Valeur
               </span>
               <span className="text-4xl font-black text-white leading-none">
                 {totalRevenue.toFixed(0)}{" "}
-                <span className="text-sm opacity-60 ml-0.5">DT</span>
+                <span className="text-sm font-bold text-white/80 ml-0.5">DT</span>
               </span>
             </div>
             <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/20">
@@ -257,18 +257,18 @@ const Interventions: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex items-center gap-3 text-slate-400">
+              <div className="flex items-center gap-3 text-slate-500">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <div
-                    className={`w-1.5 h-1.5 rounded-full ${inter.status === "completed" ? "bg-emerald-500" : "bg-blue-400"}`}
+                    className={`w-2 h-2 rounded-full flex-shrink-0 ${inter.status === "completed" ? "bg-emerald-500" : "bg-blue-400"}`}
                   />
-                  <span className="text-xs font-bold uppercase tracking-widest truncate">
+                  <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide truncate">
                     {inter.technician?.full_name || "Non assigné"}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <Clock size={12} className="opacity-50" />
-                  <span className="text-xs font-bold uppercase tracking-widest">
+                  <Clock size={14} className="text-slate-400" />
+                  <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">
                     {inter.status === "scheduled" || inter.status === "pending"
                       ? inter.scheduled_date
                         ? new Date(inter.scheduled_date).toLocaleDateString(
