@@ -37,10 +37,11 @@ const AdminUsers: React.FC = () => {
 
     // Modal State
     const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
-    const [actionType, setActionType] = useState<'link_technician' | 'link_client' | 'create_technician' | 'create_client' | 'make_admin' | 'change_role' | null>(null);
+    const [actionType, setActionType] = useState<'link_technician' | 'link_client' | 'create_technician' | 'create_client' | 'make_admin' | 'edit_profile' | null>(null);
     const [selectedLinkId, setSelectedLinkId] = useState<string>('');
     const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
     const [newRole, setNewRole] = useState<string>('');
+    const [tempName, setTempName] = useState<string>('');
     const [confirmAction, setConfirmAction] = useState<{ type: 'revoke' | 'delete', profileId: string } | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
@@ -69,7 +70,7 @@ const AdminUsers: React.FC = () => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [activeTab]);
 
     const handleApproval = async () => {
         if (!selectedProfile || !actionType) return;
@@ -100,8 +101,9 @@ const AdminUsers: React.FC = () => {
             updateData.role = 'technician';
             updateData.technician_id = newTech.id;
         }
-        else if (actionType === 'change_role') {
+        else if (actionType === 'edit_profile') {
             updateData.role = newRole;
+            updateData.full_name = tempName;
         }
 
         const { error } = await supabase.from('profiles').update(updateData).eq('id', selectedProfile.id);
@@ -160,7 +162,9 @@ const AdminUsers: React.FC = () => {
                     </button>
                     <div>
                         <h1 className="text-xl font-black text-white leading-tight">Administration</h1>
-                        <p className="text-blue-100 text-xs font-medium opacity-80">Validation des comptes</p>
+                        <p className="text-blue-100 text-xs font-medium opacity-80">
+                            {activeTab === 'pending' ? 'Validation des comptes' : 'Gestion des utilisateurs'}
+                        </p>
                     </div>
                 </div>
 
@@ -198,9 +202,12 @@ const AdminUsers: React.FC = () => {
                 ) : (
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-2 px-2 mb-2">
-                            <span className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></span>
+                            <span className={`w-2 h-2 rounded-full animate-pulse ${activeTab === 'pending' ? 'bg-amber-400' : 'bg-blue-400'}`}></span>
                             <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                                {profiles.length} demande{profiles.length > 1 ? 's' : ''} en attente
+                                {activeTab === 'pending'
+                                    ? `${profiles.length} demande${profiles.length > 1 ? 's' : ''} en attente`
+                                    : `${profiles.length} compte${profiles.length > 1 ? 's' : ''} au total`
+                                }
                             </span>
                         </div>
 
@@ -252,10 +259,15 @@ const AdminUsers: React.FC = () => {
                                     ) : (
                                         <>
                                             <button
-                                                onClick={() => { setSelectedProfile(profile); setActionType('change_role'); setNewRole(profile.role); }}
+                                                onClick={() => {
+                                                    setSelectedProfile(profile);
+                                                    setActionType('edit_profile');
+                                                    setNewRole(profile.role);
+                                                    setTempName(profile.full_name || '');
+                                                }}
                                                 className="px-4 py-2 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-xs hover:bg-slate-100 transition-colors uppercase"
                                             >
-                                                Rôle
+                                                Éditer
                                             </button>
                                             {profile.is_approved ? (
                                                 <button
@@ -353,35 +365,56 @@ const AdminUsers: React.FC = () => {
                 </div>
             )}
 
-            {selectedProfile && actionType === 'change_role' && (
+            {selectedProfile && actionType === 'edit_profile' && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-[32px] p-8 max-w-md w-full animate-in fade-in zoom-in-95 shadow-2xl border border-slate-100 dark:border-slate-700 transition-colors text-center">
-                        <h2 className="text-xl font-black text-slate-800 dark:text-white">Changer le rôle</h2>
+                    <div className="bg-white dark:bg-slate-800 rounded-[32px] p-8 max-w-md w-full animate-in fade-in zoom-in-95 shadow-2xl border border-slate-100 dark:border-slate-700 transition-colors">
+                        <h2 className="text-xl font-black text-slate-800 dark:text-white mb-1">Modifier le compte</h2>
                         <p className="text-slate-400 text-sm mb-6">{selectedProfile.email}</p>
 
-                        <div className="flex flex-col gap-3">
-                            {['admin', 'technician', 'client', 'pending'].map(role => (
-                                <button
-                                    key={role}
-                                    onClick={() => setNewRole(role)}
-                                    className={`py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all border-2 ${newRole === role
-                                        ? 'bg-primary/5 border-primary text-primary'
-                                        : 'bg-slate-50 dark:bg-slate-700 border-transparent text-slate-500 hover:bg-slate-100'
-                                        }`}
-                                >
-                                    {role}
-                                </button>
-                            ))}
+                        <div className="flex flex-col gap-5">
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Nom Complet</label>
+                                <input
+                                    type="text"
+                                    className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-primary transition-all"
+                                    value={tempName}
+                                    onChange={(e) => setTempName(e.target.value)}
+                                    placeholder="Nom complet..."
+                                />
+                            </div>
 
-                            <button
-                                onClick={handleApproval}
-                                className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 mt-4 active:scale-95 transition-transform"
-                            >
-                                Mettre à jour
-                            </button>
-                            <button onClick={() => setSelectedProfile(null)} className="w-full py-2 text-slate-400 font-bold text-xs hover:text-slate-600 uppercase tracking-widest">
-                                Annuler
-                            </button>
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Rôle Système</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {['admin', 'technician', 'client', 'pending'].map(role => (
+                                        <button
+                                            key={role}
+                                            onClick={() => setNewRole(role)}
+                                            className={`py-3 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all border-2 ${newRole === role
+                                                ? 'bg-primary/5 border-primary text-primary'
+                                                : 'bg-slate-50 dark:bg-slate-700 border-transparent text-slate-500 hover:bg-slate-100'
+                                                }`}
+                                        >
+                                            {role}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    onClick={() => setSelectedProfile(null)}
+                                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded-xl font-bold text-xs uppercase hover:bg-slate-200 transition-colors"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    onClick={handleApproval}
+                                    className="flex-[2] py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform text-xs uppercase"
+                                >
+                                    Valider
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
