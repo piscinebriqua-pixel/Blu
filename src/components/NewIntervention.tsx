@@ -431,6 +431,35 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         ]);
       }
 
+      // --- MISE À JOUR DU SOLDE CLIENT ---
+      if (interventionType === "direct") {
+        // 1. Récupérer le solde actuel
+        const { data: clientData, error: clientFetchError } = await supabase
+          .from("clients")
+          .select("balance")
+          .eq("id", selectedClientId)
+          .single();
+
+        if (clientFetchError) throw clientFetchError;
+
+        const currentBalance = clientData?.balance || 0;
+        const paymentReceived = (formData.record_payment && formData.payment_amount)
+          ? parseFloat(formData.payment_amount)
+          : 0;
+
+        // Calcul du nouveau solde : Ancien + Paiement - Coût
+        const newBalance = currentBalance + paymentReceived - totalAmount;
+
+        // 2. Mettre à jour dans la base
+        const { error: balanceUpdateError } = await supabase
+          .from("clients")
+          .update({ balance: newBalance })
+          .eq("id", selectedClientId);
+
+        if (balanceUpdateError) throw balanceUpdateError;
+      }
+      // ------------------------------------
+
       onSuccess();
       onClose();
     } catch (error: unknown) {

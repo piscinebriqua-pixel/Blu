@@ -45,6 +45,32 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
             }]);
 
             if (error) throw error;
+
+            // --- MISE À JOUR DU SOLDE CLIENT ---
+            // 1. Récupérer le solde actuel
+            const { data: clientData, error: clientFetchError } = await supabase
+                .from('clients')
+                .select('balance')
+                .eq('id', clientId)
+                .single();
+
+            if (clientFetchError) throw clientFetchError;
+
+            const currentBalance = clientData?.balance || 0;
+            const paymentAmount = parseFloat(formData.amount);
+
+            // Calcul du nouveau solde : Ancien + Paiement
+            const newBalance = currentBalance + paymentAmount;
+
+            // 2. Mettre à jour dans la base
+            const { error: balanceUpdateError } = await supabase
+                .from('clients')
+                .update({ balance: newBalance })
+                .eq('id', clientId);
+
+            if (balanceUpdateError) throw balanceUpdateError;
+            // ------------------------------------
+
             onSuccess();
             onClose();
         } catch (error: any) {
