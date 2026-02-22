@@ -237,9 +237,9 @@ const Interventions: React.FC = () => {
         </div>
 
         {filteredInterventions.map((inter) => (
-          <button
+          <div
             key={inter.id}
-            className="card-white !flex-row !items-center !gap-4 !p-5 text-left hover:scale-[1.01] transition-all"
+            className="card-white !flex-row !items-center !gap-4 !p-5 text-left hover:scale-[1.01] transition-all cursor-pointer"
             onClick={() => setSelectedIntervention(inter)}
           >
             <div className="w-12 h-12 rounded-2xl bg-primary-glow flex items-center justify-center text-primary shrink-0 transition-transform">
@@ -321,7 +321,7 @@ const Interventions: React.FC = () => {
                 </button>
               )}
             </div>
-          </button>
+          </div>
         ))}
 
         {filteredInterventions.length === 0 && (
