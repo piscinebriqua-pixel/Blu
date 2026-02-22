@@ -76,7 +76,43 @@ All interactive elements (buttons, links, icons) must have a **minimum tap area 
 ```
 
 ### Contrast & Opacity
-- Text opacity must never go below **70%** for secondary labels
+
+#### Rule 1 — Labels on colored/gradient backgrounds (stat cards, headers)
+Labels displayed on blue, violet or dark gradient backgrounds **must be clearly visible**. Never use low-opacity white text as a label on a colored card.
+
+```tsx
+// ✅ Correct — label clearly legible on gradient
+<span className="text-xs font-bold text-white/90 uppercase tracking-widest">AUJOURD'HUI</span>
+
+// ❌ Wrong — disappears on gradient background, especially in sunlight
+<span className="text-[11px] font-bold text-white/50 uppercase">AUJOURD'HUI</span>
+```
+
+**Rules for on-gradient labels:**
+- Minimum opacity: `text-white/80` (never below `text-white/70`)
+- Minimum size: `text-xs` (12px)
+- Font weight: `font-bold` minimum — never `font-normal` on a colored bg
+- Always use `uppercase tracking-widest` for label-style caps text
+
+#### Rule 2 — Secondary info text on white cards (technician, date, meta)
+Text like technician names, dates, and metadata inside white cards must be legible even in bright outdoor conditions.
+
+```tsx
+// ✅ Correct — uses slate-500 (not 400) with text-sm
+<span className="text-sm font-semibold text-slate-500">WALID · 21/02</span>
+
+// ❌ Wrong — slate-400 + text-xs = nearly invisible outdoors
+<span className="text-xs text-slate-400">WALID · 21/02</span>
+```
+
+**Rules for secondary card info:**
+- Minimum color: `text-slate-500` (never `text-slate-300` or `text-slate-400` for readable content)
+- Minimum size: `text-sm` (14px)
+- For muted metadata (pure decorative): `text-slate-400` is acceptable only if `text-sm` or larger
+- Icon + text combos (clock, user, location): icon must be at least `size={14}`, never `size={10}` or `size={12}`
+
+#### Rule 3 — General opacity rule
+- Text opacity must never go below **70%** for any readable label
 - Never combine `text-slate-400` with a font size below `text-xs`
 - On dark backgrounds, prefer `text-white/80` over `text-slate-400`
 
