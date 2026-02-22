@@ -62,7 +62,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
   >("direct");
   const [tab, setTab] = useState<
     "client" | "tech" | "photos" | "services" | "products" | "summary"
-  >(initialClientId ? "tech" : "client");
+  >(initialClientId && initialPoolId ? "tech" : "client");
 
   const [dbClients, setDbClients] = useState<
     { id: string; first_name: string; last_name: string; city: string }[]

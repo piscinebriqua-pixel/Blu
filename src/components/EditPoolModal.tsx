@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Droplets, Waves, Calendar, AlertCircle } from 'lucide-react';
+import { Droplets, Waves, Calendar, AlertCircle, Trash2 } from 'lucide-react';
 import ModalLayout from './ModalLayout';
 import Input from './ui/Input';
 import Button from './ui/Button';
@@ -66,6 +66,29 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
         }
     };
 
+    const handleDelete = async () => {
+        if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce bassin ? Toutes les interventions associées seront également supprimées.')) {
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const { error } = await supabase
+                .from('pools')
+                .delete()
+                .eq('id', pool.id);
+
+            if (error) throw error;
+
+            onSuccess();
+            onClose();
+        } catch (error: any) {
+            alert(error.message || 'Une erreur est survenue lors de la suppression');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const actions = (
         <div className="flex gap-2 w-full">
             <Button
@@ -76,6 +99,16 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                 disabled={loading}
             >
                 ANNULER
+            </Button>
+            <Button
+                type="button"
+                variant="secondary"
+                onClick={handleDelete}
+                className="flex-1 !bg-red-50 dark:!bg-red-900/10 !text-red-500 !border-red-100 dark:!border-red-900/20 hover:!bg-red-500 hover:!text-white transition-all shadow-none"
+                disabled={loading}
+            >
+                <Trash2 size={16} />
+                SUPPRIMER
             </Button>
             <Button
                 type="submit"

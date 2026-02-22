@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Search, Plus, ArrowLeft, Filter, MapPin, ChevronRight, Mail, LayoutList, Map as MapIcon } from 'lucide-react';
 import AddClientModal from '../components/AddClientModal';
@@ -7,16 +7,24 @@ import GlobalMap from '../components/GlobalMap';
 
 const ClientsList: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [clients, setClients] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
     const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+    const [activeFilter, setActiveFilter] = useState('Tous');
 
     useEffect(() => {
         fetchClients();
-    }, []);
+        const params = new URLSearchParams(location.search);
+        const filterParam = params.get('filter');
+        if (filterParam) {
+            setActiveFilter(filterParam);
+            setShowFilters(true);
+        }
+    }, [location.search]);
 
     const fetchClients = async () => {
         try {
@@ -34,10 +42,18 @@ const ClientsList: React.FC = () => {
         }
     };
 
-    const filteredClients = clients.filter(c =>
-        `${c.first_name || ''} ${c.last_name || ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (c.phone && c.phone.includes(searchTerm))
-    );
+    const filteredClients = clients.filter(c => {
+        const matchesSearch = `${c.first_name || ''} ${c.last_name || ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (c.phone && c.phone.includes(searchTerm));
+
+        if (!matchesSearch) return false;
+
+        if (activeFilter === 'Dettes') {
+            return c.balance !== 0;
+        }
+
+        return true;
+    });
 
     // The toolbar and PageLayout structure are replaced by the new return block
     // const toolbar = (
@@ -124,10 +140,11 @@ const ClientsList: React.FC = () => {
 
                     {showFilters && (
                         <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar animate-in fade-in slide-in-from-top-2">
-                            {['Tous', 'Actifs', 'En attente', 'Archivés'].map((filter) => (
+                            {['Tous', 'Dettes', 'Actifs', 'En attente', 'Archivés'].map((filter) => (
                                 <button
                                     key={filter}
-                                    className="px-4 py-2 bg-white dark:bg-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700 whitespace-nowrap hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                    onClick={() => setActiveFilter(filter)}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold shadow-sm border whitespace-nowrap transition-colors ${activeFilter === filter ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400'}`}
                                 >
                                     {filter}
                                 </button>
@@ -173,7 +190,7 @@ const ClientsList: React.FC = () => {
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-2">
                                                 <div className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide border ${client.balance < 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'}`}>
-                                                    {client.balance < 0 ? 'Solde Dû' : 'À jour'}
+                                                    {client.balance < 0 ? 'Credit Client' : 'À jour'}
                                                 </div>
                                                 {client.email && (
                                                     <div className="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 flex items-center justify-center">
@@ -182,7 +199,12 @@ const ClientsList: React.FC = () => {
                                                 )}
                                             </div>
                                             <span className={`text-sm font-black ${client.balance < 0 ? 'text-red-500 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
-                                                {client.balance.toFixed(0)} <span className="text-[10px] font-bold opacity-60">DT</span>
+                                                {client.balance < 0 ? (
+                                                    <>Credit <span className="text-sm">{Math.abs(client.balance).toFixed(0)}</span></>
+                                                ) : (
+                                                    <>{client.balance.toFixed(0)}</>
+                                                )}
+                                                <span className="text-[10px] font-bold opacity-60 ml-1">DT</span>
                                             </span>
                                         </div>
                                     </div>

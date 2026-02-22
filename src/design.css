@@ -144,6 +144,175 @@ body {
     transition: width 0.5s ease;
 }
 
+/* --- PREMIUM UTILITIES --- */
+.glass-morphism {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+[data-theme='dark'] .glass-morphism {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.shadow-premium {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.card-premium {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-premium:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.15);
+}
+
+/* --- MESH GRADIENTS --- */
+.mesh-blue {
+    background-color: var(--primary);
+    background-image:
+        radial-gradient(at 0% 0%, hsla(201, 100%, 36%, 1) 0, transparent 50%),
+        radial-gradient(at 50% 0%, hsla(190, 81%, 75%, 1) 0, transparent 50%),
+        radial-gradient(at 100% 0%, hsla(214, 95%, 27%, 1) 0, transparent 50%);
+}
+
+.mesh-gold {
+    background-color: #D4AF37;
+    background-image:
+        radial-gradient(at 0% 0%, hsla(45, 100%, 70%, 1) 0, transparent 50%),
+        radial-gradient(at 50% 100%, hsla(40, 100%, 50%, 1) 0, transparent 50%),
+        radial-gradient(at 100% 0%, hsla(35, 100%, 40%, 1) 0, transparent 50%);
+}
+
+/* --- ANIMATIONS --- */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slide-up {
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.stagger-1 {
+    animation-delay: 0.1s;
+}
+
+.stagger-2 {
+    animation-delay: 0.2s;
+}
+
+.stagger-3 {
+    animation-delay: 0.3s;
+}
+
+.stagger-4 {
+    animation-delay: 0.4s;
+}
+
+.stagger-5 {
+    animation-delay: 0.5s;
+}
+
+.stagger-6 {
+    animation-delay: 0.6s;
+}
+
+.float-animation {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+/* --- BENTO LAYOUT --- */
+.bento-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+@media (max-width: 768px) {
+    .bento-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.card-bento {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 24px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.card-bento:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.fintech-card-dark {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+}
+
+.fintech-card-money-luxe {
+    background: linear-gradient(135deg, #064e3b 0%, #059669 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.fintech-card-red-luxe {
+    background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.fintech-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.03;
+    pointer-events: none;
+    background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* --- LAYOUT UTILITIES --- */
+.glass-morphism {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+[data-theme='dark'] .glass-morphism {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 /* Gauges Area */
 .gauge-container {
     display: grid;

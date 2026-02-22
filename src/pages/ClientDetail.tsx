@@ -3,17 +3,15 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
     Plus,
-    MessageCircle,
-    Navigation,
     Edit2,
     MapPin,
-    User,
     Waves,
-    History,
+    History as HistoryIcon,
     Wallet,
     Mail,
-    Calendar,
-    Phone
+    Phone,
+    MessageCircle,
+    Navigation
 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import NewIntervention from '../components/NewIntervention';
@@ -23,6 +21,8 @@ import EditClientModal from '../components/EditClientModal';
 import RecordPaymentModal from '../components/RecordPaymentModal';
 import EditPoolModal from '../components/EditPoolModal';
 import InterventionDetailsModal from '../components/InterventionDetailsModal';
+import ModalLayout from '../components/ModalLayout';
+import Button from '../components/ui/Button';
 
 interface Pool {
     id: string;
@@ -45,9 +45,14 @@ interface Intervention {
     chlorine_level: number;
     status: string;
     pool_name?: string;
-    intervention_products?: {
+    services?: {
+        price_at_time: number;
+        service: { name: string; }
+    }[];
+    products?: {
         quantity: number;
-        inventory_products: { name: string; unit: string; }
+        total_price: number;
+        product: { name: string; unit: string; }
     }[];
 }
 
@@ -73,7 +78,6 @@ const ClientDetail: React.FC = () => {
     const [pools, setPools] = useState<Pool[]>([]);
     const [interventions, setInterventions] = useState<Intervention[]>([]);
     const [payments, setPayments] = useState<any[]>([]);
-    const [activeTab, setActiveTab] = useState<'profile' | 'finance'>('profile');
     const [loading, setLoading] = useState(true);
 
     const [isInterventionModalOpen, setIsInterventionModalOpen] = useState(false);
@@ -84,12 +88,41 @@ const ClientDetail: React.FC = () => {
     const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null);
     const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
     const [selectedInterventionForView, setSelectedInterventionForView] = useState<any | null>(null);
+    const [activeCategory, setActiveCategory] = useState<'pools' | 'interventions' | 'payments' | 'balance' | 'gps' | null>(null);
+
+    const totalIntersAmount = interventions.reduce((acc, inter) => {
+        const sTotal = inter.services?.reduce((sAcc: number, s: any) => sAcc + (s.price_at_time || 0), 0) || 0;
+        const pTotal = inter.products?.reduce((pAcc: number, p: any) => pAcc + (p.total_price || 0), 0) || 0;
+        return acc + sTotal + pTotal;
+    }, 0);
+
+    const totalPaymentsAmount = payments.reduce((acc, pay) => acc + pay.amount, 0);
 
     useEffect(() => {
         if (id) {
             fetchClientData();
         }
     }, [id]);
+
+    // Auto-sync balance to database if there's a discrepancy
+    useEffect(() => {
+        const syncBalance = async () => {
+            if (!client || loading) return;
+            const calculatedBalance = totalPaymentsAmount - totalIntersAmount;
+            if (Math.abs(client.balance - calculatedBalance) > 0.1) {
+                console.log(`Syncing balance for client ${client.id}: ${client.balance} -> ${calculatedBalance}`);
+                const { error } = await supabase
+                    .from('clients')
+                    .update({ balance: calculatedBalance })
+                    .eq('id', client.id);
+
+                if (!error) {
+                    setClient(prev => prev ? { ...prev, balance: calculatedBalance } : null);
+                }
+            }
+        };
+        syncBalance();
+    }, [client, totalPaymentsAmount, totalIntersAmount, loading]);
 
     const fetchClientData = async () => {
         try {
@@ -125,8 +158,7 @@ const ClientDetail: React.FC = () => {
                     )
                 `)
                 .in('pool_id', poolData?.map(p => p.id) || [])
-                .order('created_at', { ascending: false })
-                .limit(10);
+                .order('created_at', { ascending: false });
 
             const formattedInters = interData?.map((i: any) => ({
                 ...i,
@@ -180,399 +212,497 @@ const ClientDetail: React.FC = () => {
                     <Navigation size={18} />
                 </button>
             </div>
-            <button onClick={() => setIsEditClientModalOpen(true)} className="btn-secondary !h-[40px] !px-4 !text-[10px] font-black">
-                <Edit2 size={14} /> <span className="hidden sm:inline">MODIFIER PROFIL</span>
+            <button onClick={() => setIsEditClientModalOpen(true)} className="btn-icon !bg-blue-600 !text-white !border-none !w-10 !h-10 shadow-lg shadow-blue-500/20" title="Modifier Profil">
+                <Edit2 size={18} />
             </button>
         </div>
     );
 
     return (
         <PageLayout
-            title="Dossier Client"
-            subtitle={`${client?.first_name} ${client?.last_name}`}
+            title={client?.first_name || ''}
+            subtitle={client?.last_name || ''}
             showBackButton={true}
             toolbar={toolbar}
             loading={loading}
         >
-            <div className="flex-column gap-6">
-
-                {/* 1. Header Card - Premium Identity */}
-                <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0B2347] to-[#1e3a8a] p-8 shadow-2xl transition-all duration-500 hover:shadow-blue-900/20 group">
-                    {/* Background Elements */}
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-
-                    <div className="absolute -right-8 -top-8 opacity-[0.03] rotate-12 transition-transform duration-1000 group-hover:scale-110 group-hover:rotate-6">
-                        <User size={300} />
-                    </div>
-
-                    <div className="relative z-10 flex flex-col gap-8">
-                        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-
-                            <div className="flex-1 space-y-2">
-                                <h1 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none drop-shadow-lg">
-                                    {client?.first_name} <span className="text-blue-300">{client?.last_name}</span>
-                                </h1>
-                                <div className="flex flex-wrap items-center gap-y-2 gap-x-6 text-blue-100/80">
-                                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">
-                                        <MapPin size={12} className="text-cyan-300" /> {client?.city || 'Tunisie'}
-                                    </div>
-                                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">
-                                        <Phone size={12} className="text-cyan-300" /> {client?.phone}
-                                    </div>
-                                    {client?.phone2 && (
-                                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">
-                                            <Phone size={12} className="text-cyan-300" /> {client.phone2}
-                                        </div>
-                                    )}
-                                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">
-                                        <Mail size={12} className="text-cyan-300" /> {client?.email || 'Pas d\'email'}
-                                    </div>
+            <div className="bento-grid-2">
+                {/* LEFT COLUMN: CONTACT & LOCATION */}
+                <div className="flex flex-col gap-4">
+                    {/* 1. Contact Details Tile */}
+                    <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6">
+                        <h4 className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Coordonnées</h4>
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-4 group">
+                                <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                                    <Phone size={20} />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase">Téléphone Principal</span>
+                                    <span className="text-lg font-black text-slate-900 dark:text-white">{client?.phone}</span>
                                 </div>
                             </div>
+
+                            {client?.phone2 && (
+                                <div className="flex items-center gap-4 group">
+                                    <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                                        <Phone size={20} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase">Téléphone Secondaire</span>
+                                        <span className="text-lg font-black text-slate-900 dark:text-white">{client?.phone2}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {client?.email && (
+                                <div className="flex items-center gap-4 group">
+                                    <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                                        <Mail size={20} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase">Email</span>
+                                        <span className="text-lg font-black text-slate-900 dark:text-white">{client?.email}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {client?.city && (
+                                <div className="flex items-center gap-4 group">
+                                    <div className="w-12 h-12 rounded-xl bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-orange-600 dark:text-orange-400 group-hover:scale-110 transition-transform">
+                                        <MapPin size={20} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase">Localisation</span>
+                                        <span className="text-lg font-black text-slate-900 dark:text-white">{client?.city}</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* 2. Payment List Tile (Timeline Style) */}
+                    <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6 flex-1 cursor-pointer group" onClick={() => setActiveCategory('payments')}>
+                        <div className="flex items-center justify-between mb-6">
+                            <h4 className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Historique Financier</h4>
+                            <Wallet size={16} className="text-slate-400" />
                         </div>
 
-                        {/* Quick Metrics */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div className="bg-black/20 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/5 transition-colors group/stat">
-                                <span className="flex items-center gap-2 text-[9px] font-black text-blue-300 uppercase tracking-widest mb-1">
-                                    <Wallet size={12} /> Solde Actuel
-                                </span>
-                                <span className={`text-2xl font-black block tracking-tight ${client && client.balance < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-                                    {client?.balance.toFixed(0)} <span className="text-xs opacity-60 font-bold">DT</span>
-                                </span>
+                        {payments.length > 0 ? (
+                            <div className="space-y-4">
+                                {payments.slice(0, 3).map((pay) => (
+                                    <div key={pay.id} className="flex items-center gap-4">
+                                        <div className="w-1.5 h-10 rounded-full bg-emerald-500/30 flex-shrink-0 relative overflow-hidden">
+                                            <div className="absolute top-0 left-0 w-full bg-emerald-500 h-3" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start">
+                                                <h5 className="text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-tight">Encaissement {pay.method}</h5>
+                                                <span className="text-[13px] font-black text-emerald-600 dark:text-emerald-400">+{pay.amount.toFixed(0)} DT</span>
+                                            </div>
+                                            <p className="text-xs font-black text-slate-500 uppercase">{new Date(pay.payment_date).toLocaleDateString('fr-FR')}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-center">
+                                    <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest group-hover:underline">Consulter tout l'historique</span>
+                                </div>
                             </div>
-
-                            <div className="bg-black/20 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/5 transition-colors group/stat">
-                                <span className="flex items-center gap-2 text-[9px] font-black text-blue-300 uppercase tracking-widest mb-1">
-                                    <Waves size={12} /> Bassins
-                                </span>
-                                <span className="text-2xl font-black text-white block tracking-tight">
-                                    {pools.length} <span className="text-xs opacity-60 font-bold text-blue-200">Unités</span>
-                                </span>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-6 opacity-30">
+                                <Wallet size={24} />
+                                <p className="text-xs font-black uppercase tracking-widest">Aucun paiement</p>
                             </div>
+                        )}
+                    </div>
+                </div>
 
-                            <div className="bg-black/20 backdrop-blur-md rounded-2xl p-4 border border-white/10 hover:bg-white/5 transition-colors group/stat">
-                                <span className="flex items-center gap-2 text-[9px] font-black text-blue-300 uppercase tracking-widest mb-1">
-                                    <History size={12} /> Dernière visite
-                                </span>
-                                <span className="text-2xl font-black text-white block tracking-tight">
-                                    {interventions[0] ? new Date(interventions[0].created_at).getDate() : '--'} <span className="text-xs opacity-60 font-bold text-blue-200 uppercase">{interventions[0] ? new Date(interventions[0].created_at).toLocaleDateString('fr-FR', { month: 'short' }) : ''}</span>
-                                </span>
+                {/* RIGHT COLUMN: FINANCE & STATUS */}
+                <div className="flex flex-col gap-4">
+                    {/* 3. Financial Fintech Tile */}
+                    <div
+                        onClick={() => setActiveCategory('balance')}
+                        className={`card-bento cursor-pointer relative overflow-hidden transition-all duration-500 min-h-[180px] flex flex-col justify-center ${(totalPaymentsAmount - totalIntersAmount) < 0 ? 'border-none shadow-2xl fintech-card-red-luxe' : 'border-none shadow-xl fintech-card-money-luxe'}`}
+                    >
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-white">État Financier</p>
+                                <Wallet size={24} className="text-white/40" />
                             </div>
+                            <h3 className="text-6xl font-black tracking-tighter leading-none mb-2 text-white">
+                                {Math.abs(totalPaymentsAmount - totalIntersAmount).toFixed(0)}
+                                <span className="text-xl font-black ml-1 uppercase text-white/60">Dt</span>
+                            </h3>
+                            <p className="text-[12px] font-black uppercase tracking-widest text-white">
+                                {(totalPaymentsAmount - totalIntersAmount) < 0 ? 'Crédit à recouvrer' : 'Compte positif'}
+                            </p>
+                        </div>
 
-                            <button onClick={() => setIsEditClientModalOpen(true)} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 hover:bg-white/20 transition-all active:scale-95 group/btn flex flex-col justify-center items-center gap-2 text-center">
-                                <span className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-200 group-hover/btn:scale-110 transition-transform">
-                                    <Edit2 size={16} />
-                                </span>
-                                <span className="text-[9px] font-black text-white uppercase tracking-widest">Modifier Profil</span>
+                        {/* Decorative Grid Lines like a Fintech app */}
+                        <div className="fintech-pattern" />
+                    </div>
+
+                    {/* 4. Technical Summary Tile */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <button
+                            onClick={() => setActiveCategory('pools')}
+                            className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 hover:bg-white/80 transition-all p-5 flex flex-col items-center text-center justify-center group"
+                        >
+                            <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <Waves size={28} />
+                            </div>
+                            <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Bassins</span>
+                            <span className="text-3xl font-black text-slate-900 dark:text-white">{pools.length}</span>
+                        </button>
+
+                        <button
+                            onClick={() => setActiveCategory('interventions')}
+                            className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 hover:bg-white/80 transition-all p-5 flex flex-col items-center text-center justify-center group"
+                        >
+                            <div className="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <HistoryIcon size={28} />
+                            </div>
+                            <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Suivi</span>
+                            <span className="text-3xl font-black text-slate-900 dark:text-white">{interventions.length}</span>
+                        </button>
+                    </div>
+
+                    {/* 5. Quick Actions Tile */}
+                    <div className="card-bento bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 flex-1 min-h-[140px]">
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Actions de Gestion</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button onClick={() => setIsInterventionModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-blue-500 transition-all group">
+                                <Plus size={16} className="text-blue-500 group-hover:scale-125 transition-transform" />
+                                <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">Intervention</span>
+                            </button>
+                            <button onClick={() => setIsPaymentModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-emerald-500 transition-all group">
+                                <Wallet size={16} className="text-emerald-500 group-hover:scale-125 transition-transform" />
+                                <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">Encaissement</span>
+                            </button>
+                            <button onClick={() => setIsPoolModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-indigo-500 transition-all group">
+                                <Plus size={16} className="text-indigo-500 group-hover:scale-125 transition-transform" />
+                                <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">Info Bassin</span>
+                            </button>
+                            <button onClick={() => setIsEditClientModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-slate-900 transition-all group">
+                                <Edit2 size={16} className="text-slate-400 group-hover:scale-125 transition-transform" />
+                                <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">Editer Profil</span>
                             </button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Tabs Switcher */}
-                <div className="flex gap-4 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-fit border border-slate-200 dark:border-slate-700">
-                    <button
-                        onClick={() => setActiveTab('profile')}
-                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'profile' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-400'}`}
-                    >
-                        Détails
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('finance')}
-                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'finance' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-400'}`}
-                    >
-                        Finance
+            {/* 6. Activity Timeline Tile (Bottom Wide Box) */}
+            <div className="mt-4">
+                <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6 min-h-[200px]">
+                    <div className="flex items-center justify-between mb-6">
+                        <h4 className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Dernière Activité</h4>
+                        <HistoryIcon size={16} className="text-slate-400" />
+                    </div>
+
+                    {interventions.length > 0 ? (
+                        <div className="space-y-4">
+                            {interventions.slice(0, 3).map((inter) => (
+                                <div key={inter.id} className="flex items-center gap-4 group cursor-pointer" onClick={() => setSelectedInterventionForView(inter)}>
+                                    <div className="w-1.5 h-12 rounded-full bg-blue-500/30 flex-shrink-0 relative overflow-hidden">
+                                        <div className="absolute top-0 left-0 w-full bg-blue-500 transition-all duration-500 group-hover:h-full h-3" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start">
+                                            <h5 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Rapport de Maintenance</h5>
+                                            <span className="text-xs font-black text-slate-500">{new Date(inter.created_at).toLocaleDateString('fr-FR')}</span>
+                                        </div>
+                                        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-black uppercase mt-1">Bassin: {inter.pool_name} • {inter.status || 'Terminé'}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-20 opacity-30">
+                            <HistoryIcon size={28} />
+                            <p className="text-xs font-black uppercase tracking-widest">Aucune activité enregistrée</p>
+                        </div>
+                    )}
+
+                    <button onClick={() => setActiveCategory('interventions')} className="w-full mt-6 py-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-[10px] font-black text-slate-500 hover:text-blue-600 hover:border-blue-500/50 transition-all uppercase tracking-widest">
+                        Consulter l'historique complet
                     </button>
                 </div>
+            </div>
 
-                {activeTab === 'profile' ? (
-                    <div className="flex flex-col gap-6 animate-in fade-in duration-500">
-                        {/* 1.5 GPS Map Preview */}
-                        {client?.gps_lat && client?.gps_lng && (
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center gap-3 px-2">
-                                    <div className="w-1.5 h-6 bg-gradient-to-b from-orange-500 to-yellow-400 rounded-full" />
-                                    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-800 dark:text-white">Localisation GPS</h3>
+            {/* Categorized Details Modal */}
+            {
+                activeCategory && (
+                    <ModalLayout
+                        title={
+                            activeCategory === 'pools' ? 'Parc Aquatique' :
+                                activeCategory === 'interventions' ? 'Historique des Entretiens' :
+                                    activeCategory === 'payments' ? 'Historique des Paiements' :
+                                        activeCategory === 'balance' ? 'Détails du Solde' : 'Localisation GPS'
+                        }
+                        onClose={() => setActiveCategory(null)}
+                        className="max-w-4xl"
+                        actions={
+                            <div className="flex gap-3 w-full justify-end">
+                                {activeCategory === 'pools' && (
+                                    <Button onClick={() => setIsPoolModalOpen(true)} className="btn-primary">
+                                        <Plus size={18} className="mr-2" /> AJOUTER UN BASSIN
+                                    </Button>
+                                )}
+                                {activeCategory === 'interventions' && (
+                                    <Button
+                                        onClick={() => {
+                                            if (pools.length === 1) setSelectedPoolId(pools[0].id);
+                                            else setSelectedPoolId(null);
+                                            setIsInterventionModalOpen(true);
+                                        }}
+                                        className="btn-primary"
+                                    >
+                                        <Plus size={18} className="mr-2" /> NOUVELLE VISITE
+                                    </Button>
+                                )}
+                                {(activeCategory === 'payments' || activeCategory === 'balance') && (
+                                    <Button onClick={() => setIsPaymentModalOpen(true)} className="btn-primary">
+                                        <Wallet size={18} className="mr-2" /> ENCAISSER
+                                    </Button>
+                                )}
+                                <Button onClick={() => setActiveCategory(null)} variant="secondary">FERMER</Button>
+                            </div>
+                        }
+                    >
+                        <div className="p-2">
+                            {activeCategory === 'balance' && (
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-700">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Interventions</p>
+                                            <h4 className="text-2xl font-black text-slate-800 dark:text-white">-{totalIntersAmount.toFixed(0)} <span className="text-xs opacity-60">DT</span></h4>
+                                        </div>
+                                        <div className="bg-emerald-50 dark:bg-emerald-900/10 p-6 rounded-3xl border border-emerald-100 dark:border-emerald-800/30">
+                                            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">Total Paiements</p>
+                                            <h4 className="text-2xl font-black text-emerald-600">+{totalPaymentsAmount.toFixed(0)} <span className="text-xs opacity-60 text-emerald-400">DT</span></h4>
+                                        </div>
+                                    </div>
+                                    <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-slate-800 to-slate-900 text-white shadow-xl shadow-slate-900/20 text-center">
+                                        <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Solde Final</p>
+                                        <h3 className="text-5xl font-black tracking-tighter">
+                                            {(totalPaymentsAmount - totalIntersAmount) < 0 ? (
+                                                <span className="text-rose-400">Credit {Math.abs(totalPaymentsAmount - totalIntersAmount).toFixed(0)}</span>
+                                            ) : (
+                                                <span>{(totalPaymentsAmount - totalIntersAmount).toFixed(0)}</span>
+                                            )}
+                                            <span className="text-lg opacity-40 ml-2">DT</span>
+                                        </h3>
+                                    </div>
                                 </div>
-                                <div className="p-1.5 bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700">
+                            )}
+                            {activeCategory === 'pools' && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {pools.map((pool) => (
+                                        <div key={pool.id} className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 group hover:border-blue-500/30 transition-all">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                                                    <Waves size={20} />
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
+                                                        className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-600 transition-colors"
+                                                    >
+                                                        Nouveau Rapport
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setSelectedPool(pool); setIsEditPoolModalOpen(true); }}
+                                                        className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-400 flex items-center justify-center hover:text-blue-600 border border-slate-100 dark:border-slate-600 shadow-sm transition-all"
+                                                        title="Modifier"
+                                                    >
+                                                        <Edit2 size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <h4 className="text-base font-black text-slate-800 dark:text-white mb-1">{pool.name}</h4>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{pool.volume_m3} m³</span>
+                                                <span className="w-1 h-1 rounded-full bg-slate-200" />
+                                                <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">{pool.treatment_method}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button
+                                        onClick={() => setIsPoolModalOpen(true)}
+                                        className="flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500/50 hover:bg-blue-500/[0.02] transition-all group"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <Plus size={24} className="text-slate-400 group-hover:text-blue-500" />
+                                        </div>
+                                        <span className="text-xs font-black text-slate-400 group-hover:text-blue-500 uppercase tracking-widest">Ajouter un bassin</span>
+                                    </button>
+                                </div>
+                            )}
+
+                            {activeCategory === 'interventions' && (
+                                <div className="space-y-6">
+                                    {/* Summary Header in Modal */}
+                                    <div className="bg-indigo-50/50 dark:bg-indigo-900/10 p-6 rounded-3xl border border-indigo-100 dark:border-indigo-800/20 flex justify-between items-center">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center">
+                                                <HistoryIcon size={24} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Cumul des Travaux</p>
+                                                <h4 className="text-2xl font-black text-slate-800 dark:text-white">{totalIntersAmount.toFixed(0)} <span className="text-xs opacity-60">DT</span></h4>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fréquence</p>
+                                            <h4 className="text-2xl font-black text-slate-800 dark:text-white">{interventions.length} <span className="text-xs opacity-60">Visites</span></h4>
+                                        </div>
+                                    </div>
+
+                                    {interventions.length > 0 ? (
+                                        <div className="relative before:absolute before:left-7 before:top-4 before:bottom-4 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
+                                            {interventions.map((inter) => (
+                                                <div
+                                                    key={inter.id}
+                                                    onClick={() => setSelectedInterventionForView(inter)}
+                                                    className="relative pl-14 mb-4 group cursor-pointer"
+                                                >
+                                                    <div className="absolute left-[22px] top-6 w-3 h-3 rounded-full bg-white dark:bg-slate-900 border-[3.5px] border-slate-200 dark:border-slate-700 group-hover:border-indigo-500 group-hover:scale-125 transition-all z-10" />
+                                                    <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-transparent hover:border-indigo-500/20 transition-all">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div>
+                                                                <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                                                    {new Date(inter.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                                </span>
+                                                                <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Bassin: {inter.pool_name}</p>
+                                                            </div>
+                                                            <span className="text-[10px] font-black text-indigo-500 bg-indigo-500/10 px-3 py-1 rounded-lg uppercase tracking-widest">
+                                                                {inter.status || 'TERMINE'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-6 pt-3 border-t border-slate-100 dark:border-slate-700">
+                                                            {inter.ph_level && <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">PH: <strong className="text-slate-900 dark:text-white ml-1">{inter.ph_level}</strong></span>}
+                                                            {inter.chlorine_level && <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">Chlore: <strong className="text-slate-900 dark:text-white ml-1">{inter.chlorine_level}</strong></span>}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem]">
+                                            <HistoryIcon size={48} className="mx-auto text-slate-200 mb-4" />
+                                            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Aucun historique technique</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeCategory === 'payments' && (
+                                <div className="space-y-4">
+                                    {payments.length > 0 ? (
+                                        <div className="grid gap-3">
+                                            {payments.map(pay => (
+                                                <div key={pay.id} className="flex justify-between items-center p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 hover:border-emerald-500/30 transition-all">
+                                                    <div className="flex items-center gap-5">
+                                                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                                                            <Wallet size={24} />
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <p className="text-xl font-black text-emerald-600">+{pay.amount.toFixed(0)} <span className="text-xs opacity-70">DT</span></p>
+                                                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                                                                {new Date(pay.payment_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} • {pay.method}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[10px] font-black text-slate-500 uppercase shadow-sm">
+                                                            {pay.technician?.full_name?.split(' ')[0] || 'Admin'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem]">
+                                            <Wallet size={48} className="mx-auto text-slate-200 mb-4" />
+                                            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Aucun mouvement financier</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeCategory === 'gps' && client?.gps_lat && client?.gps_lng && (
+                                <div className="rounded-[2.5rem] overflow-hidden bg-slate-100 dark:bg-slate-800 h-[500px] border border-slate-200 dark:border-slate-700 p-1">
                                     <MapPicker
                                         lat={client.gps_lat}
                                         lng={client.gps_lng}
                                         readonly={true}
                                     />
                                 </div>
-                            </div>
-                        )}
-
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* 2. Bassins Section */}
-                            <div className="flex flex-col gap-5">
-                                <div className="flex items-center justify-between px-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-1.5 h-6 bg-gradient-to-b from-blue-500 to-cyan-400 rounded-full" />
-                                        <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-800">Parc & Équipements</h3>
-                                    </div>
-                                    <button
-                                        onClick={() => setIsPoolModalOpen(true)}
-                                        className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-sm active:scale-95"
-                                        title="Ajouter une structure"
-                                    >
-                                        <Plus size={16} strokeWidth={3} />
-                                    </button>
-                                </div>
-
-                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                                    {pools.map((pool, idx) => (
-                                        // eslint-disable-next-line
-                                        <div key={pool.id} className={`animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-backwards bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-700 transition-all group/pool relative overflow-hidden ${idx < 10 ? `stagger-${idx + 1}` : ''}`}>
-                                            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-transparent dark:from-blue-900/20 rounded-bl-full opacity-50" />
-
-                                            <div className="flex flex-col gap-4 relative z-10">
-                                                <div className="flex justify-between items-start">
-                                                    <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-inner group-hover/pool:scale-110 transition-transform duration-500">
-                                                        <Waves size={24} />
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
-                                                            className="px-3 py-1.5 bg-slate-900 dark:bg-slate-700 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-600 transition-colors shadow-lg shadow-slate-900/10"
-                                                        >
-                                                            Rapport
-                                                        </button>
-                                                        <button
-                                                            onClick={() => { setSelectedPool(pool); setIsEditPoolModalOpen(true); }}
-                                                            className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 transition-all"
-                                                            title="Paramètres bassin"
-                                                        >
-                                                            <Edit2 size={14} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <h4 className="text-base font-black text-slate-800 dark:text-white leading-tight">{pool.name}</h4>
-                                                        {(pool as any).is_contracted && (
-                                                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-1" title="Sous contrat d'entretien" />
-                                                        )}
-                                                    </div>
-                                                    <div className="flex flex-wrap gap-2 mt-2">
-                                                        <span className="px-2 py-1 rounded-md bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600 text-[10px] font-bold text-slate-500 dark:text-slate-300 uppercase tracking-wide">
-                                                            {pool.volume_m3} m³
-                                                        </span>
-                                                        {(pool as any).is_contracted ? (
-                                                            <span className="px-2 py-1 rounded-md bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-800 text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wide flex items-center gap-1">
-                                                                <Calendar size={10} /> {(pool as any).maintenance_frequency === 'weekly' ? '7j' : (pool as any).maintenance_frequency === 'biweekly' ? '14j' : '30j'}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
-                                                                {pool.treatment_method}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    <button
-                                        onClick={() => setIsPoolModalOpen(true)}
-                                        className="min-h-[160px] flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-slate-400 dark:text-slate-500 hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-all group/add"
-                                    >
-                                        <div className="w-12 h-12 rounded-full bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center group-hover/add:scale-110 transition-transform">
-                                            <Plus size={24} />
-                                        </div>
-                                        <span className="text-xs font-black uppercase tracking-widest">Nouveau Bassin</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* 3. Journal d'activités Section */}
-                            <div className="flex flex-col gap-5">
-                                <div className="flex items-center gap-3 px-2">
-                                    <div className="w-1.5 h-6 bg-gradient-to-b from-violet-500 to-fuchsia-400 rounded-full" />
-                                    <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-800">Journal d'Activité</h3>
-                                </div>
-
-                                <div className="flex flex-col gap-3 relative before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-slate-200 before:to-transparent dark:before:from-slate-700 before:content-['']">
-                                    {interventions.map((inter, idx) => (
-                                        <div
-                                            key={inter.id}
-                                            onClick={() => setSelectedInterventionForView(inter)}
-                                            className={`animate-in fade-in slide-in-from-right-8 duration-700 fill-mode-backwards relative pl-14 group/inter cursor-pointer ${idx < 10 ? `stagger-${idx + 1}` : ''}`}
-                                        >
-                                            {/* Timeline Dot */}
-                                            <div className="absolute left-[21px] top-6 w-2.5 h-2.5 rounded-full bg-white dark:bg-slate-800 border-[3px] border-slate-300 dark:border-slate-600 group-hover/inter:border-violet-500 group-hover/inter:scale-125 transition-all z-10" />
-
-                                            <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md hover:border-violet-100 dark:hover:border-violet-900 transition-all">
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wide">
-                                                            {new Date(inter.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                                        </span>
-                                                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">
-                                                            {inter.pool_name}
-                                                        </span>
-                                                    </div>
-                                                    <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${inter.status === 'completed' ? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800' : 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800'}`}>
-                                                        {inter.status}
-                                                    </span>
-                                                </div>
-
-                                                <div className="flex items-center gap-2">
-                                                    {inter.ph_level && (
-                                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                                                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">PH <span className="text-slate-900 dark:text-white">{inter.ph_level}</span></span>
-                                                        </div>
-                                                    )}
-                                                    {inter.chlorine_level && (
-                                                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-700 border border-slate-100 dark:border-slate-600">
-                                                            <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-                                                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300">CL <span className="text-slate-900 dark:text-white">{inter.chlorine_level}</span></span>
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {inter.notes && (
-                                                    <div className="mt-3 pt-3 border-t border-slate-50 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 italic">
-                                                        "{inter.notes}"
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    {interventions.length === 0 && (
-                                        <div className="ml-14 py-8 px-6 bg-slate-50 rounded-3xl border border-dashed border-slate-200 flex flex-col items-center gap-2 text-slate-400">
-                                            <History size={24} className="opacity-50" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">Aucune activité récente</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+                            )}
                         </div>
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-6 animate-in fade-in duration-500">
-                        {/* Finance Content */}
-                        <div className="flex items-center justify-between px-2">
-                            <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-800 dark:text-white">Gestion Financière</h3>
-                            <button
-                                onClick={() => setIsPaymentModalOpen(true)}
-                                className="px-5 py-2.5 bg-[#0077B6]/10 text-[#0077B6] rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#0077B6] hover:text-white transition-all"
-                            >
-                                <Plus size={14} className="mr-1" /> NOUVEAU PAIEMENT
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="flex flex-col gap-4">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-2">Interventions Récentes</h4>
-                                <div className="space-y-4">
-                                    {interventions.map(inter => (
-                                        <div key={inter.id} className="card-white flex flex-col !items-stretch !p-5 hover:scale-[1.01]">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">#{inter.id.slice(0, 8)}</span>
-                                                <span className="text-xs font-black text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-lg">- 45 DT</span>
-                                            </div>
-                                            <p className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">{inter.pool_name}</p>
-                                            <div className="flex items-center gap-1.5 mt-1">
-                                                <Calendar size={10} className="text-slate-400" />
-                                                <p className="text-[10px] text-slate-400 uppercase font-black tracking-tight">{new Date(inter.created_at).toLocaleDateString()}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="flex flex-col gap-4">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 px-2">Historique Paiements</h4>
-                                <div className="space-y-4">
-                                    {payments.length === 0 ? (
-                                        <div className="p-12 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-[2rem] text-center text-slate-300">
-                                            <Wallet size={24} className="mx-auto mb-2 opacity-30" />
-                                            <p className="text-[10px] font-black uppercase tracking-widest">Aucun règlement</p>
-                                        </div>
-                                    ) : (
-                                        payments.map(pay => (
-                                            <div key={pay.id} className="card-white flex justify-between items-center !p-5 hover:scale-[1.01]">
-                                                <div>
-                                                    <p className="text-sm font-black text-emerald-500">+{pay.amount} DT</p>
-                                                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest mt-0.5">{pay.method} • {new Date(pay.payment_date).toLocaleDateString()}</p>
-                                                </div>
-                                                <div className="bg-slate-50 dark:bg-slate-800/50 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                    <p className="text-[9px] font-black uppercase text-slate-500 tracking-tighter">{pay.technician?.full_name || 'Admin'}</p>
-                                                </div>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* 4. Notes Générales / Footer */}
-                {client?.notes && (
-                    <div className="card-premium !bg-secondary/30 !border-white/5 !p-5">
-                        <div className="flex items-center gap-3 mb-3">
-                            <History size={14} className="text-muted" />
-                            <h4 className="text-[10px] font-black uppercase tracking-widest text-muted">Notes Internes</h4>
-                        </div>
-                        <p className="text-xs text-muted leading-relaxed italic">{client.notes}</p>
-                    </div>
-                )}
-
-            </div>
+                    </ModalLayout>
+                )
+            }
 
             {/* Modals */}
-            {isInterventionModalOpen && selectedPoolId && (
-                <NewIntervention
-                    poolId={selectedPoolId}
-                    clientId={id!}
-                    onClose={() => setIsInterventionModalOpen(false)}
-                    onSuccess={fetchClientData}
-                />
-            )}
-            {isPoolModalOpen && (
-                <AddPoolModal
-                    clientId={id!}
-                    onClose={() => setIsPoolModalOpen(false)}
-                    onSuccess={fetchClientData}
-                />
-            )}
-            {isEditClientModalOpen && (
-                <EditClientModal
-                    client={client}
-                    onClose={() => setIsEditClientModalOpen(false)}
-                    onSuccess={fetchClientData}
-                />
-            )}
-            {isPaymentModalOpen && (
-                <RecordPaymentModal
-                    clientId={id!}
-                    onClose={() => setIsPaymentModalOpen(false)}
-                    onSuccess={() => {
-                        setIsPaymentModalOpen(false);
-                        fetchClientData();
-                    }}
-                />
-            )}
-            {isEditPoolModalOpen && selectedPool && (
-                <EditPoolModal
-                    pool={selectedPool}
-                    onClose={() => { setIsEditPoolModalOpen(false); setSelectedPool(null); }}
-                    onSuccess={fetchClientData}
-                />
-            )}
-            {selectedInterventionForView && (
-                <InterventionDetailsModal
-                    intervention={selectedInterventionForView}
-                    onClose={() => setSelectedInterventionForView(null)}
-                />
-            )}
+            {
+                isInterventionModalOpen && (
+                    <NewIntervention
+                        poolId={selectedPoolId || undefined}
+                        clientId={id!}
+                        onClose={() => setIsInterventionModalOpen(false)}
+                        onSuccess={fetchClientData}
+                    />
+                )
+            }
+            {
+                isPoolModalOpen && (
+                    <AddPoolModal
+                        clientId={id!}
+                        onClose={() => setIsPoolModalOpen(false)}
+                        onSuccess={fetchClientData}
+                    />
+                )
+            }
+            {
+                isEditClientModalOpen && (
+                    <EditClientModal
+                        client={client}
+                        onClose={() => setIsEditClientModalOpen(false)}
+                        onSuccess={fetchClientData}
+                    />
+                )
+            }
+            {
+                isPaymentModalOpen && (
+                    <RecordPaymentModal
+                        clientId={id!}
+                        onClose={() => setIsPaymentModalOpen(false)}
+                        onSuccess={() => {
+                            setIsPaymentModalOpen(false);
+                            fetchClientData();
+                        }}
+                    />
+                )
+            }
+            {
+                isEditPoolModalOpen && selectedPool && (
+                    <EditPoolModal
+                        pool={selectedPool}
+                        onClose={() => { setIsEditPoolModalOpen(false); setSelectedPool(null); }}
+                        onSuccess={fetchClientData}
+                    />
+                )
+            }
+            {
+                selectedInterventionForView && (
+                    <InterventionDetailsModal
+                        intervention={selectedInterventionForView}
+                        onClose={() => setSelectedInterventionForView(null)}
+                    />
+                )
+            }
         </PageLayout>
     );
 };

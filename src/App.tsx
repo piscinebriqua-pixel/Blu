@@ -11,6 +11,8 @@ import Interventions from './pages/Interventions';
 import PendingApproval from './pages/PendingApproval';
 import AdminUsers from './pages/AdminUsers';
 import TechnicianPortal from './pages/TechnicianPortal';
+import Profile from './pages/Profile';
+import Payments from './pages/Payments';
 import './index.css';
 
 const ClientRedirect = () => {
@@ -183,9 +185,20 @@ function App() {
               <div className="app-container"><Interventions /></div>
             </ProtectedRoute>
           } />
+          <Route path="/payments" element={
+            <ProtectedRoute>
+              <div className="app-container"><Payments /></div>
+            </ProtectedRoute>
+          } />
           <Route path="/technician-portal" element={
             <ProtectedRoute>
               <div className="app-container"><TechnicianPortal /></div>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <div className="app-container"><Profile /></div>
             </ProtectedRoute>
           } />
 
