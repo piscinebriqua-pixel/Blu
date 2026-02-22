@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import Payments from './pages/Payments';
 import Planning from './pages/Planning';
 import { Toaster } from 'react-hot-toast';
+import BccpLogo from './components/BccpLogo';
 import './index.css';
 
 const ClientRedirect = () => {
@@ -101,7 +102,8 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex flex-col justify-center items-center h-screen bg-[#0f141e] gap-4">
+      <div className="flex flex-col justify-center items-center h-screen bg-[#0f141e] gap-6 px-10">
+        <BccpLogo width={240} fillColor="white" className="animate-pulse mb-4" />
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <button
           onClick={() => { supabase.auth.signOut(); window.location.href = '/login'; }}

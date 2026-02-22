@@ -14,6 +14,7 @@ import {
     Wallet
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
+import BccpLogo from '../components/BccpLogo';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -64,10 +65,14 @@ const Dashboard: React.FC = () => {
         <div className="gabarit-wrapper">
             <header className="header-gradient flex justify-between items-start">
                 <div>
-                    <h1>DeepBlue</h1>
-                    <div className="flex flex-row items-center gap-2 opacity-80">
+                    <BccpLogo
+                        width={180}
+                        fillColor="white"
+                        className="drop-shadow-lg -ml-4 -mt-2"
+                    />
+                    <div className="flex flex-row items-center gap-2 opacity-80 mt-1 ml-1">
                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                        <p>Système Actif</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-blue-100">Système Actif</p>
                     </div>
                 </div>
 

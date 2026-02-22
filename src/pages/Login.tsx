@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Mail, Lock, Loader2, AlertCircle, Droplets } from 'lucide-react';
+import { Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
+import BccpLogo from '../components/BccpLogo';
 
 const Login: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -57,14 +58,12 @@ const Login: React.FC = () => {
             <div className="z-10 w-full max-w-sm px-6 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
 
                 {/* Header / Logo */}
-                <div className="flex flex-col items-center text-center gap-2">
-                    <div className="w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-4 shadow-2xl ring-1 ring-white/20">
-                        <Droplets size={40} className="text-white drop-shadow-md" />
-                    </div>
-                    <h1 className="text-4xl font-black text-white tracking-tight">DeepBlue</h1>
-                    <p className="text-blue-100 font-bold tracking-[0.2em] uppercase text-xs opacity-80">
-                        Entretien Piscine Premium
-                    </p>
+                <div className="flex flex-col items-center text-center -mb-4">
+                    <BccpLogo
+                        width={280}
+                        fillColor="white"
+                        className="drop-shadow-2xl"
+                    />
                 </div>
 
                 {/* Login Card */}
@@ -147,25 +146,6 @@ const Login: React.FC = () => {
                     </div>
                 </div>
 
-                {import.meta.env.DEV && (
-                    <div className="bg-blue-50/80 rounded-2xl p-4 text-center border border-blue-100 shadow-sm animate-in fade-in zoom-in-95 duration-500">
-                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1.5 flex items-center justify-center gap-2">
-                            <AlertCircle size={14} /> Diagnostic Connexion
-                        </p>
-                        <code className="text-xs font-mono text-primary font-black bg-white px-2 py-1 rounded-lg border border-blue-200 inline-block shadow-inner">
-                            {window.location.origin}
-                        </code>
-                        <div className="mt-3 space-y-2">
-                            <p className="text-[9px] text-slate-500 font-bold leading-tight uppercase">
-                                Si redirigé vers <span className="text-red-500">localhost</span> sur mobile :
-                            </p>
-                            <p className="text-[10px] text-slate-400 italic leading-relaxed">
-                                Utilisez un tunnel stable :<br />
-                                <span className="font-mono bg-slate-100 px-1 rounded">npx localtunnel --port 3000</span>
-                            </p>
-                        </div>
-                    </div>
-                )}
 
                 {/* Footer */}
                 <div className="text-center">

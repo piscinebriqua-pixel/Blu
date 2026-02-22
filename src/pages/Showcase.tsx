@@ -20,7 +20,7 @@ const MockupShowcase: React.FC = () => {
             <div className="gabarit-wrapper">
                 <header className="header-gradient">
                     <div className="flex justify-between items-center mb-6">
-                        <h1>DeepBlue Flow</h1>
+                        <h1>BCCP Flow</h1>
                         <div className="bg-white/20 p-2 rounded-full backdrop-blur-md">
                             <Sun size={20} />
                         </div>

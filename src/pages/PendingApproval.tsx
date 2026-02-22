@@ -45,7 +45,7 @@ const PendingApproval: React.FC = () => {
                 </div>
 
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] opacity-60">
-                    DeepBlue Security
+                    BCCP Security
                 </p>
             </div>
         </div>

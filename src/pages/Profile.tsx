@@ -217,7 +217,7 @@ const Profile: React.FC = () => {
                 {/* Quick Info Bar */}
                 <div className="text-center py-8">
                     <p className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">
-                        DeepBlue Version 2.4.0 • Propulsé par Google Mind
+                        BCCP Version 2.4.0 • Propulsé par Google Mind
                     </p>
                 </div>
             </div>
