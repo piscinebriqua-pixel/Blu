@@ -12,10 +12,14 @@ const Login: React.FC = () => {
 
     const handleGoogleLogin = async () => {
         try {
+            const redirectUrl = window.location.origin.includes('localhost')
+                ? window.location.origin
+                : window.location.origin; // Keep it simple but dynamic
+
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
-                    redirectTo: `${window.location.origin}/`
+                    redirectTo: redirectUrl
                 }
             });
             if (error) throw error;
