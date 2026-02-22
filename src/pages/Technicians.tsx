@@ -136,7 +136,7 @@ const Technicians: React.FC = () => {
                                         <h3 className="font-bold text-lg text-slate-800 dark:text-white leading-tight">
                                             {tech.full_name || 'Sans Nom'}
                                         </h3>
-                                        <p className="text-slate-400 text-xs font-mono mt-1">{tech.email}</p>
+                                        <p className="text-slate-400 text-sm font-mono mt-1">{tech.email}</p>
                                     </div>
                                 </div>
 
@@ -144,16 +144,16 @@ const Technicians: React.FC = () => {
 
                                 <div className="flex justify-between items-center">
                                     <div className="flex gap-2">
-                                        <div className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wide">
+                                        <div className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wide">
                                             Technicien
                                         </div>
-                                        <div className="px-3 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[10px] font-bold uppercase tracking-wide flex items-center gap-1">
+                                        <div className="px-3 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-xs font-bold uppercase tracking-wide flex items-center gap-1">
                                             <Key size={12} /> {tech.pin_code || '----'}
                                         </div>
                                     </div>
 
                                     <button
-                                        className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex items-center justify-center"
+                                        className="w-11 h-11 rounded-full bg-slate-50 dark:bg-slate-700 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex items-center justify-center"
                                         onClick={(e) => { e.stopPropagation(); handleOpenModal(tech); }}
                                         aria-label="Modifier"
                                     >

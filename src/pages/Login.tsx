@@ -149,7 +149,7 @@ const Login: React.FC = () => {
 
                 {/* Footer */}
                 <div className="text-center">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] opacity-60">
+                    <p className="text-sm text-slate-400 font-bold uppercase tracking-[0.2em] opacity-60">
                         Conception et développement par M.A.K
                     </p>
                 </div>

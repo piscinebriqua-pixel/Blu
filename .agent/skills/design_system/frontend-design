@@ -40,3 +40,32 @@ Interpret creatively and make unexpected choices that feel genuinely designed fo
 **IMPORTANT**: Match implementation complexity to the aesthetic vision. Maximalist designs need elaborate code with extensive animations and effects. Minimalist or refined designs need restraint, precision, and careful attention to spacing, typography, and subtle details. Elegance comes from executing the vision well.
 
 Remember: Claude is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.
+
+## Accessibility & Readability Rules (PROJECT-SPECIFIC — MANDATORY)
+
+This is a **mobile-first application** used by field technicians on smartphones, often outdoors in variable lighting conditions. Aesthetic ambition must never come at the cost of readability.
+
+### Non-negotiable rules
+
+1. **No micro-text**: Classes `text-[8px]`, `text-[9px]`, `text-[10px]` are **strictly forbidden**. The minimum is `text-[11px]` for badges and `text-xs` (12px) for labels.
+
+2. **16px rule for inputs**: All `<input>`, `<select>`, and `<textarea>` must have at least `text-base` (16px). Below 16px, iOS Safari auto-zooms the page — this is unacceptable.
+
+3. **44px touch targets**: All tappable elements must have a minimum hit area of 44×44px (`w-11 h-11`). An icon can be 16px, but its button wrapper must be 44px.
+
+4. **Label contrast**: Labels must never be lighter than `text-slate-400` on white backgrounds, and `text-white/70` minimum on dark/blue gradients.
+
+5. **Hierarchy must be visible**: A card must always have a clear visual hierarchy with at least 3 distinct levels (title > subtitle > meta). Never make title and body the same size.
+
+### Correct typography scale for this project
+
+```
+Page Header Title:     text-2xl / text-3xl font-black   (28–30px)
+Section Titles:        text-xl font-black                (20px)  
+Card Primary Text:     text-base font-black              (16px)
+Card Secondary Text:   text-sm font-medium               (14px)
+Form Labels:           text-xs font-bold uppercase       (12px)
+Badges / Status:       text-[11px] font-bold             (11px)
+```
+
+**Design principle**: *A component can be beautiful AND readable. If you must choose between a visually striking effect and readability, always choose readability.*

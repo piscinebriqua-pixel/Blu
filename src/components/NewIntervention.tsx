@@ -495,7 +495,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
   const actions = (
     <div className="flex flex-col w-full gap-4">
       <div className="flex justify-between items-center px-4 py-3 bg-blue-50/50 dark:bg-blue-900/20 rounded-2xl border border-blue-100/50 dark:border-blue-800/30">
-        <span className="text-[10px] font-black text-blue-500 dark:text-blue-400 uppercase tracking-widest">
+        <span className="text-xs font-black text-blue-500 dark:text-blue-400 uppercase tracking-widest">
           Coût estimé
         </span>
         <span className="text-2xl font-black text-blue-600 dark:text-blue-300 tabular-nums">
@@ -506,7 +506,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         <button
           type="button"
           onClick={onClose}
-          className="px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black rounded-2xl uppercase tracking-widest text-[10px] hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95 flex-1"
+          className="px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black rounded-2xl uppercase tracking-widest text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95 flex-1"
           disabled={loading}
         >
           Fermer
@@ -569,13 +569,13 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         <div className="flex bg-slate-100/50 dark:bg-slate-800/50 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
           <button
             onClick={() => setInterventionType("direct")}
-            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${interventionType === "direct" ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-xl shadow-blue-500/10 scale-[1.02]" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"}`}
+            className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 ${interventionType === "direct" ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-xl shadow-blue-500/10 scale-[1.02]" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"}`}
           >
             Rapport Direct
           </button>
           <button
             onClick={() => setInterventionType("scheduled")}
-            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${interventionType === "scheduled" ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-xl shadow-blue-500/10 scale-[1.02]" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"}`}
+            className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 ${interventionType === "scheduled" ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-xl shadow-blue-500/10 scale-[1.02]" : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"}`}
           >
             Planification
           </button>
@@ -609,7 +609,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                     return;
                   setTab(t);
                 }}
-                className={`flex-1 min-w-[90px] py-3 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all duration-500 relative ${tab === t ? "text-white" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"} ${t !== "client" && t !== "tech" && !formData.technician_id ? "opacity-30 cursor-not-allowed" : ""}`}
+                className={`flex-1 min-w-[90px] py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all duration-500 relative ${tab === t ? "text-white" : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"} ${t !== "client" && t !== "tech" && !formData.technician_id ? "opacity-30 cursor-not-allowed" : ""}`}
                 disabled={
                   t !== "client" && t !== "tech" && !formData.technician_id
                 }
@@ -639,7 +639,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           {tab === "client" && (
             <div className="flex-column gap-5">
               <div className="flex-column gap-3">
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
+                <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
                   Rechercher un Client
                 </label>
                 <div className="relative group">
@@ -680,12 +680,12 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                             <p className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">
                               {c.first_name} {c.last_name}
                             </p>
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">
+                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">
                               {c.city && c.city !== "null" ? c.city : "Ville non spécifiée"}
                             </p>
                           </div>
                         </div>
-                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700/50 flex items-center justify-center text-slate-300 group-hover:text-blue-600 transition-colors">
+                        <div className="w-11 h-11 rounded-full bg-slate-50 dark:bg-slate-700/50 flex items-center justify-center text-slate-300 group-hover:text-blue-600 transition-colors">
                           <Plus size={16} strokeWidth={3} />
                         </div>
                       </button>
@@ -704,7 +704,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                         <User size={24} strokeWidth={2.5} />
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-blue-100/70 uppercase tracking-widest mb-0.5">
+                        <p className="text-xs font-black text-blue-100/70 uppercase tracking-widest mb-0.5">
                           Client sélectionné
                         </p>
                         <p className="text-md font-black uppercase">
@@ -723,7 +723,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                   </div>
 
                   <div className="flex-column gap-3">
-                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
+                    <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
                       Choisir un Bassin
                     </label>
                     <div className="grid grid-cols-1 gap-3">
@@ -760,7 +760,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                             <p className="text-xs font-black text-orange-800 dark:text-orange-300 uppercase tracking-tight mb-1">
                               Aucun bassin configuré
                             </p>
-                            <p className="text-[10px] font-bold text-orange-600/60 dark:text-orange-400/50 uppercase tracking-widest max-w-[200px] leading-relaxed">
+                            <p className="text-xs font-bold text-orange-600/60 dark:text-orange-400/50 uppercase tracking-widest max-w-[200px] leading-relaxed">
                               Une piscine est nécessaire pour créer un rapport d'entretien.
                             </p>
                           </div>
@@ -769,7 +769,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                             onClick={() => setIsPoolModalOpen(true)}
                             className="w-full py-5 bg-blue-600 text-white rounded-[22px] font-black shadow-xl shadow-blue-500/30 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all text-xs tracking-[0.2em] uppercase mt-4 flex items-center justify-center gap-3"
                           >
-                            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                            <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center">
                               <Plus size={18} strokeWidth={3} />
                             </div>
                             AJOUTER UN BASSIN
@@ -786,7 +786,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           {tab === "tech" && (
             <div className="flex-column gap-5">
               <div className="flex-column gap-2">
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
+                <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
                   Technicien
                 </label>
                 <div
@@ -797,7 +797,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                     <User size={24} strokeWidth={2.5} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">
+                    <p className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">
                       Intervenant assigné
                     </p>
                     <p className={`text-md font-black uppercase tracking-tight ${isTechnician ? "text-blue-600 dark:text-blue-400" : "text-slate-800 dark:text-white"}`}>
@@ -807,13 +807,13 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                     </p>
                   </div>
                   {!isTechnician && (
-                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400">
+                    <div className="w-11 h-11 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400">
                       <Plus size={18} strokeWidth={3} />
                     </div>
                   )}
                   {isTechnician && (
                     <div className="absolute right-5 top-1/2 -translate-y-1/2">
-                      <span className="text-[9px] font-black text-white bg-blue-600 px-3 py-1.5 rounded-full shadow-lg shadow-blue-500/30 uppercase tracking-widest">
+                      <span className="text-[11px] font-black text-white bg-blue-600 px-3 py-1.5 rounded-full shadow-lg shadow-blue-500/30 uppercase tracking-widest">
                         AUTO
                       </span>
                     </div>
@@ -823,7 +823,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
 
               {interventionType === "scheduled" && (
                 <div className="flex-column gap-2 animate-in fade-in slide-in-from-top-2">
-                  <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">
+                  <label className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">
                     Date d'intervention
                   </label>
                   <input
@@ -855,7 +855,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex-column gap-2">
-                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
+                      <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
                         pH
                       </label>
                       <div className="group relative">
@@ -876,7 +876,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                       </div>
                     </div>
                     <div className="flex-column gap-2">
-                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
+                      <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
                         Chlore
                       </label>
                       <div className="group relative">
@@ -900,7 +900,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex-column gap-2">
-                      <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
+                      <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
                         Temp. Eau
                       </label>
                       <div className="group relative">
@@ -937,7 +937,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                             <Square size={18} strokeWidth={2.5} />
                           )}
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest">
+                        <span className="text-xs font-black uppercase tracking-widest">
                           Niveau OK
                         </span>
                       </button>
@@ -947,7 +947,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
               )}
 
               <div className="flex-column gap-2">
-                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
+                <label className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-2">
                   Observations
                 </label>
                 <textarea
@@ -989,7 +989,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                 onClick={() => setServiceModalOpen(true)}
                 className="w-full flex items-center justify-center gap-3 py-5 bg-blue-600 text-white rounded-[22px] shadow-xl shadow-blue-500/30 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all font-black uppercase text-xs tracking-[0.2em]"
               >
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center">
                   <Plus size={18} strokeWidth={3} />
                 </div>
                 Ajouter un service
@@ -1014,14 +1014,14 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-4 flex-1 overflow-hidden">
-                            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                               <Check size={16} strokeWidth={3} />
                             </div>
                             <div className="flex-column overflow-hidden flex-1">
                               <span className="text-xs font-black uppercase text-slate-800 dark:text-white truncate" title={s.name}>
                                 {s.name}
                               </span>
-                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">
+                              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                 Service technique
                               </span>
                             </div>
@@ -1039,7 +1039,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                               }}
                               title={`Prix pour ${s.name}`}
                             />
-                            <span className="text-[10px] font-bold text-slate-500">DT</span>
+                            <span className="text-xs font-bold text-slate-500">DT</span>
                             <button
                               type="button"
                               onClick={() => {
@@ -1047,7 +1047,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                                 delete rest[sId];
                                 setSelectedServices(rest);
                               }}
-                              className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors ml-2"
+                              className="w-11 h-11 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors ml-2"
                               title="Retirer ce service"
                             >
                               <Minus size={16} strokeWidth={3} />
@@ -1057,12 +1057,12 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                         {(isModified || (referencePrices[sId] !== undefined && referencePrices[sId] !== s.price)) && (
                           <div className="mt-2 pl-12 flex gap-2">
                             {isModified && (
-                              <span className="text-[9px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+                              <span className="text-[11px] font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
                                 Prix modifié (Base: {s.price} DT)
                               </span>
                             )}
                             {!isModified && referencePrices[sId] !== undefined && referencePrices[sId] !== s.price && (
-                              <span className="text-[9px] font-bold text-blue-300">
+                              <span className="text-[11px] font-bold text-blue-300">
                                 Prix habituel client: {referencePrices[sId]} DT
                               </span>
                             )}
@@ -1083,7 +1083,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                 onClick={() => setProductModalOpen(true)}
                 className="w-full flex items-center justify-center gap-3 py-5 bg-blue-600 text-white rounded-[22px] shadow-xl shadow-blue-500/30 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all font-black uppercase text-xs tracking-[0.2em]"
               >
-                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <div className="w-11 h-11 rounded-full bg-white/20 flex items-center justify-center">
                   <Plus size={18} strokeWidth={3} />
                 </div>
                 Ajouter un produit
@@ -1107,14 +1107,14 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-4 flex-1 overflow-hidden">
-                            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
+                            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
                               <Check size={16} strokeWidth={3} />
                             </div>
                             <div className="flex-column overflow-hidden flex-1">
                               <span className="text-xs font-black uppercase text-slate-800 dark:text-white truncate" title={p.name}>
                                 {p.name}
                               </span>
-                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">
+                              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                                 {p.price_per_unit.toFixed(2)} DT / {p.unit}
                               </span>
                             </div>
@@ -1148,7 +1148,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                                 delete rest[pId];
                                 setUsedProducts(rest);
                               }}
-                              className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors ml-2"
+                              className="w-11 h-11 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors ml-2"
                               title="Retirer ce produit"
                             >
                               <Minus size={16} strokeWidth={3} />
@@ -1171,7 +1171,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                   size={120}
                   strokeWidth={1}
                 />
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/70 mb-2">
+                <p className="text-xs font-black uppercase tracking-[0.3em] text-white/70 mb-2">
                   Total Intervention
                 </p>
                 <div className="flex items-baseline gap-2">
@@ -1183,13 +1183,13 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
               </div>
 
               <div className="flex-column gap-3">
-                <h4 className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 pb-2">
+                <h4 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 pb-2">
                   Résumé des coûts
                 </h4>
                 {Object.entries(selectedServices).map(([sId, price]) => {
                   const s = dbServices.find((srv) => srv.id === sId);
                   return (
-                    <div key={sId} className="flex justify-between items-center text-[10px]">
+                    <div key={sId} className="flex justify-between items-center text-xs">
                       <span className="text-slate-500 dark:text-slate-400 font-bold uppercase">{s?.name}</span>
                       <span className="font-black text-slate-800 dark:text-white">{price.toFixed(0)} DT</span>
                     </div>
@@ -1198,7 +1198,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                 {Object.entries(usedProducts).map(([pId, qty]) => {
                   const p = dbProducts.find((prod) => prod.id === pId);
                   return (
-                    <div key={pId} className="flex justify-between items-center text-[10px]">
+                    <div key={pId} className="flex justify-between items-center text-xs">
                       <span className="text-slate-500 dark:text-slate-400 font-bold uppercase">{p?.name} (x{qty})</span>
                       <span className="font-black text-slate-800 dark:text-white">{((p?.price_per_unit || 0) * qty).toFixed(0)} DT</span>
                     </div>
@@ -1210,7 +1210,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Wallet size={18} className="text-primary shrink-0" />
-                    <p className="text-[10px] font-black text-primary uppercase">
+                    <p className="text-xs font-black text-primary uppercase">
                       Paiement reçu ?
                     </p>
                   </div>
@@ -1260,13 +1260,13 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                         <option value="autre">Autre</option>
                       </select>
                     </div>
-                    <p className="text-[9px] font-bold text-primary uppercase opacity-60">
+                    <p className="text-[11px] font-bold text-primary uppercase opacity-60">
                       Le solde du client sera crédité de ce montant.
                     </p>
                   </div>
                 )}
 
-                <p className="text-[9px] font-bold text-primary leading-relaxed uppercase pt-2 border-t border-primary/10">
+                <p className="text-[11px] font-bold text-primary leading-relaxed uppercase pt-2 border-t border-primary/10">
                   {interventionType === "direct" ? (
                     <>
                       L'enregistrement du rapport déduira automatiquement{" "}

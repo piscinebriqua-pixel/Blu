@@ -189,7 +189,7 @@ const ClientsList: React.FC = () => {
 
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-2">
-                                                <div className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide border ${client.balance < 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'}`}>
+                                                <div className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wide border ${client.balance < 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'}`}>
                                                     {client.balance < 0 ? 'Credit Client' : 'À jour'}
                                                 </div>
                                                 {client.email && (
@@ -204,7 +204,7 @@ const ClientsList: React.FC = () => {
                                                 ) : (
                                                     <>{client.balance.toFixed(0)}</>
                                                 )}
-                                                <span className="text-[10px] font-bold opacity-60 ml-1">DT</span>
+                                                <span className="text-xs font-bold opacity-60 ml-1">DT</span>
                                             </span>
                                         </div>
                                     </div>

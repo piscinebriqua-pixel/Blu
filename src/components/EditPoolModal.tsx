@@ -138,7 +138,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                         <Waves size={24} />
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Configuration technique</p>
+                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Configuration technique</p>
                         <h3 className="text-lg font-bold uppercase text-slate-800 dark:text-white leading-none">{pool.name}</h3>
                     </div>
                 </div>
@@ -164,12 +164,12 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                 <div className="flex flex-col gap-4 p-5 bg-blue-50/50 dark:bg-blue-900/10 rounded-[2rem] border border-blue-100 dark:border-blue-800/20">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
+                            <div className="w-11 h-11 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
                                 <Calendar size={18} />
                             </div>
                             <div>
                                 <h4 className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-widest">Contrat Entretien</h4>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Planification automatique</p>
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Planification automatique</p>
                             </div>
                         </div>
                         <button
@@ -185,7 +185,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                     {formData.is_contracted && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
                             <div className="flex flex-col gap-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Fréquence</label>
+                                <label className="text-xs font-black uppercase text-slate-400 ml-1">Fréquence</label>
                                 <select
                                     className="search-input !h-12 text-sm"
                                     value={formData.maintenance_frequency}
@@ -198,7 +198,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                                 </select>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Jour préféré</label>
+                                <label className="text-xs font-black uppercase text-slate-400 ml-1">Jour préféré</label>
                                 <select
                                     className="search-input !h-12 text-sm"
                                     value={formData.preferred_day}
@@ -220,7 +220,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
 
                 <div className="flex items-start gap-3 p-4 bg-orange-50 dark:bg-orange-900/10 rounded-2xl border border-orange-100 dark:border-orange-800/20">
                     <AlertCircle size={16} className="text-orange-500 shrink-0 mt-0.5" />
-                    <p className="text-[10px] font-medium text-orange-700 dark:text-orange-300 leading-normal">
+                    <p className="text-xs font-medium text-orange-700 dark:text-orange-300 leading-normal">
                         L'activation du contrat créera automatiquement la prochaine visite dès qu'une intervention est marquée comme terminée.
                     </p>
                 </div>

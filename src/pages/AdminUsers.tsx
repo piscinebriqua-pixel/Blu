@@ -202,7 +202,7 @@ const AdminUsers: React.FC = () => {
                     </button>
                     <button
                         onClick={() => setActiveTab('all')}
-                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'all' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                        className={`px-6 py-2 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'all' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
                     >
                         Tous les comptes
                     </button>
@@ -247,14 +247,14 @@ const AdminUsers: React.FC = () => {
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-bold text-slate-800 dark:text-white">{profile.full_name || 'Sans nom'}</h3>
-                                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${profile.role === 'admin' ? 'bg-slate-900 text-white' :
+                                            <span className={`text-[11px] font-black uppercase px-2 py-0.5 rounded ${profile.role === 'admin' ? 'bg-slate-900 text-white' :
                                                 profile.role === 'technician' ? 'bg-blue-100 text-blue-600' :
                                                     'bg-slate-100 text-slate-500'
                                                 }`}>
                                                 {profile.role}
                                             </span>
                                         </div>
-                                        <p className="text-slate-400 text-xs font-medium">{profile.email}</p>
+                                        <p className="text-slate-400 text-sm font-medium">{profile.email}</p>
                                     </div>
                                 </div>
 
@@ -381,7 +381,7 @@ const AdminUsers: React.FC = () => {
                                 Valider et Lier
                             </button>
 
-                            <button onClick={() => setSelectedProfile(null)} className="w-full py-2 text-slate-400 font-bold text-xs hover:text-slate-600 uppercase tracking-widest">
+                            <button onClick={() => setSelectedProfile(null)} className="w-full py-2 text-slate-400 font-bold text-sm hover:text-slate-600 uppercase tracking-widest">
                                 Annuler
                             </button>
                         </div>
@@ -414,7 +414,7 @@ const AdminUsers: React.FC = () => {
                                         <button
                                             key={role}
                                             onClick={() => setNewRole(role)}
-                                            className={`py-3 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all border-2 ${newRole === role
+                                            className={`py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all border-2 ${newRole === role
                                                 ? 'bg-primary/5 border-primary text-primary'
                                                 : 'bg-slate-50 dark:bg-slate-700 border-transparent text-slate-500 hover:bg-slate-100'
                                                 }`}

@@ -75,7 +75,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
     <div className="flex-column gap-2">
       <label
         htmlFor={`photo-upload-${label.replace(/\s+/g, "-").toLowerCase()}`}
-        className="text-[10px] font-black text-muted uppercase tracking-widest ml-1"
+        className="text-xs font-black text-muted uppercase tracking-widest ml-1"
       >
         {label}
       </label>
@@ -108,7 +108,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
             ) : (
               <>
                 <ImageIcon size={28} className="opacity-40" />
-                <span className="text-[9px] font-black uppercase tracking-wider">
+                <span className="text-[11px] font-black uppercase tracking-wider">
                   Tap pour ajouter
                 </span>
               </>
@@ -120,7 +120,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
             <div className="flex flex-col items-center gap-2">
               <Loader2 size={24} className="animate-spin text-white" />
-              <span className="text-[10px] text-white font-black uppercase">
+              <span className="text-xs text-white font-black uppercase">
                 Compression...
               </span>
             </div>

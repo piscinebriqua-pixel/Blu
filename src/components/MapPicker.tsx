@@ -77,7 +77,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onPositionChange, reado
     if (!isLoaded) {
         return (
             <div className="w-full h-[300px] bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center animate-pulse">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <Loader2 className="w-11 h-11 text-primary animate-spin" />
             </div>
         );
     }
@@ -129,7 +129,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onPositionChange, reado
                 <div className="absolute top-4 left-4 right-4 flex justify-between pointer-events-none">
                     <div className="px-3 py-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-full shadow-lg border border-slate-200 dark:border-white/10 flex items-center gap-2 pointer-events-auto transition-transform hover:scale-105">
                         <MapPin size={14} className="text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-white">
+                        <span className="text-xs font-black uppercase tracking-widest text-slate-700 dark:text-white">
                             {lat ? `${lat.toFixed(4)}, ${lng?.toFixed(4)}` : "Cliquez sur la carte"}
                         </span>
                     </div>
@@ -152,7 +152,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onPositionChange, reado
                 )}
             </div>
             {!readonly && (
-                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 text-center uppercase tracking-widest">
+                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 text-center uppercase tracking-widest">
                     Cliquez pour placer le marqueur ou utilisez le bouton GPS
                 </p>
             )}

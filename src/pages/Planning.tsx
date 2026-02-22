@@ -137,7 +137,7 @@ const Planning: React.FC = () => {
             <div className="flex flex-col animate-in fade-in duration-500">
                 <div className="grid grid-cols-7 mb-2">
                     {weekDays.map(d => (
-                        <div key={d} className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest py-2">
+                        <div key={d} className="text-center text-xs font-black text-slate-400 uppercase tracking-widest py-2">
                             {d}
                         </div>
                     ))}
@@ -166,7 +166,7 @@ const Planning: React.FC = () => {
                                         {day.getDate()}
                                     </span>
                                     {dayInterventions.length > 0 && (
-                                        <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-[10px] font-black">
+                                        <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs font-black">
                                             {dayInterventions.length}
                                         </div>
                                     )}
@@ -175,13 +175,13 @@ const Planning: React.FC = () => {
                                     {dayInterventions.slice(0, 3).map(i => (
                                         <div
                                             key={i.id}
-                                            className="text-[8px] md:text-[9px] font-bold py-0.5 px-1.5 rounded-md truncate bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800/30"
+                                            className="text-[11px] md:text-[11px] font-bold py-0.5 px-1.5 rounded-md truncate bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800/30"
                                         >
                                             {i.pool?.client?.last_name || 'Client'}
                                         </div>
                                     ))}
                                     {dayInterventions.length > 3 && (
-                                        <span className="text-[8px] text-slate-400 font-bold ml-1">+{dayInterventions.length - 3} de plus</span>
+                                        <span className="text-[11px] text-slate-400 font-bold ml-1">+{dayInterventions.length - 3} de plus</span>
                                     )}
                                 </div>
                             </div>
@@ -204,7 +204,7 @@ const Planning: React.FC = () => {
                         return (
                             <div key={idx} className="flex flex-col gap-3">
                                 <div className={`p-4 rounded-3xl border text-center transition-all ${isToday ? 'bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-500/20' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
-                                    <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${isToday ? 'text-blue-100' : 'text-slate-400'}`}>
+                                    <p className={`text-xs font-black uppercase tracking-[0.2em] ${isToday ? 'text-blue-100' : 'text-slate-400'}`}>
                                         {day.toLocaleDateString('fr-FR', { weekday: 'short' })}
                                     </p>
                                     <p className="text-2xl font-black">{day.getDate()}</p>
@@ -220,11 +220,11 @@ const Planning: React.FC = () => {
                                             >
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                                    <span className="text-[10px] font-black uppercase text-slate-800 dark:text-white truncate">
+                                                    <span className="text-xs font-black uppercase text-slate-800 dark:text-white truncate">
                                                         {i.pool?.client?.first_name} {i.pool?.client?.last_name}
                                                     </span>
                                                 </div>
-                                                <p className="text-[9px] font-medium text-slate-400 uppercase truncate">
+                                                <p className="text-[11px] font-medium text-slate-400 uppercase truncate">
                                                     {i.pool?.name}
                                                 </p>
                                             </div>
@@ -260,7 +260,7 @@ const Planning: React.FC = () => {
                 <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-6 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700">
                     <div className="flex items-center gap-5">
                         <div className="w-16 h-16 bg-blue-600 rounded-[2rem] flex flex-col items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                            <span className="text-[10px] font-black uppercase tracking-widest opacity-80 leading-none mb-1">{currentDate.toLocaleDateString('fr-FR', { month: 'short' })}</span>
+                            <span className="text-xs font-black uppercase tracking-widest opacity-80 leading-none mb-1">{currentDate.toLocaleDateString('fr-FR', { month: 'short' })}</span>
                             <span className="text-2xl font-black leading-none">{currentDate.getDate()}</span>
                         </div>
                         <div>
@@ -302,7 +302,7 @@ const Planning: React.FC = () => {
                                         </h3>
                                         <div className="flex items-center gap-1.5 bg-blue-50/50 dark:bg-blue-900/30 px-2.5 py-1 rounded-lg">
                                             <Clock size={12} className="text-blue-500" />
-                                            <span className="text-[10px] font-black text-blue-600 uppercase">
+                                            <span className="text-xs font-black text-blue-600 uppercase">
                                                 {new Date(i.scheduled_date || i.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
@@ -312,7 +312,7 @@ const Planning: React.FC = () => {
                                             {i.pool?.name || 'Piscine'}
                                         </span>
                                         <div className="w-1 h-1 rounded-full bg-slate-200"></div>
-                                        <span className="text-[10px] font-black text-slate-400 uppercase">
+                                        <span className="text-xs font-black text-slate-400 uppercase">
                                             {i.technician?.full_name}
                                         </span>
                                     </div>
@@ -328,7 +328,7 @@ const Planning: React.FC = () => {
                                 <CalendarIcon size={40} />
                             </div>
                             <h3 className="text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight">Aucun RDV</h3>
-                            <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">Cliquez sur le + pour planifier</p>
+                            <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mt-2">Cliquez sur le + pour planifier</p>
                         </div>
                     )}
                 </div>
@@ -366,7 +366,7 @@ const Planning: React.FC = () => {
                         <button
                             key={mode}
                             onClick={() => setViewMode(mode)}
-                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === mode
+                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${viewMode === mode
                                 ? 'bg-white text-blue-600 shadow-md scale-105'
                                 : 'text-white/60 hover:text-white'
                                 }`}
@@ -394,7 +394,7 @@ const Planning: React.FC = () => {
                                 setCurrentDate(new Date());
                                 setViewMode('month');
                             }}
-                            className="px-6 h-12 bg-white dark:bg-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-800 dark:text-white shadow-sm border border-slate-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all"
+                            className="px-6 h-12 bg-white dark:bg-slate-800 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-800 dark:text-white shadow-sm border border-slate-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all"
                         >
                             Aujourd'hui
                         </button>
@@ -410,11 +410,11 @@ const Planning: React.FC = () => {
                     <div className="hidden md:flex items-center gap-6">
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Planifié</span>
+                            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Planifié</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Terminé</span>
+                            <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Terminé</span>
                         </div>
                     </div>
                 </div>

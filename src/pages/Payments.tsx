@@ -219,7 +219,7 @@ const Payments: React.FC = () => {
                                     </h4>
                                     <div className="flex flex-col items-end">
                                         <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
-                                            +{p.amount.toFixed(0)} <span className="text-[10px] opacity-60">DT</span>
+                                            +{p.amount.toFixed(0)} <span className="text-xs opacity-60">DT</span>
                                         </span>
                                     </div>
                                 </div>
@@ -234,7 +234,7 @@ const Payments: React.FC = () => {
                                         {new Date(p.payment_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
                                     </div>
 
-                                    <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border ${p.method === 'Espèces' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' :
+                                    <div className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-[0.1em] border ${p.method === 'Espèces' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' :
                                         p.method === 'Carte' ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30' :
                                             'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/30'
                                         }`}>

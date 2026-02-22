@@ -73,7 +73,7 @@ const TechnicianDetailsModal: React.FC<TechnicianDetailsModalProps> = ({ technic
     }
 
     const footer = (
-        <button onClick={onClose} className="w-full py-4 bg-white/5 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold rounded-2xl uppercase tracking-widest text-xs hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+        <button onClick={onClose} className="w-full py-4 bg-white/5 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-bold rounded-2xl uppercase tracking-widest text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
             Fermer
         </button>
     );
@@ -99,7 +99,7 @@ const TechnicianDetailsModal: React.FC<TechnicianDetailsModalProps> = ({ technic
                             </h4>
                             <div className="flex items-center gap-2 text-white/40">
                                 <Wrench size={12} className="text-primary/80" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest truncate">Technicien Certifié</span>
+                                <span className="text-xs font-bold uppercase tracking-widest truncate">Technicien Certifié</span>
                             </div>
                         </div>
                     </div>
@@ -109,19 +109,19 @@ const TechnicianDetailsModal: React.FC<TechnicianDetailsModalProps> = ({ technic
                         <div className="bg-white/10 rounded-2xl p-4 border border-white/5 flex flex-col gap-1">
                             <div className="flex items-center gap-2 text-white/40 mb-1">
                                 <CheckCircle2 size={12} />
-                                <span className="text-[9px] font-black uppercase tracking-widest">Interventions</span>
+                                <span className="text-[11px] font-black uppercase tracking-widest">Interventions</span>
                             </div>
                             <p className="text-lg font-black leading-none text-white">
-                                {interventions.length} <span className="text-[10px] opacity-50 uppercase font-normal">Total</span>
+                                {interventions.length} <span className="text-xs opacity-50 uppercase font-normal">Total</span>
                             </p>
                         </div>
                         <div className="bg-white/10 rounded-2xl p-4 border border-white/5 flex flex-col gap-1">
                             <div className="flex items-center gap-2 text-white/40 mb-1">
                                 <TrendingUp size={12} />
-                                <span className="text-[9px] font-black uppercase tracking-widest">Performance</span>
+                                <span className="text-[11px] font-black uppercase tracking-widest">Performance</span>
                             </div>
                             <p className="text-lg font-black text-white leading-none">
-                                {stats.rating} <span className="text-[10px] opacity-50 uppercase font-normal">/ 5.0</span>
+                                {stats.rating} <span className="text-xs opacity-50 uppercase font-normal">/ 5.0</span>
                             </p>
                         </div>
                     </div>
@@ -157,18 +157,18 @@ const TechnicianDetailsModal: React.FC<TechnicianDetailsModalProps> = ({ technic
                                             <p className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase leading-none">
                                                 {inter.pool?.name || 'Bassin Inconnu'}
                                             </p>
-                                            <p className="text-[10px] text-slate-400 font-medium mt-1">
+                                            <p className="text-sm text-slate-400 font-medium mt-1">
                                                 {new Date(inter.created_at || inter.visit_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
                                             </p>
                                         </div>
                                     </div>
-                                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${inter.status === 'completed' ? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'}`}>
+                                    <span className={`px-2 py-1 rounded-lg text-xs font-bold uppercase ${inter.status === 'completed' ? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'}`}>
                                         {inter.status === 'completed' ? 'Terminé' : 'En cours'}
                                     </span>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-8 text-slate-400 text-xs italic bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+                            <div className="text-center py-8 text-slate-400 text-sm italic bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
                                 Aucune intervention récente
                             </div>
                         )}

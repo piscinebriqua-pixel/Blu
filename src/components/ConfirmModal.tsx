@@ -55,7 +55,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                     <p className="text-xs font-bold text-slate-800 dark:text-white px-2 leading-relaxed">
                         {message}
                     </p>
-                    <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                    <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                         Cette action est irréversible
                     </p>
                 </div>

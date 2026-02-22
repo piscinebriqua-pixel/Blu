@@ -417,7 +417,7 @@ const ClientDetail: React.FC = () => {
 
                     {/* 5. Quick Actions Tile */}
                     <div className="card-bento bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 flex-1 min-h-[140px]">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Actions de Gestion</h4>
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Actions de Gestion</h4>
                         <div className="grid grid-cols-2 gap-2">
                             <button onClick={() => setIsInterventionModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-blue-500 transition-all group">
                                 <Plus size={16} className="text-blue-500 group-hover:scale-125 transition-transform" />
@@ -472,7 +472,7 @@ const ClientDetail: React.FC = () => {
                         </div>
                     )}
 
-                    <button onClick={() => setActiveCategory('interventions')} className="w-full mt-6 py-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-[10px] font-black text-slate-500 hover:text-blue-600 hover:border-blue-500/50 transition-all uppercase tracking-widest">
+                    <button onClick={() => setActiveCategory('interventions')} className="w-full mt-6 py-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-xs font-black text-slate-500 hover:text-blue-600 hover:border-blue-500/50 transition-all uppercase tracking-widest">
                         Consulter l'historique complet
                     </button>
                 </div>
@@ -523,11 +523,11 @@ const ClientDetail: React.FC = () => {
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-700">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Total Interventions</p>
+                                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Total Interventions</p>
                                             <h4 className="text-2xl font-black text-slate-800 dark:text-white">-{totalIntersAmount.toFixed(0)} <span className="text-xs opacity-60">DT</span></h4>
                                         </div>
                                         <div className="bg-emerald-50 dark:bg-emerald-900/10 p-6 rounded-3xl border border-emerald-100 dark:border-emerald-800/30">
-                                            <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2">Total Paiements</p>
+                                            <p className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2">Total Paiements</p>
                                             <h4 className="text-2xl font-black text-emerald-600">+{totalPaymentsAmount.toFixed(0)} <span className="text-xs opacity-60 text-emerald-400">DT</span></h4>
                                         </div>
                                     </div>
@@ -555,13 +555,13 @@ const ClientDetail: React.FC = () => {
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
-                                                        className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-blue-600 transition-colors"
+                                                        className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-black uppercase tracking-wider hover:bg-blue-600 transition-colors"
                                                     >
                                                         Nouveau Rapport
                                                     </button>
                                                     <button
                                                         onClick={() => { setSelectedPool(pool); setIsEditPoolModalOpen(true); }}
-                                                        className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700 text-slate-400 flex items-center justify-center hover:text-blue-600 border border-slate-100 dark:border-slate-600 shadow-sm transition-all"
+                                                        className="w-11 h-11 rounded-xl bg-white dark:bg-slate-700 text-slate-400 flex items-center justify-center hover:text-blue-600 border border-slate-100 dark:border-slate-600 shadow-sm transition-all"
                                                         title="Modifier"
                                                     >
                                                         <Edit2 size={14} />
@@ -569,7 +569,7 @@ const ClientDetail: React.FC = () => {
                                                     {isAdmin && (
                                                         <button
                                                             onClick={() => setPoolToDelete(pool)}
-                                                            className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-400 flex items-center justify-center hover:text-red-600 hover:bg-red-100 border border-red-100 dark:border-red-800/30 shadow-sm transition-all"
+                                                            className="w-11 h-11 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-400 flex items-center justify-center hover:text-red-600 hover:bg-red-100 border border-red-100 dark:border-red-800/30 shadow-sm transition-all"
                                                             title="Supprimer la piscine"
                                                         >
                                                             <Trash2 size={14} />
@@ -579,9 +579,9 @@ const ClientDetail: React.FC = () => {
                                             </div>
                                             <h4 className="text-base font-black text-slate-800 dark:text-white mb-1">{pool.name}</h4>
                                             <div className="flex items-center gap-3">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{pool.volume_m3} m³</span>
+                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{pool.volume_m3} m³</span>
                                                 <span className="w-1 h-1 rounded-full bg-slate-200" />
-                                                <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">{pool.treatment_method}</span>
+                                                <span className="text-xs font-bold text-blue-500 uppercase tracking-widest">{pool.treatment_method}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -606,12 +606,12 @@ const ClientDetail: React.FC = () => {
                                                 <HistoryIcon size={24} />
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest">Cumul des Travaux</p>
+                                                <p className="text-xs font-black text-indigo-500 uppercase tracking-widest">Cumul des Travaux</p>
                                                 <h4 className="text-2xl font-black text-slate-800 dark:text-white">{totalIntersAmount.toFixed(0)} <span className="text-xs opacity-60">DT</span></h4>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fréquence</p>
+                                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Fréquence</p>
                                             <h4 className="text-2xl font-black text-slate-800 dark:text-white">{interventions.length} <span className="text-xs opacity-60">Visites</span></h4>
                                         </div>
                                     </div>
@@ -631,15 +631,15 @@ const ClientDetail: React.FC = () => {
                                                                 <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">
                                                                     {new Date(inter.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                                                 </span>
-                                                                <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Bassin: {inter.pool_name}</p>
+                                                                <p className="text-sm text-slate-400 font-bold uppercase mt-1">Bassin: {inter.pool_name}</p>
                                                             </div>
-                                                            <span className="text-[10px] font-black text-indigo-500 bg-indigo-500/10 px-3 py-1 rounded-lg uppercase tracking-widest">
+                                                            <span className="text-xs font-black text-indigo-500 bg-indigo-500/10 px-3 py-1 rounded-lg uppercase tracking-widest">
                                                                 {inter.status || 'TERMINE'}
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center gap-6 pt-3 border-t border-slate-100 dark:border-slate-700">
-                                                            {inter.ph_level && <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">PH: <strong className="text-slate-900 dark:text-white ml-1">{inter.ph_level}</strong></span>}
-                                                            {inter.chlorine_level && <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">Chlore: <strong className="text-slate-900 dark:text-white ml-1">{inter.chlorine_level}</strong></span>}
+                                                            {inter.ph_level && <span className="text-xs font-bold text-slate-500 uppercase tracking-widest italic">PH: <strong className="text-slate-900 dark:text-white ml-1">{inter.ph_level}</strong></span>}
+                                                            {inter.chlorine_level && <span className="text-xs font-bold text-slate-500 uppercase tracking-widest italic">Chlore: <strong className="text-slate-900 dark:text-white ml-1">{inter.chlorine_level}</strong></span>}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -666,13 +666,13 @@ const ClientDetail: React.FC = () => {
                                                         </div>
                                                         <div className="space-y-1">
                                                             <p className="text-xl font-black text-emerald-600">+{pay.amount.toFixed(0)} <span className="text-xs opacity-70">DT</span></p>
-                                                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                                                            <p className="text-sm text-slate-400 font-black uppercase tracking-widest">
                                                                 {new Date(pay.payment_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} • {pay.method}
                                                             </p>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[10px] font-black text-slate-500 uppercase shadow-sm">
+                                                        <span className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-black text-slate-500 uppercase shadow-sm">
                                                             {pay.technician?.full_name?.split(' ')[0] || 'Admin'}
                                                         </span>
                                                         {isAdmin && (
@@ -682,7 +682,7 @@ const ClientDetail: React.FC = () => {
                                                                         setPaymentToEdit(pay);
                                                                         setActiveCategory(null);
                                                                     }}
-                                                                    className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all border border-blue-100 dark:border-blue-900/30"
+                                                                    className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all border border-blue-100 dark:border-blue-900/30"
                                                                     title="Modifier"
                                                                 >
                                                                     <Edit2 size={14} />
@@ -692,7 +692,7 @@ const ClientDetail: React.FC = () => {
                                                                         e.stopPropagation();
                                                                         setPaymentToDelete(pay.id);
                                                                     }}
-                                                                    className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all border border-red-100 dark:border-red-900/30"
+                                                                    className="w-11 h-11 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all border border-red-100 dark:border-red-900/30"
                                                                     title="Supprimer"
                                                                 >
                                                                     <Trash2 size={14} />

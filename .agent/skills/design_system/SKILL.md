@@ -31,6 +31,56 @@ The project uses a custom design system based on CSS variables defined in `src/i
 - **Card Shadow**: `var(--card-shadow)`
 - **Card Border**: `var(--card-border)`
 
+## Mobile Typography Standards (MANDATORY)
+
+This application runs primarily on **smartphones**. Every component you create must respect the following minimum sizes. These are non-negotiable — violating them breaks usability on mobile.
+
+### Minimum Font Sizes
+
+| Element | Tailwind Class | Minimum Size |
+|---|---|---|
+| Card titles / names | `text-base` | **16px** |
+| Descriptions / body text | `text-sm` | **14px** |
+| Form labels | `text-xs` | **12px** |
+| Badges, status pills | `text-[11px]` | **11px** |
+
+### ❌ Forbidden Classes
+- `text-[8px]` — **NEVER USE** — illegible on any device
+- `text-[9px]` — **NEVER USE** — illegible on any device
+- `text-[10px]` — **NEVER USE** — too small for mobile, use `text-xs` (12px) instead
+
+### Inputs: Prevent iOS Auto-Zoom
+Always use `text-base` (16px) on `<input>`, `<select>`, and `<textarea>`. If font-size is below 16px, iOS Safari automatically zooms in on the field — this breaks the layout and UX.
+
+```tsx
+// ✅ Correct
+<input className="... text-base" />
+
+// ❌ Wrong — triggers iOS zoom
+<input className="... text-sm" />
+```
+
+### Touch Target Sizes
+All interactive elements (buttons, links, icons) must have a **minimum tap area of 44×44px** (Apple HIG standard / Google Material 48px).
+
+```tsx
+// ✅ Icon button — visually small, but 44px tap area
+<button className="w-11 h-11 flex items-center justify-center ...">
+  <Edit2 size={16} />
+</button>
+
+// ❌ Wrong — 32px tap target, too small for fingers
+<button className="w-8 h-8 ...">
+  <Edit2 size={14} />
+</button>
+```
+
+### Contrast & Opacity
+- Text opacity must never go below **70%** for secondary labels
+- Never combine `text-slate-400` with a font size below `text-xs`
+- On dark backgrounds, prefer `text-white/80` over `text-slate-400`
+
+
 ## Component Classes
 
 ### Cards

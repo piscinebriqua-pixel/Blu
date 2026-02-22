@@ -42,7 +42,7 @@ const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({ payment, onCl
                     <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 mb-2">
                         <Wallet size={32} strokeWidth={2.5} />
                     </div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-400">Encaissement Réalisé</p>
+                    <p className="text-xs font-black uppercase tracking-[0.4em] text-slate-400">Encaissement Réalisé</p>
                     <div className="flex items-center gap-4 text-4xl font-black text-slate-900 dark:text-white tracking-tighter">
                         +{payment.amount.toFixed(0)}
                         <span className="text-xl font-bold text-emerald-500 dark:text-emerald-400 ml-1">DT</span>
@@ -58,7 +58,7 @@ const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({ payment, onCl
                     </div>
 
                     {/* Method Badge */}
-                    <div className={`mt-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border transition-colors ${payment.method === 'Espèces' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' :
+                    <div className={`mt-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border transition-colors ${payment.method === 'Espèces' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' :
                         payment.method === 'Carte' ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30' :
                             'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/30'
                         }`}>
@@ -73,7 +73,7 @@ const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({ payment, onCl
                         className="flex flex-col gap-1 p-5 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 text-left group hover:border-primary/30 transition-all"
                     >
                         <div className="flex justify-between items-center mb-1">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Client</span>
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Client</span>
                             <ChevronRight size={14} className="text-slate-300 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                         </div>
                         <span className="text-sm font-black text-slate-800 dark:text-white uppercase truncate">
@@ -81,12 +81,12 @@ const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({ payment, onCl
                         </span>
                         <div className="flex items-center gap-1.5 mt-1">
                             <div className={`w-1.5 h-1.5 rounded-full ${payment.client?.balance && payment.client.balance < 0 ? 'bg-red-500' : 'bg-emerald-500'}`} />
-                            <span className="text-[10px] font-bold text-slate-400">Solde: {payment.client?.balance?.toFixed(0)} DT</span>
+                            <span className="text-xs font-bold text-slate-400">Solde: {payment.client?.balance?.toFixed(0)} DT</span>
                         </div>
                     </button>
 
                     <div className="flex flex-col gap-1 p-5 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Responsable</span>
+                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Responsable</span>
                         <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
                                 <User size={14} />
@@ -102,7 +102,7 @@ const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({ payment, onCl
                 <div className="space-y-4">
                     <div className="flex items-center gap-3">
                         <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
-                        <h5 className="text-[10px] font-black text-primary dark:text-blue-400 uppercase tracking-[0.3em]">Informations Temporelles</h5>
+                        <h5 className="text-xs font-black text-primary dark:text-blue-400 uppercase tracking-[0.3em]">Informations Temporelles</h5>
                         <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
                     </div>
 
@@ -112,14 +112,14 @@ const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({ payment, onCl
                                 <Calendar size={24} />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Date de l'opération</span>
+                                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Date de l'opération</span>
                                 <span className="text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">
                                     {new Date(payment.payment_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
                                 </span>
                             </div>
                         </div>
                         <div className="text-right">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Heure</span>
+                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Heure</span>
                             <p className="text-sm font-bold text-slate-600">{new Date(payment.payment_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
                     </div>
@@ -130,7 +130,7 @@ const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({ payment, onCl
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 ml-1 text-slate-400">
                             <FileText size={14} />
-                            <h5 className="text-[10px] font-black uppercase tracking-[0.2em]">Observations</h5>
+                            <h5 className="text-xs font-black uppercase tracking-[0.2em]">Observations</h5>
                         </div>
                         <div className="bg-slate-50 dark:bg-white/5 rounded-2xl p-6 border border-slate-100 dark:border-white/5 relative">
                             <div className="absolute top-0 left-6 w-8 h-1 bg-emerald-500/20 rounded-full" />
@@ -152,7 +152,7 @@ const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({ payment, onCl
                     </button>
                     <button
                         onClick={onClose}
-                        className="px-8 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-all active:scale-95"
+                        className="px-8 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-slate-200 transition-all active:scale-95"
                     >
                         Fermer
                     </button>

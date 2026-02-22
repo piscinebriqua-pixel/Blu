@@ -127,22 +127,22 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                         <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-100 dark:border-slate-600">
                             <div className="flex items-center gap-2 mb-1 text-slate-400 dark:text-slate-300">
                                 <Wallet size={14} />
-                                <span className="text-[10px] font-bold uppercase tracking-wider">Solde</span>
+                                <span className="text-xs font-bold uppercase tracking-wider">Solde</span>
                             </div>
                             <p className={`text-lg font-bold ${client.balance < 0 ? 'text-red-500 dark:text-red-400' : 'text-green-500 dark:text-green-400'}`}>
-                                {client.balance?.toFixed(0)} <span className="text-xs text-slate-400 dark:text-slate-500">DT</span>
+                                {client.balance?.toFixed(0)} <span className="text-sm text-slate-400 dark:text-slate-500">DT</span>
                             </p>
                         </div>
 
                         <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-100 dark:border-slate-600">
                             <div className="flex items-center gap-2 mb-1 text-slate-400 dark:text-slate-300">
                                 <Phone size={14} />
-                                <span className="text-[10px] font-bold uppercase tracking-wider">Contact</span>
+                                <span className="text-xs font-bold uppercase tracking-wider">Contact</span>
                             </div>
                             <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
                                 {client.phone || '-----'}
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                            <p className="text-sm text-slate-400 dark:text-slate-500 truncate">
                                 {client.email || '-----'}
                             </p>
                         </div>
@@ -153,13 +153,13 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                 <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
                     <button
                         onClick={() => setActiveTab('bassins')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${activeTab === 'bassins' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wider ${activeTab === 'bassins' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     >
                         <Waves size={14} /> Bassins ({pools.length})
                     </button>
                     <button
                         onClick={() => setActiveTab('journal')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[10px] font-bold transition-all uppercase tracking-wider ${activeTab === 'journal' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all uppercase tracking-wider ${activeTab === 'journal' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     >
                         <History size={14} /> Journal ({interventions.length})
                     </button>
@@ -177,12 +177,12 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                                         </div>
                                         <div>
                                             <h5 className="text-sm font-bold text-slate-700 dark:text-slate-200">{pool.name}</h5>
-                                            <p className="text-xs text-slate-400 dark:text-slate-500">{pool.volume_m3}m³ • {pool.treatment_method}</p>
+                                            <p className="text-sm text-slate-400 dark:text-slate-500">{pool.volume_m3}m³ • {pool.treatment_method}</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
-                                        className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-400 dark:text-slate-500 flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                                        className="w-11 h-11 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-400 dark:text-slate-500 flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
                                         title="Nouvelle intervention"
                                     >
                                         <Plus size={18} />
@@ -215,11 +215,11 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                                             <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
                                                 {new Date(inter.created_at || inter.visit_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
                                             </p>
-                                            <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wide font-bold">{inter.pool_name}</p>
+                                            <p className="text-sm text-slate-400 dark:text-slate-500 uppercase tracking-wide font-bold">{inter.pool_name}</p>
                                         </div>
                                     </div>
                                     {inter.ph_level && (
-                                        <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md text-[10px] font-bold border border-slate-200 dark:border-slate-600">
+                                        <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md text-xs font-bold border border-slate-200 dark:border-slate-600">
                                             PH {inter.ph_level}
                                         </span>
                                     )}

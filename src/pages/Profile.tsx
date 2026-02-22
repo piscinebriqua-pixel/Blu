@@ -143,7 +143,7 @@ const Profile: React.FC = () => {
                                 <Mail size={18} />
                             </div>
                             <div className="text-left">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email</p>
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Email</p>
                                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate max-w-[150px]">{profile?.email}</p>
                             </div>
                         </div>
@@ -152,7 +152,7 @@ const Profile: React.FC = () => {
                                 <Calendar size={18} />
                             </div>
                             <div className="text-left">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Inscrit le</p>
+                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Inscrit le</p>
                                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
                                     {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
                                 </p>
@@ -175,7 +175,7 @@ const Profile: React.FC = () => {
                             </div>
                             <div>
                                 <p className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Modifier les infos</p>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nom complet uniquement</p>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nom complet uniquement</p>
                             </div>
                         </div>
                         <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
@@ -191,7 +191,7 @@ const Profile: React.FC = () => {
                             </div>
                             <div>
                                 <p className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Mot de passe</p>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Sécurité du compte</p>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Sécurité du compte</p>
                             </div>
                         </div>
                         <ChevronRight size={18} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
@@ -207,7 +207,7 @@ const Profile: React.FC = () => {
                             </div>
                             <div>
                                 <p className="text-sm font-black text-rose-600 uppercase tracking-tight">Se déconnecter</p>
-                                <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Fermer la session actuelle</p>
+                                <p className="text-xs font-bold text-rose-400 uppercase tracking-widest">Fermer la session actuelle</p>
                             </div>
                         </div>
                         <ChevronRight size={18} className="text-rose-300 group-hover:text-rose-500 transition-colors" />
@@ -216,7 +216,7 @@ const Profile: React.FC = () => {
 
                 {/* Quick Info Bar */}
                 <div className="text-center py-8">
-                    <p className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">
+                    <p className="text-xs font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">
                         BCCP Version 2.4.0 • Propulsé par Google Mind
                     </p>
                 </div>

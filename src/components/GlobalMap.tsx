@@ -42,7 +42,7 @@ const GlobalMap: React.FC<GlobalMapProps> = ({ clients }) => {
     if (!isLoaded) {
         return (
             <div className="w-full h-[400px] bg-slate-100 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center animate-pulse">
-                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                <Loader2 className="w-11 h-11 text-primary animate-spin" />
             </div>
         );
     }
@@ -87,21 +87,21 @@ const GlobalMap: React.FC<GlobalMapProps> = ({ clients }) => {
                         >
                             <div className="p-2 min-w-[200px]">
                                 <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                    <div className="w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
                                         <User size={14} />
                                     </div>
                                     <div>
                                         <h4 className="text-sm font-black text-slate-800 uppercase tracking-tight">
                                             {selectedClient.first_name} {selectedClient.last_name}
                                         </h4>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                                        <p className="text-sm text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
                                             <MapPin size={10} /> {selectedClient.city}
                                         </p>
                                     </div>
                                 </div>
                                 <button
                                     onClick={() => navigate(`/client/${selectedClient.id}`)}
-                                    className="w-full py-2 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
+                                    className="w-full py-2 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
                                 >
                                     <Navigation size={12} /> VOIR LE PROFIL
                                 </button>
@@ -121,7 +121,7 @@ const GlobalMap: React.FC<GlobalMapProps> = ({ clients }) => {
 
                 {/* Stats Overlay */}
                 <div className="absolute bottom-6 left-6 px-4 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-lg border border-slate-100 dark:border-white/10">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
                         {validClients.length} Localisations affichées
                     </span>
                 </div>

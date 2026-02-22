@@ -133,7 +133,7 @@ const Interventions: React.FC = () => {
       onClick={handleOpenAddModal}
     >
       <Plus size={20} />
-      <span className="hidden md:inline font-black uppercase text-[10px] tracking-widest">
+      <span className="hidden md:inline font-black uppercase text-xs tracking-widest">
         Nouveau
       </span>
     </button>
@@ -262,13 +262,13 @@ const Interventions: React.FC = () => {
                   <div
                     className={`w-1.5 h-1.5 rounded-full ${inter.status === "completed" ? "bg-emerald-500" : "bg-blue-400"}`}
                   />
-                  <span className="text-[10px] font-bold uppercase tracking-widest truncate">
+                  <span className="text-xs font-bold uppercase tracking-widest truncate">
                     {inter.technician?.full_name || "Non assigné"}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <Clock size={12} className="opacity-50" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">
+                  <span className="text-xs font-bold uppercase tracking-widest">
                     {inter.status === "scheduled" || inter.status === "pending"
                       ? inter.scheduled_date
                         ? new Date(inter.scheduled_date).toLocaleDateString(
@@ -287,7 +287,7 @@ const Interventions: React.FC = () => {
               {inter.status !== "completed" && inter.status !== "cancelled" && (
                 <div className="flex items-center gap-2 mt-2">
                   <span
-                    className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-full border ${inter.status === "scheduled"
+                    className={`text-[11px] font-black uppercase px-2.5 py-1 rounded-full border ${inter.status === "scheduled"
                       ? "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 text-blue-600"
                       : inter.status === "in_progress"
                         ? "bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800 text-orange-600"
@@ -315,7 +315,7 @@ const Interventions: React.FC = () => {
                     setEditingId(inter.id);
                     setIsNewInterventionModalOpen(true);
                   }}
-                  className="px-3 py-1.5 bg-primary text-white text-[9px] font-black uppercase rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-blue-500/20"
+                  className="px-3 py-1.5 bg-primary text-white text-[11px] font-black uppercase rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-blue-500/20"
                 >
                   DÉMARRER
                 </button>

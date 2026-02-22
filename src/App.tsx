@@ -107,7 +107,7 @@ function App() {
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <button
           onClick={() => { supabase.auth.signOut(); window.location.href = '/login'; }}
-          className="text-slate-500 text-xs hover:text-white underline"
+          className="text-slate-500 text-sm hover:text-white underline"
         >
           Chargement long ? Se déconnecter
         </button>
@@ -276,7 +276,7 @@ const ProfileNotFound = () => {
         </button>
         <button
           onClick={() => supabase.auth.signOut()}
-          className="w-full py-4 bg-white text-slate-400 rounded-2xl font-black border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 text-xs tracking-widest uppercase"
+          className="w-full py-4 bg-white text-slate-400 rounded-2xl font-black border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 text-sm tracking-widest uppercase"
         >
           Se déconnecter
         </button>

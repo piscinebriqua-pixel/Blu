@@ -110,10 +110,10 @@ const TechnicianSelectionModal: React.FC<TechnicianSelectionModalProps> = ({ isO
                                     </div>
                                     <div className="text-left flex-1">
                                         <p className={`text-sm font-black ${isSelected ? 'text-blue-900 dark:text-blue-300' : 'text-slate-700 dark:text-slate-200'}`}>{tech.full_name}</p>
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Technicien</p>
+                                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">Technicien</p>
                                     </div>
                                     {isSelected && (
-                                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-lg animate-in zoom-in duration-300">
+                                        <div className="w-11 h-11 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-lg animate-in zoom-in duration-300">
                                             <Check size={16} strokeWidth={4} />
                                         </div>
                                     )}

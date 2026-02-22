@@ -207,7 +207,7 @@ const ServicesManager: React.FC = () => {
                 </button>
                 <button
                     onClick={() => setActiveTab('products')}
-                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'products'
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'products'
                         ? 'bg-white dark:bg-slate-700 text-violet-600 shadow-sm'
                         : 'text-slate-400 hover:text-slate-600'
                         }`}
@@ -237,7 +237,7 @@ const ServicesManager: React.FC = () => {
                                     <p className="font-black text-slate-800 dark:text-white text-sm truncate">{service.name}</p>
                                     <div className="flex items-center gap-1.5 mt-0.5">
                                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Disponible</span>
+                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Disponible</span>
                                     </div>
                                 </div>
                             </div>
@@ -275,7 +275,7 @@ const ServicesManager: React.FC = () => {
                                     <p className="font-black text-slate-800 dark:text-white text-sm truncate">{product.name}</p>
                                     <div className="flex items-center gap-2 mt-0.5">
                                         <Tag size={10} className="text-slate-400" />
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{product.unit || '—'}</span>
+                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{product.unit || '—'}</span>
                                     </div>
                                 </div>
                             </div>

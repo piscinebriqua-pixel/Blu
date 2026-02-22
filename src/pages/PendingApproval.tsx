@@ -44,7 +44,7 @@ const PendingApproval: React.FC = () => {
                     </button>
                 </div>
 
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] opacity-60">
+                <p className="text-sm text-slate-400 font-bold uppercase tracking-[0.2em] opacity-60">
                     BCCP Security
                 </p>
             </div>

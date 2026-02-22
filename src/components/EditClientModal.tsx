@@ -121,7 +121,7 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                             <Phone size={12} className="text-slate-400" /> Téléphones
                         </label>
                         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setIsWhatsAppEnabled(!isWhatsAppEnabled)}>
-                            <span className="text-[10px] text-slate-400">WhatsApp enabled</span>
+                            <span className="text-sm text-slate-400">WhatsApp enabled</span>
                             <div className={`w-8 h-4 rounded-full relative transition-colors ${isWhatsAppEnabled ? 'bg-green-500' : 'bg-slate-300'}`}>
                                 <div className={`w-3 h-3 bg-white rounded-full absolute top-0.5 transition-all ${isWhatsAppEnabled ? 'left-[18px]' : 'left-0.5'}`} />
                             </div>
@@ -205,7 +205,7 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                     </div>
                     <div>
                         <p className="text-sm font-bold text-slate-700 dark:text-white">Compte Actif</p>
-                        <p className="text-xs text-slate-400">Le client peut être sélectionné pour des interventions</p>
+                        <p className="text-sm text-slate-400">Le client peut être sélectionné pour des interventions</p>
                     </div>
                 </div>
             </form>
