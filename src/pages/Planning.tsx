@@ -156,7 +156,7 @@ const Planning: React.FC = () => {
                                     setViewMode('day');
                                     setCurrentDate(day);
                                 }}
-                                className={`min-h-[80px] md:min-h-[110px] p-2 rounded-2xl border transition-all cursor-pointer group ${isCurrentMonth
+                                className={`min-h-[110px] md:min-h-[150px] p-2 rounded-2xl border transition-all cursor-pointer group ${isCurrentMonth
                                     ? 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'
                                     : 'bg-slate-50/50 dark:bg-slate-900/30 border-transparent opacity-40'
                                     } ${isToday ? 'ring-2 ring-blue-500 ring-inset' : ''} hover:border-blue-500/50 hover:shadow-lg`}
@@ -273,7 +273,10 @@ const Planning: React.FC = () => {
                         </div>
                     </div>
                     <button
-                        onClick={() => setIsNewModalOpen(true)}
+                        onClick={() => {
+                            setSelectedDate(formatDateKey(currentDate));
+                            setIsNewModalOpen(true);
+                        }}
                         className="w-14 h-14 bg-blue-600 text-white rounded-[1.5rem] flex items-center justify-center shadow-xl shadow-blue-500/20 hover:scale-110 active:scale-95 transition-all"
                         title="Ajouter RDV"
                     >
@@ -425,7 +428,7 @@ const Planning: React.FC = () => {
             {/* Floating Action Button */}
             <button
                 onClick={() => {
-                    setSelectedDate(formatDateKey(new Date()));
+                    setSelectedDate(formatDateKey(currentDate));
                     setIsNewModalOpen(true);
                 }}
                 className="fixed bottom-8 right-8 w-16 h-16 bg-blue-600 text-white rounded-[2rem] shadow-2xl shadow-blue-500/40 flex items-center justify-center hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all z-30"
