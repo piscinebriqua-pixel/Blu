@@ -27,11 +27,17 @@ function App() {
 
   useEffect(() => {
     const initAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      if (session?.user) {
-        fetchProfileWithRetry(session.user.id);
-      } else {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        setSession(session);
+        if (session?.user) {
+          fetchProfileWithRetry(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      } catch (err: any) {
         setLoading(false);
       }
     };
@@ -206,6 +212,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
+
     </Router>
   );
 }

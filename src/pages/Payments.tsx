@@ -135,35 +135,39 @@ const Payments: React.FC = () => {
 
                 {/* Stats Header */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="card-premium vibrant grad-blue p-6 flex justify-between items-center">
+                    <div className="card-premium vibrant grad-blue p-6 flex justify-between items-center shadow-lg">
                         <div>
-                            <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mb-1">Total Période</p>
-                            <h3 className="text-3xl font-black text-white">{totalAmount.toLocaleString()} <span className="text-xs opacity-60">DT</span></h3>
+                            <p className="text-premium-label !text-white/60 mb-2">Total Période</p>
+                            <h3 className="text-3xl font-black text-white leading-none">
+                                {totalAmount.toLocaleString()} <span className="text-xs opacity-60 ml-1">DT</span>
+                            </h3>
                         </div>
-                        <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                        <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20">
                             <Wallet size={24} className="text-white" />
                         </div>
                     </div>
 
-                    <div className="card-premium !bg-white dark:!bg-slate-800 p-6 flex justify-between items-center border border-slate-100 dark:border-slate-700 shadow-sm">
+                    <div className="card-white p-6 flex justify-between items-center">
                         <div>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Transactions</p>
-                            <h3 className="text-3xl font-black text-slate-800 dark:text-white">{filteredPayments.length}</h3>
+                            <p className="text-premium-label mb-2">Transactions</p>
+                            <h3 className="text-3xl font-black text-slate-800 dark:text-white leading-none">
+                                {filteredPayments.length}
+                            </h3>
                         </div>
-                        <div className="w-12 h-12 bg-slate-50 dark:bg-slate-700 rounded-2xl flex items-center justify-center text-slate-400">
+                        <div className="w-12 h-12 bg-slate-50 dark:bg-slate-700/50 rounded-2xl flex items-center justify-center text-slate-400 border border-slate-100 dark:border-slate-700/50">
                             <ArrowUpRight size={24} />
                         </div>
                     </div>
 
                     <button
                         onClick={() => navigate('/clients?filter=Dettes')}
-                        className="card-premium !bg-slate-50 dark:!bg-slate-900 p-6 flex justify-between items-center border border-dashed border-slate-200 dark:border-slate-800 hover:border-primary transition-all active:scale-95 group"
+                        className="card-white !bg-slate-50 dark:!bg-slate-900/50 p-6 flex justify-between items-center border-dashed hover:border-primary transition-all active:scale-95 group"
                     >
                         <div className="text-left">
-                            <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Action Rapide</p>
+                            <p className="text-premium-label !text-primary mb-2">Action Rapide</p>
                             <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase">Relancer Dettes</h3>
                         </div>
-                        <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform">
+                        <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform border border-slate-100 dark:border-slate-700">
                             <Filter size={20} />
                         </div>
                     </button>
@@ -187,9 +191,9 @@ const Payments: React.FC = () => {
                         <div
                             key={p.id}
                             onClick={() => navigate(`/client/${p.client_id}`)}
-                            className={`card-white !flex-row !items-center !gap-4 !p-5 group animate-in fade-in slide-in-from-bottom-4 stagger-${(idx % 5) + 1} cursor-pointer hover:border-primary/30 transition-all`}
+                            className={`card-white !flex-row !items-center !gap-4 !p-5 group animate-in fade-in slide-in-from-bottom-4 stagger-${(idx % 5) + 1} cursor-pointer hover:border-primary/20 transition-all`}
                         >
-                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100/50 dark:border-emerald-800/30">
                                 <Wallet size={20} />
                             </div>
 

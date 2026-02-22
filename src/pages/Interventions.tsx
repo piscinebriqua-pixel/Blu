@@ -177,49 +177,50 @@ const Interventions: React.FC = () => {
       {searchBar}
 
       {/* Custom Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800/50 rounded-2xl mb-8">
+      <div className="flex gap-1 p-1.5 bg-slate-100/80 dark:bg-slate-800/50 rounded-[20px] mb-8 border border-slate-200/50 dark:border-slate-700/50">
         <button
           onClick={() => setActiveTab("planning")}
-          className={`flex-1 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === "planning" ? "bg-primary text-white shadow-lg shadow-blue-500/20" : "text-slate-400 hover:text-slate-600 dark:hover:text-white"}`}
+          className={`flex-1 py-3.5 rounded-[14px] text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === "planning" ? "bg-primary text-white shadow-xl shadow-blue-500/30 scale-[1.02]" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
         >
           Plannification
         </button>
         <button
           onClick={() => setActiveTab("history")}
-          className={`flex-1 py-3 rounded-xl text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === "history" ? "bg-primary text-white shadow-lg shadow-blue-500/20" : "text-slate-400 hover:text-slate-600 dark:hover:text-white"}`}
+          className={`flex-1 py-3.5 rounded-[14px] text-[11px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === "history" ? "bg-primary text-white shadow-xl shadow-blue-500/30 scale-[1.02]" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
         >
           Historique
         </button>
       </div>
+
       {/* Stats Overview */}
       <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="card-premium vibrant grad-blue shadow-blue-500/20">
+        <div className="card-premium vibrant grad-blue p-6 flex flex-col gap-4 shadow-lg border-white/10">
           <div className="flex justify-between items-start">
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-premium-label !text-white/60">
                 Aujourd'hui
               </span>
-              <span className="text-3xl font-black text-white leading-none">
+              <span className="text-4xl font-black text-white leading-none">
                 {todayInterventions.length}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
+            <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/20">
               <Calendar size={20} className="text-white" />
             </div>
           </div>
         </div>
-        <div className="card-premium vibrant grad-violet shadow-indigo-500/20">
+        <div className="card-premium vibrant grad-violet p-6 flex flex-col gap-4 shadow-lg border-white/10">
           <div className="flex justify-between items-start">
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em]">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-premium-label !text-white/60">
                 Valeur
               </span>
-              <span className="text-3xl font-black text-white leading-none">
+              <span className="text-4xl font-black text-white leading-none">
                 {totalRevenue.toFixed(0)}{" "}
-                <span className="text-xs opacity-60">DT</span>
+                <span className="text-sm opacity-60 ml-0.5">DT</span>
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-sm">
+            <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/20">
               <CreditCard size={20} className="text-white" />
             </div>
           </div>
@@ -229,10 +230,10 @@ const Interventions: React.FC = () => {
       {/* List Section */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between px-2 mb-2">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
+          <h3 className="text-premium-label">
             Rapports d'interventions
           </h3>
-          <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800 mx-4 opacity-50" />
+          <div className="h-px flex-1 bg-slate-200/50 dark:bg-slate-800 mx-6" />
         </div>
 
         {filteredInterventions.map((inter) => (
@@ -324,9 +325,11 @@ const Interventions: React.FC = () => {
         ))}
 
         {filteredInterventions.length === 0 && (
-          <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3 bg-slate-50/50 dark:bg-slate-800/20 rounded-[2rem] border-2 border-dashed border-slate-100 dark:border-slate-800">
-            <FileText size={48} className="opacity-10" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em]">
+          <div className="py-24 flex flex-col items-center justify-center text-slate-400 gap-4 bg-white/30 dark:bg-slate-800/20 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm animate-in zoom-in-95 duration-500">
+            <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-2">
+              <FileText size={40} className="opacity-10" />
+            </div>
+            <p className="text-premium-label">
               Aucun rapport trouvé
             </p>
           </div>

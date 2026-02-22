@@ -63,7 +63,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       console.error("Erreur d'upload:", error);
       alert(
         "Erreur lors de l'envoi de la photo : " +
-          (error.message || "Erreur inconnue"),
+        (error.message || "Erreur inconnue"),
       );
     } finally {
       setUploading(false);
@@ -133,7 +133,6 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
         ref={fileInputRef}
         onChange={handleFileChange}
         accept="image/*"
-        capture="environment"
         className="hidden"
         title={label}
       />

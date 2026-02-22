@@ -147,8 +147,8 @@ body {
 /* --- PREMIUM UTILITIES --- */
 .glass-morphism {
     background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -171,6 +171,44 @@ body {
 .card-premium:hover {
     transform: translateY(-4px);
     box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.15);
+}
+
+.card-white {
+    background: white;
+    border-radius: var(--radius-lg);
+    border: 1px solid #F1F5F9;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .card-white {
+    background: #1E293B;
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.grad-blue {
+    background: linear-gradient(135deg, #0077B6 0%, #023E8A 100%) !important;
+}
+
+.grad-violet {
+    background: linear-gradient(135deg, #4F46E5 0%, #3730A3 100%) !important;
+}
+
+.bg-primary-glow {
+    background: rgba(0, 119, 182, 0.08);
+    box-shadow: 0 0 20px rgba(0, 119, 182, 0.05);
+}
+
+.vibrant {
+    box-shadow: 0 10px 20px -5px rgba(0, 119, 182, 0.4);
+}
+
+.text-premium-label {
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-weight: 900;
+    font-size: 10px;
+    opacity: 0.6;
 }
 
 /* --- MESH GRADIENTS --- */
