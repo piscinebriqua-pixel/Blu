@@ -95,7 +95,9 @@ const ClientDetail: React.FC = () => {
     const [isAdmin, setIsAdmin] = useState(false);
     const [activeCategory, setActiveCategory] = useState<'pools' | 'interventions' | 'payments' | 'balance' | 'gps' | null>(null);
     const [paymentToDelete, setPaymentToDelete] = useState<string | null>(null);
+    const [poolToDelete, setPoolToDelete] = useState<Pool | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isDeletingPool, setIsDeletingPool] = useState(false);
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
         const sTotal = inter.services?.reduce((sAcc: number, s: any) => sAcc + (s.price_at_time || 0), 0) || 0;
@@ -104,6 +106,22 @@ const ClientDetail: React.FC = () => {
     }, 0);
 
     const totalPaymentsAmount = payments.reduce((acc, pay) => acc + pay.amount, 0);
+
+    const handleDeletePool = async () => {
+        if (!poolToDelete) return;
+        setIsDeletingPool(true);
+        try {
+            const { error } = await supabase.from('pools').delete().eq('id', poolToDelete.id);
+            if (error) throw error;
+            toast.success(`Piscine "${poolToDelete.name}" supprimée`);
+            setPoolToDelete(null);
+            fetchClientData();
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsDeletingPool(false);
+        }
+    };
 
     useEffect(() => {
         if (id) {
@@ -548,6 +566,15 @@ const ClientDetail: React.FC = () => {
                                                     >
                                                         <Edit2 size={14} />
                                                     </button>
+                                                    {isAdmin && (
+                                                        <button
+                                                            onClick={() => setPoolToDelete(pool)}
+                                                            className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-400 flex items-center justify-center hover:text-red-600 hover:bg-red-100 border border-red-100 dark:border-red-800/30 shadow-sm transition-all"
+                                                            title="Supprimer la piscine"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                             <h4 className="text-base font-black text-slate-800 dark:text-white mb-1">{pool.name}</h4>
@@ -777,6 +804,16 @@ const ClientDetail: React.FC = () => {
                 onConfirm={handleDeletePayment}
                 onClose={() => setPaymentToDelete(null)}
                 loading={isDeleting}
+            />
+
+            <ConfirmModal
+                isOpen={!!poolToDelete}
+                title="Supprimer la piscine"
+                message={`Voulez-vous vraiment supprimer la piscine "${poolToDelete?.name}" ? Toutes les interventions associées seront perdues.`}
+                confirmLabel="SUPPRIMER"
+                onConfirm={handleDeletePool}
+                onClose={() => setPoolToDelete(null)}
+                loading={isDeletingPool}
             />
         </PageLayout>
     );
