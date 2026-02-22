@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Wallet, User, CheckCircle2 } from 'lucide-react';
+import { Wallet, User, CheckCircle2, Calendar } from 'lucide-react';
 import ModalLayout from './ModalLayout';
 import { toast } from 'react-hot-toast';
 
@@ -14,6 +14,7 @@ interface RecordPaymentModalProps {
         method: string;
         technician_id: string;
         notes: string;
+        payment_date?: string;
     };
 }
 
@@ -24,7 +25,10 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
         amount: payment?.amount.toString() || '',
         method: payment?.method || 'espèces',
         technician_id: payment?.technician_id || '',
-        notes: payment?.notes || ''
+        notes: payment?.notes || '',
+        payment_date: payment?.payment_date
+            ? payment.payment_date.split('T')[0]
+            : new Date().toISOString().split('T')[0]
     });
 
     useEffect(() => {
@@ -52,7 +56,8 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
                     technician_id: formData.technician_id,
                     amount: paymentAmount,
                     method: formData.method,
-                    notes: formData.notes
+                    notes: formData.notes,
+                    payment_date: formData.payment_date
                 }).eq('id', payment.id);
 
                 if (error) throw error;
@@ -63,7 +68,8 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
                     technician_id: formData.technician_id,
                     amount: paymentAmount,
                     method: formData.method,
-                    notes: formData.notes || 'Paiement direct'
+                    notes: formData.notes || 'Paiement direct',
+                    payment_date: formData.payment_date
                 }]);
 
                 if (error) throw error;
@@ -121,6 +127,21 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
                             placeholder="0.00"
                             value={formData.amount}
                             onChange={e => setFormData({ ...formData, amount: e.target.value })}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Date du Paiement</label>
+                    <div className="relative">
+                        <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                            type="date"
+                            required
+                            title="Date du paiement"
+                            className="search-input !pl-12 !h-12"
+                            value={formData.payment_date}
+                            onChange={e => setFormData({ ...formData, payment_date: e.target.value })}
                         />
                     </div>
                 </div>
