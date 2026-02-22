@@ -225,16 +225,16 @@ const Payments: React.FC = () => {
                             </div>
 
                             {isAdmin && (
-                                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center gap-1 shrink-0">
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleDelete(p.id, p.client_id, p.amount);
                                         }}
-                                        className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                                        className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm border border-red-100/50 dark:border-red-800/20"
                                         title="Supprimer"
                                     >
-                                        <Trash2 size={16} />
+                                        <Trash2 size={18} />
                                     </button>
                                 </div>
                             )}

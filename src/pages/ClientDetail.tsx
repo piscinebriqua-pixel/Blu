@@ -11,7 +11,8 @@ import {
     Mail,
     Phone,
     MessageCircle,
-    Navigation
+    Navigation,
+    Trash2
 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import NewIntervention from '../components/NewIntervention';
@@ -88,6 +89,7 @@ const ClientDetail: React.FC = () => {
     const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null);
     const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
     const [selectedInterventionForView, setSelectedInterventionForView] = useState<any | null>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [activeCategory, setActiveCategory] = useState<'pools' | 'interventions' | 'payments' | 'balance' | 'gps' | null>(null);
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
@@ -126,7 +128,12 @@ const ClientDetail: React.FC = () => {
 
     const fetchClientData = async () => {
         try {
-            setLoading(true);
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
+                setIsAdmin(profile?.role === 'admin');
+            }
+
             const { data: clientData, error: clientError } = await supabase.from('clients').select('*').eq('id', id).single();
             if (clientError) throw clientError;
             setClient(clientData);
@@ -178,6 +185,21 @@ const ClientDetail: React.FC = () => {
             navigate('/clients');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeletePayment = async (payId: string) => {
+        if (!isAdmin) return;
+        if (!window.confirm('Voulez-vous vraiment supprimer ce paiement ? Le solde du client sera automatiquement ajusté.')) return;
+
+        try {
+            const { error } = await supabase.from('payments').delete().eq('id', payId);
+            if (error) throw error;
+
+            // Balance will be auto-synced by the useEffect listening to payments change
+            fetchClientData();
+        } catch (error: any) {
+            alert('Erreur lors de la suppression : ' + error.message);
         }
     };
 
@@ -614,10 +636,22 @@ const ClientDetail: React.FC = () => {
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div className="text-right">
+                                                    <div className="flex items-center gap-2">
                                                         <span className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[10px] font-black text-slate-500 uppercase shadow-sm">
                                                             {pay.technician?.full_name?.split(' ')[0] || 'Admin'}
                                                         </span>
+                                                        {isAdmin && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleDeletePayment(pay.id);
+                                                                }}
+                                                                className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all border border-red-100 dark:border-red-900/30"
+                                                                title="Supprimer"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             ))}
