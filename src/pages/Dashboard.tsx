@@ -5,7 +5,6 @@ import {
     Users,
     Wrench,
     ChevronRight,
-    TrendingUp,
     CheckCircle2,
     Calendar,
     LogOut,
@@ -200,13 +199,6 @@ const Dashboard: React.FC = () => {
                         <p className="text-xs text-orange-600/60 dark:text-orange-400/60 uppercase font-black">Espace Tech</p>
                     </div>
 
-                    <div className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800 dark:border-slate-700">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-teal-50 text-teal-600 mb-2 dark:bg-teal-900/30 dark:text-teal-400">
-                            <TrendingUp size={24} />
-                        </div>
-                        <span className="mt-1 dark:text-slate-300">Rapports</span>
-                        <p className="text-xl font-bold text-slate-800 dark:text-white">OK</p>
-                    </div>
 
                     <div onClick={() => navigate('/technicians')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800 dark:border-slate-700">
                         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-50 text-purple-600 mb-2 dark:bg-purple-900/30 dark:text-purple-400">
