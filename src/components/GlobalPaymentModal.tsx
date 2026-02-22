@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Wallet, User, CheckCircle2, Globe } from 'lucide-react';
 import ModalLayout from './ModalLayout';
 import Combobox from './ui/Combobox';
+import { toast } from 'react-hot-toast';
 
 interface GlobalPaymentModalProps {
     onClose: () => void;
@@ -63,7 +64,7 @@ const GlobalPaymentModal: React.FC<GlobalPaymentModalProps> = ({ onClose, onSucc
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.amount || !formData.technician_id || !formData.client_id) {
-            alert('Veuillez remplir les champs obligatoires (Montant, Client, Technicien)');
+            toast.error('Veuillez remplir les champs obligatoires (Montant, Client, Technicien)');
             return;
         }
 
@@ -100,10 +101,11 @@ const GlobalPaymentModal: React.FC<GlobalPaymentModalProps> = ({ onClose, onSucc
 
             if (balanceUpdateError) throw balanceUpdateError;
 
+            toast.success('Paiement enregistré avec succès');
             onSuccess();
             onClose();
         } catch (error: any) {
-            alert(error.message);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
@@ -202,23 +204,33 @@ const GlobalPaymentModal: React.FC<GlobalPaymentModalProps> = ({ onClose, onSucc
                     />
                 </div>
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="btn-flow btn-primary !h-14 w-full shadow-xl shadow-blue-500/20"
-                >
-                    {loading ? (
-                        <div className="flex items-center justify-center gap-2">
-                            <Globe className="animate-spin" size={20} />
-                            <span className="font-black uppercase tracking-widest">Enregistrement...</span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center justify-center gap-2">
-                            <CheckCircle2 size={20} />
-                            <span className="font-black uppercase tracking-widest">Valider l'Encaissement</span>
-                        </div>
-                    )}
-                </button>
+                <div className="flex gap-3 mt-2">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black rounded-2xl uppercase tracking-widest text-[10px] hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
+                        disabled={loading}
+                    >
+                        Annuler
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex-[2] btn-flow btn-primary !h-14 shadow-xl shadow-blue-500/20"
+                    >
+                        {loading ? (
+                            <div className="flex items-center justify-center gap-2">
+                                <Globe className="animate-spin" size={20} />
+                                <span className="font-black uppercase tracking-widest">Enregistrement...</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center gap-2">
+                                <CheckCircle2 size={20} />
+                                <span className="font-black uppercase tracking-widest">Valider</span>
+                            </div>
+                        )}
+                    </button>
+                </div>
             </form>
         </ModalLayout>
     );

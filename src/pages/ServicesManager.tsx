@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PageLayout from '../components/PageLayout';
 import ModalLayout from '../components/ModalLayout';
 import { supabase } from '../lib/supabase';
+import { toast } from 'react-hot-toast';
 import {
     Loader2,
     Edit2,
@@ -11,6 +12,7 @@ import {
     Search as SearchIcon,
     Wallet
 } from 'lucide-react';
+import ConfirmModal from '../components/ConfirmModal';
 
 interface Service {
     id: string;
@@ -25,6 +27,8 @@ const ServicesManager: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingService, setEditingService] = useState<Service | null>(null);
     const [formData, setFormData] = useState({ name: '', price: '' });
+    const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => { fetchServices(); }, []);
 
@@ -70,22 +74,29 @@ const ServicesManager: React.FC = () => {
                 await supabase.from('services').insert([payload]);
             }
             setIsModalOpen(false);
+            toast.success(editingService ? 'Service mis à jour' : 'Service ajouté');
             fetchServices();
         } catch (error: any) {
-            alert(error.message);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`Supprimer "${name}" ?`)) return;
-        setLoading(true);
+    const handleDelete = async () => {
+        if (!serviceToDelete) return;
+
+        setIsDeleting(true);
         try {
-            await supabase.from('services').delete().eq('id', id);
+            await supabase.from('services').delete().eq('id', serviceToDelete.id);
+            toast.success('Service supprimé');
+            setServiceToDelete(null);
             fetchServices();
-        } catch (error: any) { alert(error.message); }
-        finally { setLoading(false); }
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsDeleting(false);
+        }
     };
 
     const filteredServices = services.filter(s =>
@@ -130,7 +141,7 @@ const ServicesManager: React.FC = () => {
                                 <button onClick={() => handleOpenModal(service)} className="btn-icon !w-8 !h-8 !border-none" title="Modifier">
                                     <Edit2 size={14} className="text-primary" />
                                 </button>
-                                <button onClick={() => handleDelete(service.id, service.name)} className="btn-icon !w-8 !h-8 !border-none" title="Supprimer">
+                                <button onClick={() => setServiceToDelete(service)} className="btn-icon !w-8 !h-8 !border-none" title="Supprimer">
                                     <Trash2 size={14} className="text-status-red" />
                                 </button>
                             </div>
@@ -202,6 +213,16 @@ const ServicesManager: React.FC = () => {
                     </form>
                 </ModalLayout>
             )}
+
+            <ConfirmModal
+                isOpen={!!serviceToDelete}
+                title="Supprimer Service"
+                message={`Voulez-vous vraiment supprimer la prestation "${serviceToDelete?.name}" ?`}
+                confirmLabel="SUPPRIMER"
+                onConfirm={handleDelete}
+                onClose={() => setServiceToDelete(null)}
+                loading={isDeleting}
+            />
         </PageLayout>
     );
 };

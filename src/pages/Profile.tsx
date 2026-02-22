@@ -11,6 +11,7 @@ import {
     ChevronRight,
     Lock
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const Profile: React.FC = () => {
     const navigate = useNavigate();
@@ -44,7 +45,7 @@ const Profile: React.FC = () => {
                 }
             } catch (error: any) {
                 console.error('Erreur profil:', error.message);
-                alert('Impossible de charger le profil');
+                toast.error('Impossible de charger le profil');
             } finally {
                 setLoading(false);
             }
@@ -66,9 +67,9 @@ const Profile: React.FC = () => {
 
             setProfile({ ...profile, full_name: newName });
             setIsEditModalOpen(false);
-            alert('Profil mis à jour avec succès !');
+            toast.success('Profil mis à jour avec succès !');
         } catch (error: any) {
-            alert('Erreur: ' + error.message);
+            toast.error('Erreur: ' + error.message);
         } finally {
             setSubmitting(false);
         }
@@ -77,11 +78,11 @@ const Profile: React.FC = () => {
     const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault();
         if (newPassword !== confirmPassword) {
-            alert('Les mots de passe ne correspondent pas');
+            toast.error('Les mots de passe ne correspondent pas');
             return;
         }
         if (newPassword.length < 6) {
-            alert('Le mot de passe doit faire au moins 6 caractères');
+            toast.error('Le mot de passe doit faire au moins 6 caractères');
             return;
         }
 
@@ -96,9 +97,9 @@ const Profile: React.FC = () => {
             setIsPasswordModalOpen(false);
             setNewPassword('');
             setConfirmPassword('');
-            alert('Mot de passe modifié avec succès !');
+            toast.success('Mot de passe modifié avec succès !');
         } catch (error: any) {
-            alert('Erreur: ' + error.message);
+            toast.error('Erreur: ' + error.message);
         } finally {
             setSubmitting(false);
         }
@@ -107,7 +108,7 @@ const Profile: React.FC = () => {
     const handleLogout = async () => {
         const { error } = await supabase.auth.signOut();
         if (error) {
-            alert('Erreur déconnexion');
+            toast.error('Erreur déconnexion');
         } else {
             navigate('/login');
         }

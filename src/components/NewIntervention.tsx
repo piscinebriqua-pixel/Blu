@@ -24,6 +24,7 @@ import AddServiceModal from "./AddServiceModal";
 import AddProductModal from "./AddProductModal";
 import AddPoolModal from "./AddPoolModal";
 import { Globe, Waves } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 interface Service {
   id: string;
@@ -46,6 +47,7 @@ interface NewInterventionProps {
   poolId?: string;
   clientId?: string;
   interventionId?: string;
+  scheduledDate?: string;
   onClose: () => void;
   onSuccess: () => void;
 }
@@ -54,6 +56,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
   poolId: initialPoolId,
   clientId: initialClientId,
   interventionId,
+  scheduledDate: initialScheduledDate,
   onClose,
   onSuccess,
 }) => {
@@ -102,7 +105,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
     water_temp: "",
     notes: "",
     water_level_adjusted: false,
-    scheduled_date: new Date().toISOString().split("T")[0],
+    scheduled_date: initialScheduledDate || new Date().toISOString().split("T")[0],
     payment_amount: "",
     payment_method: "espèces" as "espèces" | "chèque" | "virement" | "autre",
     record_payment: false,
@@ -308,7 +311,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
 
   const handleSubmit = async () => {
     if (!formData.technician_id) {
-      alert("Veuillez sélectionner un technicien");
+      toast.error("Veuillez sélectionner un technicien");
       setTab("tech");
       return;
     }
@@ -477,10 +480,11 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       }
       // ------------------------------------
 
+      toast.success(interventionId ? 'Rapport mis à jour' : 'Rapport enregistré avec succès');
       onSuccess();
       onClose();
     } catch (error: unknown) {
-      alert(error instanceof Error ? error.message : "Une erreur est survenue");
+      toast.error(error instanceof Error ? error.message : "Une erreur est survenue");
     } finally {
       setLoading(false);
     }
@@ -536,7 +540,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
               <Loader2 className="animate-spin" size={24} />
             ) : tab === "summary" ? (
               <>
-                <Save size={20} strokeWidth={2.5} /> ENREGISTRER
+                <Save size={20} strokeWidth={2.5} /> VALIDER
               </>
             ) : (
               <>
@@ -763,9 +767,12 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                           <button
                             type="button"
                             onClick={() => setIsPoolModalOpen(true)}
-                            className="w-full py-4 bg-orange-600 text-white rounded-2xl font-black shadow-lg shadow-orange-600/20 hover:bg-orange-700 transition-all active:scale-95 text-[10px] tracking-[0.2em] uppercase mt-2 flex items-center justify-center gap-2"
+                            className="w-full py-5 bg-blue-600 text-white rounded-[22px] font-black shadow-xl shadow-blue-500/30 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all text-xs tracking-[0.2em] uppercase mt-4 flex items-center justify-center gap-3"
                           >
-                            <Plus size={16} strokeWidth={3} /> AJOUTER UN BASSIN
+                            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                              <Plus size={18} strokeWidth={3} />
+                            </div>
+                            AJOUTER UN BASSIN
                           </button>
                         </div>
                       )}
@@ -980,9 +987,9 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
               <button
                 type="button"
                 onClick={() => setServiceModalOpen(true)}
-                className="w-full flex items-center justify-center gap-3 py-6 border-2 border-dashed border-slate-200 dark:border-slate-700/50 rounded-[22px] text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-all font-black uppercase text-[11px] tracking-[0.2em]"
+                className="w-full flex items-center justify-center gap-3 py-5 bg-blue-600 text-white rounded-[22px] shadow-xl shadow-blue-500/30 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all font-black uppercase text-xs tracking-[0.2em]"
               >
-                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                   <Plus size={18} strokeWidth={3} />
                 </div>
                 Ajouter un service
@@ -1074,9 +1081,9 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
               <button
                 type="button"
                 onClick={() => setProductModalOpen(true)}
-                className="w-full flex items-center justify-center gap-3 py-6 border-2 border-dashed border-slate-200 dark:border-slate-700/50 rounded-[22px] text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-all font-black uppercase text-[11px] tracking-[0.2em]"
+                className="w-full flex items-center justify-center gap-3 py-5 bg-blue-600 text-white rounded-[22px] shadow-xl shadow-blue-500/30 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all font-black uppercase text-xs tracking-[0.2em]"
               >
-                <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                   <Plus size={18} strokeWidth={3} />
                 </div>
                 Ajouter un produit

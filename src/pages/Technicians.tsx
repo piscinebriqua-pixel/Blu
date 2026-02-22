@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Plus, Search as SearchIcon, ArrowLeft, Key, MoreVertical } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import TechnicianModal from '../components/TechnicianModal';
 import TechnicianDetailsModal from '../components/TechnicianDetailsModal';
 
@@ -64,10 +65,11 @@ const Technicians: React.FC = () => {
                 if (error) throw error;
             }
             setIsAddModalOpen(false);
+            toast.success(editingTech ? 'Technicien mis à jour' : 'Technicien ajouté');
             fetchTechnicians();
         } catch (error: unknown) {
             console.error('Erreur:', error);
-            alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+            toast.error(error instanceof Error ? error.message : 'Une erreur est survenue');
         } finally {
             setModalLoading(false);
         }

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 import { Crosshair, MapPin, Loader2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 interface MapPickerProps {
     lat: number | null;
@@ -48,7 +49,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onPositionChange, reado
 
     const handleGetCurrentPosition = () => {
         if (!navigator.geolocation) {
-            alert("La géolocalisation n'est pas supportée par votre navigateur");
+            toast.error("La géolocalisation n'est pas supportée par votre navigateur");
             return;
         }
 
@@ -66,7 +67,7 @@ const MapPicker: React.FC<MapPickerProps> = ({ lat, lng, onPositionChange, reado
             },
             (error) => {
                 console.error("Error getting location:", error);
-                alert("Impossible de récupérer votre position");
+                toast.error("Impossible de récupérer votre position");
                 setIsLocating(false);
             },
             { enableHighAccuracy: true }

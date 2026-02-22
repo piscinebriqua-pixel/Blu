@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { User, Phone, MapPin, Mail, Globe, FileText } from 'lucide-react';
 import ModalLayout from './ModalLayout';
+import { toast } from 'react-hot-toast';
 import Input from './ui/Input';
 import Button from './ui/Button';
 import Combobox from './ui/Combobox';
@@ -55,10 +56,11 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
 
             if (error) throw error;
 
+            toast.success('Client mis à jour avec succès');
             onSuccess();
             onClose();
         } catch (error: unknown) {
-            alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+            toast.error(error instanceof Error ? error.message : 'Une erreur est survenue');
         } finally {
             setLoading(false);
         }
@@ -81,7 +83,7 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                 className="flex-[2]"
                 loading={loading}
             >
-                ENREGISTRER
+                VALIDER
             </Button>
         </div>
     );

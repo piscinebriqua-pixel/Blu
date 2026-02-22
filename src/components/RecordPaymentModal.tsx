@@ -2,21 +2,29 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Wallet, User, CheckCircle2 } from 'lucide-react';
 import ModalLayout from './ModalLayout';
+import { toast } from 'react-hot-toast';
 
 interface RecordPaymentModalProps {
     clientId: string;
     onClose: () => void;
     onSuccess: () => void;
+    payment?: {
+        id: string;
+        amount: number;
+        method: string;
+        technician_id: string;
+        notes: string;
+    };
 }
 
-const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClose, onSuccess }) => {
+const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClose, onSuccess, payment }) => {
     const [loading, setLoading] = useState(false);
     const [technicians, setTechnicians] = useState<any[]>([]);
     const [formData, setFormData] = useState({
-        amount: '',
-        method: 'espèces',
-        technician_id: '',
-        notes: ''
+        amount: payment?.amount.toString() || '',
+        method: payment?.method || 'espèces',
+        technician_id: payment?.technician_id || '',
+        notes: payment?.notes || ''
     });
 
     useEffect(() => {
@@ -30,24 +38,38 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.amount || !formData.technician_id) {
-            alert('Veuillez remplir les champs obligatoires');
+            toast.error('Veuillez remplir les champs obligatoires');
             return;
         }
 
         setLoading(true);
         try {
-            const { error } = await supabase.from('payments').insert([{
-                client_id: clientId,
-                technician_id: formData.technician_id,
-                amount: parseFloat(formData.amount),
-                method: formData.method,
-                notes: formData.notes || 'Paiement direct'
-            }]);
+            const paymentAmount = parseFloat(formData.amount);
 
-            if (error) throw error;
+            if (payment) {
+                // UPDATE EXISTING PAYMENT
+                const { error } = await supabase.from('payments').update({
+                    technician_id: formData.technician_id,
+                    amount: paymentAmount,
+                    method: formData.method,
+                    notes: formData.notes
+                }).eq('id', payment.id);
+
+                if (error) throw error;
+            } else {
+                // INSERT NEW PAYMENT
+                const { error } = await supabase.from('payments').insert([{
+                    client_id: clientId,
+                    technician_id: formData.technician_id,
+                    amount: paymentAmount,
+                    method: formData.method,
+                    notes: formData.notes || 'Paiement direct'
+                }]);
+
+                if (error) throw error;
+            }
 
             // --- MISE À JOUR DU SOLDE CLIENT ---
-            // 1. Récupérer le solde actuel
             const { data: clientData, error: clientFetchError } = await supabase
                 .from('clients')
                 .select('balance')
@@ -56,13 +78,17 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
 
             if (clientFetchError) throw clientFetchError;
 
-            const currentBalance = clientData?.balance || 0;
-            const paymentAmount = parseFloat(formData.amount);
+            let currentBalance = clientData?.balance || 0;
+            let newBalance;
 
-            // Calcul du nouveau solde : Ancien + Paiement
-            const newBalance = currentBalance + paymentAmount;
+            if (payment) {
+                // If editing, diff = new - old
+                const diff = paymentAmount - payment.amount;
+                newBalance = currentBalance + diff;
+            } else {
+                newBalance = currentBalance + paymentAmount;
+            }
 
-            // 2. Mettre à jour dans la base
             const { error: balanceUpdateError } = await supabase
                 .from('clients')
                 .update({ balance: newBalance })
@@ -71,17 +97,18 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
             if (balanceUpdateError) throw balanceUpdateError;
             // ------------------------------------
 
+            toast.success(payment ? 'Paiement mis à jour' : 'Paiement enregistré');
             onSuccess();
             onClose();
         } catch (error: any) {
-            alert(error.message);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <ModalLayout title="Enregistrer un Paiement" onClose={onClose}>
+        <ModalLayout title={payment ? "Modifier le Paiement" : "Enregistrer un Paiement"} onClose={onClose}>
             <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-4">
                 <div className="flex flex-col gap-2">
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1">Montant (DT)</label>
@@ -142,18 +169,28 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
                     />
                 </div>
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="btn-flow btn-primary !h-14 w-full shadow-xl shadow-blue-500/20"
-                >
-                    {loading ? 'Enregistrement...' : (
-                        <div className="flex items-center justify-center gap-2">
-                            <CheckCircle2 size={20} />
-                            <span className="font-black uppercase tracking-widest">Valider le Paiement</span>
-                        </div>
-                    )}
-                </button>
+                <div className="flex gap-3 mt-2">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black rounded-2xl uppercase tracking-widest text-[10px] hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
+                        disabled={loading}
+                    >
+                        Annuler
+                    </button>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex-[2] btn-flow btn-primary !h-14 shadow-xl shadow-blue-500/20"
+                    >
+                        {loading ? 'Enregistrement...' : (
+                            <div className="flex items-center justify-center gap-2">
+                                <CheckCircle2 size={20} />
+                                <span className="font-black uppercase tracking-widest">Valider</span>
+                            </div>
+                        )}
+                    </button>
+                </div>
             </form>
         </ModalLayout>
     );

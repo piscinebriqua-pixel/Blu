@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { toast } from 'react-hot-toast';
 import {
     Plus,
     Edit2,
@@ -24,6 +25,7 @@ import EditPoolModal from '../components/EditPoolModal';
 import InterventionDetailsModal from '../components/InterventionDetailsModal';
 import ModalLayout from '../components/ModalLayout';
 import Button from '../components/ui/Button';
+import ConfirmModal from '../components/ConfirmModal';
 
 interface Pool {
     id: string;
@@ -89,8 +91,11 @@ const ClientDetail: React.FC = () => {
     const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null);
     const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
     const [selectedInterventionForView, setSelectedInterventionForView] = useState<any | null>(null);
+    const [paymentToEdit, setPaymentToEdit] = useState<any | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
     const [activeCategory, setActiveCategory] = useState<'pools' | 'interventions' | 'payments' | 'balance' | 'gps' | null>(null);
+    const [paymentToDelete, setPaymentToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
         const sTotal = inter.services?.reduce((sAcc: number, s: any) => sAcc + (s.price_at_time || 0), 0) || 0;
@@ -188,18 +193,21 @@ const ClientDetail: React.FC = () => {
         }
     };
 
-    const handleDeletePayment = async (payId: string) => {
-        if (!isAdmin) return;
-        if (!window.confirm('Voulez-vous vraiment supprimer ce paiement ? Le solde du client sera automatiquement ajusté.')) return;
+    const handleDeletePayment = async () => {
+        if (!isAdmin || !paymentToDelete) return;
 
         try {
-            const { error } = await supabase.from('payments').delete().eq('id', payId);
+            setIsDeleting(true);
+            const { error } = await supabase.from('payments').delete().eq('id', paymentToDelete);
             if (error) throw error;
 
-            // Balance will be auto-synced by the useEffect listening to payments change
+            toast.success('Paiement supprimé');
+            setPaymentToDelete(null);
             fetchClientData();
         } catch (error: any) {
-            alert('Erreur lors de la suppression : ' + error.message);
+            toast.error('Erreur lors de la suppression : ' + error.message);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -641,16 +649,28 @@ const ClientDetail: React.FC = () => {
                                                             {pay.technician?.full_name?.split(' ')[0] || 'Admin'}
                                                         </span>
                                                         {isAdmin && (
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleDeletePayment(pay.id);
-                                                                }}
-                                                                className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all border border-red-100 dark:border-red-900/30"
-                                                                title="Supprimer"
-                                                            >
-                                                                <Trash2 size={14} />
-                                                            </button>
+                                                            <div className="flex gap-2">
+                                                                <button
+                                                                    onClick={() => {
+                                                                        setPaymentToEdit(pay);
+                                                                        setActiveCategory(null);
+                                                                    }}
+                                                                    className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all border border-blue-100 dark:border-blue-900/30"
+                                                                    title="Modifier"
+                                                                >
+                                                                    <Edit2 size={14} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setPaymentToDelete(pay.id);
+                                                                    }}
+                                                                    className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all border border-red-100 dark:border-red-900/30"
+                                                                    title="Supprimer"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </div>
@@ -729,6 +749,17 @@ const ClientDetail: React.FC = () => {
                     />
                 )
             }
+            {paymentToEdit && (
+                <RecordPaymentModal
+                    clientId={id!}
+                    payment={paymentToEdit}
+                    onClose={() => setPaymentToEdit(null)}
+                    onSuccess={() => {
+                        setPaymentToEdit(null);
+                        fetchClientData();
+                    }}
+                />
+            )}
             {
                 selectedInterventionForView && (
                     <InterventionDetailsModal
@@ -737,6 +768,16 @@ const ClientDetail: React.FC = () => {
                     />
                 )
             }
+
+            <ConfirmModal
+                isOpen={!!paymentToDelete}
+                title="Supprimer Paiement"
+                message="Voulez-vous vraiment supprimer ce paiement ? Le solde du client sera automatiquement ajusté."
+                confirmLabel="SUPPRIMER"
+                onConfirm={handleDeletePayment}
+                onClose={() => setPaymentToDelete(null)}
+                loading={isDeleting}
+            />
         </PageLayout>
     );
 };

@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { Camera, Image as ImageIcon, Loader2, Check } from "lucide-react";
 import imageCompression from "browser-image-compression";
 import { supabase } from "../../lib/supabase";
+import { toast } from "react-hot-toast";
 
 interface PhotoUploadProps {
   label: string;
@@ -61,7 +62,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       onUploadComplete(publicUrl);
     } catch (error: any) {
       console.error("Erreur d'upload:", error);
-      alert(
+      toast.error(
         "Erreur lors de l'envoi de la photo : " +
         (error.message || "Erreur inconnue"),
       );

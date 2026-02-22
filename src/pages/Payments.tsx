@@ -14,6 +14,10 @@ import {
     Trash2
 } from 'lucide-react';
 import GlobalPaymentModal from '../components/GlobalPaymentModal';
+import RecordPaymentModal from '../components/RecordPaymentModal';
+import PaymentDetailsModal from '../components/PaymentDetailsModal';
+import ConfirmModal from '../components/ConfirmModal';
+import { toast } from 'react-hot-toast';
 
 interface Payment {
     id: string;
@@ -40,6 +44,10 @@ const Payments: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+    const [paymentToDelete, setPaymentToDelete] = useState<{ id: string, clientId: string, amount: number } | null>(null);
+    const [paymentToEdit, setPaymentToEdit] = useState<Payment | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         fetchUserAndPayments();
@@ -90,11 +98,13 @@ const Payments: React.FC = () => {
         }
     };
 
-    const handleDelete = async (id: string, clientId: string, amount: number) => {
-        if (!isAdmin) return;
-        if (!window.confirm('Voulez-vous vraiment supprimer ce paiement ? Le solde du client sera ajusté.')) return;
+    const handleDelete = async () => {
+        if (!isAdmin || !paymentToDelete) return;
 
         try {
+            setIsDeleting(true);
+            const { id, clientId, amount } = paymentToDelete;
+
             // 1. Get current balance
             const { data: client } = await supabase.from('clients').select('balance').eq('id', clientId).single();
             const currentBalance = client?.balance || 0;
@@ -111,9 +121,13 @@ const Payments: React.FC = () => {
 
             if (updateError) throw updateError;
 
+            toast.success('Paiement supprimé');
+            setPaymentToDelete(null);
             fetchUserAndPayments();
         } catch (error: any) {
-            alert(error.message);
+            toast.error(error.message);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -191,7 +205,7 @@ const Payments: React.FC = () => {
                     {filteredPayments.map((p, idx) => (
                         <div
                             key={p.id}
-                            onClick={() => navigate(`/client/${p.client_id}`)}
+                            onClick={() => setSelectedPayment(p)}
                             className={`card-white !flex-row !items-center !gap-5 !p-6 group animate-in fade-in slide-in-from-bottom-4 stagger-${(idx % 5) + 1} cursor-pointer hover:border-primary/30 hover:shadow-xl transition-all relative overflow-hidden`}
                         >
                             <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100/50 dark:border-emerald-800/30 group-hover:scale-110 transition-transform">
@@ -221,8 +235,8 @@ const Payments: React.FC = () => {
                                     </div>
 
                                     <div className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] border ${p.method === 'Espèces' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' :
-                                            p.method === 'Carte' ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30' :
-                                                'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/30'
+                                        p.method === 'Carte' ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30' :
+                                            'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/30'
                                         }`}>
                                         {p.method}
                                     </div>
@@ -240,7 +254,7 @@ const Payments: React.FC = () => {
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            handleDelete(p.id, p.client_id, p.amount);
+                                            setPaymentToDelete({ id: p.id, clientId: p.client_id, amount: p.amount });
                                         }}
                                         className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm border border-red-100/50 dark:border-red-800/20"
                                         title="Supprimer"
@@ -283,6 +297,40 @@ const Payments: React.FC = () => {
                     onSuccess={fetchUserAndPayments}
                 />
             )}
+
+            {selectedPayment && (
+                <PaymentDetailsModal
+                    payment={selectedPayment as any}
+                    onClose={() => setSelectedPayment(null)}
+                    isAdmin={isAdmin}
+                    onEdit={() => {
+                        setPaymentToEdit(selectedPayment);
+                        setSelectedPayment(null);
+                    }}
+                />
+            )}
+
+            {paymentToEdit && (
+                <RecordPaymentModal
+                    clientId={paymentToEdit.client_id}
+                    payment={paymentToEdit as any}
+                    onClose={() => setPaymentToEdit(null)}
+                    onSuccess={() => {
+                        setPaymentToEdit(null);
+                        fetchUserAndPayments();
+                    }}
+                />
+            )}
+
+            <ConfirmModal
+                isOpen={!!paymentToDelete}
+                title="Supprimer Paiement"
+                message="Voulez-vous vraiment supprimer ce paiement ? Le solde du client sera ajusté."
+                confirmLabel="SUPPRIMER"
+                onConfirm={handleDelete}
+                onClose={() => setPaymentToDelete(null)}
+                loading={isDeleting}
+            />
         </PageLayout>
     );
 };

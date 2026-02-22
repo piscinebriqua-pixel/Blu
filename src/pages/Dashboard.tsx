@@ -164,7 +164,7 @@ const Dashboard: React.FC = () => {
                         <p className="text-xs text-emerald-600/60 dark:text-emerald-400/60 uppercase font-black">Encaissements</p>
                     </div>
 
-                    <div className="action-item cursor-pointer hover:scale-[1.02] transition-transform relative overflow-hidden dark:bg-slate-800 dark:border-slate-700">
+                    <div onClick={() => navigate('/planning')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform relative overflow-hidden dark:bg-slate-800 dark:border-slate-700">
                         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-cyan-50 text-cyan-600 mb-2 dark:bg-cyan-900/30 dark:text-cyan-400">
                             <Calendar size={24} />
                         </div>

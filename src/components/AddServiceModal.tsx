@@ -40,7 +40,7 @@ const AddServiceModal: React.FC<AddServiceModalProps> = ({ availableServices, re
                 Annuler
             </Button>
             <Button onClick={handleAdd} disabled={!selectedServiceId || !price} className="flex-[2]">
-                Ajouter le service
+                Valider
             </Button>
         </div>
     );

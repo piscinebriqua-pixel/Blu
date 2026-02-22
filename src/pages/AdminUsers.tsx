@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { toast } from 'react-hot-toast';
 import { UserCheck, Shield, UserPlus, ArrowLeft, ChevronDown, X } from 'lucide-react';
+import ConfirmModal from '../components/ConfirmModal';
 
 interface Profile {
     id: string;
@@ -39,6 +41,8 @@ const AdminUsers: React.FC = () => {
     const [selectedLinkId, setSelectedLinkId] = useState<string>('');
     const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
     const [newRole, setNewRole] = useState<string>('');
+    const [confirmAction, setConfirmAction] = useState<{ type: 'revoke' | 'delete', profileId: string } | null>(null);
+    const [isProcessing, setIsProcessing] = useState(false);
 
     const fetchData = async () => {
         setLoading(true);
@@ -90,7 +94,7 @@ const AdminUsers: React.FC = () => {
             }).select().single();
 
             if (error) {
-                alert("Erreur création technicien: " + error.message);
+                toast.error("Erreur création technicien: " + error.message);
                 return;
             }
             updateData.role = 'technician';
@@ -102,8 +106,9 @@ const AdminUsers: React.FC = () => {
 
         const { error } = await supabase.from('profiles').update(updateData).eq('id', selectedProfile.id);
 
-        if (error) alert("Erreur mise à jour profil: " + error.message);
+        if (error) toast.error("Erreur mise à jour profil: " + error.message);
         else {
+            toast.success("Profil mis à jour avec succès");
             setSelectedProfile(null);
             setActionType(null);
             setNewRole('');
@@ -111,21 +116,33 @@ const AdminUsers: React.FC = () => {
         }
     };
 
-    const handleRevoke = async (profileId: string) => {
-        if (!window.confirm("Voulez-vous vraiment révoquer l'accès de cet utilisateur ?")) return;
-        const { error } = await supabase.from('profiles').update({ is_approved: false }).eq('id', profileId);
-        if (error) alert("Erreur revocation: " + error.message);
-        else fetchData();
+    const handleRevoke = async () => {
+        if (!confirmAction || confirmAction.type !== 'revoke') return;
+        setIsProcessing(true);
+        const { error } = await supabase.from('profiles').update({ is_approved: false }).eq('id', confirmAction.profileId);
+        if (error) toast.error("Erreur revocation: " + error.message);
+        else {
+            toast.success("Accès révoqué");
+            setConfirmAction(null);
+            fetchData();
+        }
+        setIsProcessing(false);
     };
 
-    const handleDelete = async (profileId: string) => {
-        if (!window.confirm("Voulez-vous vraiment supprimer définitivement ce compte ?")) return;
+    const handleDelete = async () => {
+        if (!confirmAction || confirmAction.type !== 'delete') return;
+        setIsProcessing(true);
         // In Supabase, deleting from auth.users requires admin/service role. 
         // We can delete from public.profiles, but auth user remains.
         // For now, let's just delete the profile record.
-        const { error } = await supabase.from('profiles').delete().eq('id', profileId);
-        if (error) alert("Erreur suppression: " + error.message);
-        else fetchData();
+        const { error } = await supabase.from('profiles').delete().eq('id', confirmAction.profileId);
+        if (error) toast.error("Erreur suppression: " + error.message);
+        else {
+            toast.success("Compte supprimé");
+            setConfirmAction(null);
+            fetchData();
+        }
+        setIsProcessing(false);
     };
 
     if (loading) return <div className="p-8 text-center text-slate-500 dark:text-slate-400">Chargement...</div>;
@@ -242,7 +259,7 @@ const AdminUsers: React.FC = () => {
                                             </button>
                                             {profile.is_approved ? (
                                                 <button
-                                                    onClick={() => handleRevoke(profile.id)}
+                                                    onClick={() => setConfirmAction({ type: 'revoke', profileId: profile.id })}
                                                     className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors uppercase"
                                                 >
                                                     Révoquer
@@ -251,7 +268,7 @@ const AdminUsers: React.FC = () => {
                                                 <button
                                                     onClick={async () => {
                                                         const { error } = await supabase.from('profiles').update({ is_approved: true }).eq('id', profile.id);
-                                                        if (error) alert(error.message); else fetchData();
+                                                        if (error) toast.error(error.message); else { toast.success("Compte approuvé"); fetchData(); }
                                                     }}
                                                     className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs hover:bg-emerald-100 transition-colors uppercase"
                                                 >
@@ -259,7 +276,7 @@ const AdminUsers: React.FC = () => {
                                                 </button>
                                             )}
                                             <button
-                                                onClick={() => handleDelete(profile.id)}
+                                                onClick={() => setConfirmAction({ type: 'delete', profileId: profile.id })}
                                                 className="w-10 h-10 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl flex items-center justify-center hover:bg-red-100 transition-all"
                                                 title="Supprimer le compte"
                                             >
@@ -369,6 +386,19 @@ const AdminUsers: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            <ConfirmModal
+                isOpen={!!confirmAction}
+                title={confirmAction?.type === 'revoke' ? 'Révoquer Accès' : 'Supprimer Compte'}
+                message={confirmAction?.type === 'revoke'
+                    ? "Voulez-vous vraiment révoquer l'accès de cet utilisateur ? Il ne pourra plus se connecter."
+                    : "Voulez-vous vraiment supprimer définitivement ce compte ? Cette action est irréversible."
+                }
+                confirmLabel={confirmAction?.type === 'revoke' ? 'REVOQUER' : 'SUPPRIMER'}
+                onConfirm={confirmAction?.type === 'revoke' ? handleRevoke : handleDelete}
+                onClose={() => setConfirmAction(null)}
+                loading={isProcessing}
+            />
         </div>
     );
 };

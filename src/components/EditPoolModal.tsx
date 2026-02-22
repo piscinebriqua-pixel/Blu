@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Droplets, Waves, Calendar, AlertCircle, Trash2 } from 'lucide-react';
 import ModalLayout from './ModalLayout';
+import { toast } from 'react-hot-toast';
 import Input from './ui/Input';
 import Button from './ui/Button';
+import ConfirmModal from './ConfirmModal';
 
 interface Pool {
     id: string;
@@ -25,6 +27,8 @@ interface EditPoolModalProps {
 
 const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess }) => {
     const [loading, setLoading] = useState(false);
+    const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [formData, setFormData] = useState({
         name: pool.name,
         volume_m3: pool.volume_m3.toString(),
@@ -57,21 +61,19 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
 
             if (error) throw error;
 
+            toast.success('Bassin mis à jour avec succès');
             onSuccess();
             onClose();
         } catch (error: any) {
-            alert(error.message || 'Une erreur est survenue');
+            toast.error(error.message || 'Une erreur est survenue');
         } finally {
             setLoading(false);
         }
     };
 
     const handleDelete = async () => {
-        if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce bassin ? Toutes les interventions associées seront également supprimées.')) {
-            return;
-        }
-
         setLoading(true);
+        setIsDeleting(true);
         try {
             const { error } = await supabase
                 .from('pools')
@@ -80,12 +82,15 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
 
             if (error) throw error;
 
+            toast.success('Bassin supprimé');
             onSuccess();
             onClose();
         } catch (error: any) {
-            alert(error.message || 'Une erreur est survenue lors de la suppression');
+            toast.error(error.message || 'Une erreur est survenue lors de la suppression');
         } finally {
             setLoading(false);
+            setIsDeleting(false);
+            setIsConfirmDeleteOpen(false);
         }
     };
 
@@ -103,7 +108,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
             <Button
                 type="button"
                 variant="secondary"
-                onClick={handleDelete}
+                onClick={() => setIsConfirmDeleteOpen(true)}
                 className="flex-1 !bg-red-50 dark:!bg-red-900/10 !text-red-500 !border-red-100 dark:!border-red-900/20 hover:!bg-red-500 hover:!text-white transition-all shadow-none"
                 disabled={loading}
             >
@@ -116,7 +121,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                 className="flex-[2]"
                 loading={loading}
             >
-                ENREGISTRER
+                VALIDER
             </Button>
         </div>
     );
@@ -220,6 +225,16 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                     </p>
                 </div>
             </form>
+
+            <ConfirmModal
+                isOpen={isConfirmDeleteOpen}
+                title="Supprimer Bassin"
+                message={`Voulez-vous vraiment supprimer le bassin "${pool.name}" ? Toutes les interventions associées seront également supprimées.`}
+                confirmLabel="SUPPRIMER"
+                onConfirm={handleDelete}
+                onClose={() => setIsConfirmDeleteOpen(false)}
+                loading={isDeleting}
+            />
         </ModalLayout>
     );
 };

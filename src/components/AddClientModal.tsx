@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Phone, MapPin, User, Mail, Globe, FileText } from 'lucide-react';
 import ModalLayout from './ModalLayout';
+import { toast } from 'react-hot-toast';
 import Input from './ui/Input';
 import Button from './ui/Button';
 import Combobox from './ui/Combobox';
@@ -52,10 +53,11 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
 
             if (clientError) throw clientError;
 
+            toast.success('Client ajouté avec succès');
             onSuccess();
             onClose();
         } catch (error: unknown) {
-            alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+            toast.error(error instanceof Error ? error.message : 'Une erreur est survenue');
         } finally {
             setLoading(false);
         }
@@ -78,7 +80,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
                 className="flex-[2]"
                 loading={loading}
             >
-                ENREGISTRER LE CLIENT
+                VALIDER
             </Button>
         </div>
     );

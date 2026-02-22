@@ -34,7 +34,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ availableProducts, on
                 Annuler
             </Button>
             <Button onClick={handleAdd} disabled={!selectedProductId || !quantity || parseFloat(quantity) <= 0} className="flex-[2]">
-                Ajouter le produit
+                Valider
             </Button>
         </div>
     );

@@ -13,6 +13,8 @@ import AdminUsers from './pages/AdminUsers';
 import TechnicianPortal from './pages/TechnicianPortal';
 import Profile from './pages/Profile';
 import Payments from './pages/Payments';
+import Planning from './pages/Planning';
+import { Toaster } from 'react-hot-toast';
 import './index.css';
 
 const ClientRedirect = () => {
@@ -201,6 +203,11 @@ function App() {
               <div className="app-container"><TechnicianPortal /></div>
             </ProtectedRoute>
           } />
+          <Route path="/planning" element={
+            <ProtectedRoute>
+              <div className="app-container"><Planning /></div>
+            </ProtectedRoute>
+          } />
 
           <Route path="/profile" element={
             <ProtectedRoute>
@@ -213,6 +220,37 @@ function App() {
         </Routes>
       </div>
 
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#ffffff',
+            color: '#1e293b',
+            padding: '16px 24px',
+            borderRadius: '20px',
+            fontSize: '14px',
+            fontWeight: '600',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            border: '1px solid rgba(0, 0, 0, 0.05)',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#ffffff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#ffffff',
+            },
+            style: {
+              border: '1px solid rgba(239, 68, 68, 0.1)',
+            }
+          },
+        }}
+      />
     </Router>
   );
 }

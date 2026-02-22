@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Droplets, Waves } from 'lucide-react';
 import ModalLayout from './ModalLayout';
+import { toast } from 'react-hot-toast';
 import Input from './ui/Input';
 import Button from './ui/Button';
 
@@ -39,10 +40,11 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
 
             if (error) throw error;
 
+            toast.success('Bassin ajouté avec succès');
             onSuccess();
             onClose();
         } catch (error: unknown) {
-            alert(error instanceof Error ? error.message : 'Une erreur est survenue');
+            toast.error(error instanceof Error ? error.message : 'Une erreur est survenue');
         } finally {
             setLoading(false);
         }
@@ -65,7 +67,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                 className="flex-[2]"
                 loading={loading}
             >
-                AJOUTER LE BASSIN
+                VALIDER
             </Button>
         </div>
     );
