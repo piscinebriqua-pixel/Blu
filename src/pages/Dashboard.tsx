@@ -11,7 +11,8 @@ import {
     LogOut,
     Activity,
     Shield,
-    Wallet
+    Wallet,
+    Settings
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import BccpLogo from '../components/BccpLogo';
@@ -214,6 +215,16 @@ const Dashboard: React.FC = () => {
                         <span className="mt-1 dark:text-slate-300">Techniciens</span>
                         <p className="text-xl font-bold text-slate-800 dark:text-white">{counts.technicians} <span className="text-[10px] font-normal text-slate-400">membres</span></p>
                     </div>
+
+                    {profile?.role === 'admin' && (
+                        <div onClick={() => navigate('/settings/services')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-violet-50/50 border-violet-100 dark:bg-violet-900/10 dark:border-violet-800/20">
+                            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-white text-violet-600 mb-2 dark:bg-violet-900/50 dark:text-violet-400">
+                                <Settings size={24} />
+                            </div>
+                            <span className="mt-1 dark:text-violet-300 font-bold">Services</span>
+                            <p className="text-xs text-violet-600/60 dark:text-violet-400/60 uppercase font-black">Configuration</p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Logs Feed */}
