@@ -17,6 +17,14 @@ const Profile: React.FC = () => {
     const [profile, setProfile] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
+    // Modal & Form State
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+    const [newName, setNewName] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -30,6 +38,7 @@ const Profile: React.FC = () => {
 
                     if (error) throw error;
                     setProfile(data);
+                    setNewName(data.full_name || '');
                 } else {
                     navigate('/login');
                 }
@@ -43,6 +52,57 @@ const Profile: React.FC = () => {
 
         fetchProfile();
     }, [navigate]);
+
+    const handleUpdateProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        try {
+            const { error } = await supabase
+                .from('profiles')
+                .update({ full_name: newName })
+                .eq('id', profile.id);
+
+            if (error) throw error;
+
+            setProfile({ ...profile, full_name: newName });
+            setIsEditModalOpen(false);
+            alert('Profil mis à jour avec succès !');
+        } catch (error: any) {
+            alert('Erreur: ' + error.message);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleChangePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (newPassword !== confirmPassword) {
+            alert('Les mots de passe ne correspondent pas');
+            return;
+        }
+        if (newPassword.length < 6) {
+            alert('Le mot de passe doit faire au moins 6 caractères');
+            return;
+        }
+
+        setSubmitting(true);
+        try {
+            const { error } = await supabase.auth.updateUser({
+                password: newPassword
+            });
+
+            if (error) throw error;
+
+            setIsPasswordModalOpen(false);
+            setNewPassword('');
+            setConfirmPassword('');
+            alert('Mot de passe modifié avec succès !');
+        } catch (error: any) {
+            alert('Erreur: ' + error.message);
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     const handleLogout = async () => {
         const { error } = await supabase.auth.signOut();
@@ -104,20 +164,26 @@ const Profile: React.FC = () => {
                 <div className="flex flex-col gap-3">
                     <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-1">Paramètres du compte</h3>
 
-                    <button className="group flex items-center justify-between p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-blue-500 transition-all text-left">
+                    <button
+                        onClick={() => setIsEditModalOpen(true)}
+                        className="group flex items-center justify-between p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-blue-500 transition-all text-left"
+                    >
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center transition-transform group-hover:scale-110">
                                 <User size={18} />
                             </div>
                             <div>
                                 <p className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Modifier les infos</p>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nom, Prénom, Photo</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nom complet uniquement</p>
                             </div>
                         </div>
                         <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
                     </button>
 
-                    <button className="group flex items-center justify-between p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-indigo-500 transition-all text-left">
+                    <button
+                        onClick={() => setIsPasswordModalOpen(true)}
+                        className="group flex items-center justify-between p-5 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 hover:border-indigo-500 transition-all text-left"
+                    >
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 flex items-center justify-center transition-transform group-hover:scale-110">
                                 <Lock size={18} />
@@ -139,7 +205,7 @@ const Profile: React.FC = () => {
                                 <LogOut size={18} />
                             </div>
                             <div>
-                                <p className="text-sm font-black text-rose-600 uppercase tracking-tight text-shadow-sm">Se déconnecter</p>
+                                <p className="text-sm font-black text-rose-600 uppercase tracking-tight">Se déconnecter</p>
                                 <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Fermer la session actuelle</p>
                             </div>
                         </div>
@@ -154,6 +220,111 @@ const Profile: React.FC = () => {
                     </p>
                 </div>
             </div>
+
+            {/* Edit Profile Modal */}
+            {isEditModalOpen && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-[32px] p-8 max-w-md w-full animate-in fade-in zoom-in-95 shadow-2xl border border-slate-100 dark:border-slate-700 transition-colors">
+                        <h2 className="text-xl font-black text-slate-800 dark:text-white mb-1">
+                            Modifier le Profil
+                        </h2>
+                        <p className="text-slate-400 text-sm mb-6 font-medium">Mettez à jour votre nom public</p>
+
+                        <form onSubmit={handleUpdateProfile} className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">
+                                    Nom Complet
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary transition-colors outline-none"
+                                    value={newName}
+                                    onChange={(e) => setNewName(e.target.value)}
+                                    placeholder="Ex: Jean Dupont"
+                                />
+                            </div>
+
+                            <div className="flex gap-2 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditModalOpen(false)}
+                                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 transition-colors uppercase text-xs"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="flex-1 py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 disabled:opacity-50 transition-all active:scale-95 uppercase text-xs"
+                                >
+                                    {submitting ? 'Enregistrement...' : 'Enregistrer'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Change Password Modal */}
+            {isPasswordModalOpen && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-[32px] p-8 max-w-md w-full animate-in fade-in zoom-in-95 shadow-2xl border border-slate-100 dark:border-slate-700 transition-colors">
+                        <h2 className="text-xl font-black text-slate-800 dark:text-white mb-1">
+                            Sécurité
+                        </h2>
+                        <p className="text-slate-400 text-sm mb-6 font-medium">Changer votre mot de passe</p>
+
+                        <form onSubmit={handleChangePassword} className="space-y-4">
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">
+                                    Nouveau mot de passe
+                                </label>
+                                <input
+                                    type="password"
+                                    required
+                                    minLength={6}
+                                    className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary transition-colors outline-none"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">
+                                    Confirmer le mot de passe
+                                </label>
+                                <input
+                                    type="password"
+                                    required
+                                    minLength={6}
+                                    className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary transition-colors outline-none"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                />
+                            </div>
+
+                            <div className="flex gap-2 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPasswordModalOpen(false)}
+                                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 transition-colors uppercase text-xs"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="flex-1 py-4 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 disabled:opacity-50 transition-all active:scale-95 uppercase text-xs"
+                                >
+                                    {submitting ? 'Mise à jour...' : 'Mettre à jour'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </PageLayout>
     );
 };
