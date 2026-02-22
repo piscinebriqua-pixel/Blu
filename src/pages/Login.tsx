@@ -147,6 +147,26 @@ const Login: React.FC = () => {
                     </div>
                 </div>
 
+                {import.meta.env.DEV && (
+                    <div className="bg-blue-50/80 rounded-2xl p-4 text-center border border-blue-100 shadow-sm animate-in fade-in zoom-in-95 duration-500">
+                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1.5 flex items-center justify-center gap-2">
+                            <AlertCircle size={14} /> Diagnostic Connexion
+                        </p>
+                        <code className="text-xs font-mono text-primary font-black bg-white px-2 py-1 rounded-lg border border-blue-200 inline-block shadow-inner">
+                            {window.location.origin}
+                        </code>
+                        <div className="mt-3 space-y-2">
+                            <p className="text-[9px] text-slate-500 font-bold leading-tight uppercase">
+                                Si redirigé vers <span className="text-red-500">localhost</span> sur mobile :
+                            </p>
+                            <p className="text-[10px] text-slate-400 italic leading-relaxed">
+                                Utilisez un tunnel stable :<br />
+                                <span className="font-mono bg-slate-100 px-1 rounded">npx localtunnel --port 3000</span>
+                            </p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Footer */}
                 <div className="text-center">
                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] opacity-60">
