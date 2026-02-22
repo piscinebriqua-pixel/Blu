@@ -106,7 +106,7 @@ const ServicesManager: React.FC = () => {
     const fetchProducts = async () => {
         try {
             setLoadingProducts(true);
-            const { data, error } = await supabase.from('products').select('*').order('name');
+            const { data, error } = await supabase.from('inventory_products').select('*').order('name');
             if (error) throw error;
             setProducts(data || []);
         } catch (err) { console.error(err); }
@@ -132,9 +132,9 @@ const ServicesManager: React.FC = () => {
                 price_per_unit: parseFloat(productForm.price_per_unit) || 0
             };
             if (editingProduct) {
-                await supabase.from('products').update(payload).eq('id', editingProduct.id);
+                await supabase.from('inventory_products').update(payload).eq('id', editingProduct.id);
             } else {
-                await supabase.from('products').insert([payload]);
+                await supabase.from('inventory_products').insert([payload]);
             }
             setIsProductModalOpen(false);
             toast.success(editingProduct ? 'Produit mis à jour ✓' : 'Produit ajouté ✓');
@@ -147,7 +147,7 @@ const ServicesManager: React.FC = () => {
         if (!productToDelete) return;
         setIsDeletingProduct(true);
         try {
-            await supabase.from('products').delete().eq('id', productToDelete.id);
+            await supabase.from('inventory_products').delete().eq('id', productToDelete.id);
             toast.success('Produit supprimé');
             setProductToDelete(null);
             fetchProducts();
@@ -199,8 +199,8 @@ const ServicesManager: React.FC = () => {
                 <button
                     onClick={() => setActiveTab('services')}
                     className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'services'
-                            ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
-                            : 'text-slate-400 hover:text-slate-600'
+                        ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-600'
                         }`}
                 >
                     <Wrench size={14} /> Services
@@ -208,8 +208,8 @@ const ServicesManager: React.FC = () => {
                 <button
                     onClick={() => setActiveTab('products')}
                     className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'products'
-                            ? 'bg-white dark:bg-slate-700 text-violet-600 shadow-sm'
-                            : 'text-slate-400 hover:text-slate-600'
+                        ? 'bg-white dark:bg-slate-700 text-violet-600 shadow-sm'
+                        : 'text-slate-400 hover:text-slate-600'
                         }`}
                 >
                     <Package size={14} /> Produits
