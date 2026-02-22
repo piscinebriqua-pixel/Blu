@@ -46,26 +46,35 @@ const AdminUsers: React.FC = () => {
     const [isProcessing, setIsProcessing] = useState(false);
 
     const fetchData = async () => {
-        setLoading(true);
-        // Fetch profiles based on active tab
-        let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
+        try {
+            setLoading(true);
+            // Fetch profiles based on active tab
+            let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
 
-        if (activeTab === 'pending') {
-            query = query.eq('is_approved', false);
+            if (activeTab === 'pending') {
+                query = query.eq('is_approved', false);
+            }
+
+            const { data: profs, error: profError } = await query;
+            if (profError) throw profError;
+            setProfiles(profs || []);
+
+            // Fetch Technicians for linking
+            const { data: techs, error: techError } = await supabase.from('technicians').select('*').order('full_name');
+            if (techError) console.error("Tech fetch error:", techError);
+            if (techs) setTechnicians(techs);
+
+            // Fetch Clients for linking
+            const { data: cli, error: cliError } = await supabase.from('clients').select('*').order('last_name');
+            if (cliError) console.error("Client fetch error:", cliError);
+            if (cli) setClients(cli);
+
+        } catch (error: any) {
+            console.error('Erreur fetchData:', error);
+            toast.error("Erreur de chargement: " + error.message);
+        } finally {
+            setLoading(false);
         }
-
-        const { data: profs } = await query;
-        if (profs) setProfiles(profs);
-
-        // Fetch Technicians for linking
-        const { data: techs } = await supabase.from('technicians').select('*').order('full_name');
-        if (techs) setTechnicians(techs);
-
-        // Fetch Clients for linking
-        const { data: cli } = await supabase.from('clients').select('*').order('last_name');
-        if (cli) setClients(cli);
-
-        setLoading(false);
     };
 
     useEffect(() => {
@@ -168,8 +177,18 @@ const AdminUsers: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-md">
-                    <Shield size={20} />
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => fetchData()}
+                        disabled={loading}
+                        title="Actualiser la liste"
+                        className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md disabled:opacity-50"
+                    >
+                        <UserCheck size={20} className={loading ? 'animate-pulse' : ''} />
+                    </button>
+                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-md">
+                        <Shield size={20} />
+                    </div>
                 </div>
             </header>
 
@@ -196,7 +215,12 @@ const AdminUsers: React.FC = () => {
                         </div>
                         <div>
                             <h3 className="text-lg font-black text-slate-800 dark:text-white">Aucun profil</h3>
-                            <p className="text-slate-400 text-sm">Il n'y a aucun compte dans cette catégorie.</p>
+                            <p className="text-slate-400 text-sm">
+                                {activeTab === 'pending'
+                                    ? "Aucune demande d'approbation en attente."
+                                    : "Aucun compte trouvé dans la base de données."
+                                }
+                            </p>
                         </div>
                     </div>
                 ) : (
