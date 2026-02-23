@@ -162,8 +162,8 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       .select(
         `
             *,
-            intervention_services(service_id, price_at_time),
-            intervention_products(product_id, quantity)
+            services:intervention_services(service_id, price_at_time),
+            products:intervention_products(product_id, quantity)
         `,
       )
       .eq("id", interventionId)
@@ -185,10 +185,10 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         photo_after_url: data.photo_after_url || "",
       }));
 
-      if (data.intervention_services) {
+      if (data.services) {
         const svcs: Record<string, number> = {};
         (
-          data.intervention_services as {
+          data.services as {
             service_id: string;
             price_at_time: number;
           }[]
@@ -198,10 +198,10 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         setSelectedServices(svcs);
       }
 
-      if (data.intervention_products) {
+      if (data.products) {
         const prods: Record<string, number> = {};
         (
-          data.intervention_products as {
+          data.products as {
             product_id: string;
             quantity: number;
           }[]
@@ -225,7 +225,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
     // Fetch last 50 intervention services for this client to find last paid prices
     const { data } = await supabase
       .from("interventions")
-      .select("id, intervention_services(service_id, price_at_time)")
+      .select("id, services:intervention_services(service_id, price_at_time)")
       .eq("pool_id", selectedPoolId)
       .order("created_at", { ascending: false })
       .limit(20);
@@ -235,9 +235,9 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       // Iterate in reverse to let newer overwrite older (though we fetched desc, we want the *first* occurrence found)
       // Actually, we want the MOST RECENT usage. data is desc.
       data.forEach((intervention) => {
-        if (intervention.intervention_services) {
+        if (intervention.services) {
           (
-            intervention.intervention_services as {
+            intervention.services as {
               service_id: string;
               price_at_time: number;
             }[]
