@@ -33,14 +33,22 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       setUploading(true);
 
       // 1. Compression (< 300 Ko)
+      // useWebWorker: false — Web Workers can be blocked on Android WebViews
       const options = {
         maxSizeMB: 0.3, // 300 Ko
         maxWidthOrHeight: 1200,
-        useWebWorker: true,
+        useWebWorker: false,
         initialQuality: 0.7,
       };
 
-      const compressedFile = await imageCompression(file, options);
+      let fileToUpload: File = file;
+      try {
+        fileToUpload = await imageCompression(file, options);
+      } catch (compressionError) {
+        console.warn('Image compression failed, using original file:', compressionError);
+        // Fall back to original file if compression fails
+        fileToUpload = file;
+      }
 
       // 2. Upload vers Supabase Storage
       const fileExt = file.name.split(".").pop();
@@ -49,7 +57,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
 
       const { error: uploadError } = await supabase.storage
         .from("interventions")
-        .upload(filePath, compressedFile);
+        .upload(filePath, fileToUpload);
 
       if (uploadError) throw uploadError;
 
@@ -58,7 +66,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
         data: { publicUrl },
       } = supabase.storage.from("interventions").getPublicUrl(filePath);
 
-      setPreview(URL.createObjectURL(compressedFile));
+      setPreview(URL.createObjectURL(fileToUpload));
       onUploadComplete(publicUrl);
     } catch (error: any) {
       console.error("Erreur d'upload:", error);
@@ -70,6 +78,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       setUploading(false);
     }
   };
+
 
   return (
     <div className="flex-column gap-2">

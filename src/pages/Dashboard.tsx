@@ -46,14 +46,31 @@ const Dashboard: React.FC = () => {
                     }
                 }
 
-                const [clientsRes, techRes] = await Promise.all([
-                    supabase.from('clients').select('id', { count: 'exact', head: true }),
-                    supabase.from('technicians').select('id', { count: 'exact', head: true })
-                ]);
-                setCounts({
-                    clients: clientsRes.count || 0,
-                    technicians: techRes.count || 0
-                });
+                // Fetch each count independently to avoid a single failure
+                // blocking both counters (common on slow Android connections)
+                let clientCount = 0;
+                let techCount = 0;
+
+                try {
+                    const { count } = await supabase
+                        .from('clients')
+                        .select('id', { count: 'exact', head: true });
+                    clientCount = count ?? 0;
+                } catch (e) {
+                    console.warn('Client count fetch failed:', e);
+                }
+
+                try {
+                    const { count } = await supabase
+                        .from('technicians')
+                        .select('id', { count: 'exact', head: true });
+                    techCount = count ?? 0;
+                } catch (e) {
+                    console.warn('Technician count fetch failed:', e);
+                }
+
+                setCounts({ clients: clientCount, technicians: techCount });
+
             } catch (error) {
                 console.error('Erreur stats:', error);
             }

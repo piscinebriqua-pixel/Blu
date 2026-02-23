@@ -45,14 +45,19 @@
 }
 
 html,
-body,
-#root {
+body {
   height: 100%;
   width: 100%;
   font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
   -webkit-font-smoothing: antialiased;
+  /* Do NOT set overflow:hidden on html/body — it blocks native scroll on Android WebViews */
+}
+
+#root {
+  height: 100%;
+  width: 100%;
   overflow: hidden;
-  /* Prevent body scroll, use internal scrolls */
+  /* Keep overflow:hidden only on #root to control the layout container */
 }
 
 body {
@@ -86,6 +91,9 @@ a,
 [role="button"] {
   min-height: 44px;
   min-width: 44px;
+  /* Removes the 300ms tap delay on Android */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Inline/icon-only buttons override (they can be smaller visually but wrapper stays 44px) */

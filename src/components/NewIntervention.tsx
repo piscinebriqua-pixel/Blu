@@ -60,6 +60,12 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const mountedRef = React.useRef(true);
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const [loading, setLoading] = useState(false);
   const [interventionType, setInterventionType] = useState<
     "direct" | "scheduled"
@@ -318,6 +324,23 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
     }
     setLoading(true);
 
+    // Snapshot state values before any async operations to avoid stale closures.
+    // This is critical on Android where re-renders can happen between awaits.
+    const snapshotServices = { ...selectedServices };
+    const snapshotProducts = { ...usedProducts };
+    const snapshotClientId = selectedClientId;
+    const snapshotPoolId = selectedPoolId;
+    const snapshotFormData = { ...formData };
+    const snapshotDbProducts = [...dbProducts];
+
+    // Calculate total from snapshot to avoid stale closure issues
+    const servicesTotal = Object.values(snapshotServices).reduce((a, p) => a + p, 0);
+    const productsTotal = Object.entries(snapshotProducts).reduce((a, [pId, qty]) => {
+      const prod = snapshotDbProducts.find((p) => p.id === pId);
+      return a + (prod?.price_per_unit || 0) * qty;
+    }, 0);
+    const localTotalAmount = servicesTotal + productsTotal;
+
     try {
       let tempId = "";
 
@@ -326,67 +349,65 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         const { error: interError } = await supabase
           .from("interventions")
           .update({
-            technician_id: formData.technician_id,
+            technician_id: snapshotFormData.technician_id,
             ph_level:
-              interventionType === "direct" && formData.ph_level
-                ? parseFloat(formData.ph_level)
+              interventionType === "direct" && snapshotFormData.ph_level
+                ? parseFloat(snapshotFormData.ph_level)
                 : null,
             chlorine_level:
-              interventionType === "direct" && formData.chlorine_level
-                ? parseFloat(formData.chlorine_level)
+              interventionType === "direct" && snapshotFormData.chlorine_level
+                ? parseFloat(snapshotFormData.chlorine_level)
                 : null,
             water_temp:
-              interventionType === "direct" && formData.water_temp
-                ? parseFloat(formData.water_temp)
+              interventionType === "direct" && snapshotFormData.water_temp
+                ? parseFloat(snapshotFormData.water_temp)
                 : null,
             water_level_adjusted:
               interventionType === "direct"
-                ? formData.water_level_adjusted
+                ? snapshotFormData.water_level_adjusted
                 : false,
-            notes: formData.notes,
+            notes: snapshotFormData.notes,
             status: interventionType === "direct" ? "completed" : "scheduled",
             scheduled_date:
-              interventionType === "scheduled" ? formData.scheduled_date : null,
-            photo_before_url: formData.photo_before_url,
-            photo_after_url: formData.photo_after_url,
+              interventionType === "scheduled" ? snapshotFormData.scheduled_date : null,
+            photo_before_url: snapshotFormData.photo_before_url,
+            photo_after_url: snapshotFormData.photo_after_url,
           })
           .eq("id", interventionId);
 
         if (interError) throw interError;
-        // For simplicity, we assume if we are editing we might want to refresh services/products
-        // But in 'Starting' flow, people usually add them now.
       } else {
         // Insert new
         const { data: interData, error: interError } = await supabase
           .from("interventions")
           .insert([
             {
-              pool_id: selectedPoolId,
-              technician_id: formData.technician_id,
+              pool_id: snapshotPoolId,
+              technician_id: snapshotFormData.technician_id,
               ph_level:
-                interventionType === "direct" && formData.ph_level
-                  ? parseFloat(formData.ph_level)
+                interventionType === "direct" && snapshotFormData.ph_level
+                  ? parseFloat(snapshotFormData.ph_level)
                   : null,
               chlorine_level:
-                interventionType === "direct" && formData.chlorine_level
-                  ? parseFloat(formData.chlorine_level)
+                interventionType === "direct" && snapshotFormData.chlorine_level
+                  ? parseFloat(snapshotFormData.chlorine_level)
                   : null,
               water_temp:
-                interventionType === "direct" && formData.water_temp
-                  ? parseFloat(formData.water_temp)
+                interventionType === "direct" && snapshotFormData.water_temp
+                  ? parseFloat(snapshotFormData.water_temp)
                   : null,
               water_level_adjusted:
                 interventionType === "direct"
-                  ? formData.water_level_adjusted
+                  ? snapshotFormData.water_level_adjusted
                   : false,
-              notes: formData.notes,
+              notes: snapshotFormData.notes,
               status: interventionType === "direct" ? "completed" : "scheduled",
               scheduled_date:
                 interventionType === "scheduled"
-                  ? formData.scheduled_date
+                  ? snapshotFormData.scheduled_date
                   : null,
-              photo_before_url: formData.photo_before_url,
-              photo_after_url: formData.photo_after_url,
+              photo_before_url: snapshotFormData.photo_before_url,
+              photo_after_url: snapshotFormData.photo_after_url,
             },
           ])
           .select()
@@ -397,6 +418,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       }
 
       const activeInterId = interventionId || tempId;
+      if (!activeInterId) throw new Error("Identifiant d'intervention manquant");
 
       if (interventionId) {
         await supabase
@@ -410,9 +432,9 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           .eq("intervention_id", interventionId);
       }
 
-      if (Object.keys(selectedServices).length > 0) {
+      if (Object.keys(snapshotServices).length > 0) {
         await supabase.from("intervention_services").insert(
-          Object.entries(selectedServices).map(([sId, price]) => ({
+          Object.entries(snapshotServices).map(([sId, price]) => ({
             intervention_id: activeInterId,
             service_id: sId,
             price_at_time: price,
@@ -420,11 +442,11 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         );
       }
 
-      const productEntries = Object.entries(usedProducts);
+      const productEntries = Object.entries(snapshotProducts);
       if (productEntries.length > 0) {
         await supabase.from("intervention_products").insert(
           productEntries.map(([pId, qty]) => {
-            const p = dbProducts.find((prod) => prod.id === pId);
+            const p = snapshotDbProducts.find((prod) => prod.id === pId);
             return {
               intervention_id: activeInterId,
               product_id: pId,
@@ -437,16 +459,16 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
 
       if (
         interventionType === "direct" &&
-        formData.record_payment &&
-        formData.payment_amount
+        snapshotFormData.record_payment &&
+        snapshotFormData.payment_amount
       ) {
         await supabase.from("payments").insert([
           {
-            client_id: selectedClientId,
+            client_id: snapshotClientId,
             intervention_id: activeInterId,
-            technician_id: formData.technician_id,
-            amount: parseFloat(formData.payment_amount),
-            method: formData.payment_method,
+            technician_id: snapshotFormData.technician_id,
+            amount: parseFloat(snapshotFormData.payment_amount),
+            method: snapshotFormData.payment_method,
             notes: `Paiement lors de l'intervention ${activeInterId}`,
           },
         ]);
@@ -454,42 +476,45 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
 
       // --- MISE À JOUR DU SOLDE CLIENT ---
       if (interventionType === "direct") {
-        // 1. Récupérer le solde actuel
         const { data: clientData, error: clientFetchError } = await supabase
           .from("clients")
           .select("balance")
-          .eq("id", selectedClientId)
+          .eq("id", snapshotClientId)
           .single();
 
         if (clientFetchError) throw clientFetchError;
 
         const currentBalance = clientData?.balance || 0;
-        const paymentReceived = (formData.record_payment && formData.payment_amount)
-          ? parseFloat(formData.payment_amount)
+        const paymentReceived = (snapshotFormData.record_payment && snapshotFormData.payment_amount)
+          ? parseFloat(snapshotFormData.payment_amount)
           : 0;
 
-        // Calcul du nouveau solde : Ancien + Paiement - Coût
-        const newBalance = currentBalance + paymentReceived - totalAmount;
+        // Use localTotalAmount (calculated from snapshot) — avoids stale closure
+        const newBalance = currentBalance + paymentReceived - localTotalAmount;
 
-        // 2. Mettre à jour dans la base
         const { error: balanceUpdateError } = await supabase
           .from("clients")
           .update({ balance: newBalance })
-          .eq("id", selectedClientId);
+          .eq("id", snapshotClientId);
 
         if (balanceUpdateError) throw balanceUpdateError;
       }
       // ------------------------------------
 
+      // Guard: only update state if component is still mounted
+      if (!mountedRef.current) return;
+
       toast.success(interventionId ? 'Rapport mis à jour' : 'Rapport enregistré avec succès');
       onSuccess();
       onClose();
     } catch (error: unknown) {
+      if (!mountedRef.current) return;
       toast.error(error instanceof Error ? error.message : "Une erreur est survenue");
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   };
+
 
   const totalAmount = calculateTotal();
 
