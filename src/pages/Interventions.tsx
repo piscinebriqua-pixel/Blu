@@ -127,17 +127,6 @@ const Interventions: React.FC = () => {
     );
   });
 
-  const toolbar = (
-    <button
-      className="btn-primary w-10 h-10 md:w-auto md:h-[44px] !p-0 md:!px-4 flex items-center justify-center gap-2 shadow-lg hover:scale-105 transition-all"
-      onClick={handleOpenAddModal}
-    >
-      <Plus size={20} />
-      <span className="hidden md:inline font-black uppercase text-xs tracking-widest">
-        Nouveau
-      </span>
-    </button>
-  );
 
   const searchBar = (
     <div className="relative mb-6 animate-in fade-in slide-in-from-top-2 duration-500">
@@ -170,7 +159,6 @@ const Interventions: React.FC = () => {
     <PageLayout
       title="ENTRETIENS"
       subtitle={`${interventions.length} TOTAL`}
-      toolbar={toolbar}
       loading={loading && interventions.length === 0}
       showBackButton={true}
     >
@@ -341,7 +329,16 @@ const Interventions: React.FC = () => {
 
       {/* Selection Modal for adding */}
 
-      {/* New Intervention Form */}
+      {/* Floating Action Button */}
+      <button
+        onClick={handleOpenAddModal}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-600/30 flex items-center justify-center hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all z-30"
+        aria-label="Nouvelle intervention"
+      >
+        <Plus size={28} />
+      </button>
+
+      {/* Modals */}
       {isNewInterventionModalOpen && (
         <NewIntervention
           clientId={selClient?.id}
