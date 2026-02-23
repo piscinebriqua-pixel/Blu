@@ -39,15 +39,15 @@ This application runs primarily on **smartphones**. Every component you create m
 
 | Element | Tailwind Class | Minimum Size |
 |---|---|---|
-| Card titles / names | `text-base` | **16px** |
-| Descriptions / body text | `text-sm` | **14px** |
-| Form labels | `text-xs` | **12px** |
-| Badges, status pills | `text-[11px]` | **11px** |
+| Card titles / names | `text-base font-black` | **16px** |
+| Descriptions / body text | `text-base` | **16px** |
+| Form labels / Category labels | `text-[13px] font-bold` | **13px** |
+| Badges, status pills | `text-xs` | **12px** |
 
 ### ❌ Forbidden Classes
-- `text-[8px]` — **NEVER USE** — illegible on any device
-- `text-[9px]` — **NEVER USE** — illegible on any device
-- `text-[10px]` — **NEVER USE** — too small for mobile, use `text-xs` (12px) instead
+- `text-[8px]` to `text-[10px]` — **NEVER USE**
+- `text-xs` — Avoid for body text, only for small badges/pills.
+- `text-sm` — Avoid for main content, prefer `text-base` (16px).
 
 ### Inputs: Prevent iOS Auto-Zoom
 Always use `text-base` (16px) on `<input>`, `<select>`, and `<textarea>`. If font-size is below 16px, iOS Safari automatically zooms in on the field — this breaks the layout and UX.

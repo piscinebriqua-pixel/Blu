@@ -107,7 +107,7 @@ function App() {
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <button
           onClick={() => { supabase.auth.signOut(); window.location.href = '/login'; }}
-          className="text-slate-500 text-sm hover:text-white underline"
+          className="text-slate-500 text-base hover:text-white underline"
         >
           Chargement long ? Se déconnecter
         </button>
@@ -264,7 +264,7 @@ const ProfileNotFound = () => {
         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="17" y1="8" x2="22" y2="13" /><line x1="22" y1="8" x2="17" y2="13" /></svg>
       </div>
       <h2 className="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tight">Profil introuvable</h2>
-      <p className="text-slate-500 text-sm max-w-xs leading-relaxed mb-8">
+      <p className="text-slate-500 text-base max-w-xs leading-relaxed mb-8">
         Votre compte est bien authentifié mais votre profil de base n'a pas pu être chargé. Veuillez contacter un administrateur.
       </p>
       <div className="flex flex-col gap-3 w-full max-w-xs">
@@ -276,7 +276,7 @@ const ProfileNotFound = () => {
         </button>
         <button
           onClick={() => supabase.auth.signOut()}
-          className="w-full py-4 bg-white text-slate-400 rounded-2xl font-black border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 text-sm tracking-widest uppercase"
+          className="w-full py-4 bg-white text-slate-500 rounded-2xl font-black border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 text-base tracking-widest uppercase"
         >
           Se déconnecter
         </button>

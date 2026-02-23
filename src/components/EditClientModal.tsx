@@ -117,11 +117,11 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
 
                 <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center w-full">
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
-                            <Phone size={12} className="text-slate-400" /> Téléphones
+                        <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                            <Phone size={12} className="text-slate-500" /> Téléphones
                         </label>
                         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setIsWhatsAppEnabled(!isWhatsAppEnabled)}>
-                            <span className="text-sm text-slate-400">WhatsApp enabled</span>
+                            <span className="text-base text-slate-500">WhatsApp enabled</span>
                             <div className={`w-8 h-4 rounded-full relative transition-colors ${isWhatsAppEnabled ? 'bg-green-500' : 'bg-slate-300'}`}>
                                 <div className={`w-3 h-3 bg-white rounded-full absolute top-0.5 transition-all ${isWhatsAppEnabled ? 'left-[18px]' : 'left-0.5'}`} />
                             </div>
@@ -173,8 +173,8 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <Globe size={12} className="text-slate-400" /> Géolocalisation
+                    <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <Globe size={12} className="text-slate-500" /> Géolocalisation
                     </label>
                     <MapPicker
                         lat={formData.gps_lat ? parseFloat(formData.gps_lat) : null}
@@ -188,11 +188,11 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <FileText size={12} className="text-slate-400 dark:text-slate-500" /> Notes Internes
+                    <label className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <FileText size={12} className="text-slate-500 dark:text-slate-500" /> Notes Internes
                     </label>
                     <textarea
-                        className="w-full min-h-[100px] p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-medium text-slate-700 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-y"
+                        className="w-full min-h-[100px] p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-medium text-slate-700 dark:text-white placeholder:text-slate-500 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-y"
                         placeholder="Notes concernant le client..."
                         value={formData.notes}
                         onChange={e => setFormData({ ...formData, notes: e.target.value })}
@@ -204,8 +204,8 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                         <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all shadow-sm ${formData.status === 'active' ? 'left-[22px]' : 'left-1'}`} />
                     </div>
                     <div>
-                        <p className="text-sm font-bold text-slate-700 dark:text-white">Compte Actif</p>
-                        <p className="text-sm text-slate-400">Le client peut être sélectionné pour des interventions</p>
+                        <p className="text-base font-bold text-slate-700 dark:text-white">Compte Actif</p>
+                        <p className="text-base text-slate-500">Le client peut être sélectionné pour des interventions</p>
                     </div>
                 </div>
             </form>

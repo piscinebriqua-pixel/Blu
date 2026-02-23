@@ -121,7 +121,7 @@ const TechnicianPortal: React.FC = () => {
             <div className="relative">
                 <Calendar size={22} strokeWidth={2.5} />
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-white text-primary rounded-full flex items-center justify-center shadow-sm">
-                    <span className="text-xs font-black">+</span>
+                    <span className="text-[13px] font-black">+</span>
                 </div>
             </div>
         </button>
@@ -140,7 +140,7 @@ const TechnicianPortal: React.FC = () => {
                     <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                     <div className="relative z-10 flex justify-between items-center">
                         <div className="flex flex-col gap-1">
-                            <p className="text-xs font-black uppercase tracking-[0.3em] opacity-60">Programme du</p>
+                            <p className="text-[13px] font-black uppercase tracking-[0.3em] opacity-60">Programme du</p>
                             <div className="flex flex-col">
                                 <span className="text-4xl font-black uppercase tracking-tighter leading-[0.8]">{new Date().toLocaleDateString('fr-FR', { day: 'numeric' })}</span>
                                 <span className="text-xl font-black uppercase tracking-[0.1em] opacity-90">{new Date().toLocaleDateString('fr-FR', { month: 'long' })}</span>
@@ -148,7 +148,7 @@ const TechnicianPortal: React.FC = () => {
                         </div>
                         <div className="bg-white/10 backdrop-blur-xl border border-white/20 w-24 h-24 rounded-[2rem] shadow-2xl flex flex-col items-center justify-center gap-1">
                             <span className="text-3xl font-black text-white">{interventions.length}</span>
-                            <span className="text-[11px] font-extrabold uppercase tracking-widest opacity-60">Visites</span>
+                            <span className="text-[13px] font-extrabold uppercase tracking-widest opacity-60">Visites</span>
                         </div>
                     </div>
                 </div>
@@ -165,12 +165,12 @@ const TechnicianPortal: React.FC = () => {
                                 <Calendar size={40} className="opacity-20" />
                             </div>
                             <div className="flex flex-col items-center gap-1">
-                                <p className="text-sm font-black uppercase tracking-[0.2em]">Aucune visite planifiée</p>
-                                <p className="text-xs font-bold opacity-60 uppercase">Tout est à jour pour aujourd'hui</p>
+                                <p className="text-base font-black uppercase tracking-[0.2em]">Aucune visite planifiée</p>
+                                <p className="text-[13px] font-bold opacity-60 uppercase">Tout est à jour pour aujourd'hui</p>
                             </div>
                             <button
                                 onClick={handleOpenManual}
-                                className="mt-4 px-6 py-3 bg-primary/10 text-primary rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
+                                className="mt-4 px-6 py-3 bg-primary/10 text-primary rounded-2xl text-[13px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
                             >
                                 Commencer une intervention
                             </button>
@@ -189,25 +189,25 @@ const TechnicianPortal: React.FC = () => {
                                             </h3>
                                             <div className="flex items-center gap-1.5 mt-0.5">
                                                 <div className={`w-1.5 h-1.5 rounded-full ${inter.status === 'completed' ? 'bg-green-400' : 'bg-blue-400'}`} />
-                                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                                <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">
                                                     {inter.pool?.name}
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
                                     {inter.status === 'completed' ? (
-                                        <span className="px-3 py-1 bg-green-500/10 text-green-600 rounded-full text-xs font-black uppercase tracking-widest border border-green-500/20">
+                                        <span className="px-3 py-1 bg-green-500/10 text-green-600 rounded-full text-[13px] font-black uppercase tracking-widest border border-green-500/20">
                                             Terminé
                                         </span>
                                     ) : (
-                                        <span className="px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-xs font-black uppercase tracking-widest border border-blue-500/20">
+                                        <span className="px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-[13px] font-black uppercase tracking-widest border border-blue-500/20">
                                             Confirmé
                                         </span>
                                     )}
                                 </div>
 
                                 <div className="flex flex-col gap-3 mb-8">
-                                    <div className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-400">
+                                    <div className="flex items-start gap-3 text-base text-slate-600 dark:text-slate-500">
                                         <MapPin size={18} className="text-primary mt-0.5 shrink-0" />
                                         <span className="font-medium leading-tight">
                                             {inter.pool?.client?.address}, {inter.pool?.client?.city}
@@ -218,14 +218,14 @@ const TechnicianPortal: React.FC = () => {
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => runNavigation(`${inter.pool?.client?.address} ${inter.pool?.client?.city}`)}
-                                        className="w-14 h-14 bg-slate-50 dark:bg-slate-700/50 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-2xl flex items-center justify-center transition-all shadow-sm"
+                                        className="w-14 h-14 bg-slate-50 dark:bg-slate-700/50 text-slate-500 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-2xl flex items-center justify-center transition-all shadow-sm"
                                         title="Lancer la navigation"
                                     >
                                         <Navigation size={22} strokeWidth={2.5} />
                                     </button>
                                     <button
                                         onClick={() => openWhatsApp(inter.pool?.client?.phone)}
-                                        className="w-14 h-14 bg-slate-50 dark:bg-slate-700/50 text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-2xl flex items-center justify-center transition-all shadow-sm"
+                                        className="w-14 h-14 bg-slate-50 dark:bg-slate-700/50 text-slate-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-2xl flex items-center justify-center transition-all shadow-sm"
                                         title="Contacter sur WhatsApp"
                                     >
                                         <MessageCircle size={22} strokeWidth={2.5} />
@@ -236,7 +236,7 @@ const TechnicianPortal: React.FC = () => {
                                             className="flex-1 btn-flow btn-primary !h-14 shadow-blue-500/20"
                                         >
                                             <Play size={18} fill="currentColor" />
-                                            <span className="text-[11px] font-black uppercase tracking-[0.15em]">Démarrer</span>
+                                            <span className="text-[13px] font-black uppercase tracking-[0.15em]">Démarrer</span>
                                         </button>
                                     )}
                                 </div>
@@ -266,9 +266,9 @@ const TechnicianPortal: React.FC = () => {
                 >
                     <div className="flex flex-col gap-5">
                         <div className="flex flex-col gap-2">
-                            <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Choisir un Client</label>
+                            <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest ml-1">Choisir un Client</label>
                             <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                 <select
                                     className="search-input !pl-12 cursor-pointer !h-14"
                                     onChange={(e) => {
@@ -288,15 +288,15 @@ const TechnicianPortal: React.FC = () => {
 
                         {selClient && (
                             <div className="flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Choisir un Bassin</label>
+                                <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest ml-1">Choisir un Bassin</label>
                                 <div className="grid grid-cols-1 gap-2">
                                     {pools.length > 0 ? pools.map(p => (
                                         <button
                                             key={p.id}
                                             onClick={() => setSelPoolId(p.id)}
-                                            className={`flex items-center justify-between p-4 rounded-xl border transition-all ${selPoolId === p.id ? 'bg-primary/10 border-primary text-primary' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                            className={`flex items-center justify-between p-4 rounded-xl border transition-all ${selPoolId === p.id ? 'bg-primary/10 border-primary text-primary' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                         >
-                                            <span className="text-xs font-black uppercase">{p.name}</span>
+                                            <span className="text-[13px] font-black uppercase">{p.name}</span>
                                             {selPoolId === p.id && <Droplets size={16} className="text-primary" />}
                                         </button>
                                     )) : (

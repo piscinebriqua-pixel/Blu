@@ -117,7 +117,7 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
         <ModalLayout title={payment ? "Modifier le Paiement" : "Enregistrer un Paiement"} onClose={onClose}>
             <form onSubmit={handleSubmit} className="flex flex-col gap-6 p-4">
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-black uppercase text-slate-400 ml-1">Montant (DT)</label>
+                    <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Montant (DT)</label>
                     <div className="relative">
                         <Wallet size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-primary" />
                         <input
@@ -132,9 +132,9 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-black uppercase text-slate-400 ml-1">Date du Paiement</label>
+                    <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Date du Paiement</label>
                     <div className="relative">
-                        <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
                         <input
                             type="date"
                             required
@@ -147,7 +147,7 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-black uppercase text-slate-400 ml-1">Mode de Paiement</label>
+                    <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Mode de Paiement</label>
                     <select
                         className="search-input !h-12"
                         value={formData.method}
@@ -162,9 +162,9 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-black uppercase text-slate-400 ml-1">Technicien Responsable</label>
+                    <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Technicien Responsable</label>
                     <div className="relative">
-                        <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
                         <select
                             required
                             className="search-input !pl-12 !h-12"
@@ -181,7 +181,7 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-black uppercase text-slate-400 ml-1">Notes</label>
+                    <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Notes</label>
                     <textarea
                         className="search-input !h-24 !py-3 resize-none"
                         placeholder="Ex: Chèque n°12345..."
@@ -194,7 +194,7 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
                     <button
                         type="button"
                         onClick={onClose}
-                        className="flex-1 px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black rounded-2xl uppercase tracking-widest text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
+                        className="flex-1 px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-500 font-black rounded-2xl uppercase tracking-widest text-base hover:bg-slate-200 dark:hover:bg-slate-700 transition-all active:scale-95"
                         disabled={loading}
                     >
                         Annuler

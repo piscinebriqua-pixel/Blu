@@ -133,27 +133,27 @@ const Profile: React.FC = () => {
                     <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-1 uppercase tracking-tight">
                         {profile?.full_name || 'Utilisateur'}
                     </h2>
-                    <p className="text-sm font-black text-blue-500 uppercase tracking-widest bg-blue-50 dark:bg-blue-900/30 px-4 py-1.5 rounded-full mb-8">
+                    <p className="text-base font-black text-blue-500 uppercase tracking-widest bg-blue-50 dark:bg-blue-900/30 px-4 py-1.5 rounded-full mb-8">
                         {profile?.role || 'Membre'}
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                         <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-700">
-                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-slate-500">
                                 <Mail size={18} />
                             </div>
                             <div className="text-left">
-                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Email</p>
-                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate max-w-[150px]">{profile?.email}</p>
+                                <p className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Email</p>
+                                <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate max-w-[150px]">{profile?.email}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-700">
-                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-slate-500">
                                 <Calendar size={18} />
                             </div>
                             <div className="text-left">
-                                <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Inscrit le</p>
-                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                                <p className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Inscrit le</p>
+                                <p className="text-[13px] font-bold text-slate-800 dark:text-slate-200">
                                     {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
                                 </p>
                             </div>
@@ -163,7 +163,7 @@ const Profile: React.FC = () => {
 
                 {/* Account Settings */}
                 <div className="flex flex-col gap-3">
-                    <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1 mb-1">Paramètres du compte</h3>
+                    <h3 className="text-[13px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-1">Paramètres du compte</h3>
 
                     <button
                         onClick={() => setIsEditModalOpen(true)}
@@ -174,8 +174,8 @@ const Profile: React.FC = () => {
                                 <User size={18} />
                             </div>
                             <div>
-                                <p className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Modifier les infos</p>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nom complet uniquement</p>
+                                <p className="text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Modifier les infos</p>
+                                <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">Nom complet uniquement</p>
                             </div>
                         </div>
                         <ChevronRight size={18} className="text-slate-300 group-hover:text-blue-500 transition-colors" />
@@ -190,8 +190,8 @@ const Profile: React.FC = () => {
                                 <Lock size={18} />
                             </div>
                             <div>
-                                <p className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Mot de passe</p>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Sécurité du compte</p>
+                                <p className="text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Mot de passe</p>
+                                <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">Sécurité du compte</p>
                             </div>
                         </div>
                         <ChevronRight size={18} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
@@ -206,8 +206,8 @@ const Profile: React.FC = () => {
                                 <LogOut size={18} />
                             </div>
                             <div>
-                                <p className="text-sm font-black text-rose-600 uppercase tracking-tight">Se déconnecter</p>
-                                <p className="text-xs font-bold text-rose-400 uppercase tracking-widest">Fermer la session actuelle</p>
+                                <p className="text-base font-black text-rose-600 uppercase tracking-tight">Se déconnecter</p>
+                                <p className="text-[13px] font-bold text-rose-400 uppercase tracking-widest">Fermer la session actuelle</p>
                             </div>
                         </div>
                         <ChevronRight size={18} className="text-rose-300 group-hover:text-rose-500 transition-colors" />
@@ -216,7 +216,7 @@ const Profile: React.FC = () => {
 
                 {/* Quick Info Bar */}
                 <div className="text-center py-8">
-                    <p className="text-xs font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">
+                    <p className="text-[13px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-[0.2em]">
                         BCCP Version 2.4.0 • Propulsé par Google Mind
                     </p>
                 </div>
@@ -229,11 +229,11 @@ const Profile: React.FC = () => {
                         <h2 className="text-xl font-black text-slate-800 dark:text-white mb-1">
                             Modifier le Profil
                         </h2>
-                        <p className="text-slate-400 text-sm mb-6 font-medium">Mettez à jour votre nom public</p>
+                        <p className="text-slate-500 text-base mb-6 font-medium">Mettez à jour votre nom public</p>
 
                         <form onSubmit={handleUpdateProfile} className="space-y-4">
                             <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">
+                                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">
                                     Nom Complet
                                 </label>
                                 <input
@@ -274,11 +274,11 @@ const Profile: React.FC = () => {
                         <h2 className="text-xl font-black text-slate-800 dark:text-white mb-1">
                             Sécurité
                         </h2>
-                        <p className="text-slate-400 text-sm mb-6 font-medium">Changer votre mot de passe</p>
+                        <p className="text-slate-500 text-base mb-6 font-medium">Changer votre mot de passe</p>
 
                         <form onSubmit={handleChangePassword} className="space-y-4">
                             <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">
+                                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">
                                     Nouveau mot de passe
                                 </label>
                                 <input
@@ -292,7 +292,7 @@ const Profile: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">
+                                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">
                                     Confirmer le mot de passe
                                 </label>
                                 <input

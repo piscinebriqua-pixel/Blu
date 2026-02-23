@@ -104,11 +104,11 @@ const Technicians: React.FC = () => {
                 {/* Search */}
                 <div className="sticky top-0 z-20 pb-4 pt-1">
                     <div className="relative">
-                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
                         <input
                             type="text"
                             placeholder="Rechercher un technicien..."
-                            className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-slate-800 rounded-2xl border-none shadow-sm text-slate-800 dark:text-white font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                            className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-slate-800 rounded-2xl border-none shadow-sm text-slate-800 dark:text-white font-bold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -127,7 +127,7 @@ const Technicians: React.FC = () => {
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="relative">
-                                        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 font-black text-xl">
+                                        <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-500 font-black text-xl">
                                             {tech.full_name ? tech.full_name.charAt(0).toUpperCase() : '?'}
                                         </div>
                                         {tech.active && <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 border-4 border-white dark:border-slate-800 rounded-full"></div>}
@@ -136,7 +136,7 @@ const Technicians: React.FC = () => {
                                         <h3 className="font-bold text-lg text-slate-800 dark:text-white leading-tight">
                                             {tech.full_name || 'Sans Nom'}
                                         </h3>
-                                        <p className="text-slate-400 text-sm font-mono mt-1">{tech.email}</p>
+                                        <p className="text-slate-500 text-base font-mono mt-1">{tech.email}</p>
                                     </div>
                                 </div>
 
@@ -144,16 +144,16 @@ const Technicians: React.FC = () => {
 
                                 <div className="flex justify-between items-center">
                                     <div className="flex gap-2">
-                                        <div className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wide">
+                                        <div className="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[13px] font-bold uppercase tracking-wide">
                                             Technicien
                                         </div>
-                                        <div className="px-3 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-xs font-bold uppercase tracking-wide flex items-center gap-1">
+                                        <div className="px-3 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 text-[13px] font-bold uppercase tracking-wide flex items-center gap-1">
                                             <Key size={12} /> {tech.pin_code || '----'}
                                         </div>
                                     </div>
 
                                     <button
-                                        className="w-11 h-11 rounded-full bg-slate-50 dark:bg-slate-700 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex items-center justify-center"
+                                        className="w-11 h-11 rounded-full bg-slate-50 dark:bg-slate-700 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-600 hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex items-center justify-center"
                                         onClick={(e) => { e.stopPropagation(); handleOpenModal(tech); }}
                                         aria-label="Modifier"
                                     >
@@ -166,10 +166,10 @@ const Technicians: React.FC = () => {
                         !loading && (
                             <div className="flex flex-col items-center justify-center py-20 text-center col-span-full">
                                 <div className="w-20 h-20 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mb-4">
-                                    <SearchIcon size={32} className="text-slate-400" />
+                                    <SearchIcon size={32} className="text-slate-500" />
                                 </div>
                                 <h3 className="text-lg font-bold text-slate-700 dark:text-white">Aucun technicien trouvé</h3>
-                                <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto mt-2">
+                                <p className="text-slate-500 dark:text-slate-500 max-w-xs mx-auto mt-2">
                                     Essayez de modifier vos critères de recherche ou ajoutez un nouveau membre à l'équipe.
                                 </p>
                             </div>

@@ -30,7 +30,7 @@ const MockupShowcase: React.FC = () => {
 
                 <main className="main-container">
                     <div className="progress-container">
-                        <div className="flex justify-between items-center text-sm font-bold mb-2">
+                        <div className="flex justify-between items-center text-base font-bold mb-2">
                             <span>4/8 Pools Visited</span>
                             <button className="text-primary bg-primary-light/30 px-4 py-1 rounded-full text-xs">View Map</button>
                         </div>
@@ -39,7 +39,7 @@ const MockupShowcase: React.FC = () => {
                         </div>
                     </div>
 
-                    <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Today's Schedule</h2>
+                    <h2 className="text-base font-black text-slate-500 uppercase tracking-widest mb-4">Today's Schedule</h2>
 
                     <div className="flex flex-col gap-3">
                         <div className="flow-card" onClick={() => setView('detail')}>
@@ -49,7 +49,7 @@ const MockupShowcase: React.FC = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-slate-800">Hotel Blue Lagoon</h3>
-                                    <p className="text-sm text-slate-400">Pratc Man</p>
+                                    <p className="text-base text-slate-500">Pratc Man</p>
                                 </div>
                             </div>
                             <div className="status-dot bg-amber-500">
@@ -65,7 +65,7 @@ const MockupShowcase: React.FC = () => {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-slate-800">{name}</h3>
-                                        <p className="text-sm text-slate-400">Location area</p>
+                                        <p className="text-base text-slate-500">Location area</p>
                                     </div>
                                 </div>
                                 <div className="status-dot bg-green-500">
@@ -85,7 +85,7 @@ const MockupShowcase: React.FC = () => {
                 <button title="Retour" onClick={() => setView('dash')} className="btn-back-flow">
                     <ArrowLeft size={20} />
                 </button>
-                <div className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg shadow-blue-500/30">
+                <div className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-full text-[13px] font-bold shadow-lg shadow-blue-500/30">
                     <Sun size={14} /> Outdoor Mode
                 </div>
             </header>
@@ -94,7 +94,7 @@ const MockupShowcase: React.FC = () => {
                 <div className="flex justify-between items-center mb-6">
                     <div>
                         <h2 className="text-2xl font-black text-slate-800">Current Status</h2>
-                        <p className="text-sm text-slate-400">Hotel Blue Lagoon</p>
+                        <p className="text-base text-slate-500">Hotel Blue Lagoon</p>
                     </div>
                 </div>
 
@@ -107,7 +107,7 @@ const MockupShowcase: React.FC = () => {
                             </svg>
                             <span className="gauge-value">6.8</span>
                         </div>
-                        <span className="text-xs font-bold text-slate-400 uppercase">pH Level</span>
+                        <span className="text-[13px] font-bold text-slate-500 uppercase">pH Level</span>
                     </div>
 
                     <div className="circular-gauge">
@@ -118,10 +118,10 @@ const MockupShowcase: React.FC = () => {
                             </svg>
                             <div className="flex flex-col items-center">
                                 <span className="gauge-value">3.2</span>
-                                <span className="text-sm text-slate-400">ppm</span>
+                                <span className="text-base text-slate-500">ppm</span>
                             </div>
                         </div>
-                        <span className="text-xs font-bold text-slate-400 uppercase">Chlorine</span>
+                        <span className="text-[13px] font-bold text-slate-500 uppercase">Chlorine</span>
                     </div>
                 </div>
 
@@ -142,7 +142,7 @@ const MockupShowcase: React.FC = () => {
 
                 <div className="photo-dropzone">
                     <Camera size={28} className="mx-auto mb-2 text-blue-500" />
-                    <p className="text-xs font-bold">Drag & Drop Photos</p>
+                    <p className="text-[13px] font-bold">Drag & Drop Photos</p>
                     <p className="text-xs">Before / After</p>
                 </div>
 

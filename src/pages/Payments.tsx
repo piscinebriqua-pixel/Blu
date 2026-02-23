@@ -153,7 +153,7 @@ const Payments: React.FC = () => {
                         <div className="relative z-10">
                             <p className="text-premium-label !text-white/70 mb-2">Total Période</p>
                             <h3 className="text-4xl font-black text-white leading-none tracking-tighter">
-                                {totalAmount.toLocaleString()} <span className="text-sm opacity-60 ml-1">DT</span>
+                                {totalAmount.toLocaleString()} <span className="text-base opacity-60 ml-1">DT</span>
                             </h3>
                         </div>
                         <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20 shadow-inner group-hover:rotate-12 transition-transform">
@@ -180,7 +180,7 @@ const Payments: React.FC = () => {
                     >
                         <div className="text-left">
                             <p className="text-premium-label !text-primary mb-2">Action Rapide</p>
-                            <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Recouvrer Dettes</h3>
+                            <h3 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Recouvrer Dettes</h3>
                         </div>
                         <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-primary shadow-sm group-hover:bg-primary group-hover:text-white transition-all border border-slate-100 dark:border-slate-700">
                             <Filter size={20} />
@@ -190,7 +190,7 @@ const Payments: React.FC = () => {
 
                 {/* Search Bar */}
                 <div className="relative group">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors" size={20} />
                     <input
                         type="text"
                         placeholder="Rechercher par client ou technicien..."
@@ -225,16 +225,16 @@ const Payments: React.FC = () => {
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                    <div className="flex items-center gap-1.5 text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-wider">
                                         <User size={14} className="text-slate-300 dark:text-slate-600" />
                                         {p.technician?.full_name}
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                    <div className="flex items-center gap-1.5 text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-wider">
                                         <Calendar size={14} className="text-slate-300 dark:text-slate-600" />
                                         {new Date(p.payment_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
                                     </div>
 
-                                    <div className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-[0.1em] border ${p.method === 'Espèces' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' :
+                                    <div className={`px-2.5 py-1 rounded-lg text-[13px] font-black uppercase tracking-[0.1em] border ${p.method === 'Espèces' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' :
                                         p.method === 'Carte' ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30' :
                                             'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/30'
                                         }`}>
@@ -244,7 +244,7 @@ const Payments: React.FC = () => {
 
                                 {p.notes && p.notes !== 'Paiement direct' && (
                                     <div className="mt-3 flex items-start gap-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800/30">
-                                        <p className="text-[11px] text-slate-500 dark:text-slate-400 italic font-medium truncate">"{p.notes}"</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-500 italic font-medium truncate">"{p.notes}"</p>
                                     </div>
                                 )}
                             </div>
@@ -273,8 +273,8 @@ const Payments: React.FC = () => {
                                 <Wallet size={40} className="opacity-20 translate-y-1" />
                             </div>
                             <div className="text-center">
-                                <p className="text-sm font-black uppercase tracking-[0.2em] text-slate-400">Aucun résultat</p>
-                                <p className="text-[11px] font-bold text-slate-300 dark:text-slate-600 mt-1">Ajustez vos filtres de recherche</p>
+                                <p className="text-base font-black uppercase tracking-[0.2em] text-slate-500">Aucun résultat</p>
+                                <p className="text-[13px] font-bold text-slate-300 dark:text-slate-600 mt-1">Ajustez vos filtres de recherche</p>
                             </div>
                         </div>
                     )}

@@ -279,14 +279,14 @@ const ClientDetail: React.FC = () => {
                 <div className="flex flex-col gap-4">
                     {/* 1. Contact Details Tile */}
                     <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6">
-                        <h4 className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">Coordonnées</h4>
+                        <h4 className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-4">Coordonnées</h4>
                         <div className="space-y-4">
                             <div className="flex items-center gap-4 group">
                                 <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
                                     <Phone size={20} />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase">Téléphone Principal</span>
+                                    <span className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase">Téléphone Principal</span>
                                     <span className="text-lg font-black text-slate-900 dark:text-white">{client?.phone}</span>
                                 </div>
                             </div>
@@ -297,7 +297,7 @@ const ClientDetail: React.FC = () => {
                                         <Phone size={20} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase">Téléphone Secondaire</span>
+                                        <span className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase">Téléphone Secondaire</span>
                                         <span className="text-lg font-black text-slate-900 dark:text-white">{client?.phone2}</span>
                                     </div>
                                 </div>
@@ -309,7 +309,7 @@ const ClientDetail: React.FC = () => {
                                         <Mail size={20} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase">Email</span>
+                                        <span className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase">Email</span>
                                         <span className="text-lg font-black text-slate-900 dark:text-white">{client?.email}</span>
                                     </div>
                                 </div>
@@ -321,7 +321,7 @@ const ClientDetail: React.FC = () => {
                                         <MapPin size={20} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[11px] font-black text-slate-500 dark:text-slate-500 uppercase">Localisation</span>
+                                        <span className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase">Localisation</span>
                                         <span className="text-lg font-black text-slate-900 dark:text-white">{client?.city}</span>
                                     </div>
                                 </div>
@@ -332,8 +332,8 @@ const ClientDetail: React.FC = () => {
                     {/* 2. Payment List Tile (Timeline Style) */}
                     <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6 flex-1 cursor-pointer group" onClick={() => setActiveCategory('payments')}>
                         <div className="flex items-center justify-between mb-6">
-                            <h4 className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Historique Financier</h4>
-                            <Wallet size={16} className="text-slate-400" />
+                            <h4 className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Historique Financier</h4>
+                            <Wallet size={16} className="text-slate-500" />
                         </div>
 
                         {payments.length > 0 ? (
@@ -348,18 +348,18 @@ const ClientDetail: React.FC = () => {
                                                 <h5 className="text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-tight">Encaissement {pay.method}</h5>
                                                 <span className="text-[13px] font-black text-emerald-600 dark:text-emerald-400">+{pay.amount.toFixed(0)} DT</span>
                                             </div>
-                                            <p className="text-xs font-black text-slate-500 uppercase">{new Date(pay.payment_date).toLocaleDateString('fr-FR')}</p>
+                                            <p className="text-[13px] font-black text-slate-500 uppercase">{new Date(pay.payment_date).toLocaleDateString('fr-FR')}</p>
                                         </div>
                                     </div>
                                 ))}
                                 <div className="pt-2 border-t border-slate-200 dark:border-slate-800 text-center">
-                                    <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest group-hover:underline">Consulter tout l'historique</span>
+                                    <span className="text-[13px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest group-hover:underline">Consulter tout l'historique</span>
                                 </div>
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-6 opacity-30">
                                 <Wallet size={24} />
-                                <p className="text-xs font-black uppercase tracking-widest">Aucun paiement</p>
+                                <p className="text-[13px] font-black uppercase tracking-widest">Aucun paiement</p>
                             </div>
                         )}
                     </div>
@@ -374,7 +374,7 @@ const ClientDetail: React.FC = () => {
                     >
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-2">
-                                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-white">État Financier</p>
+                                <p className="text-[13px] font-black uppercase tracking-[0.2em] text-white">État Financier</p>
                                 <Wallet size={24} className="text-white/40" />
                             </div>
                             <h3 className="text-6xl font-black tracking-tighter leading-none mb-2 text-white">
@@ -399,7 +399,7 @@ const ClientDetail: React.FC = () => {
                             <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                                 <Waves size={28} />
                             </div>
-                            <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Bassins</span>
+                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Bassins</span>
                             <span className="text-3xl font-black text-slate-900 dark:text-white">{pools.length}</span>
                         </button>
 
@@ -410,30 +410,30 @@ const ClientDetail: React.FC = () => {
                             <div className="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                                 <HistoryIcon size={28} />
                             </div>
-                            <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Suivi</span>
+                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Suivi</span>
                             <span className="text-3xl font-black text-slate-900 dark:text-white">{interventions.length}</span>
                         </button>
                     </div>
 
                     {/* 5. Quick Actions Tile */}
                     <div className="card-bento bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 flex-1 min-h-[140px]">
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Actions de Gestion</h4>
+                        <h4 className="text-[13px] font-black text-slate-500 uppercase tracking-widest mb-4">Actions de Gestion</h4>
                         <div className="grid grid-cols-2 gap-2">
                             <button onClick={() => setIsInterventionModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-blue-500 transition-all group">
                                 <Plus size={16} className="text-blue-500 group-hover:scale-125 transition-transform" />
-                                <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">Intervention</span>
+                                <span className="text-[13px] font-black text-slate-600 dark:text-slate-300 uppercase">Intervention</span>
                             </button>
                             <button onClick={() => setIsPaymentModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-emerald-500 transition-all group">
                                 <Wallet size={16} className="text-emerald-500 group-hover:scale-125 transition-transform" />
-                                <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">Encaissement</span>
+                                <span className="text-[13px] font-black text-slate-600 dark:text-slate-300 uppercase">Encaissement</span>
                             </button>
                             <button onClick={() => setIsPoolModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-indigo-500 transition-all group">
                                 <Plus size={16} className="text-indigo-500 group-hover:scale-125 transition-transform" />
-                                <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">Info Bassin</span>
+                                <span className="text-[13px] font-black text-slate-600 dark:text-slate-300 uppercase">Info Bassin</span>
                             </button>
                             <button onClick={() => setIsEditClientModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-slate-900 transition-all group">
-                                <Edit2 size={16} className="text-slate-400 group-hover:scale-125 transition-transform" />
-                                <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">Editer Profil</span>
+                                <Edit2 size={16} className="text-slate-500 group-hover:scale-125 transition-transform" />
+                                <span className="text-[13px] font-black text-slate-600 dark:text-slate-300 uppercase">Editer Profil</span>
                             </button>
                         </div>
                     </div>
@@ -444,8 +444,8 @@ const ClientDetail: React.FC = () => {
             <div className="mt-4">
                 <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6 min-h-[200px]">
                     <div className="flex items-center justify-between mb-6">
-                        <h4 className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Dernière Activité</h4>
-                        <HistoryIcon size={16} className="text-slate-400" />
+                        <h4 className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Dernière Activité</h4>
+                        <HistoryIcon size={16} className="text-slate-500" />
                     </div>
 
                     {interventions.length > 0 ? (
@@ -457,10 +457,10 @@ const ClientDetail: React.FC = () => {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex justify-between items-start">
-                                            <h5 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">Rapport de Maintenance</h5>
-                                            <span className="text-xs font-black text-slate-500">{new Date(inter.created_at).toLocaleDateString('fr-FR')}</span>
+                                            <h5 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">Rapport de Maintenance</h5>
+                                            <span className="text-[13px] font-black text-slate-500">{new Date(inter.created_at).toLocaleDateString('fr-FR')}</span>
                                         </div>
-                                        <p className="text-[11px] text-slate-600 dark:text-slate-400 font-black uppercase mt-1">Bassin: {inter.pool_name} • {inter.status || 'Terminé'}</p>
+                                        <p className="text-xs text-slate-600 dark:text-slate-500 font-black uppercase mt-1">Bassin: {inter.pool_name} • {inter.status || 'Terminé'}</p>
                                     </div>
                                 </div>
                             ))}
@@ -468,11 +468,11 @@ const ClientDetail: React.FC = () => {
                     ) : (
                         <div className="flex flex-col items-center justify-center h-20 opacity-30">
                             <HistoryIcon size={28} />
-                            <p className="text-xs font-black uppercase tracking-widest">Aucune activité enregistrée</p>
+                            <p className="text-[13px] font-black uppercase tracking-widest">Aucune activité enregistrée</p>
                         </div>
                     )}
 
-                    <button onClick={() => setActiveCategory('interventions')} className="w-full mt-6 py-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-xs font-black text-slate-500 hover:text-blue-600 hover:border-blue-500/50 transition-all uppercase tracking-widest">
+                    <button onClick={() => setActiveCategory('interventions')} className="w-full mt-6 py-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-[13px] font-black text-slate-500 hover:text-blue-600 hover:border-blue-500/50 transition-all uppercase tracking-widest">
                         Consulter l'historique complet
                     </button>
                 </div>
@@ -523,16 +523,16 @@ const ClientDetail: React.FC = () => {
                                 <div className="space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-3xl border border-slate-100 dark:border-slate-700">
-                                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Total Interventions</p>
+                                            <p className="text-[13px] font-black text-slate-500 uppercase tracking-widest mb-2">Total Interventions</p>
                                             <h4 className="text-2xl font-black text-slate-800 dark:text-white">-{totalIntersAmount.toFixed(0)} <span className="text-xs opacity-60">DT</span></h4>
                                         </div>
                                         <div className="bg-emerald-50 dark:bg-emerald-900/10 p-6 rounded-3xl border border-emerald-100 dark:border-emerald-800/30">
-                                            <p className="text-xs font-black text-emerald-600 uppercase tracking-widest mb-2">Total Paiements</p>
+                                            <p className="text-[13px] font-black text-emerald-600 uppercase tracking-widest mb-2">Total Paiements</p>
                                             <h4 className="text-2xl font-black text-emerald-600">+{totalPaymentsAmount.toFixed(0)} <span className="text-xs opacity-60 text-emerald-400">DT</span></h4>
                                         </div>
                                     </div>
                                     <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-slate-800 to-slate-900 text-white shadow-xl shadow-slate-900/20 text-center">
-                                        <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Solde Final</p>
+                                        <p className="text-[13px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Solde Final</p>
                                         <h3 className="text-5xl font-black tracking-tighter">
                                             {(totalPaymentsAmount - totalIntersAmount) < 0 ? (
                                                 <span className="text-rose-400">Credit {Math.abs(totalPaymentsAmount - totalIntersAmount).toFixed(0)}</span>
@@ -555,13 +555,13 @@ const ClientDetail: React.FC = () => {
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
-                                                        className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-black uppercase tracking-wider hover:bg-blue-600 transition-colors"
+                                                        className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[13px] font-black uppercase tracking-wider hover:bg-blue-600 transition-colors"
                                                     >
                                                         Nouveau Rapport
                                                     </button>
                                                     <button
                                                         onClick={() => { setSelectedPool(pool); setIsEditPoolModalOpen(true); }}
-                                                        className="w-11 h-11 rounded-xl bg-white dark:bg-slate-700 text-slate-400 flex items-center justify-center hover:text-blue-600 border border-slate-100 dark:border-slate-600 shadow-sm transition-all"
+                                                        className="w-11 h-11 rounded-xl bg-white dark:bg-slate-700 text-slate-500 flex items-center justify-center hover:text-blue-600 border border-slate-100 dark:border-slate-600 shadow-sm transition-all"
                                                         title="Modifier"
                                                     >
                                                         <Edit2 size={14} />
@@ -579,9 +579,9 @@ const ClientDetail: React.FC = () => {
                                             </div>
                                             <h4 className="text-base font-black text-slate-800 dark:text-white mb-1">{pool.name}</h4>
                                             <div className="flex items-center gap-3">
-                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{pool.volume_m3} m³</span>
+                                                <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">{pool.volume_m3} m³</span>
                                                 <span className="w-1 h-1 rounded-full bg-slate-200" />
-                                                <span className="text-xs font-bold text-blue-500 uppercase tracking-widest">{pool.treatment_method}</span>
+                                                <span className="text-[13px] font-bold text-blue-500 uppercase tracking-widest">{pool.treatment_method}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -590,9 +590,9 @@ const ClientDetail: React.FC = () => {
                                         className="flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-500/50 hover:bg-blue-500/[0.02] transition-all group"
                                     >
                                         <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                            <Plus size={24} className="text-slate-400 group-hover:text-blue-500" />
+                                            <Plus size={24} className="text-slate-500 group-hover:text-blue-500" />
                                         </div>
-                                        <span className="text-xs font-black text-slate-400 group-hover:text-blue-500 uppercase tracking-widest">Ajouter un bassin</span>
+                                        <span className="text-[13px] font-black text-slate-500 group-hover:text-blue-500 uppercase tracking-widest">Ajouter un bassin</span>
                                     </button>
                                 </div>
                             )}
@@ -606,12 +606,12 @@ const ClientDetail: React.FC = () => {
                                                 <HistoryIcon size={24} />
                                             </div>
                                             <div>
-                                                <p className="text-xs font-black text-indigo-500 uppercase tracking-widest">Cumul des Travaux</p>
+                                                <p className="text-[13px] font-black text-indigo-500 uppercase tracking-widest">Cumul des Travaux</p>
                                                 <h4 className="text-2xl font-black text-slate-800 dark:text-white">{totalIntersAmount.toFixed(0)} <span className="text-xs opacity-60">DT</span></h4>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Fréquence</p>
+                                            <p className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Fréquence</p>
                                             <h4 className="text-2xl font-black text-slate-800 dark:text-white">{interventions.length} <span className="text-xs opacity-60">Visites</span></h4>
                                         </div>
                                     </div>
@@ -628,18 +628,18 @@ const ClientDetail: React.FC = () => {
                                                     <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-transparent hover:border-indigo-500/20 transition-all">
                                                         <div className="flex justify-between items-start mb-2">
                                                             <div>
-                                                                <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                                                <span className="text-[13px] font-black text-slate-900 dark:text-white uppercase tracking-tight">
                                                                     {new Date(inter.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                                                 </span>
-                                                                <p className="text-sm text-slate-400 font-bold uppercase mt-1">Bassin: {inter.pool_name}</p>
+                                                                <p className="text-base text-slate-500 font-bold uppercase mt-1">Bassin: {inter.pool_name}</p>
                                                             </div>
-                                                            <span className="text-xs font-black text-indigo-500 bg-indigo-500/10 px-3 py-1 rounded-lg uppercase tracking-widest">
+                                                            <span className="text-[13px] font-black text-indigo-500 bg-indigo-500/10 px-3 py-1 rounded-lg uppercase tracking-widest">
                                                                 {inter.status || 'TERMINE'}
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center gap-6 pt-3 border-t border-slate-100 dark:border-slate-700">
-                                                            {inter.ph_level && <span className="text-xs font-bold text-slate-500 uppercase tracking-widest italic">PH: <strong className="text-slate-900 dark:text-white ml-1">{inter.ph_level}</strong></span>}
-                                                            {inter.chlorine_level && <span className="text-xs font-bold text-slate-500 uppercase tracking-widest italic">Chlore: <strong className="text-slate-900 dark:text-white ml-1">{inter.chlorine_level}</strong></span>}
+                                                            {inter.ph_level && <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest italic">PH: <strong className="text-slate-900 dark:text-white ml-1">{inter.ph_level}</strong></span>}
+                                                            {inter.chlorine_level && <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest italic">Chlore: <strong className="text-slate-900 dark:text-white ml-1">{inter.chlorine_level}</strong></span>}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -648,7 +648,7 @@ const ClientDetail: React.FC = () => {
                                     ) : (
                                         <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem]">
                                             <HistoryIcon size={48} className="mx-auto text-slate-200 mb-4" />
-                                            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Aucun historique technique</p>
+                                            <p className="text-base font-bold text-slate-500 uppercase tracking-widest">Aucun historique technique</p>
                                         </div>
                                     )}
                                 </div>
@@ -666,13 +666,13 @@ const ClientDetail: React.FC = () => {
                                                         </div>
                                                         <div className="space-y-1">
                                                             <p className="text-xl font-black text-emerald-600">+{pay.amount.toFixed(0)} <span className="text-xs opacity-70">DT</span></p>
-                                                            <p className="text-sm text-slate-400 font-black uppercase tracking-widest">
+                                                            <p className="text-base text-slate-500 font-black uppercase tracking-widest">
                                                                 {new Date(pay.payment_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} • {pay.method}
                                                             </p>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-black text-slate-500 uppercase shadow-sm">
+                                                        <span className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[13px] font-black text-slate-500 uppercase shadow-sm">
                                                             {pay.technician?.full_name?.split(' ')[0] || 'Admin'}
                                                         </span>
                                                         {isAdmin && (
@@ -706,7 +706,7 @@ const ClientDetail: React.FC = () => {
                                     ) : (
                                         <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem]">
                                             <Wallet size={48} className="mx-auto text-slate-200 mb-4" />
-                                            <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Aucun mouvement financier</p>
+                                            <p className="text-base font-bold text-slate-500 uppercase tracking-widest">Aucun mouvement financier</p>
                                         </div>
                                     )}
                                 </div>

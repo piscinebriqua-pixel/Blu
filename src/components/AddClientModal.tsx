@@ -113,11 +113,11 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
 
                 <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center w-full">
-                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
-                            <Phone size={12} className="text-slate-400" /> Téléphones
+                        <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                            <Phone size={12} className="text-slate-500" /> Téléphones
                         </label>
                         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setIsWhatsAppEnabled(!isWhatsAppEnabled)}>
-                            <span className="text-sm text-slate-400">WhatsApp enabled</span>
+                            <span className="text-base text-slate-500">WhatsApp enabled</span>
                             <div className={`w-8 h-4 rounded-full relative transition-colors ${isWhatsAppEnabled ? 'bg-green-500' : 'bg-slate-300'}`}>
                                 <div className={`w-3 h-3 bg-white rounded-full absolute top-0.5 transition-all ${isWhatsAppEnabled ? 'left-[18px]' : 'left-0.5'}`} />
                             </div>
@@ -169,8 +169,8 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <Globe size={12} className="text-slate-400" /> Géolocalisation
+                    <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <Globe size={12} className="text-slate-500" /> Géolocalisation
                     </label>
                     <MapPicker
                         lat={formData.gps_lat ? parseFloat(formData.gps_lat) : null}
@@ -184,11 +184,11 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1 flex items-center gap-1">
-                        <FileText size={12} className="text-slate-400 dark:text-slate-500" /> Notes Internes
+                    <label className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <FileText size={12} className="text-slate-500 dark:text-slate-500" /> Notes Internes
                     </label>
                     <textarea
-                        className="w-full min-h-[100px] p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-medium text-slate-700 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-y"
+                        className="w-full min-h-[100px] p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-medium text-slate-700 dark:text-white placeholder:text-slate-500 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-y"
                         placeholder="Client intéressé par la rénovation du bassin..."
                         value={formData.notes}
                         onChange={e => setFormData({ ...formData, notes: e.target.value })}

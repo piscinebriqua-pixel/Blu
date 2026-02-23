@@ -59,11 +59,11 @@ const ClientsList: React.FC = () => {
     // const toolbar = (
     //     <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
     //         <div className="relative w-full sm:w-96">
-    //             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={20} />
+    //             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors" size={20} />
     //             <input
     //                 type="text"
     //                 placeholder="Rechercher un client..."
-    //                 className="w-full h-12 bg-white border border-slate-200 rounded-xl pl-12 pr-4 font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm"
+    //                 className="w-full h-12 bg-white border border-slate-200 rounded-xl pl-12 pr-4 font-medium text-slate-700 placeholder:text-slate-500 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm"
     //                 value={searchTerm}
     //                 onChange={(e) => setSearchTerm(e.target.value)}
     //             />
@@ -127,11 +127,11 @@ const ClientsList: React.FC = () => {
                 <div className="sticky top-0 z-20 pb-4 pt-1">
                     <div className="flex gap-2 mb-4">
                         <div className="relative flex-1">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
                             <input
                                 type="text"
                                 placeholder="Rechercher un client..."
-                                className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-slate-800 rounded-2xl border-none shadow-sm text-slate-800 dark:text-white font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                                className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-slate-800 rounded-2xl border-none shadow-sm text-slate-800 dark:text-white font-bold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -144,7 +144,7 @@ const ClientsList: React.FC = () => {
                                 <button
                                     key={filter}
                                     onClick={() => setActiveFilter(filter)}
-                                    className={`px-4 py-2 rounded-xl text-xs font-bold shadow-sm border whitespace-nowrap transition-colors ${activeFilter === filter ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400'}`}
+                                    className={`px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm border whitespace-nowrap transition-colors ${activeFilter === filter ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400'}`}
                                 >
                                     {filter}
                                 </button>
@@ -174,7 +174,7 @@ const ClientsList: React.FC = () => {
                                                     <h3 className="font-bold text-slate-800 dark:text-white leading-tight">
                                                         {client.first_name || 'Sans Prénom'} {client.last_name || ''}
                                                     </h3>
-                                                    <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">
+                                                    <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-500 mt-0.5">
                                                         <MapPin size={12} className="text-slate-300 dark:text-slate-600" />
                                                         {client.city || 'Ville inconnue'}
                                                     </div>
@@ -189,7 +189,7 @@ const ClientsList: React.FC = () => {
 
                                         <div className="flex justify-between items-center">
                                             <div className="flex items-center gap-2">
-                                                <div className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wide border ${client.balance < 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'}`}>
+                                                <div className={`px-2.5 py-1 rounded-lg text-[13px] font-black uppercase tracking-wide border ${client.balance < 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'}`}>
                                                     {client.balance < 0 ? 'Credit Client' : 'À jour'}
                                                 </div>
                                                 {client.email && (
@@ -198,13 +198,13 @@ const ClientsList: React.FC = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            <span className={`text-sm font-black ${client.balance < 0 ? 'text-red-500 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                                            <span className={`text-base font-black ${client.balance < 0 ? 'text-red-500 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
                                                 {client.balance < 0 ? (
-                                                    <>Credit <span className="text-sm">{Math.abs(client.balance).toFixed(0)}</span></>
+                                                    <>Credit <span className="text-base">{Math.abs(client.balance).toFixed(0)}</span></>
                                                 ) : (
                                                     <>{client.balance.toFixed(0)}</>
                                                 )}
-                                                <span className="text-xs font-bold opacity-60 ml-1">DT</span>
+                                                <span className="text-[13px] font-bold opacity-60 ml-1">DT</span>
                                             </span>
                                         </div>
                                     </div>
@@ -213,10 +213,10 @@ const ClientsList: React.FC = () => {
                                 !loading && (
                                     <div className="flex flex-col items-center justify-center py-20 text-center">
                                         <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-                                            <Search size={32} className="text-slate-400" />
+                                            <Search size={32} className="text-slate-500" />
                                         </div>
                                         <h3 className="text-lg font-bold text-slate-700 dark:text-white">Aucun client trouvé</h3>
-                                        <p className="text-slate-500 dark:text-slate-400 max-w-xs mx-auto mt-2">
+                                        <p className="text-slate-500 dark:text-slate-500 max-w-xs mx-auto mt-2">
                                             Essayez de modifier vos critères de recherche ou ajoutez un nouveau client.
                                         </p>
                                     </div>

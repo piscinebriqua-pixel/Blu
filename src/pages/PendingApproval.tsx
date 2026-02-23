@@ -24,13 +24,13 @@ const PendingApproval: React.FC = () => {
 
                 <div className="bg-white rounded-[32px] p-8 shadow-2xl shadow-slate-900/10 text-center w-full">
                     <h1 className="text-2xl font-black text-slate-800 mb-2">Compte en attente</h1>
-                    <p className="text-slate-500 font-medium text-sm mb-6">
+                    <p className="text-slate-500 font-medium text-base mb-6">
                         Votre demande d'inscription a bien été reçue.
                     </p>
 
                     <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 mb-8 flex flex-col items-center gap-3">
                         <ShieldAlert className="text-amber-500" size={32} />
-                        <p className="text-amber-700 text-xs font-bold leading-relaxed">
+                        <p className="text-amber-700 text-[13px] font-bold leading-relaxed">
                             Un administrateur doit valider votre compte et vous attribuer un rôle avant que vous ne puissiez accéder à l'application.
                         </p>
                     </div>
@@ -44,7 +44,7 @@ const PendingApproval: React.FC = () => {
                     </button>
                 </div>
 
-                <p className="text-sm text-slate-400 font-bold uppercase tracking-[0.2em] opacity-60">
+                <p className="text-base text-slate-500 font-bold uppercase tracking-[0.2em] opacity-60">
                     BCCP Security
                 </p>
             </div>

@@ -51,7 +51,7 @@ const PersonCard: React.FC<PersonCardProps> = ({
                     <Button
                         variant="icon"
                         size="icon"
-                        className="!bg-slate-50 dark:!bg-slate-700 !text-slate-500 dark:!text-slate-400 hover:!bg-blue-500 hover:!text-white shadow-sm"
+                        className="!bg-slate-50 dark:!bg-slate-700 !text-slate-500 dark:!text-slate-500 hover:!bg-blue-500 hover:!text-white shadow-sm"
                         onClick={(e) => { e.stopPropagation(); onEdit(person); }}
                         title="Modifier"
                     >
@@ -62,7 +62,7 @@ const PersonCard: React.FC<PersonCardProps> = ({
                     <Button
                         variant="icon"
                         size="icon"
-                        className={`shadow-sm ${isActive ? '!bg-slate-50 dark:!bg-slate-700 !text-green-600 dark:!text-green-400 hover:!bg-red-500 hover:!text-white' : '!bg-slate-50 dark:!bg-slate-700 !text-slate-400 hover:!bg-green-500 hover:!text-white'}`}
+                        className={`shadow-sm ${isActive ? '!bg-slate-50 dark:!bg-slate-700 !text-green-600 dark:!text-green-400 hover:!bg-red-500 hover:!text-white' : '!bg-slate-50 dark:!bg-slate-700 !text-slate-500 hover:!bg-green-500 hover:!text-white'}`}
                         onClick={(e) => { e.stopPropagation(); onToggleStatus(person); }}
                         title={isActive ? "Désactiver" : "Activer"}
                     >
@@ -90,7 +90,7 @@ const PersonCard: React.FC<PersonCardProps> = ({
                         ? (type === 'client'
                             ? 'bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-blue-200'
                             : 'bg-gradient-to-br from-primary to-primary-dark text-white shadow-sky-200')
-                        : 'bg-slate-100 dark:bg-slate-700 text-slate-400'}
+                        : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}
                 `}>
                     {initial}
                 </div>
@@ -100,30 +100,30 @@ const PersonCard: React.FC<PersonCardProps> = ({
 
                     <div className="flex flex-col gap-2 mt-3">
                         {/* Phone Badge */}
-                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-500">
                             <div className="w-6 h-6 rounded-lg bg-green-50 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
                                 <Phone size={14} className="text-green-600 dark:text-green-400" />
                             </div>
-                            <span className="text-sm font-medium">{person.phone || 'N/A'}</span>
+                            <span className="text-base font-medium">{person.phone || 'N/A'}</span>
                         </div>
 
                         {/* Email Badge (Technician) */}
                         {type === 'technician' && (
-                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-500">
                                 <div className="w-6 h-6 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
                                     <Mail size={14} className="text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <span className="text-sm font-medium truncate">{person.email || 'N/A'}</span>
+                                <span className="text-base font-medium truncate">{person.email || 'N/A'}</span>
                             </div>
                         )}
 
                         {/* Address/City Badge (Client) */}
                         {type === 'client' && (
-                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-500">
                                 <div className="w-6 h-6 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
                                     <MapPin size={14} className="text-indigo-600 dark:text-indigo-400" />
                                 </div>
-                                <span className="text-sm font-medium truncate">
+                                <span className="text-base font-medium truncate">
                                     {person.address ? person.address : (person.city || 'Adresse non renseignée')}
                                 </span>
                             </div>

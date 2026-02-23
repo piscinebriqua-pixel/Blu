@@ -52,10 +52,10 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                     {variant === 'danger' ? <Trash2 size={24} strokeWidth={2.5} /> : <AlertCircle size={24} strokeWidth={2.5} />}
                 </div>
                 <div className="flex flex-col gap-1.5">
-                    <p className="text-xs font-bold text-slate-800 dark:text-white px-2 leading-relaxed">
+                    <p className="text-[13px] font-bold text-slate-800 dark:text-white px-2 leading-relaxed">
                         {message}
                     </p>
-                    <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                    <p className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">
                         Cette action est irréversible
                     </p>
                 </div>

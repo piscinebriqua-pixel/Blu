@@ -138,7 +138,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                         <Waves size={24} />
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Configuration technique</p>
+                        <p className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">Configuration technique</p>
                         <h3 className="text-lg font-bold uppercase text-slate-800 dark:text-white leading-none">{pool.name}</h3>
                     </div>
                 </div>
@@ -168,8 +168,8 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                                 <Calendar size={18} />
                             </div>
                             <div>
-                                <h4 className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-widest">Contrat Entretien</h4>
-                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-tight">Planification automatique</p>
+                                <h4 className="text-[13px] font-black uppercase text-slate-800 dark:text-white tracking-widest">Contrat Entretien</h4>
+                                <p className="text-[13px] font-bold text-slate-500 uppercase tracking-tight">Planification automatique</p>
                             </div>
                         </div>
                         <button
@@ -185,9 +185,9 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                     {formData.is_contracted && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
                             <div className="flex flex-col gap-2">
-                                <label className="text-xs font-black uppercase text-slate-400 ml-1">Fréquence</label>
+                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Fréquence</label>
                                 <select
-                                    className="search-input !h-12 text-sm"
+                                    className="search-input !h-12 text-base"
                                     value={formData.maintenance_frequency}
                                     onChange={e => setFormData({ ...formData, maintenance_frequency: e.target.value })}
                                     title="Fréquence d'entretien"
@@ -198,9 +198,9 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                                 </select>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-xs font-black uppercase text-slate-400 ml-1">Jour préféré</label>
+                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Jour préféré</label>
                                 <select
-                                    className="search-input !h-12 text-sm"
+                                    className="search-input !h-12 text-base"
                                     value={formData.preferred_day}
                                     onChange={e => setFormData({ ...formData, preferred_day: e.target.value })}
                                     title="Jour de passage préféré"

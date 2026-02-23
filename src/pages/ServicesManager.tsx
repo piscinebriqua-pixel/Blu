@@ -168,7 +168,7 @@ const ServicesManager: React.FC = () => {
                     placeholder="Rechercher..."
                     value={activeTab === 'services' ? serviceSearch : productSearch}
                     onChange={e => activeTab === 'services' ? setServiceSearch(e.target.value) : setProductSearch(e.target.value)}
-                    className="pl-9 pr-4 py-2.5 bg-white/20 backdrop-blur-sm text-white placeholder-white/60 rounded-xl border border-white/20 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white/30 w-40"
+                    className="pl-9 pr-4 py-2.5 bg-white/20 backdrop-blur-sm text-white placeholder-white/60 rounded-xl border border-white/20 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/30 w-40"
                 />
             </div>
             <button
@@ -198,18 +198,18 @@ const ServicesManager: React.FC = () => {
             <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-fit border border-slate-200 dark:border-slate-700 mb-6">
                 <button
                     onClick={() => setActiveTab('services')}
-                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'services'
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all ${activeTab === 'services'
                         ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-600'
+                        : 'text-slate-500 hover:text-slate-600'
                         }`}
                 >
                     <Wrench size={14} /> Services
                 </button>
                 <button
                     onClick={() => setActiveTab('products')}
-                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'products'
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-base font-black uppercase tracking-widest transition-all ${activeTab === 'products'
                         ? 'bg-white dark:bg-slate-700 text-violet-600 shadow-sm'
-                        : 'text-slate-400 hover:text-slate-600'
+                        : 'text-slate-500 hover:text-slate-600'
                         }`}
                 >
                     <Package size={14} /> Produits
@@ -234,16 +234,16 @@ const ServicesManager: React.FC = () => {
                                     <Wrench size={18} />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="font-black text-slate-800 dark:text-white text-sm truncate">{service.name}</p>
+                                    <p className="font-black text-slate-800 dark:text-white text-base truncate">{service.name}</p>
                                     <div className="flex items-center gap-1.5 mt-0.5">
                                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Disponible</span>
+                                        <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">Disponible</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex items-baseline gap-1 flex-shrink-0">
                                 <span className="text-xl font-black text-slate-800 dark:text-white">{service.price.toFixed(0)}</span>
-                                <span className="text-xs font-bold text-slate-400">DT</span>
+                                <span className="text-[13px] font-bold text-slate-500">DT</span>
                             </div>
                             <div className="flex items-center gap-1.5 flex-shrink-0">
                                 <ActionBtn color="blue" onClick={() => handleOpenServiceModal(service)} icon={<Edit2 size={14} />} label="Modifier" />
@@ -272,16 +272,16 @@ const ServicesManager: React.FC = () => {
                                     <Package size={18} />
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="font-black text-slate-800 dark:text-white text-sm truncate">{product.name}</p>
+                                    <p className="font-black text-slate-800 dark:text-white text-base truncate">{product.name}</p>
                                     <div className="flex items-center gap-2 mt-0.5">
-                                        <Tag size={10} className="text-slate-400" />
-                                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{product.unit || '—'}</span>
+                                        <Tag size={10} className="text-slate-500" />
+                                        <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">{product.unit || '—'}</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex items-baseline gap-1 flex-shrink-0">
                                 <span className="text-xl font-black text-slate-800 dark:text-white">{product.price_per_unit.toFixed(0)}</span>
-                                <span className="text-xs font-bold text-slate-400">DT/{product.unit || 'u'}</span>
+                                <span className="text-[13px] font-bold text-slate-500">DT/{product.unit || 'u'}</span>
                             </div>
                             <div className="flex items-center gap-1.5 flex-shrink-0">
                                 <ActionBtn color="violet" onClick={() => handleOpenProductModal(product)} icon={<Edit2 size={14} />} label="Modifier" />
@@ -302,7 +302,7 @@ const ServicesManager: React.FC = () => {
                     saving={savingService}
                 >
                     <InputField label="Nom de la prestation" placeholder="Ex: Entretien mensuel..." value={serviceForm.name} onChange={v => setServiceForm({ ...serviceForm, name: v })} />
-                    <InputField label="Tarif (DT)" type="number" placeholder="0" value={serviceForm.price} onChange={v => setServiceForm({ ...serviceForm, price: v })} icon={<Wallet size={18} className="text-slate-400" />} />
+                    <InputField label="Tarif (DT)" type="number" placeholder="0" value={serviceForm.price} onChange={v => setServiceForm({ ...serviceForm, price: v })} icon={<Wallet size={18} className="text-slate-500" />} />
                 </FormModal>
             )}
 
@@ -317,7 +317,7 @@ const ServicesManager: React.FC = () => {
                 >
                     <InputField label="Nom du produit" placeholder="Ex: Chlore granulé..." value={productForm.name} onChange={v => setProductForm({ ...productForm, name: v })} />
                     <InputField label="Unité" placeholder="Ex: kg, L, bidon..." value={productForm.unit} onChange={v => setProductForm({ ...productForm, unit: v })} />
-                    <InputField label="Prix par unité (DT)" type="number" placeholder="0" value={productForm.price_per_unit} onChange={v => setProductForm({ ...productForm, price_per_unit: v })} icon={<Wallet size={18} className="text-slate-400" />} />
+                    <InputField label="Prix par unité (DT)" type="number" placeholder="0" value={productForm.price_per_unit} onChange={v => setProductForm({ ...productForm, price_per_unit: v })} icon={<Wallet size={18} className="text-slate-500" />} />
                 </FormModal>
             )}
 
@@ -348,12 +348,12 @@ const ServicesManager: React.FC = () => {
 
 const EmptyState = ({ icon, label, description, onAdd }: { icon: React.ReactNode; label: string; description: string; onAdd: () => void }) => (
     <div className="bg-white dark:bg-slate-800 rounded-3xl p-10 text-center shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col items-center gap-4">
-        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-400">{icon}</div>
+        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700 rounded-full flex items-center justify-center text-slate-500">{icon}</div>
         <div>
             <h3 className="text-lg font-black text-slate-800 dark:text-white">{label}</h3>
-            <p className="text-slate-400 text-sm mt-1">{description}</p>
+            <p className="text-slate-500 text-base mt-1">{description}</p>
         </div>
-        <button onClick={onAdd} className="px-6 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all flex items-center gap-2">
+        <button onClick={onAdd} className="px-6 py-3 bg-blue-600 text-white rounded-2xl font-bold text-base shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition-all flex items-center gap-2">
             <Plus size={16} /> Ajouter
         </button>
     </div>
@@ -374,7 +374,7 @@ const ActionBtn = ({ color, onClick, icon, label }: { color: 'blue' | 'violet' |
 
 const InputField = ({ label, value, onChange, placeholder, type = 'text', icon }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string; icon?: React.ReactNode }) => (
     <div>
-        <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">{label}</label>
+        <label className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">{label}</label>
         <div className="relative">
             {icon && <div className="absolute left-4 top-1/2 -translate-y-1/2">{icon}</div>}
             <input
@@ -397,9 +397,9 @@ const FormModal = ({ title, subtitle, onClose, onSubmit, saving, children }: { t
             <div className="flex justify-between items-start mb-7">
                 <div>
                     <h2 className="text-xl font-black text-slate-800 dark:text-white">{title}</h2>
-                    <p className="text-slate-400 text-sm mt-0.5">{subtitle}</p>
+                    <p className="text-slate-500 text-base mt-0.5">{subtitle}</p>
                 </div>
-                <button onClick={onClose} aria-label="Fermer" className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors">
+                <button onClick={onClose} aria-label="Fermer" className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 hover:text-slate-700 transition-colors">
                     <X size={16} />
                 </button>
             </div>

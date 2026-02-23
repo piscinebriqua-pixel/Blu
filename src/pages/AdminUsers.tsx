@@ -156,7 +156,7 @@ const AdminUsers: React.FC = () => {
         setIsProcessing(false);
     };
 
-    if (loading) return <div className="p-8 text-center text-slate-500 dark:text-slate-400">Chargement...</div>;
+    if (loading) return <div className="p-8 text-center text-slate-500 dark:text-slate-500">Chargement...</div>;
 
     return (
         <div className="gabarit-wrapper">
@@ -196,13 +196,13 @@ const AdminUsers: React.FC = () => {
                 <div className="flex gap-4 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-fit border border-slate-200 dark:border-slate-700 mb-8">
                     <button
                         onClick={() => setActiveTab('pending')}
-                        className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'pending' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                        className={`px-6 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all ${activeTab === 'pending' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}
                     >
                         En Attente
                     </button>
                     <button
                         onClick={() => setActiveTab('all')}
-                        className={`px-6 py-2 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${activeTab === 'all' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                        className={`px-6 py-2 rounded-xl text-base font-black uppercase tracking-widest transition-all ${activeTab === 'all' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}
                     >
                         Tous les comptes
                     </button>
@@ -215,7 +215,7 @@ const AdminUsers: React.FC = () => {
                         </div>
                         <div>
                             <h3 className="text-lg font-black text-slate-800 dark:text-white">Aucun profil</h3>
-                            <p className="text-slate-400 text-sm">
+                            <p className="text-slate-500 text-base">
                                 {activeTab === 'pending'
                                     ? "Aucune demande d'approbation en attente."
                                     : "Aucun compte trouvé dans la base de données."
@@ -227,7 +227,7 @@ const AdminUsers: React.FC = () => {
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-2 px-2 mb-2">
                             <span className={`w-2 h-2 rounded-full animate-pulse ${activeTab === 'pending' ? 'bg-amber-400' : 'bg-blue-400'}`}></span>
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                            <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">
                                 {activeTab === 'pending'
                                     ? `${profiles.length} demande${profiles.length > 1 ? 's' : ''} en attente`
                                     : `${profiles.length} compte${profiles.length > 1 ? 's' : ''} au total`
@@ -247,14 +247,14 @@ const AdminUsers: React.FC = () => {
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <h3 className="font-bold text-slate-800 dark:text-white">{profile.full_name || 'Sans nom'}</h3>
-                                            <span className={`text-[11px] font-black uppercase px-2 py-0.5 rounded ${profile.role === 'admin' ? 'bg-slate-900 text-white' :
+                                            <span className={`text-[13px] font-black uppercase px-2 py-0.5 rounded ${profile.role === 'admin' ? 'bg-slate-900 text-white' :
                                                 profile.role === 'technician' ? 'bg-blue-100 text-blue-600' :
                                                     'bg-slate-100 text-slate-500'
                                                 }`}>
                                                 {profile.role}
                                             </span>
                                         </div>
-                                        <p className="text-slate-400 text-sm font-medium">{profile.email}</p>
+                                        <p className="text-slate-500 text-base font-medium">{profile.email}</p>
                                     </div>
                                 </div>
 
@@ -334,11 +334,11 @@ const AdminUsers: React.FC = () => {
                         <h2 className="text-xl font-black text-slate-800 dark:text-white mb-1">
                             Approuver ce compte
                         </h2>
-                        <p className="text-slate-400 text-sm mb-6 font-medium">Pour {selectedProfile.email}</p>
+                        <p className="text-slate-500 text-base mb-6 font-medium">Pour {selectedProfile.email}</p>
 
                         <div className="space-y-4">
                             <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">
+                                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">
                                     Lier à une fiche existante
                                 </label>
                                 <div className="relative">
@@ -354,20 +354,20 @@ const AdminUsers: React.FC = () => {
                                             : clients.map(c => <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>)
                                         }
                                     </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
+                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
                                 </div>
                             </div>
 
                             <div className="relative py-2 text-center">
-                                <span className="bg-white dark:bg-slate-800 px-2 text-xs font-bold text-slate-300 uppercase relative z-10 transition-colors">OU</span>
+                                <span className="bg-white dark:bg-slate-800 px-2 text-[13px] font-bold text-slate-300 uppercase relative z-10 transition-colors">OU</span>
                                 <div className="absolute top-1/2 left-0 w-full h-px bg-slate-100 dark:border-slate-700"></div>
                             </div>
 
                             <button
                                 onClick={() => { setActionType(actionType === 'link_technician' ? 'create_technician' : 'create_client'); handleApproval(); }}
-                                className="w-full py-4 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 group"
+                                className="w-full py-4 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-500 dark:text-slate-500 hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 group"
                             >
-                                <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-300 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+                                <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
                                     <UserPlus size={14} />
                                 </div>
                                 Créer une nouvelle fiche
@@ -381,7 +381,7 @@ const AdminUsers: React.FC = () => {
                                 Valider et Lier
                             </button>
 
-                            <button onClick={() => setSelectedProfile(null)} className="w-full py-2 text-slate-400 font-bold text-sm hover:text-slate-600 uppercase tracking-widest">
+                            <button onClick={() => setSelectedProfile(null)} className="w-full py-2 text-slate-500 font-bold text-base hover:text-slate-600 uppercase tracking-widest">
                                 Annuler
                             </button>
                         </div>
@@ -393,11 +393,11 @@ const AdminUsers: React.FC = () => {
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-slate-800 rounded-[32px] p-8 max-w-md w-full animate-in fade-in zoom-in-95 shadow-2xl border border-slate-100 dark:border-slate-700 transition-colors">
                         <h2 className="text-xl font-black text-slate-800 dark:text-white mb-1">Modifier le compte</h2>
-                        <p className="text-slate-400 text-sm mb-6">{selectedProfile.email}</p>
+                        <p className="text-slate-500 text-base mb-6">{selectedProfile.email}</p>
 
                         <div className="flex flex-col gap-5">
                             <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Nom Complet</label>
+                                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Nom Complet</label>
                                 <input
                                     type="text"
                                     className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-primary transition-all"
@@ -408,7 +408,7 @@ const AdminUsers: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Rôle Système</label>
+                                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Rôle Système</label>
                                 <div className="grid grid-cols-2 gap-2">
                                     {['admin', 'technician', 'client', 'pending'].map(role => (
                                         <button

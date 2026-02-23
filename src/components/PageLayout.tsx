@@ -47,7 +47,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
                                 </h1>
                             )}
                             {subtitle && (
-                                <p className="text-blue-100 text-xs md:text-sm font-bold uppercase tracking-widest opacity-90 mt-1">
+                                <p className="text-blue-100 text-xs md:text-base font-bold uppercase tracking-widest opacity-90 mt-1">
                                     {subtitle}
                                 </p>
                             )}
@@ -68,7 +68,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-32 animate-pulse">
                             <div className="w-16 h-16 rounded-full border-4 border-slate-200 dark:border-slate-700 border-t-primary animate-spin mb-6"></div>
-                            <span className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Chargement en cours...</span>
+                            <span className="text-base font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">Chargement en cours...</span>
                         </div>
                     ) : (
                         <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 fill-mode-backwards">

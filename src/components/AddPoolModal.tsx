@@ -84,7 +84,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                         <Waves size={24} />
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Configuration technique</p>
+                        <p className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">Configuration technique</p>
                         <h3 className="text-lg font-bold uppercase text-slate-800 dark:text-white leading-none">Détails du bassin</h3>
                     </div>
                 </div>
@@ -108,7 +108,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                 />
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Méthode de traitement</label>
+                    <label className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider ml-1">Méthode de traitement</label>
                     <div className="relative">
                         <select
                             className="w-full h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-700 dark:text-white focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer"
@@ -121,7 +121,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                             <option value="bromine">💎 Traitement au Brome</option>
                             <option value="active_oxygen">💨 Oxygène Actif</option>
                         </select>
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                         </div>
                     </div>

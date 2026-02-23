@@ -73,7 +73,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
         return (
             <ModalLayout title="CHARGEMENT..." onClose={onClose}>
                 <div className="flex justify-center items-center h-40">
-                    <Loader2 className="animate-spin text-slate-400" size={32} />
+                    <Loader2 className="animate-spin text-slate-500" size={32} />
                 </div>
             </ModalLayout>
         );
@@ -113,36 +113,36 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                             <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">
                                 {client.first_name} {client.last_name}
                             </h2>
-                            <div className="flex items-center text-slate-500 dark:text-slate-400 text-sm gap-2">
+                            <div className="flex items-center text-slate-500 dark:text-slate-500 text-base gap-2">
                                 <MapPin size={14} />
                                 <span>{client.address}, {client.city}</span>
                             </div>
                         </div>
-                        <div className={`px-3 py-1 rounded-full text-xs font-bold border ${client.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600'}`}>
+                        <div className={`px-3 py-1 rounded-full text-[13px] font-bold border ${client.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600'}`}>
                             {client.status === 'active' ? 'ACTIF' : 'INACTIF'}
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 mt-6">
                         <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-100 dark:border-slate-600">
-                            <div className="flex items-center gap-2 mb-1 text-slate-400 dark:text-slate-300">
+                            <div className="flex items-center gap-2 mb-1 text-slate-500 dark:text-slate-300">
                                 <Wallet size={14} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Solde</span>
+                                <span className="text-[13px] font-bold uppercase tracking-wider">Solde</span>
                             </div>
                             <p className={`text-lg font-bold ${client.balance < 0 ? 'text-red-500 dark:text-red-400' : 'text-green-500 dark:text-green-400'}`}>
-                                {client.balance?.toFixed(0)} <span className="text-sm text-slate-400 dark:text-slate-500">DT</span>
+                                {client.balance?.toFixed(0)} <span className="text-base text-slate-500 dark:text-slate-500">DT</span>
                             </p>
                         </div>
 
                         <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-100 dark:border-slate-600">
-                            <div className="flex items-center gap-2 mb-1 text-slate-400 dark:text-slate-300">
+                            <div className="flex items-center gap-2 mb-1 text-slate-500 dark:text-slate-300">
                                 <Phone size={14} />
-                                <span className="text-xs font-bold uppercase tracking-wider">Contact</span>
+                                <span className="text-[13px] font-bold uppercase tracking-wider">Contact</span>
                             </div>
-                            <p className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                            <p className="text-base font-bold text-slate-700 dark:text-slate-200">
                                 {client.phone || '-----'}
                             </p>
-                            <p className="text-sm text-slate-400 dark:text-slate-500 truncate">
+                            <p className="text-base text-slate-500 dark:text-slate-500 truncate">
                                 {client.email || '-----'}
                             </p>
                         </div>
@@ -153,13 +153,13 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                 <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
                     <button
                         onClick={() => setActiveTab('bassins')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wider ${activeTab === 'bassins' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[13px] font-bold transition-all uppercase tracking-wider ${activeTab === 'bassins' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     >
                         <Waves size={14} /> Bassins ({pools.length})
                     </button>
                     <button
                         onClick={() => setActiveTab('journal')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-bold transition-all uppercase tracking-wider ${activeTab === 'journal' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-base font-bold transition-all uppercase tracking-wider ${activeTab === 'journal' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     >
                         <History size={14} /> Journal ({interventions.length})
                     </button>
@@ -176,27 +176,27 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                                             <Waves size={20} />
                                         </div>
                                         <div>
-                                            <h5 className="text-sm font-bold text-slate-700 dark:text-slate-200">{pool.name}</h5>
-                                            <p className="text-sm text-slate-400 dark:text-slate-500">{pool.volume_m3}m³ • {pool.treatment_method}</p>
+                                            <h5 className="text-base font-bold text-slate-700 dark:text-slate-200">{pool.name}</h5>
+                                            <p className="text-base text-slate-500 dark:text-slate-500">{pool.volume_m3}m³ • {pool.treatment_method}</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
-                                        className="w-11 h-11 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-400 dark:text-slate-500 flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
+                                        className="w-11 h-11 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-500 flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
                                         title="Nouvelle intervention"
                                     >
                                         <Plus size={18} />
                                     </button>
                                 </div>
                             )) : (
-                                <div className="p-8 text-center text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                                <div className="p-8 text-center text-slate-500 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
                                     <Waves className="mx-auto mb-2 opacity-50" size={24} />
                                     <p className="text-xs">Aucun bassin enregistré</p>
                                 </div>
                             )}
                             <button
                                 onClick={() => setIsPoolModalOpen(true)}
-                                className="w-full py-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all uppercase tracking-wider flex items-center justify-center gap-2"
+                                className="w-full py-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-[13px] font-bold text-slate-500 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all uppercase tracking-wider flex items-center justify-center gap-2"
                             >
                                 <Plus size={14} /> Ajouter un bassin
                             </button>
@@ -212,20 +212,20 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                                             <Calendar size={20} />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                                            <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">
                                                 {new Date(inter.created_at || inter.visit_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
                                             </p>
-                                            <p className="text-sm text-slate-400 dark:text-slate-500 uppercase tracking-wide font-bold">{inter.pool_name}</p>
+                                            <p className="text-base text-slate-500 dark:text-slate-500 uppercase tracking-wide font-bold">{inter.pool_name}</p>
                                         </div>
                                     </div>
                                     {inter.ph_level && (
-                                        <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md text-xs font-bold border border-slate-200 dark:border-slate-600">
+                                        <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md text-[13px] font-bold border border-slate-200 dark:border-slate-600">
                                             PH {inter.ph_level}
                                         </span>
                                     )}
                                 </div>
                             )) : (
-                                <div className="p-8 text-center text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
+                                <div className="p-8 text-center text-slate-500 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
                                     <History className="mx-auto mb-2 opacity-50" size={24} />
                                     <p className="text-xs">Aucune intervention récente</p>
                                 </div>
