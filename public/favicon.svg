@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512">
+  <!-- Blue square background -->
+  <rect width="512" height="512" rx="80" fill="#0077B6"/>
+  <!-- Logo image centered, white-filtered, scaled to fit -->
+  <image
+    href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMzk4IDI4MSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+PGltYWdlIHdpZHRoPSIzOThweCIgaGVpZ2h0PSIyODFweCIgeGxpbms6aHJlZj0iL2xvZ28uc3ZnIi8+PC9zdmc+"
+    x="56" y="56" width="400" height="400"
+    style="filter: brightness(0) invert(1);"
+  />
+</svg>

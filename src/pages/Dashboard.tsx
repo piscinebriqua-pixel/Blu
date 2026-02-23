@@ -21,6 +21,7 @@ const Dashboard: React.FC = () => {
     const [counts, setCounts] = useState({ clients: 0, technicians: 0 });
     const [profile, setProfile] = useState<{ name: string, role: string } | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [recentInterventions, setRecentInterventions] = useState<any[]>([]);
 
     const handleLogout = async () => {
         const { error } = await supabase.auth.signOut();
@@ -71,6 +72,25 @@ const Dashboard: React.FC = () => {
 
                 setCounts({ clients: clientCount, technicians: techCount });
 
+                // Fetch 5 dernières interventions (tous statuts)
+                try {
+                    const { data: interventions, error: intErr } = await supabase
+                        .from('interventions')
+                        .select(`
+                            id,
+                            created_at,
+                            status,
+                            technician:technicians!technician_id(full_name),
+                            pool:pools!pool_id(client:clients(first_name,last_name))
+                        `)
+                        .order('created_at', { ascending: false })
+                        .limit(3);
+                    if (intErr) console.error('Flux activité error:', intErr);
+                    if (interventions) setRecentInterventions(interventions);
+                } catch (e) {
+                    console.warn('Recent interventions fetch failed:', e);
+                }
+
             } catch (error) {
                 console.error('Erreur stats:', error);
             }
@@ -80,21 +100,27 @@ const Dashboard: React.FC = () => {
 
     return (
         <div className="gabarit-wrapper">
-            <header className="header-gradient flex justify-between items-start">
-                <div>
-                    <BccpLogo
-                        width={180}
-                        fillColor="white"
-                        className="drop-shadow-lg -ml-4 -mt-2"
-                    />
-                    <div className="flex flex-row items-center gap-2 opacity-80 mt-1 ml-1">
-                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                        <p className="text-[13px] font-black uppercase tracking-widest text-blue-100">Système Actif</p>
-                    </div>
-                </div>
+            <header className="header-gradient relative flex justify-between items-center z-10">
+                {/* Logo à gauche */}
+                <BccpLogo
+                    width={90}
+                    fillColor="white"
+                    className="drop-shadow-lg"
+                />
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 relative z-10">
                     <ThemeToggle />
+
+                    {/* Bouton Configuration (admin uniquement) */}
+                    {profile?.role === 'admin' && (
+                        <button
+                            onClick={() => navigate('/settings/services')}
+                            className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md shadow-lg"
+                            title="Configuration"
+                        >
+                            <Settings size={18} />
+                        </button>
+                    )}
 
                     {/* Simplified Profile Menu */}
                     <div className="relative">
@@ -154,7 +180,6 @@ const Dashboard: React.FC = () => {
 
             <main className="main-container">
 
-                <div className="pt-4"></div>
 
                 <div className="dashboard-grid">
                     <div onClick={() => navigate('/clients')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800 dark:border-slate-700">
@@ -212,38 +237,55 @@ const Dashboard: React.FC = () => {
                         <p className="text-xl font-bold text-slate-800 dark:text-white">{counts.technicians} <span className="text-xs font-normal text-slate-500">membres</span></p>
                     </div>
 
-                    {profile?.role === 'admin' && (
-                        <div onClick={() => navigate('/settings/services')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-violet-50/50 border-violet-100 dark:bg-violet-900/10 dark:border-violet-800/20">
-                            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-white text-violet-600 mb-2 dark:bg-violet-900/50 dark:text-violet-400">
-                                <Settings size={24} />
-                            </div>
-                            <span className="mt-1 dark:text-violet-300 font-bold">Services</span>
-                            <p className="text-xs text-violet-600/60 dark:text-violet-400/60 uppercase font-black">Configuration</p>
-                        </div>
-                    )}
+
                 </div>
 
-                {/* Logs Feed */}
                 <div className="mt-12">
                     <div className="flex justify-between items-center mb-4 px-1">
                         <h3 className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Flux d'activité</h3>
                         <div className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-[13px] font-bold text-slate-500">LIVE</div>
                     </div>
                     <div className="flex flex-col gap-3">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="flow-card animate-slide-up hover:scale-[1.01] transition-transform cursor-pointer dark:bg-slate-800 dark:border-slate-700">
-                                <div className="flex items-center gap-4">
-                                    <div className="status-dot bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-                                        <CheckCircle2 size={16} />
-                                    </div>
-                                    <div>
-                                        <p className="text-base font-bold text-slate-800 dark:text-slate-200">Point de mesure #{100 + i * 15}</p>
-                                        <p className="text-base text-slate-500 dark:text-slate-500">Validation technique • Agent {['M. Hamdi', 'M. Saleh', 'M. Younes'][i - 1]}</p>
-                                    </div>
-                                </div>
-                                <ChevronRight size={18} className="text-slate-300 dark:text-slate-600" />
+                        {recentInterventions.length === 0 ? (
+                            <div className="flow-card dark:bg-slate-800 dark:border-slate-700">
+                                <p className="text-base text-slate-400 dark:text-slate-500 text-center py-2">Aucune intervention réalisée</p>
                             </div>
-                        ))}
+                        ) : (
+                            recentInterventions.map((inter) => {
+                                const clientName = inter.pool?.client
+                                    ? `${inter.pool.client.first_name || ''} ${inter.pool.client.last_name || ''}`.trim()
+                                    : 'Client inconnu';
+                                const techName = inter.technician?.full_name || 'Technicien inconnu';
+                                const dateStr = inter.created_at
+                                    ? new Date(inter.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+                                    : '';
+                                const isCompleted = inter.status === 'completed';
+                                const isInProgress = inter.status === 'in_progress';
+                                const dotClass = isCompleted
+                                    ? 'status-dot bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
+                                    : isInProgress
+                                        ? 'status-dot bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                        : 'status-dot bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
+                                return (
+                                    <div
+                                        key={inter.id}
+                                        onClick={() => navigate('/interventions')}
+                                        className="flow-card animate-slide-up hover:scale-[1.01] transition-transform cursor-pointer dark:bg-slate-800 dark:border-slate-700"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={dotClass}>
+                                                <CheckCircle2 size={16} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-base font-bold text-slate-800 dark:text-slate-200 truncate">{clientName}</p>
+                                                <p className="text-[13px] text-slate-500 dark:text-slate-500 truncate">{techName} • {dateStr}</p>
+                                            </div>
+                                        </div>
+                                        <ChevronRight size={18} className="text-slate-300 dark:text-slate-600 shrink-0" />
+                                    </div>
+                                );
+                            })
+                        )}
                     </div>
                 </div>
             </main >

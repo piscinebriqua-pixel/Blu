@@ -70,6 +70,9 @@ body {
     border-bottom-left-radius: var(--radius-lg);
     border-bottom-right-radius: var(--radius-lg);
     flex-shrink: 0;
+    /* Ensure tiles scroll UNDER the header, not over it */
+    position: relative;
+    z-index: 20;
 }
 
 .header-gradient h1 {
@@ -85,8 +88,8 @@ body {
 
 .main-container {
     flex: 1;
-    margin-top: -30px;
-    padding: 0 40px;
+    margin-top: 0;
+    padding: 16px 20px 140px;
     overflow-y: auto;
 
     @supports (scrollbar-width: none) {

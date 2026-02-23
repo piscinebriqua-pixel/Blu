@@ -60,7 +60,7 @@ const Login: React.FC = () => {
                 {/* Header / Logo */}
                 <div className="flex flex-col items-center text-center -mb-4">
                     <BccpLogo
-                        width={280}
+                        width={100}
                         fillColor="white"
                         className="drop-shadow-2xl"
                     />
