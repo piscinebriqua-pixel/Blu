@@ -239,55 +239,59 @@ const Interventions: React.FC = () => {
         {filteredInterventions.map((inter) => (
           <div
             key={inter.id}
-            className="card-white !flex-row !items-center !gap-4 !p-5 text-left hover:scale-[1.01] transition-all cursor-pointer"
+            className="card-white !flex-col !items-stretch !p-5 text-left hover:scale-[1.01] transition-all cursor-pointer relative"
             onClick={() => setSelectedIntervention(inter)}
           >
-            <div className="w-12 h-12 rounded-2xl bg-primary-glow flex items-center justify-center text-primary shrink-0 transition-transform">
-              <FileText size={22} />
-            </div>
-
-            <div className="flex-1 min-w-0 flex flex-col gap-1">
-              <div className="flex justify-between items-start">
-                <h4 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-tight truncate">
+            {/* Top Row: Icon + Title | Price */}
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-primary-glow flex items-center justify-center text-primary shrink-0 transition-transform">
+                  <FileText size={20} />
+                </div>
+                <h4 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-none">
                   {inter.pool?.client?.first_name}{" "}
                   {inter.pool?.client?.last_name}
                 </h4>
-                <span className="text-[13px] font-black text-primary bg-primary/5 px-2 py-1 rounded-lg">
-                  {calculateTotal(inter).toFixed(0)} DT
+              </div>
+              <span className="text-lg font-black text-primary bg-primary/5 px-3 py-1.5 rounded-xl shrink-0">
+                {calculateTotal(inter).toFixed(0)} DT
+              </span>
+            </div>
+
+            {/* Middle Row: Tech | Date */}
+            <div className="flex items-center gap-4 text-slate-500 mb-4 px-1">
+              <div className="flex items-center gap-2 min-w-0">
+                <div
+                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${inter.status === "completed" ? "bg-emerald-500" : "bg-blue-400"}`}
+                />
+                <span className="text-base font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide truncate">
+                  {inter.technician?.full_name || "Non assigné"}
                 </span>
               </div>
-
-              <div className="flex items-center gap-3 text-slate-500">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <div
-                    className={`w-2 h-2 rounded-full flex-shrink-0 ${inter.status === "completed" ? "bg-emerald-500" : "bg-blue-400"}`}
-                  />
-                  <span className="text-base font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide truncate">
-                    {inter.technician?.full_name || "Non assigné"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Clock size={14} className="text-slate-500" />
-                  <span className="text-base font-bold text-slate-500 dark:text-slate-500">
-                    {inter.status === "scheduled" || inter.status === "pending"
-                      ? inter.scheduled_date
-                        ? new Date(inter.scheduled_date).toLocaleDateString(
-                          "fr-FR",
-                          { day: "2-digit", month: "2-digit" },
-                        )
-                        : "À planifier"
-                      : new Date(inter.created_at).toLocaleDateString("fr-FR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                      })}
-                  </span>
-                </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Clock size={16} className="text-slate-400" />
+                <span className="text-base font-bold text-slate-500 dark:text-slate-400">
+                  {inter.status === "scheduled" || inter.status === "pending"
+                    ? inter.scheduled_date
+                      ? new Date(inter.scheduled_date).toLocaleDateString(
+                        "fr-FR",
+                        { day: "2-digit", month: "2-digit" },
+                      )
+                      : "À planifier"
+                    : new Date(inter.created_at).toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                    })}
+                </span>
               </div>
+            </div>
 
-              {inter.status !== "completed" && inter.status !== "cancelled" && (
-                <div className="flex items-center gap-2 mt-2">
+            {/* Bottom Row: Status + Start Button */}
+            <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50 dark:border-slate-800/50">
+              <div className="flex items-center gap-3">
+                {inter.status !== "completed" && inter.status !== "cancelled" && (
                   <span
-                    className={`text-[13px] font-black uppercase px-2.5 py-1 rounded-full border ${inter.status === "scheduled"
+                    className={`text-[13px] font-black uppercase px-3 py-1.5 rounded-xl border ${inter.status === "scheduled"
                       ? "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 text-blue-600"
                       : inter.status === "in_progress"
                         ? "bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800 text-orange-600"
@@ -300,26 +304,25 @@ const Interventions: React.FC = () => {
                         ? "En Cours"
                         : "En Attente"}
                   </span>
-                </div>
-              )}
-            </div>
+                )}
 
-            <div className="flex flex-col items-end gap-3">
-              <ChevronRight size={18} className="text-slate-300" />
-              {inter.status === "scheduled" && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelPoolId(inter.pool_id);
-                    setSelClient(inter.pool?.client || null);
-                    setEditingId(inter.id);
-                    setIsNewInterventionModalOpen(true);
-                  }}
-                  className="px-3 py-1.5 bg-primary text-white text-[13px] font-black uppercase rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-blue-500/20"
-                >
-                  DÉMARRER
-                </button>
-              )}
+                {inter.status === "scheduled" && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelPoolId(inter.pool_id);
+                      setSelClient(inter.pool?.client || null);
+                      setEditingId(inter.id);
+                      setIsNewInterventionModalOpen(true);
+                    }}
+                    className="px-6 py-2.5 bg-primary text-white text-[13px] font-black uppercase rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center gap-2"
+                  >
+                    DÉMARRER
+                  </button>
+                )}
+              </div>
+
+              <ChevronRight size={20} className="text-slate-300" />
             </div>
           </div>
         ))}
