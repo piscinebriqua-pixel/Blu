@@ -78,14 +78,15 @@ function App() {
         const fetchPromise = supabase
           .from('profiles')
           .select('*')
-          .eq('id', userId)
-          .single();
+          .eq('id', userId);
 
         const { data, error } = await Promise.race([fetchPromise, timeout]) as any;
 
+        const profile = data?.[0]; // Extract the first item from the array
+
         if (error) throw error;
-        if (data) {
-          setUserProfile(data);
+        if (profile) {
+          setUserProfile(profile);
           setLoading(false); // Success, stop loading
           return; // Success
         }

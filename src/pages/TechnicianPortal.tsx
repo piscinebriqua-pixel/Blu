@@ -29,59 +29,59 @@ const TechnicianPortal: React.FC = () => {
     const [selPoolId, setSelPoolId] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchDailyTour = async () => {
-            setLoading(true);
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (!session?.user) return;
-
-                // Check admin and get technician ID
-                const [profileRes, techRes] = await Promise.all([
-                    supabase.from('profiles').select('role').eq('id', session.user.id).single(),
-                    supabase.from('technicians').select('id').eq('email', session.user.email).single()
-                ]);
-
-                const isAdmin = profileRes.data?.role === 'admin';
-                const techId = techRes.data?.id;
-
-                const todayStr = new Date().toISOString().split('T')[0];
-
-                let query = supabase
-                    .from('interventions')
-                    .select(`
-                        *,
-                        pool:pools(
-                            name,
-                            client:clients(id, first_name, last_name, phone, address, city)
-                        )
-                    `)
-                    // We want to see scheduled interventions (no matter when, or maybe just for today/past), 
-                    // AND interventions completed TODAY.
-                    // For a tour, usually you see scheduled and completed.
-                    .or(`status.eq.scheduled,and(status.eq.completed,created_at.gte.${todayStr})`)
-                    .order('scheduled_date', { ascending: true });
-
-                if (!isAdmin && techId) {
-                    query = query.eq('technician_id', techId);
-                } else if (!isAdmin && !techId) {
-                    // Not a tech, not an admin -> empty
-                    setInterventions([]);
-                    return;
-                }
-
-                const { data, error } = await query;
-
-                if (error) throw error;
-                setInterventions(data || []);
-            } catch (error) {
-                console.error('Error fetching tour:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchDailyTour();
     }, []);
+
+    const fetchDailyTour = async () => {
+        setLoading(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) return;
+
+            // Fetch profile and technician info
+            // Using a simple .select() then [0] is more robust against 406 errors than .single()/.maybeSingle()
+            const [profileRes, techRes] = await Promise.all([
+                supabase.from('profiles').select('role').eq('id', session.user.id),
+                supabase.from('technicians').select('id').eq('email', session.user.email)
+            ]);
+
+            const profileData = profileRes.data?.[0];
+            const techData = techRes.data?.[0];
+
+            const isAdmin = profileData?.role === 'admin';
+            const techId = techData?.id;
+
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            let query = supabase
+                .from('interventions')
+                .select(`
+                    *,
+                    pool:pools(
+                        name,
+                        client:clients(id, first_name, last_name, phone, address, city)
+                    )
+                `)
+                .or(`status.eq.scheduled,and(status.eq.completed,created_at.gte.${todayStr})`)
+                .order('scheduled_date', { ascending: true });
+
+            if (!isAdmin && techId) {
+                query = query.eq('technician_id', techId);
+            } else if (!isAdmin && !techId) {
+                setInterventions([]);
+                return;
+            }
+
+            const { data, error } = await query;
+            if (error) throw error;
+            setInterventions(data || []);
+        } catch (error) {
+            console.error('Error fetching tour:', error);
+            // toast.error('Impossible de charger votre tournée');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const openWhatsApp = (phone: string) => {
         const formatted = phone.replace(/\s/g, '').replace('+', '');
@@ -134,109 +134,123 @@ const TechnicianPortal: React.FC = () => {
             showBackButton={true}
             toolbar={toolbar}
         >
-            <div className="flex flex-col gap-8 pb-32 px-flow">
-                {/* Stats Summary */}
-                <div className="card-premium vibrant grad-blue shadow-blue-500/30 !p-8 -mt-10 md:-mt-14 transition-all hover:scale-[1.01]">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="flex flex-col gap-6 pb-32">
+                {/* Stats Summary - LUXURY REFINED */}
+                <div className="card-premium vibrant grad-blue shadow-xl shadow-blue-500/20 p-5 sm:p-8 mt-0 transition-all hover:scale-[1.01] border-none group relative overflow-hidden rounded-[24px] sm:rounded-[32px]">
+                    {/* Abstract Glassmorphism decorative elements */}
+                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-700" />
+
                     <div className="relative z-10 flex justify-between items-center">
                         <div className="flex flex-col gap-1">
-                            <p className="text-[13px] font-black uppercase tracking-[0.3em] opacity-60">Programme du</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-blue-100/80 leading-none mb-1">Programme du</p>
                             <div className="flex flex-col">
-                                <span className="text-4xl font-black uppercase tracking-tighter leading-[0.8]">{new Date().toLocaleDateString('fr-FR', { day: 'numeric' })}</span>
-                                <span className="text-xl font-black uppercase tracking-[0.1em] opacity-90">{new Date().toLocaleDateString('fr-FR', { month: 'long' })}</span>
+                                <span className="text-4xl sm:text-5xl font-black uppercase tracking-tighter leading-none text-white">
+                                    {new Date().toLocaleDateString('fr-FR', { day: 'numeric' })}
+                                </span>
+                                <span className="text-xl sm:text-2xl font-black uppercase tracking-[0.1em] text-blue-100/90">
+                                    {new Date().toLocaleDateString('fr-FR', { month: 'long' })}
+                                </span>
                             </div>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-xl border border-white/20 w-24 h-24 rounded-[2rem] shadow-2xl flex flex-col items-center justify-center gap-1">
-                            <span className="text-3xl font-black text-white">{interventions.length}</span>
-                            <span className="text-[13px] font-extrabold uppercase tracking-widest opacity-60">Visites</span>
+                        <div className="bg-white/10 backdrop-blur-xl border border-white/20 w-18 h-18 sm:w-24 sm:h-24 rounded-2xl sm:rounded-[2rem] shadow-xl flex flex-col items-center justify-center group-hover:scale-105 transition-transform duration-500">
+                            <span className="text-2xl sm:text-4xl font-black text-white leading-none">{interventions.length}</span>
+                            <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.1em] text-white/70">Visites</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Itinerary List */}
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-5">
                     {loading ? (
                         [...Array(3)].map((_, i) => (
-                            <div key={i} className="h-40 bg-slate-100 dark:bg-slate-800 rounded-3xl animate-pulse" />
+                            <div key={i} className="h-44 bg-slate-100 dark:bg-slate-800/30 rounded-[24px] animate-pulse" />
                         ))
                     ) : interventions.length === 0 ? (
-                        <div className="py-24 flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 gap-6 bg-slate-50/50 dark:bg-slate-800/20 rounded-[3rem] border-2 border-dashed border-slate-100 dark:border-slate-800 transition-all">
-                            <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center">
-                                <Calendar size={40} className="opacity-20" />
+                        <div className="py-20 flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 gap-6 bg-white/50 dark:bg-slate-800/10 rounded-[32px] border-2 border-dashed border-slate-200 dark:border-slate-800/50 transition-all px-8 text-center">
+                            <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center shadow-inner">
+                                <Calendar size={40} className="opacity-10" />
                             </div>
-                            <div className="flex flex-col items-center gap-1">
-                                <p className="text-base font-black uppercase tracking-[0.2em]">Aucune visite planifiée</p>
-                                <p className="text-[13px] font-bold opacity-60 uppercase">Tout est à jour pour aujourd'hui</p>
+                            <div className="flex flex-col items-center gap-2">
+                                <p className="text-lg font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">Aucune visite</p>
+                                <p className="text-[13px] font-bold opacity-50 uppercase tracking-widest leading-relaxed max-w-xs">
+                                    Votre planning est à jour.
+                                </p>
                             </div>
                             <button
                                 onClick={handleOpenManual}
-                                className="mt-4 px-6 py-3 bg-primary/10 text-primary rounded-2xl text-[13px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
+                                className="mt-2 px-10 py-4 bg-primary text-white rounded-[20px] text-[13px] font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 hover:scale-105 active:scale-95 transition-all"
                             >
-                                Commencer une intervention
+                                Commencer ICI
                             </button>
                         </div>
                     ) : (
-                        interventions.map((inter) => (
-                            <div key={inter.id} className="card-white flex flex-col !items-stretch !p-6 hover:scale-[1.02] transition-all">
-                                <div className="flex justify-between items-start mb-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary">
-                                            <Clock size={24} />
+                        interventions.map((inter, idx) => (
+                            <div
+                                key={inter.id}
+                                className={`card-white flex flex-col !items-stretch p-5 sm:p-6 hover:shadow-xl transition-all duration-300 border-none rounded-[22px] sm:rounded-[28px] group animate-in fade-in slide-in-from-bottom-8 fill-mode-backwards dark:bg-slate-800/60 ${idx < 10 ? `stagger-${idx + 1}` : ''}`}
+                            >
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="flex items-center gap-3 sm:gap-4">
+                                        <div className={`w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-105 shadow-lg ${inter.status === 'completed'
+                                            ? 'bg-emerald-500 text-white shadow-emerald-500/20'
+                                            : 'bg-blue-600 text-white shadow-blue-600/20'}`}>
+                                            {inter.status === 'completed' ? <Droplets size={22} className="sm:size-[28px]" strokeWidth={2.5} /> : <Clock size={22} className="sm:size-[28px]" strokeWidth={2.5} />}
                                         </div>
-                                        <div>
-                                            <h3 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">
+                                        <div className="flex flex-col min-w-0">
+                                            <h3 className="text-[15px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tighter leading-tight truncate">
                                                 {inter.pool?.client?.first_name} {inter.pool?.client?.last_name}
                                             </h3>
-                                            <div className="flex items-center gap-1.5 mt-0.5">
-                                                <div className={`w-1.5 h-1.5 rounded-full ${inter.status === 'completed' ? 'bg-green-400' : 'bg-blue-400'}`} />
-                                                <p className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">
-                                                    {inter.pool?.name}
+                                            <div className="flex items-center gap-1.5">
+                                                <div className={`w-1.5 h-1.5 rounded-full ${inter.status === 'completed' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
+                                                <p className="text-[12px] sm:text-[14px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none truncate opacity-80">
+                                                    {inter.pool?.name || 'Bassin principal'}
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
-                                    {inter.status === 'completed' ? (
-                                        <span className="px-3 py-1 bg-green-500/10 text-green-600 rounded-full text-[13px] font-black uppercase tracking-widest border border-green-500/20">
-                                            Terminé
-                                        </span>
-                                    ) : (
-                                        <span className="px-3 py-1 bg-blue-500/10 text-blue-600 rounded-full text-[13px] font-black uppercase tracking-widest border border-blue-500/20">
-                                            Confirmé
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="flex flex-col gap-3 mb-8">
-                                    <div className="flex items-start gap-3 text-base text-slate-600 dark:text-slate-500">
-                                        <MapPin size={18} className="text-primary mt-0.5 shrink-0" />
-                                        <span className="font-medium leading-tight">
-                                            {inter.pool?.client?.address}, {inter.pool?.client?.city}
-                                        </span>
+                                    <div className={`px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-lg text-[9px] sm:text-[11px] font-black uppercase tracking-widest transition-all ${inter.status === 'completed'
+                                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                        : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'}`}>
+                                        {inter.status === 'completed' ? 'Terminé' : 'Prévu'}
                                     </div>
                                 </div>
 
-                                <div className="flex gap-3">
+                                <div className="flex flex-col gap-3 mb-4 bg-slate-50/50 dark:bg-slate-900/40 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100/50 dark:border-slate-800 transition-colors">
+                                    <div className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
+                                        <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center shrink-0 shadow-sm border border-slate-100 dark:border-slate-700">
+                                            <MapPin size={14} className="text-blue-600" />
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-0.5">Destination</span>
+                                            <p className="text-[13px] font-bold text-slate-700 dark:text-slate-300 truncate">
+                                                {inter.pool?.client?.address ? `${inter.pool?.client?.address}${(inter.pool?.client?.city ? `, ${inter.pool?.client?.city}` : '')}` : 'Adresse non renseignée'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-2.5">
                                     <button
                                         onClick={() => runNavigation(`${inter.pool?.client?.address} ${inter.pool?.client?.city}`)}
-                                        className="w-14 h-14 bg-slate-50 dark:bg-slate-700/50 text-slate-500 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-2xl flex items-center justify-center transition-all shadow-sm"
-                                        title="Lancer la navigation"
+                                        className="w-11 h-11 sm:w-14 sm:h-14 bg-white dark:bg-slate-800 text-slate-400 hover:text-blue-600 rounded-xl flex items-center justify-center transition-all shadow-sm border border-slate-100 dark:border-slate-700 active:scale-95"
+                                        title="Navigation"
                                     >
-                                        <Navigation size={22} strokeWidth={2.5} />
+                                        <Navigation size={20} className="sm:size-[24px]" strokeWidth={2.5} />
                                     </button>
                                     <button
                                         onClick={() => openWhatsApp(inter.pool?.client?.phone)}
-                                        className="w-14 h-14 bg-slate-50 dark:bg-slate-700/50 text-slate-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-2xl flex items-center justify-center transition-all shadow-sm"
-                                        title="Contacter sur WhatsApp"
+                                        className="w-11 h-11 sm:w-14 sm:h-14 bg-white dark:bg-slate-800 text-slate-400 hover:text-emerald-500 rounded-xl flex items-center justify-center transition-all shadow-sm border border-slate-100 dark:border-slate-700 active:scale-95"
+                                        title="WhatsApp"
                                     >
-                                        <MessageCircle size={22} strokeWidth={2.5} />
+                                        <MessageCircle size={20} className="sm:size-[24px]" strokeWidth={2.5} />
                                     </button>
                                     {inter.status !== 'completed' && (
                                         <button
                                             onClick={() => { setSelectedInter(inter); setIsReporting(true); }}
-                                            className="flex-1 btn-flow btn-primary !h-14 shadow-blue-500/20"
+                                            className="flex-1 h-11 sm:h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
                                         >
-                                            <Play size={18} fill="currentColor" />
-                                            <span className="text-[13px] font-black uppercase tracking-[0.15em]">Démarrer</span>
+                                            <Play size={14} className="sm:size-[18px]" fill="currentColor" strokeWidth={0} />
+                                            <span className="text-[12px] sm:text-[14px] font-black uppercase tracking-[0.2em]">Démarrer</span>
                                         </button>
                                     )}
                                 </div>

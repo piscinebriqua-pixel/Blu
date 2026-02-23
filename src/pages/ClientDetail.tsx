@@ -153,13 +153,16 @@ const ClientDetail: React.FC = () => {
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {
-                const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
-                setIsAdmin(profile?.role === 'admin');
+                const { data: profiles } = await supabase.from('profiles').select('role').eq('id', session.user.id);
+                setIsAdmin(profiles?.[0]?.role === 'admin');
             }
 
-            const { data: clientData, error: clientError } = await supabase.from('clients').select('*').eq('id', id).single();
+            const { data: clients, error: clientError } = await supabase.from('clients').select('*').eq('id', id);
             if (clientError) throw clientError;
-            setClient(clientData);
+            const clientData = clients?.[0];
+            if (clientData) {
+                setClient(clientData);
+            }
 
             const { data: poolData } = await supabase.from('pools').select('*').eq('client_id', id);
             setPools(poolData || []);

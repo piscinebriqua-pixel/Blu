@@ -157,7 +157,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
 
   const fetchExistingIntervention = useCallback(async () => {
     if (!interventionId) return;
-    const { data, error } = await supabase
+    const { data: interRes, error } = await supabase
       .from("interventions")
       .select(
         `
@@ -166,8 +166,9 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
             products:intervention_products(product_id, quantity)
         `,
       )
-      .eq("id", interventionId)
-      .single();
+      .eq("id", interventionId);
+
+    const data = interRes?.[0];
 
     if (data && !error) {
       setFormData((prev) => ({

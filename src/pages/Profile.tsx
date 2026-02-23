@@ -31,15 +31,17 @@ const Profile: React.FC = () => {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session?.user) {
-                    const { data, error } = await supabase
+                    const { data: profileData, error } = await supabase
                         .from('profiles')
                         .select('*')
-                        .eq('id', session.user.id)
-                        .single();
+                        .eq('id', session.user.id);
 
                     if (error) throw error;
-                    setProfile(data);
-                    setNewName(data.full_name || '');
+                    const data = profileData?.[0];
+                    if (data) {
+                        setProfile(data);
+                        setNewName(data.full_name || '');
+                    }
                 } else {
                     navigate('/login');
                 }

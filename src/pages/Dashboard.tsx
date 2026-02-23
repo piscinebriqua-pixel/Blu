@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
                         .from('profiles')
                         .select('full_name, role')
                         .eq('id', session.user.id)
-                        .single();
+                        .maybeSingle();
                     if (profileData) {
                         setProfile({
                             name: profileData.full_name || 'Utilisateur',
@@ -137,20 +137,7 @@ const Dashboard: React.FC = () => {
 
             <main className="main-container">
 
-                {/* Main Stats Summary */}
-
-                <div className="progress-container animate-slide-up dark:bg-slate-800 dark:border dark:border-slate-700">
-                    <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center gap-2">
-                            <Activity size={18} className="text-primary dark:text-primary-light" />
-                            <span className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider">Objectif Quotidien</span>
-                        </div>
-                        <span className="text-lg font-black text-primary dark:text-blue-400">80%</span>
-                    </div>
-                    <div className="progress-bar-bg dark:bg-slate-700">
-                        <div className="progress-bar-fill w-[80%]"></div>
-                    </div>
-                </div>
+                <div className="pt-4"></div>
 
                 <div className="dashboard-grid">
                     <div onClick={() => navigate('/clients')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800 dark:border-slate-700">
