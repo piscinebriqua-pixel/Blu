@@ -138,11 +138,12 @@ const Planning: React.FC = () => {
     const getInterventionsForDate = (date: Date) => {
         const targetKey = formatDateKey(date);
         return interventions.filter(i => {
-            const dateStr = i.scheduled_date || i.visit_date || i.created_at;
-            if (!dateStr) return false;
-            // Normalize the string date back to YYYY-MM-DD for comparison
-            const d = new Date(dateStr);
-            return formatDateKey(d) === targetKey;
+            // For the planning page, we ONLY care about the scheduled_date
+            if (!i.scheduled_date) return false;
+
+            // Extract the date part (YYYY-MM-DD) from the ISO string
+            const interDatePart = i.scheduled_date.split('T')[0];
+            return interDatePart === targetKey;
         });
     };
 
@@ -339,7 +340,7 @@ const Planning: React.FC = () => {
                                                         {i.pool?.client?.first_name} {i.pool?.client?.last_name}
                                                     </h4>
                                                     <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">
-                                                        {new Date(i.scheduled_date || i.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                        {i.scheduled_date && new Date(i.scheduled_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                 </div>
                                                 <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest truncate">

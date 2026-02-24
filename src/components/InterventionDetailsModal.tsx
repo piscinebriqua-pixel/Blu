@@ -5,6 +5,7 @@ import { Droplets, FileText, Edit2, MessageCircle } from 'lucide-react';
 interface Intervention {
     id: string;
     visit_date?: string;
+    scheduled_date?: string;
     created_at: string;
     notes: string;
     ph_level: number;
@@ -139,7 +140,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                     <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
                         <span className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Date</span>
                         <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase">
-                            {new Date(intervention.created_at).toLocaleDateString('fr-FR')}
+                            {new Date(intervention.scheduled_date || intervention.visit_date || intervention.created_at).toLocaleDateString('fr-FR')}
                         </span>
                     </div>
                     <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
