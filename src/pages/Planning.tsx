@@ -136,10 +136,13 @@ const Planning: React.FC = () => {
     };
 
     const getInterventionsForDate = (date: Date) => {
-        const key = formatDateKey(date);
+        const targetKey = formatDateKey(date);
         return interventions.filter(i => {
-            const interDate = i.scheduled_date || i.visit_date || i.created_at;
-            return interDate.startsWith(key);
+            const dateStr = i.scheduled_date || i.visit_date || i.created_at;
+            if (!dateStr) return false;
+            // Normalize the string date back to YYYY-MM-DD for comparison
+            const d = new Date(dateStr);
+            return formatDateKey(d) === targetKey;
         });
     };
 

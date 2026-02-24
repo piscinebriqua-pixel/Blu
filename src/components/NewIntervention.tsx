@@ -186,7 +186,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         notes: data.notes || "",
         water_level_adjusted: data.water_level_adjusted,
         scheduled_date: data.scheduled_date
-          ? data.scheduled_date.split("T")[0]
+          ? new Date(data.scheduled_date).toISOString().split("T")[0]
           : prev.scheduled_date,
         photo_before_url: data.photo_before_url || "",
         photo_after_url: data.photo_after_url || "",
@@ -368,8 +368,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                 : false,
             notes: snapshotFormData.notes,
             status: interventionType === "direct" ? "completed" : "scheduled",
-            scheduled_date:
-              interventionType === "scheduled" ? snapshotFormData.scheduled_date : null,
+            scheduled_date: snapshotFormData.scheduled_date || null,
             photo_before_url: snapshotFormData.photo_before_url,
             photo_after_url: snapshotFormData.photo_after_url,
           })
@@ -402,10 +401,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                   : false,
               notes: snapshotFormData.notes,
               status: interventionType === "direct" ? "completed" : "scheduled",
-              scheduled_date:
-                interventionType === "scheduled"
-                  ? snapshotFormData.scheduled_date
-                  : null,
+              scheduled_date: snapshotFormData.scheduled_date || null,
               photo_before_url: snapshotFormData.photo_before_url,
               photo_after_url: snapshotFormData.photo_after_url,
             },
