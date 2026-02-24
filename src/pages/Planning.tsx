@@ -12,14 +12,15 @@ import {
 import { useNavigate } from 'react-router-dom';
 import NewIntervention from '../components/NewIntervention';
 import InterventionDetailsModal from '../components/InterventionDetailsModal';
+import { toast } from 'react-hot-toast';
 
 interface Intervention {
     id: string;
     pool_id: string;
     visit_date: string;
+    scheduled_date?: string;
     created_at: string;
     status: string;
-    scheduled_date: string;
     technician: { full_name: string };
     pool?: {
         name: string;
@@ -59,6 +60,29 @@ const Planning: React.FC = () => {
             setLoading(false);
         }
     }, []);
+
+    const handleDeleteIntervention = async (intervention: any) => {
+        if (!window.confirm("Voulez-vous vraiment supprimer cet entretien ?")) return;
+
+        try {
+            setLoading(true);
+            const { error } = await supabase
+                .from('interventions')
+                .delete()
+                .eq('id', intervention.id);
+
+            if (error) throw error;
+
+            toast.success("Entretien supprimé");
+            setSelectedIntervention(null);
+            fetchInterventions();
+        } catch (error: any) {
+            console.error('Error deleting:', error);
+            toast.error("Erreur lors de la suppression");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         fetchInterventions();
@@ -138,11 +162,14 @@ const Planning: React.FC = () => {
     const getInterventionsForDate = (date: Date) => {
         const targetKey = formatDateKey(date);
         return interventions.filter(i => {
-            // For the planning page, we ONLY care about the scheduled_date
+            // CRITICAL: We ONLY show planned interventions on their exact scheduled date.
+            // This prevents "ghost" interventions appearing on multiple days.
             if (!i.scheduled_date) return false;
 
-            // Extract the date part (YYYY-MM-DD) from the ISO string
-            const interDatePart = i.scheduled_date.split('T')[0];
+            // Extract the date part (YYYY-MM-DD) from the database timestamp
+            const interDateStr = String(i.scheduled_date);
+            const interDatePart = interDateStr.split('T')[0];
+
             return interDatePart === targetKey;
         });
     };
@@ -564,6 +591,7 @@ const Planning: React.FC = () => {
                         setEditingInterventionId(i.id);
                         setSelectedIntervention(null);
                     }}
+                    onDelete={handleDeleteIntervention}
                 />
             )}
 

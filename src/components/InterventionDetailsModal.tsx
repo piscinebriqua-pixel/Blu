@@ -1,6 +1,6 @@
 import React from 'react';
 import ModalLayout from './ModalLayout';
-import { Droplets, FileText, Edit2, MessageCircle } from 'lucide-react';
+import { Droplets, FileText, Edit2, MessageCircle, Trash2 } from 'lucide-react';
 
 interface Intervention {
     id: string;
@@ -40,9 +40,10 @@ interface InterventionDetailsModalProps {
     intervention: Intervention;
     onClose: () => void;
     onEdit?: (intervention: Intervention) => void;
+    onDelete?: (intervention: Intervention) => void;
 }
 
-const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ intervention, onClose, onEdit }) => {
+const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ intervention, onClose, onEdit, onDelete }) => {
     const handleWhatsAppShare = () => {
         if (!intervention.pool?.client?.phone) return;
 
@@ -277,15 +278,26 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                 )}
 
                 <div className="flex flex-col sm:flex-row gap-3 pt-4 sm:pt-6">
-                    {onEdit && (
-                        <button
-                            className="flex-1 btn-flow btn-primary !h-14 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                            onClick={() => onEdit(intervention)}
-                        >
-                            <Edit2 size={18} strokeWidth={2.5} />
-                            <span className="font-black uppercase tracking-[0.2em] text-[11px]">Modifier le rapport</span>
-                        </button>
-                    )}
+                    <div className="flex flex-1 gap-2">
+                        {onEdit && (
+                            <button
+                                className="flex-1 btn-flow btn-primary !h-14 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                onClick={() => onEdit(intervention)}
+                            >
+                                <Edit2 size={18} strokeWidth={2.5} />
+                                <span className="font-black uppercase tracking-[0.2em] text-[11px]">Modifier</span>
+                            </button>
+                        )}
+                        {onDelete && (
+                            <button
+                                className="w-14 h-14 bg-red-500/10 text-red-500 rounded-[20px] flex items-center justify-center hover:bg-red-500 hover:text-white transition-all active:scale-95 shadow-sm"
+                                onClick={() => onDelete(intervention)}
+                                title="Supprimer l'intervention"
+                            >
+                                <Trash2 size={20} strokeWidth={2.5} />
+                            </button>
+                        )}
+                    </div>
                     {intervention.pool?.client?.phone && (
                         <button
                             className="flex-1 btn-flow bg-emerald-500 hover:bg-emerald-600 !text-white !h-14 shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
