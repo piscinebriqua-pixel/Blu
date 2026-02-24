@@ -18,7 +18,7 @@ import BccpLogo from '../components/BccpLogo';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
-    const [counts, setCounts] = useState({ clients: 0, technicians: 0, interventions: 0, scheduled: 0 });
+    const [counts, setCounts] = useState({ clients: 0, technicians: 0, interventions: 0, scheduled: 0, revenue: 0, lastMonthRevenue: 0 });
     const [profile, setProfile] = useState<{ name: string, role: string } | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [recentInterventions, setRecentInterventions] = useState<any[]>([]);
@@ -32,6 +32,7 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
+                let currentProfile = null;
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session?.user) {
                     const { data: profileData } = await supabase
@@ -40,6 +41,7 @@ const Dashboard: React.FC = () => {
                         .eq('id', session.user.id)
                         .maybeSingle();
                     if (profileData) {
+                        currentProfile = profileData;
                         setProfile({
                             name: profileData.full_name || 'Utilisateur',
                             role: profileData.role
@@ -47,56 +49,61 @@ const Dashboard: React.FC = () => {
                     }
                 }
 
-                // Fetch each count independently to avoid a single failure
-                // blocking both counters (common on slow Android connections)
+                // Fetch each count independently
                 let clientCount = 0;
                 let techCount = 0;
                 let interventionCount = 0;
                 let scheduledCount = 0;
 
                 try {
-                    const { count } = await supabase
-                        .from('clients')
-                        .select('id', { count: 'exact', head: true });
-                    clientCount = count ?? 0;
+                    const [clientsRes, techRes, intRes, schedRes] = await Promise.all([
+                        supabase.from('clients').select('id', { count: 'exact', head: true }),
+                        supabase.from('technicians').select('id', { count: 'exact', head: true }),
+                        supabase.from('interventions').select('id', { count: 'exact', head: true }),
+                        supabase.from('interventions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled')
+                    ]);
+                    clientCount = clientsRes.count ?? 0;
+                    techCount = techRes.count ?? 0;
+                    interventionCount = intRes.count ?? 0;
+                    scheduledCount = schedRes.count ?? 0;
                 } catch (e) {
-                    console.warn('Client count fetch failed:', e);
+                    console.warn('Counts fetch failed:', e);
                 }
 
-                try {
-                    const { count } = await supabase
-                        .from('technicians')
-                        .select('id', { count: 'exact', head: true });
-                    techCount = count ?? 0;
-                } catch (e) {
-                    console.warn('Technician count fetch failed:', e);
-                }
+                // Fetch CA (Mensuel) pour les admins
+                let monthlyRevenue = 0;
+                let lastMonthRevenue = 0;
+                if (currentProfile?.role === 'admin') {
+                    try {
+                        const now = new Date();
+                        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
-                try {
-                    const { count: total } = await supabase
-                        .from('interventions')
-                        .select('id', { count: 'exact', head: true });
-                    interventionCount = total ?? 0;
+                        const [currentRes, lastRes] = await Promise.all([
+                            supabase.from('payments').select('amount').gte('payment_date', startOfMonth.toISOString()),
+                            supabase.from('payments').select('amount').gte('payment_date', startOfLastMonth.toISOString()).lte('payment_date', endOfLastMonth.toISOString())
+                        ]);
 
-                    const { count: sched } = await supabase
-                        .from('interventions')
-                        .select('id', { count: 'exact', head: true })
-                        .eq('status', 'scheduled');
-                    scheduledCount = sched ?? 0;
-                } catch (e) {
-                    console.warn('Intervention counts fetch failed:', e);
+                        monthlyRevenue = currentRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+                        lastMonthRevenue = lastRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+                    } catch (e) {
+                        console.warn('Revenue fetch failed:', e);
+                    }
                 }
 
                 setCounts({
                     clients: clientCount,
                     technicians: techCount,
                     interventions: interventionCount,
-                    scheduled: scheduledCount
+                    scheduled: scheduledCount,
+                    revenue: monthlyRevenue,
+                    lastMonthRevenue: lastMonthRevenue
                 });
 
-                // Fetch 5 dernières interventions (tous statuts)
+                // RESTORE: Fetch 3 dernières interventions
                 try {
-                    const { data: interventions, error: intErr } = await supabase
+                    const { data: interventions } = await supabase
                         .from('interventions')
                         .select(`
                             id,
@@ -107,7 +114,6 @@ const Dashboard: React.FC = () => {
                         `)
                         .order('created_at', { ascending: false })
                         .limit(3);
-                    if (intErr) console.error('Flux activité error:', intErr);
                     if (interventions) setRecentInterventions(interventions);
                 } catch (e) {
                     console.warn('Recent interventions fetch failed:', e);
@@ -201,8 +207,51 @@ const Dashboard: React.FC = () => {
             </header>
 
             <main className="main-container">
+                {profile?.role === 'admin' && (
+                    <div className="card-premium vibrant grad-blue !p-6 shadow-xl shadow-blue-500/20 mb-8 -mt-4 animate-in slide-in-from-top-4 duration-500 relative overflow-hidden group">
+                        <div className="flex justify-between items-center relative z-10 text-white">
+                            <div className="flex-1">
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-100/70 mb-1 leading-none">Chiffre d'Affaires Mensuel</p>
+                                <div className="flex items-baseline gap-3">
+                                    <h3 className="text-4xl font-black tracking-tighter leading-none">
+                                        {(counts.revenue || 0).toLocaleString()} <span className="text-base font-bold opacity-60">DT</span>
+                                    </h3>
+                                    {counts.lastMonthRevenue > 0 && (
+                                        <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black ${counts.revenue >= counts.lastMonthRevenue
+                                            ? 'bg-emerald-400/20 text-emerald-300'
+                                            : 'bg-rose-400/20 text-rose-300'
+                                            }`}>
+                                            {counts.revenue >= counts.lastMonthRevenue ? '↑' : '↓'}
+                                            {Math.abs(((counts.revenue - counts.lastMonthRevenue) / counts.lastMonthRevenue) * 100).toFixed(0)}%
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2 mt-3">
+                                    <div className={`w-1.5 h-1.5 rounded-full ${counts.revenue >= counts.lastMonthRevenue ? 'bg-emerald-400' : 'bg-orange-400 animate-pulse'}`}></div>
+                                    <p className="text-[11px] font-bold text-blue-100/90 uppercase tracking-widest leading-none">
+                                        vs {counts.lastMonthRevenue.toLocaleString()} DT le mois dernier
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="w-16 h-16 rounded-[2rem] bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-500">
+                                <Wallet size={28} className="text-white" />
+                            </div>
+                        </div>
+                        {/* Background mesh pattern */}
+                        <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+                            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                <defs>
+                                    <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                                        <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" strokeWidth="0.5" />
+                                    </pattern>
+                                </defs>
+                                <rect width="100" height="100" fill="url(#grid)" />
+                            </svg>
+                        </div>
+                    </div>
+                )}
 
-
+                <div className={profile?.role === 'admin' ? "" : "pt-4"}></div>
                 <div className="dashboard-grid">
                     <div onClick={() => navigate('/clients')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800 dark:border-slate-700">
                         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-50 text-blue-600 mb-2 dark:bg-blue-900/30 dark:text-blue-400">
