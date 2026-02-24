@@ -338,7 +338,10 @@ const Planning: React.FC = () => {
                 <div className="space-y-8">
                     {agendaDays.map(day => {
                         const dayInters = getInterventionsForDate(day);
-                        if (dayInters.length === 0) return null;
+                        const isSelected = formatDateKey(day) === formatDateKey(currentDate);
+
+                        // Only hide the day if it's NOT the selected day AND has no interventions
+                        if (dayInters.length === 0 && !isSelected) return null;
 
                         const isToday = formatDateKey(day) === formatDateKey(new Date());
 
@@ -353,31 +356,37 @@ const Planning: React.FC = () => {
                                 </div>
 
                                 <div className="grid gap-3">
-                                    {dayInters.map(i => (
-                                        <div
-                                            key={i.id}
-                                            onClick={() => setSelectedIntervention(i)}
-                                            className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all"
-                                        >
-                                            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                                                <User size={20} />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex justify-between items-center mb-0.5">
-                                                    <h4 className="font-black text-slate-800 dark:text-white uppercase tracking-tight truncate">
-                                                        {i.pool?.client?.first_name} {i.pool?.client?.last_name}
-                                                    </h4>
-                                                    <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">
-                                                        {i.scheduled_date && new Date(i.scheduled_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
+                                    {dayInters.length > 0 ? (
+                                        dayInters.map(i => (
+                                            <div
+                                                key={i.id}
+                                                onClick={() => setSelectedIntervention(i)}
+                                                className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all"
+                                            >
+                                                <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                                    <User size={20} />
                                                 </div>
-                                                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest truncate">
-                                                    {i.pool?.name || 'Piscine'} • {i.technician?.full_name}
-                                                </p>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex justify-between items-center mb-0.5">
+                                                        <h4 className="font-black text-slate-800 dark:text-white uppercase tracking-tight truncate">
+                                                            {i.pool?.client?.first_name} {i.pool?.client?.last_name}
+                                                        </h4>
+                                                        <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">
+                                                            {i.scheduled_date && new Date(i.scheduled_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest truncate">
+                                                        {i.pool?.name || 'Piscine'} • {i.technician?.full_name}
+                                                    </p>
+                                                </div>
+                                                <ChevronRight size={16} className="text-slate-300" />
                                             </div>
-                                            <ChevronRight size={16} className="text-slate-300" />
+                                        ))
+                                    ) : (
+                                        <div className="bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
+                                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Rien de prévu pour ce jour</p>
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
                             </div>
                         );
