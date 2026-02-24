@@ -1,6 +1,6 @@
 import React from 'react';
 import ModalLayout from './ModalLayout';
-import { Droplets, FileText, Edit2, MessageCircle, Trash2 } from 'lucide-react';
+import { Droplets, Edit2, MessageCircle, Trash2 } from 'lucide-react';
 
 interface Intervention {
     id: string;
@@ -101,89 +101,88 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
             <div className="flex flex-col gap-8 pb-4">
                 {/* Header Section */}
                 <div className="flex flex-col items-center gap-2">
-                    <div className="w-16 h-16 rounded-3xl bg-blue-500/10 flex items-center justify-center text-blue-600 mb-2">
-                        <FileText size={32} strokeWidth={2.5} />
-                    </div>
-                    <p className="text-[13px] font-black uppercase tracking-[0.4em] text-slate-500">Rapport d'intervention</p>
-                    <div className="flex items-center gap-4 text-3xl font-black text-slate-900 dark:text-white tracking-tighter">
-                        {intervention.services && ((intervention.services.reduce((acc, s) => acc + (s.price_at_time || 0), 0) + (intervention.products?.reduce((acc, p) => acc + (p.total_price || 0), 0) || 0)) || 0).toFixed(0)}
-                        <span className="text-xl font-bold text-primary dark:text-blue-400 ml-1">DT</span>
+                    <div className="flex flex-col items-center">
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/60 mb-1">Rapport d'intervention</span>
+                        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight text-center">
+                            {intervention.pool?.client?.first_name} {intervention.pool?.client?.last_name}
+                        </h2>
                     </div>
 
-                    {/* Client Info Badge */}
-                    {intervention.pool?.client && (
-                        <div className="mt-4 flex flex-col items-center gap-1">
-                            <span className="text-[13px] font-black text-slate-800 dark:text-white uppercase px-4 py-1.5 bg-white/40 dark:bg-white/5 rounded-full backdrop-blur-md border border-white/20 shadow-sm">
-                                {intervention.pool.client.first_name} {intervention.pool.client.last_name}
-                            </span>
-                            <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">Compte Client:</span>
-                                <span className={`text-[13px] font-black uppercase ${intervention.pool.client.balance < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
-                                    {(intervention.pool.client.balance || 0).toFixed(0)} DT
-                                </span>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Quick Info Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
-                        <span className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Bassin</span>
-                        <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">{intervention.pool_name || intervention.pool?.name}</span>
-                    </div>
-                    <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
-                        <span className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Statut</span>
-                        <span className={`text-[13px] font-black uppercase text-center rounded-lg py-0.5 ${intervention.status === "completed" ? "bg-emerald-500/10 text-emerald-500" : "bg-blue-500/10 text-blue-500"}`}>
-                            {intervention.status === "completed" ? "Terminé" : intervention.status}
+                    <div className="flex items-center gap-2 bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-2xl border border-slate-100 dark:border-white/10 mt-2">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Solde Client:</span>
+                        <span className={`text-[13px] font-black uppercase ${intervention.pool?.client?.balance && intervention.pool.client.balance < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+                            {(intervention.pool?.client?.balance || 0).toFixed(0)} DT
                         </span>
                     </div>
-                    <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
-                        <span className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Date</span>
+
+                    <div className="flex items-center gap-3 text-3xl font-black text-slate-900 dark:text-white tracking-tighter mt-4">
+                        {intervention.services && ((intervention.services.reduce((acc, s) => acc + (s.price_at_time || 0), 0) + (intervention.products?.reduce((acc, p) => acc + (p.total_price || 0), 0) || 0)) || 0).toFixed(0)}
+                        <span className="text-xl font-bold text-primary dark:text-blue-400">DT</span>
+                    </div>
+                </div>
+
+                {/* Quick Info Grid - More compact version */}
+                <div className="grid grid-cols-2 gap-2">
+                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Bassin</span>
+                        <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
+                            {intervention.pool_name || intervention.pool?.name || 'Piscine'}
+                        </span>
+                    </div>
+                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Date Rapport</span>
                         <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase">
                             {new Date(intervention.scheduled_date || intervention.visit_date || intervention.created_at).toLocaleDateString('fr-FR')}
                         </span>
                     </div>
-                    <div className="flex flex-col gap-1 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5">
-                        <span className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">ID</span>
-                        <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">#{intervention.id.slice(0, 8)}</span>
+                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Référence</span>
+                        <span className="text-[13px] font-black text-slate-500/80 uppercase truncate">#{intervention.id.slice(0, 8)}</span>
+                    </div>
+                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Statut</span>
+                        <span className={`text-[11px] font-black uppercase text-center rounded-full px-2 py-0.5 w-fit ${intervention.status === "completed" ? "bg-emerald-500/10 text-emerald-500" : "bg-blue-500/10 text-blue-500"}`}>
+                            {intervention.status === "completed" ? "Terminé" : intervention.status}
+                        </span>
                     </div>
                 </div>
 
-                {/* Technical Measures Section */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
-                        <h5 className="text-[13px] font-black text-primary dark:text-blue-400 uppercase tracking-[0.3em]">Mesures Techniques</h5>
-                        <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="flex items-center gap-4 p-5 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-primary/30 transition-all">
-                            <div className="w-12 h-12 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center text-cyan-500 group-hover:scale-110 transition-transform">
-                                <Droplets size={24} />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Potentiel Hydrogène (pH)</span>
-                                <span className="text-2xl font-black text-slate-800 dark:text-white">
-                                    {(intervention.ph_level !== null && intervention.ph_level !== undefined) ? intervention.ph_level : "-"}
-                                </span>
-                            </div>
+                {/* Technical Measures Section - Only shows if data exists */}
+                {(intervention.ph_level || intervention.chlorine_level) && (
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
+                            <h5 className="text-[11px] font-black text-blue-400 uppercase tracking-[0.3em]">Mesures Techniques</h5>
+                            <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
                         </div>
 
-                        <div className="flex items-center gap-4 p-5 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-blue-400/30 transition-all">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-                                <Droplets size={24} />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest mb-0.5">Taux de Chlore (ppm)</span>
-                                <span className="text-2xl font-black text-slate-800 dark:text-white">
-                                    {(intervention.chlorine_level !== null && intervention.chlorine_level !== undefined) ? intervention.chlorine_level : "-"}
-                                </span>
-                            </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            {intervention.ph_level && (
+                                <div className="flex items-center gap-4 p-4 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-primary/30 transition-all">
+                                    <div className="w-10 h-10 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center text-cyan-500">
+                                        <Droplets size={20} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">pH</span>
+                                        <span className="text-xl font-black text-slate-800 dark:text-white">{intervention.ph_level}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {intervention.chlorine_level && (
+                                <div className="flex items-center gap-4 p-4 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-blue-400/30 transition-all">
+                                    <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
+                                        <Droplets size={20} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Chlore</span>
+                                        <span className="text-xl font-black text-slate-800 dark:text-white">{intervention.chlorine_level} ppm</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* Photos Section */}
                 {(intervention.photo_before_url || intervention.photo_after_url) && (

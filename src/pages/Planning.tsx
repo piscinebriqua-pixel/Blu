@@ -162,19 +162,16 @@ const Planning: React.FC = () => {
     const getInterventionsForDate = (date: Date) => {
         const targetKey = formatDateKey(date);
         return interventions.filter(i => {
-            // CRITICAL: We ONLY show planned interventions on their exact scheduled date.
             if (!i.scheduled_date) return false;
 
-            try {
-                // Robust parsing of the database date
-                const d = new Date(i.scheduled_date);
-                if (isNaN(d.getTime())) return false;
+            // Database stores ISO strings: YYYY-MM-DDTHH:MM:SS...
+            // Extracting the first 10 characters is the most reliable comparison
+            const interDateStr = String(i.scheduled_date);
+            const interDatePart = interDateStr.includes('T')
+                ? interDateStr.split('T')[0]
+                : interDateStr.substring(0, 10);
 
-                const interKey = formatDateKey(d);
-                return interKey === targetKey;
-            } catch (e) {
-                return false;
-            }
+            return interDatePart === targetKey;
         });
     };
 
