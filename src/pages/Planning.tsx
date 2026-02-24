@@ -163,14 +163,18 @@ const Planning: React.FC = () => {
         const targetKey = formatDateKey(date);
         return interventions.filter(i => {
             // CRITICAL: We ONLY show planned interventions on their exact scheduled date.
-            // This prevents "ghost" interventions appearing on multiple days.
             if (!i.scheduled_date) return false;
 
-            // Extract the date part (YYYY-MM-DD) from the database timestamp
-            const interDateStr = String(i.scheduled_date);
-            const interDatePart = interDateStr.split('T')[0];
+            try {
+                // Robust parsing of the database date
+                const d = new Date(i.scheduled_date);
+                if (isNaN(d.getTime())) return false;
 
-            return interDatePart === targetKey;
+                const interKey = formatDateKey(d);
+                return interKey === targetKey;
+            } catch (e) {
+                return false;
+            }
         });
     };
 
@@ -444,7 +448,7 @@ const Planning: React.FC = () => {
                                         <div className="flex items-center gap-1.5 bg-blue-50/50 dark:bg-blue-900/30 px-2.5 py-1 rounded-lg">
                                             <Clock size={12} className="text-blue-500" />
                                             <span className="text-[13px] font-black text-blue-600 uppercase">
-                                                {new Date(i.scheduled_date || i.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                {i.scheduled_date && new Date(i.scheduled_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
                                     </div>

@@ -229,7 +229,8 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
   }, [interventionId, fetchExistingIntervention, fetchInitialData]);
 
   const fetchClientHistory = useCallback(async () => {
-    // Fetch last 50 intervention services for this client to find last paid prices
+    if (!selectedPoolId) return;
+    // Fetch last 20 intervention services for this pool to find reference prices
     const { data } = await supabase
       .from("interventions")
       .select("id, services:intervention_services(service_id, price_at_time)")
