@@ -16,6 +16,7 @@ import TechnicianPortal from './pages/TechnicianPortal';
 import Profile from './pages/Profile';
 import Payments from './pages/Payments';
 import Planning from './pages/Planning';
+import Revenue from './pages/Revenue';
 import { Toaster } from 'react-hot-toast';
 import BccpLogo from './components/BccpLogo';
 import './index.css';
@@ -208,6 +209,11 @@ function App() {
             <Route path="/payments" element={
               <ProtectedRoute>
                 <div className="app-container"><Payments /></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/revenue" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div className="app-container"><Revenue /></div>
               </ProtectedRoute>
             } />
             <Route path="/technician-portal" element={

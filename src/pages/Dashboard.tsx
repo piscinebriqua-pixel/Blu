@@ -18,6 +18,7 @@ import BccpLogo from '../components/BccpLogo';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
     const [counts, setCounts] = useState({ clients: 0, technicians: 0, interventions: 0, scheduled: 0, revenue: 0, lastMonthRevenue: 0 });
     const [profile, setProfile] = useState<{ name: string, role: string } | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -121,25 +122,34 @@ const Dashboard: React.FC = () => {
 
             } catch (error) {
                 console.error('Erreur stats:', error);
+            } finally {
+                setLoading(false);
             }
         };
         fetchStats();
     }, []);
 
+    if (loading) {
+        return (
+            <div className="gabarit-wrapper flex items-center justify-center h-screen bg-[#0f172a]">
+                <div className="flex flex-col items-center gap-4">
+                    <BccpLogo width={80} fillColor="white" className="animate-pulse" />
+                    <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary animate-progress-loading"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="gabarit-wrapper">
             <header className="header-gradient relative flex justify-between items-center z-10">
-                {/* Logo à gauche */}
-                <BccpLogo
-                    width={90}
-                    fillColor="white"
-                    className="drop-shadow-lg"
-                />
+                <BccpLogo width={90} fillColor="white" className="drop-shadow-lg" />
 
                 <div className="flex items-center gap-3 relative z-10">
                     <ThemeToggle />
 
-                    {/* Bouton Configuration (admin uniquement) */}
                     {profile?.role === 'admin' && (
                         <button
                             onClick={() => navigate('/settings/services')}
@@ -150,7 +160,6 @@ const Dashboard: React.FC = () => {
                         </button>
                     )}
 
-                    {/* Simplified Profile Menu */}
                     <div className="relative">
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -162,10 +171,7 @@ const Dashboard: React.FC = () => {
 
                         {isMenuOpen && (
                             <>
-                                <div
-                                    className="fixed inset-0 z-40"
-                                    onClick={() => setIsMenuOpen(false)}
-                                ></div>
+                                <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)}></div>
                                 <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
                                     <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 mb-1">
                                         <p className="text-base font-black text-slate-800 dark:text-white truncate">{profile?.name}</p>
@@ -212,20 +218,26 @@ const Dashboard: React.FC = () => {
                         <div className="flex justify-between items-center relative z-10 text-white">
                             <div className="flex-1">
                                 <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-100/70 mb-1 leading-none">Chiffre d'Affaires Mensuel</p>
-                                <div className="flex items-baseline gap-3">
+                                <div
+                                    className="flex items-baseline gap-3 cursor-pointer group/nav w-fit"
+                                    onClick={() => navigate('/revenue')}
+                                >
                                     <h3 className="text-4xl font-black tracking-tighter leading-none">
                                         {(counts.revenue || 0).toLocaleString()} <span className="text-base font-bold opacity-60">DT</span>
                                     </h3>
-                                    {counts.lastMonthRevenue > 0 && (
-                                        <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black ${counts.revenue >= counts.lastMonthRevenue
+                                    <div className="flex items-center gap-1 group-hover/nav:translate-x-1 transition-transform">
+                                        <ChevronRight size={20} className="text-white/40 group-hover/nav:text-white transition-colors" />
+                                    </div>
+                                </div>
+                                {counts.lastMonthRevenue > 0 && (
+                                    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black mt-2 w-fit ${counts.revenue >= counts.lastMonthRevenue
                                             ? 'bg-emerald-400/20 text-emerald-300'
                                             : 'bg-rose-400/20 text-rose-300'
-                                            }`}>
-                                            {counts.revenue >= counts.lastMonthRevenue ? '↑' : '↓'}
-                                            {Math.abs(((counts.revenue - counts.lastMonthRevenue) / counts.lastMonthRevenue) * 100).toFixed(0)}%
-                                        </div>
-                                    )}
-                                </div>
+                                        }`}>
+                                        {counts.revenue >= counts.lastMonthRevenue ? '↑' : '↓'}
+                                        {Math.abs(((counts.revenue - counts.lastMonthRevenue) / counts.lastMonthRevenue) * 100).toFixed(0)}%
+                                    </div>
+                                )}
                                 <div className="flex items-center gap-2 mt-3">
                                     <div className={`w-1.5 h-1.5 rounded-full ${counts.revenue >= counts.lastMonthRevenue ? 'bg-emerald-400' : 'bg-orange-400 animate-pulse'}`}></div>
                                     <p className="text-[11px] font-bold text-blue-100/90 uppercase tracking-widest leading-none">
@@ -233,11 +245,12 @@ const Dashboard: React.FC = () => {
                                     </p>
                                 </div>
                             </div>
-                            <div className="w-16 h-16 rounded-[2rem] bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-500">
+                            <div className="w-16 h-16 rounded-[2rem] bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-500 shrink-0">
                                 <Wallet size={28} className="text-white" />
                             </div>
                         </div>
-                        {/* Background mesh pattern */}
+
+                        {/* Background pattern */}
                         <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
                             <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
                                 <defs>
@@ -252,6 +265,7 @@ const Dashboard: React.FC = () => {
                 )}
 
                 <div className={profile?.role === 'admin' ? "" : "pt-4"}></div>
+
                 <div className="dashboard-grid">
                     <div onClick={() => navigate('/clients')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800 dark:border-slate-700">
                         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-50 text-blue-600 mb-2 dark:bg-blue-900/30 dark:text-blue-400">
@@ -286,19 +300,13 @@ const Dashboard: React.FC = () => {
                         <p className="text-xl font-bold text-slate-800 dark:text-white">{counts.interventions} <span className="text-xs font-normal text-slate-500">total</span></p>
                     </div>
 
-
-
-                    <div
-                        onClick={() => navigate('/technician-portal')}
-                        className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-orange-50/50 border-orange-100 dark:bg-orange-900/10 dark:border-orange-800/20"
-                    >
+                    <div onClick={() => navigate('/technician-portal')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-orange-50/50 border-orange-100 dark:bg-orange-900/10 dark:border-orange-800/20">
                         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-white text-orange-600 mb-2 dark:bg-orange-900/50 dark:text-orange-400">
                             <Activity size={24} />
                         </div>
                         <span className="mt-1 dark:text-orange-300 font-bold">Ma Tournée</span>
                         <p className="text-xs text-orange-600/60 dark:text-orange-400/60 uppercase font-black">Espace Tech</p>
                     </div>
-
 
                     <div onClick={() => navigate('/technicians')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800 dark:border-slate-700">
                         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-purple-50 text-purple-600 mb-2 dark:bg-purple-900/30 dark:text-purple-400">
@@ -307,8 +315,6 @@ const Dashboard: React.FC = () => {
                         <span className="mt-1 dark:text-slate-300">Techniciens</span>
                         <p className="text-xl font-bold text-slate-800 dark:text-white">{counts.technicians} <span className="text-xs font-normal text-slate-500">membres</span></p>
                     </div>
-
-
                 </div>
 
                 <div className="mt-12">
@@ -359,8 +365,8 @@ const Dashboard: React.FC = () => {
                         )}
                     </div>
                 </div>
-            </main >
-        </div >
+            </main>
+        </div>
     );
 };
 

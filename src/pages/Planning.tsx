@@ -7,7 +7,8 @@ import {
     Plus,
     Clock,
     User,
-    ArrowLeft
+    ArrowLeft,
+    Check
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import NewIntervention from '../components/NewIntervention';
@@ -50,7 +51,7 @@ const Planning: React.FC = () => {
             const { data, error } = await supabase
                 .from('interventions')
                 .select('*, technician:technicians(full_name), pool:pools(name, client:clients(id, first_name, last_name))')
-                .eq('status', 'scheduled');
+                .in('status', ['scheduled', 'completed', 'in_progress', 'pending']);
 
             if (error) throw error;
             setInterventions(data || []);
@@ -218,14 +219,20 @@ const Planning: React.FC = () => {
                                     )}
                                 </div>
                                 <div className="flex flex-col gap-1 overflow-hidden">
-                                    {dayInterventions.slice(0, 3).map(i => (
-                                        <div
-                                            key={i.id}
-                                            className="text-xs md:text-[13px] font-bold py-0.5 px-1.5 rounded-md truncate bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800/30"
-                                        >
-                                            {i.pool?.client?.last_name || 'Client'}
-                                        </div>
-                                    ))}
+                                    {dayInterventions.slice(0, 3).map(i => {
+                                        const isDone = i.status === 'completed';
+                                        return (
+                                            <div
+                                                key={i.id}
+                                                className={`text-xs md:text-[13px] font-bold py-0.5 px-1.5 rounded-md truncate border ${isDone
+                                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 border-emerald-100 dark:border-emerald-800/30'
+                                                    : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-800/30'
+                                                    }`}
+                                            >
+                                                {i.pool?.client?.last_name || 'Client'}
+                                            </div>
+                                        );
+                                    })}
                                     {dayInterventions.length > 3 && (
                                         <span className="text-xs text-slate-500 font-bold ml-1">+{dayInterventions.length - 3} de plus</span>
                                     )}
@@ -262,11 +269,14 @@ const Planning: React.FC = () => {
                                             <div
                                                 key={i.id}
                                                 onClick={() => setSelectedIntervention(i)}
-                                                className="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:border-blue-500 transition-all cursor-pointer group"
+                                                className={`p-3 rounded-2xl border shadow-sm transition-all cursor-pointer group ${i.status === 'completed'
+                                                    ? 'bg-emerald-50/20 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30'
+                                                    : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:border-blue-500'
+                                                    }`}
                                             >
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                                    <span className="text-[13px] font-black uppercase text-slate-800 dark:text-white truncate">
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${i.status === 'completed' ? 'bg-emerald-500' : 'bg-blue-500'}`}></div>
+                                                    <span className={`text-[13px] font-black uppercase truncate ${i.status === 'completed' ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-800 dark:text-white'}`}>
                                                         {i.pool?.client?.first_name} {i.pool?.client?.last_name}
                                                     </span>
                                                 </div>
@@ -300,101 +310,123 @@ const Planning: React.FC = () => {
     };
 
     const renderAgendaView = () => {
-        // Only show the strictly selected day in the agenda list
-        // to avoid user confusion between the selected day and future dates.
-        const agendaDays = [new Date(currentDate)];
+        const selectedDayInters = getInterventionsForDate(currentDate);
 
         return (
-            <div className="flex flex-col gap-6 animate-in slide-in-from-bottom-10 duration-500 pb-20">
-                {/* 7-Day Mini Strip */}
-                <div className="flex justify-between items-center bg-white dark:bg-slate-800 p-2 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-x-auto no-scrollbar">
-                    {getDaysInWeek(currentDate).map((day, idx) => {
-                        const isSelected = formatDateKey(day) === formatDateKey(currentDate);
-                        const isToday = formatDateKey(day) === formatDateKey(new Date());
-                        return (
-                            <button
-                                key={idx}
-                                onClick={() => setCurrentDate(day)}
-                                className={`flex flex-col items-center min-w-[48px] py-3 rounded-xl transition-all ${isSelected
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
-                                    : 'hover:bg-slate-50 dark:hover:bg-slate-700'
-                                    }`}
-                            >
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${isSelected ? 'text-blue-100' : 'text-slate-500'}`}>
-                                    {day.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '')}
-                                </span>
-                                <span className="text-base font-black leading-none mt-1">{day.getDate()}</span>
-                                {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-blue-500 mt-1"></div>}
-                            </button>
-                        );
-                    })}
+            <div className="flex flex-col gap-6 animate-in slide-in-from-bottom-6 duration-500 pb-20">
+                {/* 7-Day Navigation Strip - Integrated Look */}
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => changeDate(-7)}
+                        className="w-8 h-12 flex items-center justify-center text-slate-400 hover:text-primary transition-all active:scale-90"
+                        title="Semaine précédente"
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+
+                    <div className="flex-1 flex justify-between items-center p-1.5 bg-slate-100/50 dark:bg-slate-800/40 rounded-2xl border border-white dark:border-slate-700/50 backdrop-blur-sm">
+                        {getDaysInWeek(currentDate).map((day, idx) => {
+                            const isSelected = formatDateKey(day) === formatDateKey(currentDate);
+                            const isToday = formatDateKey(day) === formatDateKey(new Date());
+                            const dayInters = getInterventionsForDate(day);
+
+                            return (
+                                <button
+                                    key={idx}
+                                    onClick={() => setCurrentDate(day)}
+                                    className={`flex flex-col items-center flex-1 py-2.5 rounded-xl transition-all relative ${isSelected
+                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/25 scale-105 z-10'
+                                        : 'hover:bg-white dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400'
+                                        }`}
+                                >
+                                    <span className={`text-[9px] font-black uppercase tracking-tighter mb-0.5 ${isSelected ? 'text-blue-100' : 'opacity-60'}`}>
+                                        {day.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '').substring(0, 3)}
+                                    </span>
+                                    <span className="text-[15px] font-black leading-none">{day.getDate()}</span>
+
+                                    {/* Intelligence Dot: shows if appointments exist */}
+                                    {dayInters.length > 0 && !isSelected && (
+                                        <div className="absolute bottom-1 w-1 h-1 rounded-full bg-blue-500 animate-pulse"></div>
+                                    )}
+                                    {isToday && !isSelected && (
+                                        <div className="absolute top-1 right-1 w-1 h-1 rounded-full bg-amber-500"></div>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <button
+                        onClick={() => changeDate(7)}
+                        className="w-8 h-12 flex items-center justify-center text-slate-400 hover:text-primary transition-all active:scale-90"
+                        title="Semaine suivante"
+                    >
+                        <ChevronRight size={20} />
+                    </button>
                 </div>
 
                 {/* Agenda List */}
-                <div className="space-y-8">
-                    {agendaDays.map(day => {
-                        const dayInters = getInterventionsForDate(day);
-                        const isSelected = formatDateKey(day) === formatDateKey(currentDate);
+                <div className="space-y-6">
+                    <div className="flex items-center gap-3">
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent"></div>
+                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">
+                            {currentDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                        </span>
+                        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent"></div>
+                    </div>
 
-                        // Only hide the day if it's NOT the selected day AND has no interventions
-                        if (dayInters.length === 0 && !isSelected) return null;
-
-                        const isToday = formatDateKey(day) === formatDateKey(new Date());
-
-                        return (
-                            <div key={formatDateKey(day)} className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <div className={`px-3 py-1 rounded-lg text-[11px] font-black uppercase tracking-[0.2em] ${isToday ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                    <div className="grid gap-4">
+                        {selectedDayInters.length > 0 ? (
+                            selectedDayInters.map((i, idx) => (
+                                <div
+                                    key={i.id}
+                                    onClick={() => setSelectedIntervention(i)}
+                                    style={{ animationDelay: `${idx * 100}ms` }}
+                                    className={`p-4 rounded-3xl border shadow-sm flex items-center gap-4 active:scale-[0.97] transition-all animate-in fade-in slide-in-from-bottom-4 ${i.status === 'completed'
+                                        ? 'bg-emerald-50/30 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/20 hover:border-emerald-500/30'
+                                        : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700/50 hover:border-primary/20'
+                                        }`}
+                                >
+                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${i.status === 'completed'
+                                        ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
+                                        : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
                                         }`}>
-                                        {isToday ? "Aujourd'hui" : day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                        <User size={20} />
                                     </div>
-                                    <div className="flex-1 h-[1px] bg-slate-100 dark:bg-slate-800" />
-                                </div>
-
-                                <div className="grid gap-3">
-                                    {dayInters.length > 0 ? (
-                                        dayInters.map(i => (
-                                            <div
-                                                key={i.id}
-                                                onClick={() => setSelectedIntervention(i)}
-                                                className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all"
-                                            >
-                                                <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                                                    <User size={20} />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex justify-between items-center mb-0.5">
-                                                        <h4 className="font-black text-slate-800 dark:text-white uppercase tracking-tight truncate">
-                                                            {i.pool?.client?.first_name} {i.pool?.client?.last_name}
-                                                        </h4>
-                                                        <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">
-                                                            {i.scheduled_date && new Date(i.scheduled_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest truncate">
-                                                        {i.pool?.name || 'Piscine'} • {i.technician?.full_name}
-                                                    </p>
-                                                </div>
-                                                <ChevronRight size={16} className="text-slate-300" />
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-center mb-0.5">
+                                            <h4 className="font-black text-[14px] text-slate-800 dark:text-white uppercase tracking-tight truncate">
+                                                {i.pool?.client?.first_name} {i.pool?.client?.last_name}
+                                            </h4>
+                                            <div className="flex items-center gap-1.5">
+                                                {i.status === 'completed' && (
+                                                    <span className="text-[9px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded uppercase">Fait</span>
+                                                )}
+                                                <span className={`text-[11px] font-black px-2 py-0.5 rounded-md ${i.status === 'completed'
+                                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600'
+                                                    : 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                                    }`}>
+                                                    {i.scheduled_date && new Date(i.scheduled_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-center">
-                                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Rien de prévu pour ce jour</p>
                                         </div>
-                                    )}
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">
+                                            {i.pool?.name || 'Piscine'} • {i.technician?.full_name}
+                                        </p>
+                                    </div>
+                                    <ChevronRight size={16} className="text-slate-300" />
                                 </div>
+                            ))
+                        ) : (
+                            <div className="py-20 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-700">
+                                <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800/50 rounded-full flex items-center justify-center mb-6 opacity-40">
+                                    <CalendarIcon size={32} className="text-slate-400" />
+                                </div>
+                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Journée libre</h3>
+                                <p className="text-[11px] font-bold text-slate-300 uppercase">Aucun rendez-vous planifié</p>
                             </div>
-                        );
-                    })}
-
-                    {/* Placeholder for no interventions */}
-                    {agendaDays.every(day => getInterventionsForDate(day).length === 0) && (
-                        <div className="py-20 text-center opacity-30">
-                            <CalendarIcon size={48} className="mx-auto mb-4" />
-                            <p className="font-black uppercase tracking-widest">Aucun RDV prévu</p>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
         );
@@ -437,19 +469,26 @@ const Planning: React.FC = () => {
                             <div
                                 key={i.id}
                                 onClick={() => setSelectedIntervention(i)}
-                                className="group bg-white dark:bg-slate-800 p-5 rounded-[2rem] border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:border-blue-500/30 transition-all cursor-pointer flex items-center gap-5"
+                                className={`group p-5 rounded-[2rem] border shadow-sm transition-all cursor-pointer flex items-center gap-5 ${i.status === 'completed'
+                                    ? 'bg-emerald-50/20 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30'
+                                    : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:shadow-xl hover:border-blue-500/30'
+                                    }`}
                             >
-                                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-all ${i.status === 'completed'
+                                    ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600'
+                                    : 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white'
+                                    }`}>
                                     <User size={24} />
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-start mb-1">
-                                        <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-tight truncate">
+                                        <h3 className={`font-black uppercase tracking-tight truncate ${i.status === 'completed' ? 'text-emerald-800 dark:text-emerald-200' : 'text-slate-800 dark:text-white'}`}>
                                             {i.pool?.client?.first_name} {i.pool?.client?.last_name}
                                         </h3>
-                                        <div className="flex items-center gap-1.5 bg-blue-50/50 dark:bg-blue-900/30 px-2.5 py-1 rounded-lg">
-                                            <Clock size={12} className="text-blue-500" />
-                                            <span className="text-[13px] font-black text-blue-600 uppercase">
+                                        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${i.status === 'completed' ? 'bg-emerald-100/50 dark:bg-emerald-900/30' : 'bg-blue-50/50 dark:bg-blue-900/30'
+                                            }`}>
+                                            {i.status === 'completed' ? <Check size={12} className="text-emerald-500" /> : <Clock size={12} className="text-blue-500" />}
+                                            <span className={`text-[13px] font-black uppercase ${i.status === 'completed' ? 'text-emerald-600' : 'text-blue-600'}`}>
                                                 {i.scheduled_date && new Date(i.scheduled_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
@@ -464,7 +503,8 @@ const Planning: React.FC = () => {
                                         </span>
                                     </div>
                                 </div>
-                                <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-700 flex items-center justify-center text-slate-300 group-hover:bg-blue-500 group-hover:text-white transition-all">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${i.status === 'completed' ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-400' : 'bg-slate-50 dark:bg-slate-700 text-slate-300 group-hover:bg-blue-500 group-hover:text-white'
+                                    }`}>
                                     <ChevronRight size={20} />
                                 </div>
                             </div>
@@ -485,86 +525,81 @@ const Planning: React.FC = () => {
 
     return (
         <div className="gabarit-wrapper">
-            <header className="header-gradient flex justify-between items-center">
-                <div className="flex items-center gap-4 min-w-0 flex-1">
-                    <button
-                        onClick={() => navigate('/')}
-                        className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md shrink-0"
-                        title="Retour au Dashboard"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div className="truncate">
-                        <h1 className="text-xl font-black text-white leading-tight truncate">Planning RDV</h1>
-                        <p className="text-blue-100 text-xs font-medium opacity-80 uppercase tracking-widest truncate">
-                            {currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
-                        </p>
+            <header className="header-gradient !pt-10 !pb-20 relative overflow-visible">
+                <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate('/')}
+                            className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center text-white hover:bg-white/20 transition-all backdrop-blur-md shrink-0 border border-white/10"
+                            title="Retour au Tableau de Bord"
+                        >
+                            <ArrowLeft size={20} />
+                        </button>
+                        <div>
+                            <h1 onClick={() => setViewMode('month')} className="text-lg font-black text-white leading-tight cursor-pointer hover:opacity-80 transition-opacity">
+                                PLANNING
+                            </h1>
+                            <p className="text-blue-100 text-[10px] font-black opacity-70 uppercase tracking-[0.2em]">
+                                {currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex bg-black/20 backdrop-blur-xl rounded-2xl p-1 border border-white/5 shadow-2xl shrink-0">
+                        {(['agenda', 'month', 'week', 'day'] as const).map(mode => (
+                            <button
+                                key={mode}
+                                onClick={() => setViewMode(mode)}
+                                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${viewMode === mode
+                                    ? 'bg-white text-blue-600 shadow-lg scale-105'
+                                    : 'text-white/50 hover:text-white'
+                                    }`}
+                            >
+                                {mode === 'month' ? 'Mois' : mode === 'week' ? 'Sem' : mode === 'day' ? 'Jour' : 'Agenda'}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                <div className="flex bg-white/10 backdrop-blur-md rounded-2xl p-1 border border-white/10 shadow-lg relative overflow-x-auto no-scrollbar shrink-0 ml-4">
-                    {loading && (
-                        <div className="absolute -top-1 -right-1 flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
-                        </div>
-                    )}
-                    {(['agenda', 'month', 'week', 'day'] as const).map(mode => (
-                        <button
-                            key={mode}
-                            onClick={() => setViewMode(mode)}
-                            className={`px-3 sm:px-4 py-2 rounded-xl text-[10px] sm:text-[13px] font-black uppercase tracking-widest transition-all ${viewMode === mode
-                                ? 'bg-white text-blue-600 shadow-md scale-105'
-                                : 'text-white/60 hover:text-white'
-                                }`}
-                            title={`Vue ${mode === 'month' ? 'Mensuelle' : mode === 'week' ? 'Hebdomadaire' : mode === 'day' ? 'Journalière' : 'Agenda'}`}
-                        >
-                            {mode === 'month' ? 'Mois' : mode === 'week' ? 'Sem' : mode === 'day' ? 'Jour' : 'Agenda'}
-                        </button>
-                    ))}
-                </div>
-            </header>
-
-            <main className="main-container !pb-24">
-                {/* Navigation Bar - Hide on mobile Agenda view if using strip */}
-                {!(isMobile && viewMode === 'agenda') && (
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-4">
+                {/* Integrated Controls for Desktop/Non-Agenda */}
+                {viewMode !== 'agenda' && (
+                    <div className="absolute -bottom-6 left-10 right-10 flex items-center justify-between pointer-events-none">
+                        <div className="flex items-center gap-3 pointer-events-auto">
                             <button
                                 onClick={() => changeDate(-1)}
-                                className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700 hover:scale-105 active:scale-95 transition-all"
+                                className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-xl border border-slate-100 dark:border-slate-700/50 hover:scale-105 active:scale-95 transition-all"
                                 title="Précédent"
                             >
                                 <ChevronLeft size={24} />
                             </button>
                             <button
-                                onClick={() => {
-                                    setCurrentDate(new Date());
-                                    setViewMode(isMobile ? 'agenda' : 'month');
-                                }}
-                                className="px-6 h-12 bg-white dark:bg-slate-800 rounded-2xl text-[13px] font-black uppercase tracking-widest text-slate-800 dark:text-white shadow-sm border border-slate-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all"
+                                onClick={() => setCurrentDate(new Date())}
+                                className="px-6 h-12 bg-white dark:bg-slate-800 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] text-slate-800 dark:text-white shadow-xl border border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 transition-all"
                             >
-                                Aujourd'hui
+                                AUJOURD'HUI
                             </button>
                             <button
                                 onClick={() => changeDate(1)}
-                                className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700 hover:scale-105 active:scale-95 transition-all"
+                                className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-xl border border-slate-100 dark:border-slate-700/50 hover:scale-105 active:scale-95 transition-all"
                                 title="Suivant"
                             >
                                 <ChevronRight size={24} />
                             </button>
                         </div>
+                    </div>
+                )}
+            </header>
 
-                        <div className="hidden md:flex items-center gap-6">
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
-                                <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Planifié</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                                <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Terminé</span>
-                            </div>
-                        </div>
+            <main className="main-container !pt-10 !pb-24">
+                {/* Specific Agenda Navigation Bar (Mobile-friendly) */}
+                {viewMode === 'agenda' && (
+                    <div className="flex items-center justify-center gap-3 mb-8">
+                        <button
+                            onClick={() => setCurrentDate(new Date())}
+                            className="bg-white dark:bg-slate-800 px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-800 dark:text-white shadow-sm border border-slate-100 dark:border-slate-700/50 active:scale-95 transition-all"
+                        >
+                            AUJOURD'HUI
+                        </button>
                     </div>
                 )}
 
