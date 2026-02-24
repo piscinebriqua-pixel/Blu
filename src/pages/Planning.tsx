@@ -300,13 +300,9 @@ const Planning: React.FC = () => {
     };
 
     const renderAgendaView = () => {
-        // Get next 14 days of interventions
-        const agendaDays = [];
-        for (let i = 0; i < 14; i++) {
-            const date = new Date(currentDate);
-            date.setDate(date.getDate() + i);
-            agendaDays.push(date);
-        }
+        // Only show the strictly selected day in the agenda list
+        // to avoid user confusion between the selected day and future dates.
+        const agendaDays = [new Date(currentDate)];
 
         return (
             <div className="flex flex-col gap-6 animate-in slide-in-from-bottom-10 duration-500 pb-20">
