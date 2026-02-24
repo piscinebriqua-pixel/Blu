@@ -525,7 +525,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           Coût estimé
         </span>
         <span className="text-2xl font-black text-blue-600 dark:text-blue-300 tabular-nums">
-          {totalAmount.toFixed(0)} <span className="text-base font-bold opacity-80">DT</span>
+          {(totalAmount || 0).toFixed(0)} <span className="text-base font-bold opacity-80">DT</span>
         </span>
       </div>
       <div className="flex gap-3">
@@ -676,7 +676,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                   <input
                     type="text"
                     className="w-full h-14 bg-white/50 dark:bg-slate-900/50 border-2 border-slate-100 dark:border-slate-800 rounded-2xl pl-12 pr-4 font-black transition-all focus:border-blue-500 focus:bg-white dark:focus:bg-slate-900 outline-none shadow-sm"
-                    placeholder="Nom du client ou ville..."
+                    placeholder="Ex: Ahmed Ben Salem ou Tunis..."
                     value={clientSearchTerm}
                     onChange={(e) => setClientSearchTerm(e.target.value)}
                   />
@@ -1141,7 +1141,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                                 {p.name}
                               </span>
                               <span className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">
-                                {p.price_per_unit.toFixed(2)} DT / {p.unit}
+                                {(p.price_per_unit || 0).toFixed(2)} DT / {p.unit}
                               </span>
                             </div>
                           </div>
@@ -1202,7 +1202,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                 </p>
                 <div className="flex items-baseline gap-2">
                   <span className="text-6xl font-black text-white drop-shadow-lg tabular-nums">
-                    {totalAmount.toFixed(0)}
+                    {(totalAmount || 0).toFixed(0)}
                   </span>
                   <span className="text-xl font-black text-white/80 uppercase">DT</span>
                 </div>
@@ -1217,7 +1217,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                   return (
                     <div key={sId} className="flex justify-between items-center text-xs">
                       <span className="text-slate-500 dark:text-slate-500 font-bold uppercase">{s?.name}</span>
-                      <span className="font-black text-slate-800 dark:text-white">{price.toFixed(0)} DT</span>
+                      <span className="font-black text-slate-800 dark:text-white">{(price || 0).toFixed(0)} DT</span>
                     </div>
                   );
                 })}
@@ -1226,7 +1226,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                   return (
                     <div key={pId} className="flex justify-between items-center text-xs">
                       <span className="text-slate-500 dark:text-slate-500 font-bold uppercase">{p?.name} (x{qty})</span>
-                      <span className="font-black text-slate-800 dark:text-white">{((p?.price_per_unit || 0) * qty).toFixed(0)} DT</span>
+                      <span className="font-black text-slate-800 dark:text-white">{((p?.price_per_unit || 0) * qty || 0).toFixed(0)} DT</span>
                     </div>
                   );
                 })}
@@ -1296,7 +1296,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                   {interventionType === "direct" ? (
                     <>
                       L'enregistrement du rapport déduira automatiquement{" "}
-                      <strong>{totalAmount.toFixed(0)} DT</strong> du solde client.
+                      <strong>{(totalAmount || 0).toFixed(0)} DT</strong> du solde client.
                     </>
                   ) : (
                     <>

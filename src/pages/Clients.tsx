@@ -200,9 +200,9 @@ const ClientsList: React.FC = () => {
                                             </div>
                                             <span className={`text-base font-black ${client.balance < 0 ? 'text-red-500 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
                                                 {client.balance < 0 ? (
-                                                    <>Credit <span className="text-base">{Math.abs(client.balance).toFixed(0)}</span></>
+                                                    <>Credit <span className="text-base">{(Math.abs(client.balance) || 0).toFixed(0)}</span></>
                                                 ) : (
-                                                    <>{client.balance.toFixed(0)}</>
+                                                    <>{(client.balance || 0).toFixed(0)}</>
                                                 )}
                                                 <span className="text-[13px] font-bold opacity-60 ml-1">DT</span>
                                             </span>

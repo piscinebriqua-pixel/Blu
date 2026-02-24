@@ -33,7 +33,8 @@ interface Intervention {
 
 const Planning: React.FC = () => {
     const navigate = useNavigate();
-    const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
+    const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'agenda'>('month');
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [interventions, setInterventions] = useState<Intervention[]>([]);
     const [loading, setLoading] = useState(true);
@@ -54,7 +55,7 @@ const Planning: React.FC = () => {
                         client:clients(id, first_name, last_name)
                     )
                 `)
-                .neq('status', 'cancelled');
+                .eq('status', 'scheduled');
 
             if (error) throw error;
             setInterventions(data || []);
@@ -68,6 +69,20 @@ const Planning: React.FC = () => {
     useEffect(() => {
         fetchInterventions();
     }, [fetchInterventions]);
+
+    useEffect(() => {
+        const handleResize = () => {
+            const mobile = window.innerWidth < 768;
+            setIsMobile(mobile);
+            if (mobile && viewMode === 'month') {
+                setViewMode('agenda');
+            }
+        };
+
+        handleResize(); // Initial check
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [viewMode]);
 
     const changeDate = (amount: number) => {
         const newDate = new Date(currentDate);
@@ -253,6 +268,102 @@ const Planning: React.FC = () => {
         );
     };
 
+    const renderAgendaView = () => {
+        // Get next 14 days of interventions
+        const agendaDays = [];
+        for (let i = 0; i < 14; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() + i);
+            agendaDays.push(date);
+        }
+
+        return (
+            <div className="flex flex-col gap-6 animate-in slide-in-from-bottom-10 duration-500 pb-20">
+                {/* 7-Day Mini Strip */}
+                <div className="flex justify-between items-center bg-white dark:bg-slate-800 p-2 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-x-auto no-scrollbar">
+                    {getDaysInWeek(currentDate).map((day, idx) => {
+                        const isSelected = formatDateKey(day) === formatDateKey(currentDate);
+                        const isToday = formatDateKey(day) === formatDateKey(new Date());
+                        return (
+                            <button
+                                key={idx}
+                                onClick={() => setCurrentDate(day)}
+                                className={`flex flex-col items-center min-w-[48px] py-3 rounded-xl transition-all ${isSelected
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
+                                    : 'hover:bg-slate-50 dark:hover:bg-slate-700'
+                                    }`}
+                            >
+                                <span className={`text-[10px] font-black uppercase tracking-widest ${isSelected ? 'text-blue-100' : 'text-slate-500'}`}>
+                                    {day.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '')}
+                                </span>
+                                <span className="text-base font-black leading-none mt-1">{day.getDate()}</span>
+                                {isToday && !isSelected && <div className="w-1 h-1 rounded-full bg-blue-500 mt-1"></div>}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Agenda List */}
+                <div className="space-y-8">
+                    {agendaDays.map(day => {
+                        const dayInters = getInterventionsForDate(day);
+                        if (dayInters.length === 0) return null;
+
+                        const isToday = formatDateKey(day) === formatDateKey(new Date());
+
+                        return (
+                            <div key={formatDateKey(day)} className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className={`px-3 py-1 rounded-lg text-[11px] font-black uppercase tracking-[0.2em] ${isToday ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                                        }`}>
+                                        {isToday ? "Aujourd'hui" : day.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                    </div>
+                                    <div className="flex-1 h-[1px] bg-slate-100 dark:bg-slate-800" />
+                                </div>
+
+                                <div className="grid gap-3">
+                                    {dayInters.map(i => (
+                                        <div
+                                            key={i.id}
+                                            onClick={() => setSelectedIntervention(i)}
+                                            className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center gap-4 active:scale-[0.98] transition-all"
+                                        >
+                                            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                                <User size={20} />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-center mb-0.5">
+                                                    <h4 className="font-black text-slate-800 dark:text-white uppercase tracking-tight truncate">
+                                                        {i.pool?.client?.first_name} {i.pool?.client?.last_name}
+                                                    </h4>
+                                                    <span className="text-[11px] font-black text-blue-600 dark:text-blue-400">
+                                                        {new Date(i.scheduled_date || i.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest truncate">
+                                                    {i.pool?.name || 'Piscine'} • {i.technician?.full_name}
+                                                </p>
+                                            </div>
+                                            <ChevronRight size={16} className="text-slate-300" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
+
+                    {/* Placeholder for no interventions */}
+                    {agendaDays.every(day => getInterventionsForDate(day).length === 0) && (
+                        <div className="py-20 text-center opacity-30">
+                            <CalendarIcon size={48} className="mx-auto mb-4" />
+                            <p className="font-black uppercase tracking-widest">Aucun RDV prévu</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
     const renderDayView = () => {
         const dayInterventions = getInterventionsForDate(currentDate);
         return (
@@ -355,71 +466,74 @@ const Planning: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex bg-white/10 backdrop-blur-md rounded-2xl p-1 border border-white/10 shadow-lg relative">
+                <div className="flex bg-white/10 backdrop-blur-md rounded-2xl p-1 border border-white/10 shadow-lg relative overflow-x-auto no-scrollbar">
                     {loading && (
                         <div className="absolute -top-1 -right-1 flex h-3 w-3">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
                         </div>
                     )}
-                    {(['month', 'week', 'day'] as const).map(mode => (
+                    {(['agenda', 'month', 'week', 'day'] as const).map(mode => (
                         <button
                             key={mode}
                             onClick={() => setViewMode(mode)}
-                            className={`px-4 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all ${viewMode === mode
+                            className={`px-3 sm:px-4 py-2 rounded-xl text-[10px] sm:text-[13px] font-black uppercase tracking-widest transition-all ${viewMode === mode
                                 ? 'bg-white text-blue-600 shadow-md scale-105'
                                 : 'text-white/60 hover:text-white'
                                 }`}
-                            title={`Vue ${mode === 'month' ? 'Mensuelle' : mode === 'week' ? 'Hebdomadaire' : 'Journalière'}`}
+                            title={`Vue ${mode === 'month' ? 'Mensuelle' : mode === 'week' ? 'Hebdomadaire' : mode === 'day' ? 'Journalière' : 'Agenda'}`}
                         >
-                            {mode === 'month' ? 'Mois' : mode === 'week' ? 'Sem' : 'Jour'}
+                            {mode === 'month' ? 'Mois' : mode === 'week' ? 'Sem' : mode === 'day' ? 'Jour' : 'Agenda'}
                         </button>
                     ))}
                 </div>
             </header>
 
             <main className="main-container !pb-24">
-                {/* Navigation Bar */}
-                <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => changeDate(-1)}
-                            className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700 hover:scale-105 active:scale-95 transition-all"
-                            title="Précédent"
-                        >
-                            <ChevronLeft size={24} />
-                        </button>
-                        <button
-                            onClick={() => {
-                                setCurrentDate(new Date());
-                                setViewMode('month');
-                            }}
-                            className="px-6 h-12 bg-white dark:bg-slate-800 rounded-2xl text-[13px] font-black uppercase tracking-widest text-slate-800 dark:text-white shadow-sm border border-slate-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all"
-                        >
-                            Aujourd'hui
-                        </button>
-                        <button
-                            onClick={() => changeDate(1)}
-                            className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700 hover:scale-105 active:scale-95 transition-all"
-                            title="Suivant"
-                        >
-                            <ChevronRight size={24} />
-                        </button>
-                    </div>
+                {/* Navigation Bar - Hide on mobile Agenda view if using strip */}
+                {!(isMobile && viewMode === 'agenda') && (
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => changeDate(-1)}
+                                className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700 hover:scale-105 active:scale-95 transition-all"
+                                title="Précédent"
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setCurrentDate(new Date());
+                                    setViewMode(isMobile ? 'agenda' : 'month');
+                                }}
+                                className="px-6 h-12 bg-white dark:bg-slate-800 rounded-2xl text-[13px] font-black uppercase tracking-widest text-slate-800 dark:text-white shadow-sm border border-slate-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all"
+                            >
+                                Aujourd'hui
+                            </button>
+                            <button
+                                onClick={() => changeDate(1)}
+                                className="w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-600 dark:text-slate-300 shadow-sm border border-slate-100 dark:border-slate-700 hover:scale-105 active:scale-95 transition-all"
+                                title="Suivant"
+                            >
+                                <ChevronRight size={24} />
+                            </button>
+                        </div>
 
-                    <div className="hidden md:flex items-center gap-6">
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
-                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Planifié</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Terminé</span>
+                        <div className="hidden md:flex items-center gap-6">
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+                                <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Planifié</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                                <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Terminé</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* Calendar Content */}
+                {viewMode === 'agenda' && renderAgendaView()}
                 {viewMode === 'month' && renderMonthView()}
                 {viewMode === 'week' && renderWeekView()}
                 {viewMode === 'day' && renderDayView()}

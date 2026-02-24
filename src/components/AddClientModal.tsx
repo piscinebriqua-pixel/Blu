@@ -92,12 +92,12 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
             actions={actions}
         >
             <form id="add-client-form" onSubmit={handleSubmit} className="flex flex-col gap-4 p-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
                     <Input
                         label="Prénom"
                         icon={User}
                         required
-                        placeholder="Jean"
+                        placeholder="Ahmed"
                         value={formData.first_name}
                         onChange={e => setFormData({ ...formData, first_name: e.target.value })}
                     />
@@ -105,7 +105,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
                         label="Nom"
                         icon={User}
                         required
-                        placeholder="Dupont"
+                        placeholder="Ben Salem"
                         value={formData.last_name}
                         onChange={e => setFormData({ ...formData, last_name: e.target.value })}
                     />
@@ -125,7 +125,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
                     <Input
                         label="Téléphone 1"
                         icon={Phone}
@@ -146,12 +146,12 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) =
                     label="Email"
                     icon={Mail}
                     type="email"
-                    placeholder="jean.dupont@email.com"
+                    placeholder="ahmed.bensalem@email.com"
                     value={formData.email}
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-4">
                     <Combobox
                         label="Ville"
                         icon={Globe}

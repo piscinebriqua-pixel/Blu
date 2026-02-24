@@ -27,14 +27,8 @@ export const BccpLogo: React.FC<BccpLogoProps> = ({
             src="/logo.svg"
             width={width}
             height={height}
-            className={className}
+            className={`${className} logo-img ${isWhite ? 'logo-white' : ''}`.trim()}
             alt="BCCP Logo"
-            style={{
-                display: 'block',
-                // Converts any color (including the semi-transparent rose/grey in original)
-                // to pure white when fillColor="white"
-                filter: isWhite ? 'brightness(0) invert(1)' : undefined,
-            }}
         />
     );
 };

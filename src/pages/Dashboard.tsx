@@ -18,7 +18,7 @@ import BccpLogo from '../components/BccpLogo';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
-    const [counts, setCounts] = useState({ clients: 0, technicians: 0 });
+    const [counts, setCounts] = useState({ clients: 0, technicians: 0, interventions: 0, scheduled: 0 });
     const [profile, setProfile] = useState<{ name: string, role: string } | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [recentInterventions, setRecentInterventions] = useState<any[]>([]);
@@ -51,6 +51,8 @@ const Dashboard: React.FC = () => {
                 // blocking both counters (common on slow Android connections)
                 let clientCount = 0;
                 let techCount = 0;
+                let interventionCount = 0;
+                let scheduledCount = 0;
 
                 try {
                     const { count } = await supabase
@@ -70,7 +72,27 @@ const Dashboard: React.FC = () => {
                     console.warn('Technician count fetch failed:', e);
                 }
 
-                setCounts({ clients: clientCount, technicians: techCount });
+                try {
+                    const { count: total } = await supabase
+                        .from('interventions')
+                        .select('id', { count: 'exact', head: true });
+                    interventionCount = total ?? 0;
+
+                    const { count: sched } = await supabase
+                        .from('interventions')
+                        .select('id', { count: 'exact', head: true })
+                        .eq('status', 'scheduled');
+                    scheduledCount = sched ?? 0;
+                } catch (e) {
+                    console.warn('Intervention counts fetch failed:', e);
+                }
+
+                setCounts({
+                    clients: clientCount,
+                    technicians: techCount,
+                    interventions: interventionCount,
+                    scheduled: scheduledCount
+                });
 
                 // Fetch 5 dernières interventions (tous statuts)
                 try {
@@ -203,7 +225,7 @@ const Dashboard: React.FC = () => {
                             <Calendar size={24} />
                         </div>
                         <span className="mt-1 dark:text-slate-300">Planning RDV</span>
-                        <p className="text-xl font-bold text-slate-800 dark:text-white">12 <span className="text-xs font-normal text-slate-500">active</span></p>
+                        <p className="text-xl font-bold text-slate-800 dark:text-white">{counts.scheduled} <span className="text-xs font-normal text-slate-500">prévus</span></p>
                         <div className="absolute top-2 right-2 w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
                     </div>
 
@@ -212,7 +234,7 @@ const Dashboard: React.FC = () => {
                             <Wrench size={24} />
                         </div>
                         <span className="mt-1 dark:text-slate-300">Interventions</span>
-                        <p className="text-xl font-bold text-slate-800 dark:text-white">Planning <span className="text-xs font-normal text-slate-500">suivi</span></p>
+                        <p className="text-xl font-bold text-slate-800 dark:text-white">{counts.interventions} <span className="text-xs font-normal text-slate-500">total</span></p>
                     </div>
 
 

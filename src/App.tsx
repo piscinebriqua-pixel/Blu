@@ -7,6 +7,7 @@ import ClientsList from './pages/Clients';
 import ClientDetail from './pages/ClientDetail';
 import Dashboard from './pages/Dashboard';
 import Technicians from './pages/Technicians';
+import TechnicianDetail from './pages/TechnicianDetail';
 import ServicesManager from './pages/ServicesManager';
 import Interventions from './pages/Interventions';
 import PendingApproval from './pages/PendingApproval';
@@ -184,6 +185,12 @@ function App() {
             <Route path="/technicians" element={
               <ProtectedRoute>
                 <div className="app-container"><Technicians /></div>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/technician/:id" element={
+              <ProtectedRoute>
+                <div className="app-container"><TechnicianDetail /></div>
               </ProtectedRoute>
             } />
 

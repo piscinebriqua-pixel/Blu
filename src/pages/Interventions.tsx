@@ -204,7 +204,7 @@ const Interventions: React.FC = () => {
                 Valeur
               </span>
               <span className="text-4xl font-black text-white leading-none">
-                {totalRevenue.toFixed(0)}{" "}
+                {(totalRevenue || 0).toFixed(0)}{" "}
                 <span className="text-base font-bold text-white/80 ml-0.5">DT</span>
               </span>
             </div>
@@ -242,7 +242,7 @@ const Interventions: React.FC = () => {
                 </h4>
               </div>
               <span className="text-lg font-black text-primary bg-primary/5 px-3 py-1.5 rounded-xl shrink-0">
-                {calculateTotal(inter).toFixed(0)} DT
+                {(calculateTotal(inter) || 0).toFixed(0)} DT
               </span>
             </div>
 

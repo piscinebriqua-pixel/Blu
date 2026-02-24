@@ -219,7 +219,7 @@ const Payments: React.FC = () => {
                                     </h4>
                                     <div className="flex flex-col items-end">
                                         <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
-                                            +{p.amount.toFixed(0)} <span className="text-xs opacity-60">DT</span>
+                                            +{(p.amount || 0).toFixed(0)} <span className="text-xs opacity-60">DT</span>
                                         </span>
                                     </div>
                                 </div>

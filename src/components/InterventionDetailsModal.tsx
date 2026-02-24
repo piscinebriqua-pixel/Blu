@@ -69,7 +69,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
             message += `*Produits utilisés :*\n${products}\n\n`;
         }
 
-        message += `*Total : ${totalAmount.toFixed(0)} DT*\n\n`;
+        message += `*Total : ${(totalAmount || 0).toFixed(0)} DT*\n\n`;
 
         if (intervention.notes) {
             message += `*Note :* ${intervention.notes}\n\n`;
@@ -104,7 +104,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                     </div>
                     <p className="text-[13px] font-black uppercase tracking-[0.4em] text-slate-500">Rapport d'intervention</p>
                     <div className="flex items-center gap-4 text-3xl font-black text-slate-900 dark:text-white tracking-tighter">
-                        {intervention.services && (intervention.services.reduce((acc, s) => acc + s.price_at_time, 0) + (intervention.products?.reduce((acc, p) => acc + p.total_price, 0) || 0)).toFixed(0)}
+                        {intervention.services && ((intervention.services.reduce((acc, s) => acc + (s.price_at_time || 0), 0) + (intervention.products?.reduce((acc, p) => acc + (p.total_price || 0), 0) || 0)) || 0).toFixed(0)}
                         <span className="text-xl font-bold text-primary dark:text-blue-400 ml-1">DT</span>
                     </div>
 
@@ -117,7 +117,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                             <div className="flex items-center gap-2 mt-1">
                                 <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">Compte Client:</span>
                                 <span className={`text-[13px] font-black uppercase ${intervention.pool.client.balance < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
-                                    {intervention.pool.client.balance.toFixed(0)} DT
+                                    {(intervention.pool.client.balance || 0).toFixed(0)} DT
                                 </span>
                             </div>
                         </div>
@@ -275,28 +275,28 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                     </div>
                 )}
 
-                <div className="flex gap-4 pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 pt-4 sm:pt-6">
                     {onEdit && (
                         <button
-                            className="flex-1 btn-flow btn-primary !h-16 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            className="flex-1 btn-flow btn-primary !h-14 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
                             onClick={() => onEdit(intervention)}
                         >
-                            <Edit2 size={20} strokeWidth={2.5} />
-                            <span className="font-black uppercase tracking-[0.2em] text-xs">Modifier le rapport</span>
+                            <Edit2 size={18} strokeWidth={2.5} />
+                            <span className="font-black uppercase tracking-[0.2em] text-[11px]">Modifier le rapport</span>
                         </button>
                     )}
                     {intervention.pool?.client?.phone && (
                         <button
-                            className="btn-flow bg-emerald-500 hover:bg-emerald-600 !text-white !h-16 px-6 shadow-xl shadow-emerald-500/20 transition-all flex items-center gap-2"
+                            className="flex-1 btn-flow bg-emerald-500 hover:bg-emerald-600 !text-white !h-14 shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
                             onClick={handleWhatsAppShare}
                         >
-                            <MessageCircle size={20} strokeWidth={2.5} />
-                            <span className="font-black uppercase tracking-[0.2em] text-xs">WhatsApp</span>
+                            <MessageCircle size={18} strokeWidth={2.5} />
+                            <span className="font-black uppercase tracking-[0.2em] text-[11px]">WhatsApp</span>
                         </button>
                     )}
                     <button
                         onClick={onClose}
-                        className="px-8 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-500 rounded-2xl font-black uppercase tracking-widest text-base hover:bg-slate-200 transition-all active:scale-95"
+                        className="flex-1 px-8 !h-14 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-500 rounded-[20px] font-black uppercase tracking-widest text-[13px] hover:bg-slate-200 dark:hover:bg-white/10 transition-all active:scale-95"
                     >
                         Fermer
                     </button>
