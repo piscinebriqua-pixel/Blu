@@ -1256,33 +1256,34 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
 
                 {formData.record_payment && (
                   <div className="flex flex-col gap-3 animate-slide-up">
-                    <div className="flex gap-2">
-                      <div className="flex-1 relative">
-                        <input
-                          type="number"
-                          className="search-input !h-10 text-xs"
-                          placeholder="Montant (DT)"
-                          value={formData.payment_amount}
-                          onChange={(e) =>
-                            setFormData({ ...formData, payment_amount: e.target.value })
-                          }
-                          title="Montant du paiement reçu"
-                        />
-                      </div>
-                      <select
-                        className="search-input !h-10 text-xs w-32 cursor-pointer"
-                        value={formData.payment_method}
+                    {/* Amount — large and prominent */}
+                    <div className="relative">
+                      <input
+                        type="number"
+                        className="w-full h-16 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl px-5 text-2xl font-black text-slate-800 dark:text-white placeholder:text-slate-300 dark:placeholder:text-slate-600 focus:border-blue-500 outline-none transition-all shadow-sm"
+                        placeholder="0"
+                        value={formData.payment_amount}
                         onChange={(e) =>
-                          setFormData({ ...formData, payment_method: e.target.value as any })
+                          setFormData({ ...formData, payment_amount: e.target.value })
                         }
-                        title="Mode de paiement"
-                      >
-                        <option value="espèces">Espèces</option>
-                        <option value="chèque">Chèque</option>
-                        <option value="virement">Virement</option>
-                        <option value="autre">Autre</option>
-                      </select>
+                        title="Montant du paiement reçu"
+                      />
+                      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-lg font-black text-slate-400 dark:text-slate-500 pointer-events-none">DT</span>
                     </div>
+                    {/* Method */}
+                    <select
+                      className="w-full h-12 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl px-4 text-sm font-black text-slate-800 dark:text-white focus:border-blue-500 outline-none transition-all shadow-sm cursor-pointer appearance-none"
+                      value={formData.payment_method}
+                      onChange={(e) =>
+                        setFormData({ ...formData, payment_method: e.target.value as any })
+                      }
+                      title="Mode de paiement"
+                    >
+                      <option value="espèces">💵 Espèces</option>
+                      <option value="chèque">🧾 Chèque</option>
+                      <option value="virement">🏦 Virement</option>
+                      <option value="autre">📋 Autre</option>
+                    </select>
                     <p className="text-[13px] font-bold text-primary uppercase opacity-60">
                       Le solde du client sera crédité de ce montant.
                     </p>
