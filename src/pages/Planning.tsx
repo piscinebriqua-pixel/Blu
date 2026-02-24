@@ -48,14 +48,7 @@ const Planning: React.FC = () => {
             setLoading(true);
             const { data, error } = await supabase
                 .from('interventions')
-                .select(`
-                    *,
-                    technician:technicians!technician_id(full_name),
-                    pool:pools(
-                        name,
-                        client:clients(id, first_name, last_name)
-                    )
-                `)
+                .select('*, technician:technicians(full_name), pool:pools(name, client:clients(id, first_name, last_name))')
                 .eq('status', 'scheduled');
 
             if (error) throw error;
@@ -451,23 +444,23 @@ const Planning: React.FC = () => {
     return (
         <div className="gabarit-wrapper">
             <header className="header-gradient flex justify-between items-center">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 min-w-0 flex-1">
                     <button
                         onClick={() => navigate('/')}
-                        className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md"
+                        className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md shrink-0"
                         title="Retour au Dashboard"
                     >
                         <ArrowLeft size={20} />
                     </button>
-                    <div>
-                        <h1 className="text-xl font-black text-white leading-tight">Planning RDV</h1>
-                        <p className="text-blue-100 text-xs font-medium opacity-80 uppercase tracking-widest">
+                    <div className="truncate">
+                        <h1 className="text-xl font-black text-white leading-tight truncate">Planning RDV</h1>
+                        <p className="text-blue-100 text-xs font-medium opacity-80 uppercase tracking-widest truncate">
                             {currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex bg-white/10 backdrop-blur-md rounded-2xl p-1 border border-white/10 shadow-lg relative overflow-x-auto no-scrollbar">
+                <div className="flex bg-white/10 backdrop-blur-md rounded-2xl p-1 border border-white/10 shadow-lg relative overflow-x-auto no-scrollbar shrink-0 ml-4">
                     {loading && (
                         <div className="absolute -top-1 -right-1 flex h-3 w-3">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
