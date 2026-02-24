@@ -41,6 +41,7 @@ const Planning: React.FC = () => {
     const [isNewModalOpen, setIsNewModalOpen] = useState(false);
     const [selectedIntervention, setSelectedIntervention] = useState<Intervention | null>(null);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
+    const [editingInterventionId, setEditingInterventionId] = useState<string | null>(null);
 
     const fetchInterventions = useCallback(async () => {
         try {
@@ -552,27 +553,32 @@ const Planning: React.FC = () => {
             </button>
 
             {/* Modals */}
-            {isNewModalOpen && (
-                <NewIntervention
-                    scheduledDate={selectedDate || undefined}
-                    onClose={() => {
-                        setIsNewModalOpen(false);
-                        setSelectedDate(null);
-                    }}
-                    onSuccess={() => {
-                        setIsNewModalOpen(false);
-                        setSelectedDate(null);
-                        fetchInterventions();
-                    }}
-                />
-            )}
 
             {selectedIntervention && (
                 <InterventionDetailsModal
                     intervention={selectedIntervention as any}
                     onClose={() => setSelectedIntervention(null)}
-                    onEdit={() => {
-                        // Handle edit if needed
+                    onEdit={(i) => {
+                        setEditingInterventionId(i.id);
+                        setSelectedIntervention(null);
+                    }}
+                />
+            )}
+
+            {(isNewModalOpen || editingInterventionId) && (
+                <NewIntervention
+                    interventionId={editingInterventionId || undefined}
+                    scheduledDate={selectedDate || undefined}
+                    onClose={() => {
+                        setIsNewModalOpen(false);
+                        setEditingInterventionId(null);
+                        setSelectedDate(null);
+                    }}
+                    onSuccess={() => {
+                        setIsNewModalOpen(false);
+                        setEditingInterventionId(null);
+                        setSelectedDate(null);
+                        fetchInterventions();
                     }}
                 />
             )}
