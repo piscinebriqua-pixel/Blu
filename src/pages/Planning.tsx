@@ -128,7 +128,12 @@ const Planning: React.FC = () => {
         return days;
     };
 
-    const formatDateKey = (date: Date) => date.toISOString().split('T')[0];
+    const formatDateKey = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
 
     const getInterventionsForDate = (date: Date) => {
         const key = formatDateKey(date);
@@ -266,7 +271,7 @@ const Planning: React.FC = () => {
         // Get next 14 days of interventions
         const agendaDays = [];
         for (let i = 0; i < 14; i++) {
-            const date = new Date();
+            const date = new Date(currentDate);
             date.setDate(date.getDate() + i);
             agendaDays.push(date);
         }

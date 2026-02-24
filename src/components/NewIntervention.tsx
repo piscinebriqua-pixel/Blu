@@ -218,8 +218,8 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         setUsedProducts(prods);
       }
 
-      // If it's a scheduled intervention being started, default to direct rapport mode
-      if (data.status === "scheduled") setInterventionType("direct");
+      // If it's a scheduled intervention being started/edited, preserve the type
+      if (data.status === "scheduled") setInterventionType("scheduled");
     }
   }, [interventionId]);
 
