@@ -13,7 +13,8 @@ import {
     Phone,
     MessageCircle,
     Navigation,
-    Trash2
+    Trash2,
+    AlertCircle
 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import NewIntervention from '../components/NewIntervention';
@@ -161,10 +162,14 @@ const ClientDetail: React.FC = () => {
 
             const { data: clients, error: clientError } = await supabase.from('clients').select('*').eq('id', id);
             if (clientError) throw clientError;
+
             const clientData = clients?.[0];
-            if (clientData) {
-                setClient(clientData);
+            if (!clientData) {
+                toast.error('Client introuvable');
+                navigate('/clients');
+                return;
             }
+            setClient(clientData);
 
             const { data: poolData } = await supabase.from('pools').select('*').eq('client_id', id);
             setPools(poolData || []);
@@ -278,7 +283,28 @@ const ClientDetail: React.FC = () => {
         }
     };
 
-    if (!client && !loading) return null;
+    if (!client && !loading) {
+        return (
+            <PageLayout title="Client introuvable" showBackButton={true}>
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                        <AlertCircle size={32} className="text-slate-500" />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-700 dark:text-white">Ce client n'existe plus</h3>
+                    <p className="text-slate-500 dark:text-slate-500 max-w-xs mx-auto mt-2">
+                        Le dossier a peut-être été supprimé ou l'identifiant est incorrect.
+                    </p>
+                    <Button
+                        variant="primary"
+                        onClick={() => navigate('/clients')}
+                        className="mt-6"
+                    >
+                        RETOUR À LA LISTE
+                    </Button>
+                </div>
+            </PageLayout>
+        );
+    }
 
     const toolbar = (
         <div className="flex items-center justify-between w-full gap-3">
