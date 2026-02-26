@@ -96,38 +96,44 @@ function App() {
     isFetchingRef.current = userId;
 
     setLoading(true);
-    let attempts = 5; // Increased attempts to 5
-    let delay = 1500; // Start with 1.5s delay
+    let attempts = 8; // Increased attempts to 8 (better for slow cold starts)
+    let delay = 1000; // Start with 1s delay
+
+    console.log(`Initialisation de la récupération du profil pour ${userId}...`);
 
     while (attempts > 0) {
       try {
+        // Use select() instead of single() to avoid 406 errors on empty results
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', userId)
-          .single();
+          .eq('id', userId);
 
-        if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows found"
+        if (error) throw error;
 
-        if (data) {
-          setUserProfile(data);
+        const profile = data?.[0];
+
+        if (profile) {
+          console.log('Profil chargé avec succès:', profile.email);
+          setUserProfile(profile);
           setLoading(false);
           isFetchingRef.current = null;
           return;
         }
 
-        console.log(`Profil non trouvé, tentative ${6 - attempts}/5...`);
+        console.log(`Profil introuvable en base (tentative ${9 - attempts}/8), attente de ${delay}ms...`);
       } catch (e: any) {
-        console.error(`Erreur chargement profil (tentative ${6 - attempts}/5):`, e.message);
+        console.error(`Erreur lors de la récupération du profil (tentative ${9 - attempts}/8):`, e.message);
       }
 
       attempts--;
       if (attempts > 0) {
         await new Promise(r => setTimeout(r, delay));
-        delay += 1000; // Increase delay progressively (exponential-ish backoff)
+        delay = Math.min(delay + 1000, 5000); // Progressively wait longer, max 5s
       }
     }
 
+    console.error('Échec définitif de la récupération du profil après toutes les tentatives.');
     isFetchingRef.current = null;
     setLoading(false);
   };
