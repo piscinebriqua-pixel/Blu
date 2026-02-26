@@ -217,12 +217,12 @@ const Dashboard: React.FC = () => {
         <PageLayout title="" leftContent={leftContent} rightContent={rightContent}>
             <div className="dashboard-grid">
                 {profile?.role === 'admin' && (
-                    <div onClick={() => navigate('/revenue')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-blue-50/30 border-blue-100/50 dark:grad-blue dark:border-none shadow-blue-500/10 dark:shadow-blue-500/30">
-                        <div className="icon-wrapper bg-white dark:bg-white/20 text-blue-600 dark:text-white shadow-sm dark:shadow-none">
+                    <div onClick={() => navigate('/revenue')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-blue-50/30 border-blue-100/50 dark:bg-blue-900/10 dark:border-blue-800/20 shadow-blue-500/10">
+                        <div className="icon-wrapper bg-white dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 shadow-sm dark:shadow-none">
                             <Wallet size={22} />
                         </div>
                         <div className="content-wrapper">
-                            <span className="text-blue-600/60 dark:text-white/80 uppercase !text-[10px] font-black">CA Mensuel</span>
+                            <span className="text-blue-600/60 dark:text-blue-400/60 uppercase !text-[10px] font-black">CA Mensuel</span>
                             <p className="text-blue-900 dark:text-white">Analyse & Revenus</p>
                         </div>
                     </div>
