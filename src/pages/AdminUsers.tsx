@@ -101,27 +101,43 @@ const AdminUsers: React.FC = () => {
 
     const handleRevoke = async (profileId: string) => {
         setIsProcessing(true);
-        const { error } = await supabase.from('profiles').update({ is_approved: false }).eq('id', profileId);
-        if (error) toast.error("Erreur: " + error.message);
-        else {
+        try {
+            const { error } = await supabase.from('profiles').update({ is_approved: false }).eq('id', profileId);
+            if (error) throw error;
+
             toast.success("Accès révoqué");
+            // Mise à jour immédiate de l'état local
+            setProfiles(prev => prev.map(p => p.id === profileId ? { ...p, is_approved: false } : p));
             setConfirmAction(null);
-            fetchData();
+
+            // Si on est sur l'onglet validation, on filtre carrément
+            if (activeTab === 'pending') {
+                setProfiles(prev => prev.filter(p => p.id !== profileId));
+            }
+        } catch (e: any) {
+            toast.error("Erreur: " + e.message);
+        } finally {
+            setIsProcessing(false);
         }
-        setIsProcessing(false);
     };
 
     const handleDelete = async () => {
         if (!confirmAction) return;
+        const profileId = confirmAction.profileId;
         setIsProcessing(true);
-        const { error } = await supabase.from('profiles').delete().eq('id', confirmAction.profileId);
-        if (error) toast.error("Erreur suppression: " + error.message);
-        else {
+        try {
+            const { error } = await supabase.from('profiles').delete().eq('id', profileId);
+            if (error) throw error;
+
             toast.success("Compte supprimé");
+            // Mise à jour immédiate de l'état local : on retire le profil de la liste
+            setProfiles(prev => prev.filter(p => p.id !== profileId));
             setConfirmAction(null);
-            fetchData();
+        } catch (e: any) {
+            toast.error("Erreur suppression: " + e.message);
+        } finally {
+            setIsProcessing(false);
         }
-        setIsProcessing(false);
     };
 
     if (loading && profiles.length === 0) return (
