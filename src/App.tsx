@@ -89,21 +89,18 @@ function App() {
   // which is generally preferred over recursion for retries in JS to avoid stack depth issues.
   // The instruction also mentions increasing timeout to 15s, which is incorporated below.
 
-  // Revised fetchProfile to handle async retries better
   const fetchProfileWithRetry = async (userId: string) => {
-    // Prevent overlapping fetches for the same user
     if (isFetchingRef.current === userId) return;
     isFetchingRef.current = userId;
 
     setLoading(true);
-    let attempts = 5; // Reduced attempts but added fail-safe
+    let attempts = 5;
     let delay = 1000;
 
-    console.log(`[Auth] Récupération du profil pour: ${userId}`);
+    console.log(`[Auth] Recherche du profil pour: ${userId}`);
 
     while (attempts > 0) {
       try {
-        // maybeSingle() returns null if no row is found, no error 406/404
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -113,32 +110,31 @@ function App() {
         if (error) throw error;
 
         if (data) {
-          console.log('[Auth] Profil trouvé !', data.email);
+          console.log('[Auth] Profil chargé.');
           setUserProfile(data);
           setLoading(false);
           isFetchingRef.current = null;
           return;
         }
 
-        // FAIL-SAFE: If profile is missing after 3 tries, try to create it manually
-        if (attempts === 2) {
-          console.warn('[Auth] Profil manquant après 3 essais. Tentative de création manuelle...');
+        // Création immédiate si manquant dès la tentative 1 ou 2
+        if (attempts >= 4) {
+          console.log(`[Auth] Profil absent. Tentative de création de secours (Essai ${6 - attempts})...`);
           const { data: { session } } = await supabase.auth.getSession();
           if (session?.user) {
-            const { error: insertError } = await supabase.from('profiles').insert({
+            await supabase.from('profiles').insert({
               id: session.user.id,
               email: session.user.email,
               full_name: session.user.user_metadata?.full_name || session.user.email,
               role: 'pending',
               is_approved: false
             });
-            if (!insertError) console.log('[Auth] Profil de secours créé avec succès.');
           }
         }
 
-        console.log(`[Auth] Profil pas encore créé (tentative ${6 - attempts}/5), nouvel essai dans ${delay}ms...`);
+        console.log(`[Auth] Profil non trouvé (Essai ${6 - attempts}/5). Nouvel essai dans ${delay}ms...`);
       } catch (e: any) {
-        console.error(`[Auth] Erreur SQL (tentative ${6 - attempts}/5):`, e.message);
+        console.error(`[Auth] Erreur SQL (Essai ${6 - attempts}/5):`, e.message);
       }
 
       attempts--;
@@ -148,7 +144,6 @@ function App() {
       }
     }
 
-    console.error('[Auth] Échec définitif : Redirection vers écran Profil Introuvable.');
     isFetchingRef.current = null;
     setLoading(false);
   };
