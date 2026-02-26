@@ -96,7 +96,7 @@ function App() {
     isFetchingRef.current = userId;
 
     setLoading(true);
-    let attempts = 10; // Increased to 10 attempts
+    let attempts = 5; // Reduced attempts but added fail-safe
     let delay = 1000;
 
     console.log(`[Auth] Récupération du profil pour: ${userId}`);
@@ -120,19 +120,35 @@ function App() {
           return;
         }
 
-        console.log(`[Auth] Profil pas encore créé (tentative ${11 - attempts}/10), nouvel essai dans ${delay}ms...`);
+        // FAIL-SAFE: If profile is missing after 3 tries, try to create it manually
+        if (attempts === 2) {
+          console.warn('[Auth] Profil manquant après 3 essais. Tentative de création manuelle...');
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user) {
+            const { error: insertError } = await supabase.from('profiles').insert({
+              id: session.user.id,
+              email: session.user.email,
+              full_name: session.user.user_metadata?.full_name || session.user.email,
+              role: 'pending',
+              is_approved: false
+            });
+            if (!insertError) console.log('[Auth] Profil de secours créé avec succès.');
+          }
+        }
+
+        console.log(`[Auth] Profil pas encore créé (tentative ${6 - attempts}/5), nouvel essai dans ${delay}ms...`);
       } catch (e: any) {
-        console.error(`[Auth] Erreur SQL (tentative ${11 - attempts}/10):`, e.message);
+        console.error(`[Auth] Erreur SQL (tentative ${6 - attempts}/5):`, e.message);
       }
 
       attempts--;
       if (attempts > 0) {
         await new Promise(r => setTimeout(r, delay));
-        delay = Math.min(delay + 1000, 4000); // Gradual backoff
+        delay = 1500;
       }
     }
 
-    console.error('[Auth] Échec : Le profil n\'existe pas en base de données.');
+    console.error('[Auth] Échec définitif : Redirection vers écran Profil Introuvable.');
     isFetchingRef.current = null;
     setLoading(false);
   };
