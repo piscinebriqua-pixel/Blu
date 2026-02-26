@@ -178,9 +178,13 @@ const AdminUsers: React.FC = () => {
                                 <div className="flex items-center gap-2">
                                     {activeTab === 'pending' ? (
                                         <>
-                                            <button onClick={() => { setSelectedProfile(p); setActionType('link_technician'); }} className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[10px] font-black uppercase">Lier Tech</button>
-                                            <button onClick={() => { setSelectedProfile(p); setActionType('link_client'); }} className="px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-[10px] font-black uppercase">Lier Client</button>
-                                            <button onClick={() => { setSelectedProfile(p); setActionType('make_admin'); handleApproval(); }} className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-xl text-[10px] font-black uppercase">Admin</button>
+                                            <button onClick={() => { setSelectedProfile(p); setActionType('link_technician'); }} className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[10px] font-black uppercase transition-all hover:scale-105 active:scale-95">Lier Tech</button>
+                                            <button onClick={() => { setSelectedProfile(p); setActionType('link_client'); }} className="px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-[10px] font-black uppercase transition-all hover:scale-105 active:scale-95">Lier Client</button>
+                                            <button onClick={() => { setSelectedProfile(p); setActionType('make_admin'); handleApproval(); }} className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-xl text-[10px] font-black uppercase transition-all hover:scale-105 active:scale-95">Admin</button>
+                                            <button onClick={() => setConfirmAction({ type: 'delete', profileId: p.id })} className="px-4 py-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-rose-100 hover:scale-105 active:scale-95 flex items-center gap-1.5" title="Refuser la demande">
+                                                <X size={14} strokeWidth={3} />
+                                                Refuser
+                                            </button>
                                         </>
                                     ) : (
                                         <>
