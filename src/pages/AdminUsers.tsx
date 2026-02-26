@@ -72,25 +72,26 @@ const AdminUsers: React.FC = () => {
         fetchData();
     }, [activeTab]);
 
-    const handleApproval = async () => {
-        if (!selectedProfile || !actionType) return;
+    const handleUpdateProfile = async (role: string, linkId?: string) => {
+        if (!selectedProfile) return;
         setIsProcessing(true);
         try {
-            let updateData: any = { is_approved: true };
-            if (actionType === 'make_admin') updateData.role = 'admin';
-            else if (actionType === 'link_technician') {
-                updateData.role = 'technician';
-                updateData.technician_id = selectedLinkId;
-            } else if (actionType === 'link_client') {
-                updateData.role = 'client';
-                updateData.client_id = selectedLinkId;
-            }
+            let updateData: any = { is_approved: true, role };
+
+            // Clean up old links
+            updateData.technician_id = null;
+            updateData.client_id = null;
+
+            if (role === 'technician') updateData.technician_id = linkId;
+            else if (role === 'client') updateData.client_id = linkId;
 
             const { error } = await supabase.from('profiles').update(updateData).eq('id', selectedProfile.id);
             if (error) throw error;
-            toast.success("Compte approuvé !");
+
+            toast.success("Profil mis à jour !");
             setSelectedProfile(null);
             setActionType(null);
+            setSelectedLinkId('');
             fetchData();
         } catch (e: any) {
             toast.error(e.message);
@@ -196,7 +197,7 @@ const AdminUsers: React.FC = () => {
                                         <>
                                             <button onClick={() => { setSelectedProfile(p); setActionType('link_technician'); }} className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[10px] font-black uppercase transition-all hover:scale-105 active:scale-95">Lier Tech</button>
                                             <button onClick={() => { setSelectedProfile(p); setActionType('link_client'); }} className="px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-[10px] font-black uppercase transition-all hover:scale-105 active:scale-95">Lier Client</button>
-                                            <button onClick={() => { setSelectedProfile(p); setActionType('make_admin'); handleApproval(); }} className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-xl text-[10px] font-black uppercase transition-all hover:scale-105 active:scale-95">Admin</button>
+                                            <button onClick={() => { setSelectedProfile(p); handleUpdateProfile('admin'); }} className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-xl text-[10px] font-black uppercase transition-all hover:scale-105 active:scale-95">Admin</button>
                                             <button onClick={() => setConfirmAction({ type: 'delete', profileId: p.id })} className="px-4 py-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:bg-rose-100 hover:scale-105 active:scale-95 flex items-center gap-1.5" title="Refuser la demande">
                                                 <X size={14} strokeWidth={3} />
                                                 Refuser
@@ -205,6 +206,17 @@ const AdminUsers: React.FC = () => {
                                     ) : (
                                         <>
                                             <span className="px-3 py-1 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-[10px] font-black uppercase text-slate-500">{p.role}</span>
+                                            <button
+                                                title="Modifier le rôle"
+                                                onClick={() => {
+                                                    setSelectedProfile(p);
+                                                    setActionType('edit_profile');
+                                                    setSelectedLinkId((p as any).technician_id || (p as any).client_id || '');
+                                                }}
+                                                className="p-2 text-primary hover:bg-blue-50 rounded-xl transition-colors"
+                                            >
+                                                <UserPlus size={20} />
+                                            </button>
                                             <button title="Supprimer l'accès" onClick={() => setConfirmAction({ type: 'revoke', profileId: p.id })} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"><X size={20} /></button>
                                         </>
                                     )}
@@ -217,32 +229,81 @@ const AdminUsers: React.FC = () => {
                 </div>
             </main>
 
-            {selectedProfile && (actionType === 'link_technician' || actionType === 'link_client') && (
+            {selectedProfile && (actionType === 'link_technician' || actionType === 'link_client' || actionType === 'edit_profile') && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl border border-white/20">
-                        <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Lier un compte</h2>
+                        <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tight">
+                            {actionType === 'edit_profile' ? 'Modifier le compte' : 'Lier un compte'}
+                        </h2>
                         <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mb-6">Profil: {selectedProfile.full_name}</p>
 
-                        <div className="space-y-4 mb-8">
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Sélectionner l'entité</label>
-                            <select
-                                title="Choisir l'entité à lier"
-                                className="w-full h-14 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold text-slate-800 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none"
-                                value={selectedLinkId}
-                                onChange={(e) => setSelectedLinkId(e.target.value)}
-                            >
-                                <option value="">Choisir...</option>
-                                {actionType === 'link_technician' ? (
-                                    technicians.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)
-                                ) : (
-                                    clients.map(c => <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>)
-                                )}
-                            </select>
+                        <div className="space-y-6">
+                            {actionType === 'edit_profile' && (
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Rôle de l'utilisateur</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {['admin', 'technician', 'client'].map((r) => (
+                                            <button
+                                                key={r}
+                                                onClick={() => {
+                                                    setSelectedProfile({ ...selectedProfile, role: r });
+                                                    setSelectedLinkId('');
+                                                }}
+                                                className={`py-3 rounded-xl text-[10px] font-black uppercase border-2 transition-all ${selectedProfile.role === r
+                                                    ? 'border-primary bg-blue-50 text-primary'
+                                                    : 'border-slate-100 text-slate-400'}`}
+                                            >
+                                                {r}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {(actionType === 'link_technician' || (actionType === 'edit_profile' && selectedProfile.role === 'technician')) && (
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Sélectionner le Technicien</label>
+                                    <select
+                                        title="Choisir le technicien"
+                                        className="w-full h-14 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold text-slate-800 dark:text-white"
+                                        value={selectedLinkId}
+                                        onChange={(e) => setSelectedLinkId(e.target.value)}
+                                    >
+                                        <option value="">Choisir...</option>
+                                        {technicians.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
+                                    </select>
+                                </div>
+                            )}
+
+                            {(actionType === 'link_client' || (actionType === 'edit_profile' && selectedProfile.role === 'client')) && (
+                                <div className="space-y-3">
+                                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Sélectionner le Client</label>
+                                    <select
+                                        title="Choisir le client"
+                                        className="w-full h-14 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold text-slate-800 dark:text-white"
+                                        value={selectedLinkId}
+                                        onChange={(e) => setSelectedLinkId(e.target.value)}
+                                    >
+                                        <option value="">Choisir...</option>
+                                        {clients.map(c => <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>)}
+                                    </select>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="flex gap-3">
-                            <button onClick={() => { setSelectedProfile(null); setActionType(null); }} className="flex-1 h-14 rounded-2xl font-black uppercase text-[13px] tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all">Annuler</button>
-                            <button onClick={handleApproval} disabled={!selectedLinkId || isProcessing} className="flex-2 h-14 bg-primary text-white rounded-2xl font-black uppercase text-[13px] tracking-widest shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 disabled:opacity-50 transition-all">Valider</button>
+                        <div className="flex gap-3 mt-8">
+                            <button onClick={() => { setSelectedProfile(null); setActionType(null); setSelectedLinkId(''); }} className="flex-1 h-14 rounded-2xl font-black uppercase text-[13px] tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all">Annuler</button>
+                            <button
+                                onClick={() => {
+                                    if (actionType === 'edit_profile') handleUpdateProfile(selectedProfile.role, selectedLinkId);
+                                    else if (actionType === 'link_technician') handleUpdateProfile('technician', selectedLinkId);
+                                    else if (actionType === 'link_client') handleUpdateProfile('client', selectedLinkId);
+                                }}
+                                disabled={isProcessing || ((selectedProfile.role === 'technician' || selectedProfile.role === 'client') && !selectedLinkId)}
+                                className="flex-2 h-14 bg-primary text-white rounded-2xl font-black uppercase text-[13px] tracking-widest shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 disabled:opacity-30 transition-all"
+                            >
+                                Valider
+                            </button>
                         </div>
                     </div>
                 </div>
