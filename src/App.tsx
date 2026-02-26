@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
-import { useEffect, useState, Component } from 'react';
+import { useEffect, useState, Component, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { supabase } from './lib/supabase';
 import Login from './pages/Login';
@@ -31,12 +31,24 @@ function App() {
   const [session, setSession] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const isFetchingRef = useRef<string | null>(null); // Track fetching to avoid parallel calls
 
   useEffect(() => {
     const initAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
+
+        // Handle specific Auth errors that block the app
+        if (error) {
+          if (error.message.includes('refresh_token') || error.message.includes('Invalid Refresh Token')) {
+            console.warn('Session expirée ou invalide. Déconnexion forcée...');
+            await supabase.auth.signOut();
+            setSession(null);
+            setLoading(false);
+            return;
+          }
+          throw error;
+        }
 
         setSession(session);
         if (session?.user) {
@@ -45,18 +57,25 @@ function App() {
           setLoading(false);
         }
       } catch (err: any) {
+        console.error('Auth initialization error:', err);
         setLoading(false);
       }
     };
 
     initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth Event:', event);
       setSession(session);
+
       if (session?.user) {
-        fetchProfileWithRetry(session.user.id);
+        // Only fetch if not already fetching for this user
+        if (isFetchingRef.current !== session.user.id) {
+          fetchProfileWithRetry(session.user.id);
+        }
       } else {
         setUserProfile(null);
+        isFetchingRef.current = null;
         setLoading(false);
       }
     });
@@ -72,37 +91,45 @@ function App() {
 
   // Revised fetchProfile to handle async retries better
   const fetchProfileWithRetry = async (userId: string) => {
-    let attempts = 3;
+    // Prevent overlapping fetches for the same user
+    if (isFetchingRef.current === userId) return;
+    isFetchingRef.current = userId;
+
+    setLoading(true);
+    let attempts = 5; // Increased attempts to 5
+    let delay = 1500; // Start with 1.5s delay
+
     while (attempts > 0) {
       try {
-        // Timeout promise (15s to be safe)
-        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 15000));
-
-        // Fetch promise
-        const fetchPromise = supabase
+        const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', userId);
+          .eq('id', userId)
+          .single();
 
-        const { data, error } = await Promise.race([fetchPromise, timeout]) as any;
+        if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows found"
 
-        const profile = data?.[0]; // Extract the first item from the array
-
-        if (error) throw error;
-        if (profile) {
-          setUserProfile(profile);
-          setLoading(false); // Success, stop loading
-          return; // Success
+        if (data) {
+          setUserProfile(data);
+          setLoading(false);
+          isFetchingRef.current = null;
+          return;
         }
-      } catch (e) {
-        console.error(`Profile fetch error (attempts left: ${attempts - 1})`, e);
-        attempts--;
-        if (attempts > 0) {
-          await new Promise(r => setTimeout(r, 2000)); // Wait 2 seconds before retrying
-        }
+
+        console.log(`Profil non trouvé, tentative ${6 - attempts}/5...`);
+      } catch (e: any) {
+        console.error(`Erreur chargement profil (tentative ${6 - attempts}/5):`, e.message);
+      }
+
+      attempts--;
+      if (attempts > 0) {
+        await new Promise(r => setTimeout(r, delay));
+        delay += 1000; // Increase delay progressively (exponential-ish backoff)
       }
     }
-    setLoading(false); // Done trying, stop loading (failed)
+
+    isFetchingRef.current = null;
+    setLoading(false);
   };
 
   if (loading) {
