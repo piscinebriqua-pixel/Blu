@@ -98,6 +98,8 @@ const ClientDetail: React.FC = () => {
     const [poolToDelete, setPoolToDelete] = useState<Pool | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingPool, setIsDeletingPool] = useState(false);
+    const [isDeletingClient, setIsDeletingClient] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
         const sTotal = inter.services?.reduce((sAcc: number, s: any) => sAcc + (s.price_at_time || 0), 0) || 0;
@@ -232,6 +234,31 @@ const ClientDetail: React.FC = () => {
         }
     };
 
+    const handleDeleteClient = async () => {
+        if (!isAdmin || !client) return;
+
+        try {
+            setIsDeletingClient(true);
+
+            // Note: Cascade deletes should be handled by DB. 
+            // If not, we'd need to delete payments, then interventions, then pools.
+            const { error } = await supabase
+                .from('clients')
+                .delete()
+                .eq('id', client.id);
+
+            if (error) throw error;
+
+            toast.success('Client supprimé avec succès');
+            navigate('/clients');
+        } catch (error: any) {
+            toast.error('Erreur lors de la suppression du client: ' + error.message);
+        } finally {
+            setIsDeletingClient(false);
+            setShowDeleteConfirm(false);
+        }
+    };
+
     const openWhatsApp = () => {
         if (client?.phone) {
             let formattedPhone = client.phone.replace(/\s/g, '').replace('+', '');
@@ -266,6 +293,11 @@ const ClientDetail: React.FC = () => {
             <button onClick={() => setIsEditClientModalOpen(true)} className="btn-icon !bg-blue-600 !text-white !border-none !w-10 !h-10 shadow-lg shadow-blue-500/20" title="Modifier Profil">
                 <Edit2 size={18} />
             </button>
+            {isAdmin && (
+                <button onClick={() => setShowDeleteConfirm(true)} className="btn-icon !bg-red-500 !text-white !border-none !w-10 !h-10 shadow-lg shadow-red-500/20" title="Supprimer Client">
+                    <Trash2 size={18} />
+                </button>
+            )}
         </div>
     );
 
@@ -817,6 +849,17 @@ const ClientDetail: React.FC = () => {
                 onConfirm={handleDeletePool}
                 onClose={() => setPoolToDelete(null)}
                 loading={isDeletingPool}
+            />
+
+            <ConfirmModal
+                isOpen={showDeleteConfirm}
+                title="Supprimer le Client"
+                message={`Êtes-vous sûr de vouloir supprimer ${client?.first_name} ${client?.last_name} ? Cette action supprimera également tous ses bassins, interventions et paiements associés. Cette action est irréversible.`}
+                confirmLabel="SUPPRIMER DÉFINITIVEMENT"
+                onConfirm={handleDeleteClient}
+                onClose={() => setShowDeleteConfirm(false)}
+                loading={isDeletingClient}
+                variant="danger"
             />
         </PageLayout>
     );

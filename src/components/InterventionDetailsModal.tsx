@@ -34,6 +34,16 @@ interface Intervention {
     }[];
     photo_before_url?: string;
     photo_after_url?: string;
+    task_balai?: boolean;
+    task_lavage?: boolean;
+    task_rincage?: boolean;
+    task_test_chlore?: boolean;
+    task_test_ph?: boolean;
+    task_remplissage?: boolean;
+    task_panier_prefiltre?: boolean;
+    task_traitement?: boolean;
+    task_verif_vanne?: boolean;
+    task_temps_fonctionnement?: boolean;
 }
 
 interface InterventionDetailsModalProps {
@@ -81,6 +91,25 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
             message += `*Photos du rapport :*\n`;
             if (intervention.photo_before_url) message += `📸 Avant : ${intervention.photo_before_url}\n`;
             if (intervention.photo_after_url) message += `📸 Après : ${intervention.photo_after_url}\n\n`;
+        }
+
+        const tasks = [
+            { key: 'task_balai', label: 'Balai' },
+            { key: 'task_lavage', label: 'Lavage' },
+            { key: 'task_rincage', label: 'Rinçage' },
+            { key: 'task_test_chlore', label: 'Teste Chlore' },
+            { key: 'task_test_ph', label: 'Teste PH' },
+            { key: 'task_remplissage', label: 'Remplissage' },
+            { key: 'task_panier_prefiltre', label: 'Panier Pré-filtre' },
+            { key: 'task_traitement', label: 'Traitement' },
+            { key: 'task_verif_vanne', label: 'Vérification Vanne' },
+            { key: 'task_temps_fonctionnement', label: 'Temps Fonct.' }
+        ].filter(t => intervention[t.key as keyof Intervention])
+            .map(t => `✅ ${t.label}`)
+            .join('\n');
+
+        if (tasks) {
+            message += `*Tâches d'entretien :*\n${tasks}\n\n`;
         }
 
         message += `Merci de votre confiance ! 🙏`;
@@ -180,6 +209,33 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                                     </div>
                                 </div>
                             )}
+                        </div>
+
+                        {/* Maintenance Tasks Checklist */}
+                        <div className="flex flex-wrap gap-2 pt-2">
+                            {[
+                                { key: 'task_balai', label: 'Balai' },
+                                { key: 'task_lavage', label: 'Lavage' },
+                                { key: 'task_rincage', label: 'Rinçage' },
+                                { key: 'task_test_chlore', label: 'Teste Chlore' },
+                                { key: 'task_test_ph', label: 'Teste PH' },
+                                { key: 'task_remplissage', label: 'Remplissage' },
+                                { key: 'task_panier_prefiltre', label: 'Panier Pré-filtre' },
+                                { key: 'task_traitement', label: 'Traitement' },
+                                { key: 'task_verif_vanne', label: 'Vérification Vanne' },
+                                { key: 'task_temps_fonctionnement', label: 'Temps Fonct.' }
+                            ].map(task => {
+                                const isDone = intervention[task.key as keyof Intervention];
+                                if (!isDone) return null;
+                                return (
+                                    <div key={task.key} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-100 dark:border-emerald-800/30 shadow-sm animate-in zoom-in duration-300">
+                                        <div className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                        </div>
+                                        <span className="text-[10px] font-black uppercase tracking-tight">{task.label}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 )}

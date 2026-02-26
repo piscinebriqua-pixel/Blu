@@ -98,6 +98,17 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
     record_payment: false,
     photo_before_url: "",
     photo_after_url: "",
+    // Maintenance Tasks
+    task_balai: false,
+    task_lavage: false,
+    task_rincage: false,
+    task_test_chlore: false,
+    task_test_ph: false,
+    task_remplissage: false,
+    task_panier_prefiltre: false,
+    task_traitement: false,
+    task_verif_vanne: false,
+    task_temps_fonctionnement: false,
   });
 
   const fetchInitialData = useCallback(async () => {
@@ -153,6 +164,16 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           scheduled_date: data.scheduled_date ? data.scheduled_date.split('T')[0] : prev.scheduled_date,
           photo_before_url: data.photo_before_url || "",
           photo_after_url: data.photo_after_url || "",
+          task_balai: data.task_balai || false,
+          task_lavage: data.task_lavage || false,
+          task_rincage: data.task_rincage || false,
+          task_test_chlore: data.task_test_chlore || false,
+          task_test_ph: data.task_test_ph || false,
+          task_remplissage: data.task_remplissage || false,
+          task_panier_prefiltre: data.task_panier_prefiltre || false,
+          task_traitement: data.task_traitement || false,
+          task_verif_vanne: data.task_verif_vanne || false,
+          task_temps_fonctionnement: data.task_temps_fonctionnement || false,
         }));
 
         const srvObj: Record<string, number> = {};
@@ -249,6 +270,16 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           scheduled_date: snapshotFormData.scheduled_date || null,
           photo_before_url: snapshotFormData.photo_before_url,
           photo_after_url: snapshotFormData.photo_after_url,
+          task_balai: snapshotFormData.task_balai,
+          task_lavage: snapshotFormData.task_lavage,
+          task_rincage: snapshotFormData.task_rincage,
+          task_test_chlore: snapshotFormData.task_test_chlore,
+          task_test_ph: snapshotFormData.task_test_ph,
+          task_remplissage: snapshotFormData.task_remplissage,
+          task_panier_prefiltre: snapshotFormData.task_panier_prefiltre,
+          task_traitement: snapshotFormData.task_traitement,
+          task_verif_vanne: snapshotFormData.task_verif_vanne,
+          task_temps_fonctionnement: snapshotFormData.task_temps_fonctionnement,
         }).eq("id", interventionId);
         if (error) throw error;
       } else {
@@ -264,6 +295,16 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           scheduled_date: snapshotFormData.scheduled_date || null,
           photo_before_url: snapshotFormData.photo_before_url,
           photo_after_url: snapshotFormData.photo_after_url,
+          task_balai: snapshotFormData.task_balai,
+          task_lavage: snapshotFormData.task_lavage,
+          task_rincage: snapshotFormData.task_rincage,
+          task_test_chlore: snapshotFormData.task_test_chlore,
+          task_test_ph: snapshotFormData.task_test_ph,
+          task_remplissage: snapshotFormData.task_remplissage,
+          task_panier_prefiltre: snapshotFormData.task_panier_prefiltre,
+          task_traitement: snapshotFormData.task_traitement,
+          task_verif_vanne: snapshotFormData.task_verif_vanne,
+          task_temps_fonctionnement: snapshotFormData.task_temps_fonctionnement,
         }]).select().single();
         if (error) throw error;
         tempId = data.id;
@@ -518,6 +559,40 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
               </div>
               {formData.water_level_adjusted ? <CheckSquare size={20} strokeWidth={3} /> : <Square size={20} strokeWidth={2.5} />}
             </button>
+
+            {/* NEW TASKS CHECKLIST (From image) */}
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckSquare size={16} className="text-blue-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Tâches d'entretien effectuées</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {[
+                  { id: 'task_balai', label: 'Balai' },
+                  { id: 'task_lavage', label: 'Lavage' },
+                  { id: 'task_rincage', label: 'Rinçage' },
+                  { id: 'task_test_chlore', label: 'Teste Chlore' },
+                  { id: 'task_test_ph', label: 'Teste PH' },
+                  { id: 'task_remplissage', label: 'Remplissage' },
+                  { id: 'task_panier_prefiltre', label: 'Panier Pré-filtre' },
+                  { id: 'task_traitement', label: 'Traitement' },
+                  { id: 'task_verif_vanne', label: 'Vérification Vanne' },
+                  { id: 'task_temps_fonctionnement', label: 'Temps Fonct.' }
+                ].map((task) => (
+                  <button
+                    key={task.id}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, [task.id]: !formData[task.id as keyof typeof formData] })}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all text-left ${formData[task.id as keyof typeof formData] ? "bg-blue-50/50 dark:bg-blue-900/10 border-blue-500/30 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-500/10" : "bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-500 hover:border-blue-500/20"}`}
+                  >
+                    <span className="text-[11px] font-black uppercase tracking-tight">{task.label}</span>
+                    <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${formData[task.id as keyof typeof formData] ? "bg-blue-500 text-white" : "bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600"}`}>
+                      {formData[task.id as keyof typeof formData] && <CheckSquare size={14} strokeWidth={3} />}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
