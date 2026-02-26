@@ -64,7 +64,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
   }, []);
 
   const [loading, setLoading] = useState(false);
-  const [interventionType, setInterventionType] = useState<"direct" | "scheduled">(type);
+  const [interventionType] = useState<"direct" | "scheduled">(type);
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isTechModalOpen, setIsTechModalOpen] = useState(false);
 
@@ -77,7 +77,6 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
   const [dbTechnicians, setDbTechnicians] = useState<Technician[]>([]);
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
 
-  const [isTechnician, setIsTechnician] = useState(false);
   const [selectedServices, setSelectedServices] = useState<Record<string, number>>({});
   const [referencePrices] = useState<Record<string, number>>({});
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
@@ -129,7 +128,6 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       const tech = tc.data?.find((t) => t.email === session.data?.session?.user?.email);
       if (tech) {
         setFormData((prev) => ({ ...prev, technician_id: tech.id }));
-        setIsTechnician(true);
       }
     }
   }, []);

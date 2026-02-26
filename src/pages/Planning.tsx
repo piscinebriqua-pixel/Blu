@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
     ChevronLeft,
     ChevronRight,
     Calendar as CalendarIcon,
     Plus,
-    User,
-    Check
+    User
 } from 'lucide-react';
 import NewIntervention from '../components/NewIntervention';
 import InterventionDetailsModal from '../components/InterventionDetailsModal';
@@ -33,7 +31,6 @@ interface Intervention {
 }
 
 const Planning: React.FC = () => {
-    const navigate = useNavigate();
     const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'agenda'>('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [interventions, setInterventions] = useState<Intervention[]>([]);
