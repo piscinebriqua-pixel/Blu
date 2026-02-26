@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
-import { UserCheck, Shield, UserPlus, ArrowLeft, ChevronDown, X } from 'lucide-react';
+import { UserPlus, X } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
+import PageLayout from '../components/PageLayout';
 
 interface Profile {
     id: string;
@@ -22,33 +22,28 @@ interface Technician {
 
 interface Client {
     id: string;
-    full_name: string; // Adjusted to match likely schema or computed
+    full_name: string;
     first_name: string;
     last_name: string;
     email: string | null;
 }
 
 const AdminUsers: React.FC = () => {
-    const navigate = useNavigate();
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [technicians, setTechnicians] = useState<Technician[]>([]);
     const [clients, setClients] = useState<Client[]>([]);
 
-    // Modal State
     const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
     const [actionType, setActionType] = useState<'link_technician' | 'link_client' | 'create_technician' | 'create_client' | 'make_admin' | 'edit_profile' | null>(null);
     const [selectedLinkId, setSelectedLinkId] = useState<string>('');
     const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
-    const [newRole, setNewRole] = useState<string>('');
-    const [tempName, setTempName] = useState<string>('');
     const [confirmAction, setConfirmAction] = useState<{ type: 'revoke' | 'delete', profileId: string } | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
 
     const fetchData = async () => {
         try {
             setLoading(true);
-            // Fetch profiles based on active tab
             let query = supabase.from('profiles').select('*').order('created_at', { ascending: false });
 
             if (activeTab === 'pending') {
@@ -59,14 +54,10 @@ const AdminUsers: React.FC = () => {
             if (profError) throw profError;
             setProfiles(profs || []);
 
-            // Fetch Technicians for linking
-            const { data: techs, error: techError } = await supabase.from('technicians').select('*').order('full_name');
-            if (techError) console.error("Tech fetch error:", techError);
+            const { data: techs } = await supabase.from('technicians').select('*').order('full_name');
             if (techs) setTechnicians(techs);
 
-            // Fetch Clients for linking
-            const { data: cli, error: cliError } = await supabase.from('clients').select('*').order('last_name');
-            if (cliError) console.error("Client fetch error:", cliError);
+            const { data: cli } = await supabase.from('clients').select('*').order('last_name');
             if (cli) setClients(cli);
 
         } catch (error: any) {
@@ -83,55 +74,35 @@ const AdminUsers: React.FC = () => {
 
     const handleApproval = async () => {
         if (!selectedProfile || !actionType) return;
-
-        let updateData: any = { is_approved: true };
-
-        if (actionType === 'make_admin') {
-            updateData.role = 'admin';
-        }
-        else if (actionType === 'link_technician') {
-            updateData.role = 'technician';
-            updateData.technician_id = selectedLinkId;
-        }
-        else if (actionType === 'link_client') {
-            updateData.role = 'client';
-            updateData.client_id = selectedLinkId;
-        }
-        else if (actionType === 'create_technician') {
-            const { data: newTech, error } = await supabase.from('technicians').insert({
-                full_name: selectedProfile.full_name || selectedProfile.email,
-                email: selectedProfile.email
-            }).select().single();
-
-            if (error) {
-                toast.error("Erreur création technicien: " + error.message);
-                return;
+        setIsProcessing(true);
+        try {
+            let updateData: any = { is_approved: true };
+            if (actionType === 'make_admin') updateData.role = 'admin';
+            else if (actionType === 'link_technician') {
+                updateData.role = 'technician';
+                updateData.technician_id = selectedLinkId;
+            } else if (actionType === 'link_client') {
+                updateData.role = 'client';
+                updateData.client_id = selectedLinkId;
             }
-            updateData.role = 'technician';
-            updateData.technician_id = newTech.id;
-        }
-        else if (actionType === 'edit_profile') {
-            updateData.role = newRole;
-            updateData.full_name = tempName;
-        }
 
-        const { error } = await supabase.from('profiles').update(updateData).eq('id', selectedProfile.id);
-
-        if (error) toast.error("Erreur mise à jour profil: " + error.message);
-        else {
-            toast.success("Profil mis à jour avec succès");
+            const { error } = await supabase.from('profiles').update(updateData).eq('id', selectedProfile.id);
+            if (error) throw error;
+            toast.success("Compte approuvé !");
             setSelectedProfile(null);
             setActionType(null);
-            setNewRole('');
             fetchData();
+        } catch (e: any) {
+            toast.error(e.message);
+        } finally {
+            setIsProcessing(false);
         }
     };
 
-    const handleRevoke = async () => {
-        if (!confirmAction || confirmAction.type !== 'revoke') return;
+    const handleRevoke = async (profileId: string) => {
         setIsProcessing(true);
-        const { error } = await supabase.from('profiles').update({ is_approved: false }).eq('id', confirmAction.profileId);
-        if (error) toast.error("Erreur revocation: " + error.message);
+        const { error } = await supabase.from('profiles').update({ is_approved: false }).eq('id', profileId);
+        if (error) toast.error("Erreur: " + error.message);
         else {
             toast.success("Accès révoqué");
             setConfirmAction(null);
@@ -141,11 +112,8 @@ const AdminUsers: React.FC = () => {
     };
 
     const handleDelete = async () => {
-        if (!confirmAction || confirmAction.type !== 'delete') return;
+        if (!confirmAction) return;
         setIsProcessing(true);
-        // In Supabase, deleting from auth.users requires admin/service role. 
-        // We can delete from public.profiles, but auth user remains.
-        // For now, let's just delete the profile record.
         const { error } = await supabase.from('profiles').delete().eq('id', confirmAction.profileId);
         if (error) toast.error("Erreur suppression: " + error.message);
         else {
@@ -156,307 +124,122 @@ const AdminUsers: React.FC = () => {
         setIsProcessing(false);
     };
 
-    if (loading) return <div className="p-8 text-center text-slate-500 dark:text-slate-500">Chargement...</div>;
+    if (loading && profiles.length === 0) return (
+        <PageLayout title="ADMINISTRATION" showBackButton={true}>
+            <div className="p-12 text-center animate-pulse text-slate-400 font-black uppercase tracking-widest">Chargement...</div>
+        </PageLayout>
+    );
+
+    const toolbar = (
+        <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl max-w-xs border border-slate-200/50 dark:border-slate-700/50">
+            <button
+                onClick={() => setActiveTab('pending')}
+                className={`flex-1 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'pending'
+                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                    : 'text-slate-400 hover:text-slate-600'
+                    }`}
+            >
+                Validation
+            </button>
+            <button
+                onClick={() => setActiveTab('all')}
+                className={`flex-1 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'all'
+                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                    : 'text-slate-400 hover:text-slate-600'
+                    }`}
+            >
+                Tous
+            </button>
+        </div>
+    );
 
     return (
-        <div className="gabarit-wrapper">
-            <header className="header-gradient flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => navigate('/')}
-                        title="Retour au tableau de bord"
-                        className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="text-xl font-black text-white leading-tight">Administration</h1>
-                        <p className="text-blue-100 text-xs font-medium opacity-80">
-                            {activeTab === 'pending' ? 'Validation des comptes' : 'Gestion des utilisateurs'}
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => fetchData()}
-                        disabled={loading}
-                        title="Actualiser la liste"
-                        className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md disabled:opacity-50"
-                    >
-                        <UserCheck size={20} className={loading ? 'animate-pulse' : ''} />
-                    </button>
-                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white backdrop-blur-md">
-                        <Shield size={20} />
-                    </div>
-                </div>
-            </header>
-
-            <main className="main-container">
-                <div className="flex gap-4 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-fit border border-slate-200 dark:border-slate-700 mb-8">
-                    <button
-                        onClick={() => setActiveTab('pending')}
-                        className={`px-6 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all ${activeTab === 'pending' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}
-                    >
-                        En Attente
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('all')}
-                        className={`px-6 py-2 rounded-xl text-base font-black uppercase tracking-widest transition-all ${activeTab === 'all' ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500'}`}
-                    >
-                        Tous les comptes
-                    </button>
-                </div>
-
-                {profiles.length === 0 ? (
-                    <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 text-center shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col items-center gap-4 transition-colors">
-                        <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-500 mb-2">
-                            <UserCheck size={32} />
-                        </div>
-                        <div>
-                            <h3 className="text-lg font-black text-slate-800 dark:text-white">Aucun profil</h3>
-                            <p className="text-slate-500 text-base">
-                                {activeTab === 'pending'
-                                    ? "Aucune demande d'approbation en attente."
-                                    : "Aucun compte trouvé dans la base de données."
-                                }
-                            </p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-2 px-2 mb-2">
-                            <span className={`w-2 h-2 rounded-full animate-pulse ${activeTab === 'pending' ? 'bg-amber-400' : 'bg-blue-400'}`}></span>
-                            <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">
-                                {activeTab === 'pending'
-                                    ? `${profiles.length} demande${profiles.length > 1 ? 's' : ''} en attente`
-                                    : `${profiles.length} compte${profiles.length > 1 ? 's' : ''} au total`
-                                }
-                            </span>
-                        </div>
-
-                        {profiles.map(profile => (
-                            <div key={profile.id} className="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 dark:border-slate-700 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+        <PageLayout
+            title="ADMINISTRATION"
+            subtitle={activeTab === 'pending' ? 'Validation des comptes' : 'Gestion des utilisateurs'}
+            showBackButton={true}
+            toolbar={toolbar}
+        >
+            <main className="main-container !pt-4">
+                <div className="grid gap-4">
+                    {profiles.length > 0 ? (
+                        profiles.map((p) => (
+                            <div key={p.id} className="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-slate-100 dark:border-slate-700/50 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-lg ${profile.role === 'admin' ? 'bg-slate-900 dark:bg-slate-700 text-white' :
-                                        profile.role === 'technician' ? 'bg-blue-500 text-white' :
-                                            'bg-slate-100 dark:bg-slate-700 text-slate-500'
-                                        }`}>
-                                        {profile.role === 'admin' ? <Shield size={18} /> : (profile.full_name ? profile.full_name.charAt(0).toUpperCase() : '?')}
+                                    <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center text-slate-400">
+                                        <UserPlus size={24} />
                                     </div>
                                     <div>
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-bold text-slate-800 dark:text-white">{profile.full_name || 'Sans nom'}</h3>
-                                            <span className={`text-[13px] font-black uppercase px-2 py-0.5 rounded ${profile.role === 'admin' ? 'bg-slate-900 text-white' :
-                                                profile.role === 'technician' ? 'bg-blue-100 text-blue-600' :
-                                                    'bg-slate-100 text-slate-500'
-                                                }`}>
-                                                {profile.role}
-                                            </span>
-                                        </div>
-                                        <p className="text-slate-500 text-base font-medium">{profile.email}</p>
+                                        <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-tight">{p.full_name || 'Sans Nom'}</h3>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{p.email}</p>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex items-center gap-2">
                                     {activeTab === 'pending' ? (
                                         <>
-                                            <button
-                                                onClick={() => { setSelectedProfile(profile); setActionType('link_technician'); }}
-                                                className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-bold text-xs hover:bg-blue-100 transition-colors uppercase"
-                                            >
-                                                + Tech
-                                            </button>
-                                            <button
-                                                onClick={() => { setSelectedProfile(profile); setActionType('link_client'); }}
-                                                className="px-4 py-2 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl font-bold text-xs hover:bg-purple-100 transition-colors uppercase"
-                                            >
-                                                + Client
-                                            </button>
-                                            <button
-                                                onClick={() => { setSelectedProfile(profile); setActionType('make_admin'); handleApproval(); }}
-                                                className="px-4 py-2 bg-slate-800 text-white rounded-xl font-bold text-xs hover:bg-slate-700 transition-colors uppercase"
-                                            >
-                                                Admin
-                                            </button>
+                                            <button onClick={() => { setSelectedProfile(p); setActionType('link_technician'); }} className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl text-[10px] font-black uppercase">Lier Tech</button>
+                                            <button onClick={() => { setSelectedProfile(p); setActionType('link_client'); }} className="px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-xl text-[10px] font-black uppercase">Lier Client</button>
+                                            <button onClick={() => { setSelectedProfile(p); setActionType('make_admin'); handleApproval(); }} className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 rounded-xl text-[10px] font-black uppercase">Admin</button>
                                         </>
                                     ) : (
                                         <>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedProfile(profile);
-                                                    setActionType('edit_profile');
-                                                    setNewRole(profile.role);
-                                                    setTempName(profile.full_name || '');
-                                                }}
-                                                className="px-4 py-2 bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold text-xs hover:bg-slate-100 transition-colors uppercase"
-                                            >
-                                                Éditer
-                                            </button>
-                                            {profile.is_approved ? (
-                                                <button
-                                                    onClick={() => setConfirmAction({ type: 'revoke', profileId: profile.id })}
-                                                    className="px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl font-bold text-xs hover:bg-amber-100 transition-colors uppercase"
-                                                >
-                                                    Révoquer
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    onClick={async () => {
-                                                        const { error } = await supabase.from('profiles').update({ is_approved: true }).eq('id', profile.id);
-                                                        if (error) toast.error(error.message); else { toast.success("Compte approuvé"); fetchData(); }
-                                                    }}
-                                                    className="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs hover:bg-emerald-100 transition-colors uppercase"
-                                                >
-                                                    Approuver
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={() => setConfirmAction({ type: 'delete', profileId: profile.id })}
-                                                className="w-10 h-10 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-xl flex items-center justify-center hover:bg-red-100 transition-all"
-                                                title="Supprimer le compte"
-                                            >
-                                                <X size={16} />
-                                            </button>
+                                            <span className="px-3 py-1 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-[10px] font-black uppercase text-slate-500">{p.role}</span>
+                                            <button title="Supprimer l'accès" onClick={() => setConfirmAction({ type: 'revoke', profileId: p.id })} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"><X size={20} /></button>
                                         </>
                                     )}
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                )}
+                        ))
+                    ) : (
+                        <div className="py-20 text-center opacity-40">Aucun utilisateur trouvé</div>
+                    )}
+                </div>
             </main>
 
-            {/* Modal for Linking/Creating */}
             {selectedProfile && (actionType === 'link_technician' || actionType === 'link_client') && (
-                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-[32px] p-8 max-w-md w-full animate-in fade-in zoom-in-95 shadow-2xl border border-slate-100 dark:border-slate-700 transition-colors">
-                        <h2 className="text-xl font-black text-slate-800 dark:text-white mb-1">
-                            Approuver ce compte
-                        </h2>
-                        <p className="text-slate-500 text-base mb-6 font-medium">Pour {selectedProfile.email}</p>
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl border border-white/20">
+                        <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Lier un compte</h2>
+                        <p className="text-slate-500 text-sm font-bold uppercase tracking-widest mb-6">Profil: {selectedProfile.full_name}</p>
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">
-                                    Lier à une fiche existante
-                                </label>
-                                <div className="relative">
-                                    <select
-                                        className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary appearance-none transition-colors"
-                                        onChange={(e) => setSelectedLinkId(e.target.value)}
-                                        value={selectedLinkId}
-                                        title={`Sélectionner un ${actionType === 'link_technician' ? 'Technicien' : 'Client'}`}
-                                    >
-                                        <option value="">Sélectionner un {actionType === 'link_technician' ? 'Technicien' : 'Client'}...</option>
-                                        {actionType === 'link_technician'
-                                            ? technicians.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)
-                                            : clients.map(c => <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>)
-                                        }
-                                    </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" size={16} />
-                                </div>
-                            </div>
-
-                            <div className="relative py-2 text-center">
-                                <span className="bg-white dark:bg-slate-800 px-2 text-[13px] font-bold text-slate-300 uppercase relative z-10 transition-colors">OU</span>
-                                <div className="absolute top-1/2 left-0 w-full h-px bg-slate-100 dark:border-slate-700"></div>
-                            </div>
-
-                            <button
-                                onClick={() => { setActionType(actionType === 'link_technician' ? 'create_technician' : 'create_client'); handleApproval(); }}
-                                className="w-full py-4 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-500 dark:text-slate-500 hover:border-primary hover:text-primary transition-all flex items-center justify-center gap-2 group"
+                        <div className="space-y-4 mb-8">
+                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Sélectionner l'entité</label>
+                            <select
+                                title="Choisir l'entité à lier"
+                                className="w-full h-14 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold text-slate-800 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none"
+                                value={selectedLinkId}
+                                onChange={(e) => setSelectedLinkId(e.target.value)}
                             >
-                                <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
-                                    <UserPlus size={14} />
-                                </div>
-                                Créer une nouvelle fiche
-                            </button>
+                                <option value="">Choisir...</option>
+                                {actionType === 'link_technician' ? (
+                                    technicians.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)
+                                ) : (
+                                    clients.map(c => <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>)
+                                )}
+                            </select>
+                        </div>
 
-                            <button
-                                onClick={handleApproval}
-                                disabled={!selectedLinkId}
-                                className="w-full py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed mt-4 active:scale-95 transition-transform"
-                            >
-                                Valider et Lier
-                            </button>
-
-                            <button onClick={() => setSelectedProfile(null)} className="w-full py-2 text-slate-500 font-bold text-base hover:text-slate-600 uppercase tracking-widest">
-                                Annuler
-                            </button>
+                        <div className="flex gap-3">
+                            <button onClick={() => { setSelectedProfile(null); setActionType(null); }} className="flex-1 h-14 rounded-2xl font-black uppercase text-[13px] tracking-widest text-slate-500 bg-slate-50 hover:bg-slate-100 transition-all">Annuler</button>
+                            <button onClick={handleApproval} disabled={!selectedLinkId || isProcessing} className="flex-2 h-14 bg-primary text-white rounded-2xl font-black uppercase text-[13px] tracking-widest shadow-xl shadow-primary/30 hover:scale-105 active:scale-95 disabled:opacity-50 transition-all">Valider</button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {selectedProfile && actionType === 'edit_profile' && (
-                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-[32px] p-8 max-w-md w-full animate-in fade-in zoom-in-95 shadow-2xl border border-slate-100 dark:border-slate-700 transition-colors">
-                        <h2 className="text-xl font-black text-slate-800 dark:text-white mb-1">Modifier le compte</h2>
-                        <p className="text-slate-500 text-base mb-6">{selectedProfile.email}</p>
-
-                        <div className="flex flex-col gap-5">
-                            <div>
-                                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Nom Complet</label>
-                                <input
-                                    type="text"
-                                    className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-primary transition-all"
-                                    value={tempName}
-                                    onChange={(e) => setTempName(e.target.value)}
-                                    placeholder="Nom complet..."
-                                />
-                            </div>
-
-                            <div>
-                                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Rôle Système</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {['admin', 'technician', 'client', 'pending'].map(role => (
-                                        <button
-                                            key={role}
-                                            onClick={() => setNewRole(role)}
-                                            className={`py-3 rounded-xl font-black uppercase tracking-widest text-xs transition-all border-2 ${newRole === role
-                                                ? 'bg-primary/5 border-primary text-primary'
-                                                : 'bg-slate-50 dark:bg-slate-700 border-transparent text-slate-500 hover:bg-slate-100'
-                                                }`}
-                                        >
-                                            {role}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    onClick={() => setSelectedProfile(null)}
-                                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-700 text-slate-500 rounded-xl font-bold text-xs uppercase hover:bg-slate-200 transition-colors"
-                                >
-                                    Annuler
-                                </button>
-                                <button
-                                    onClick={handleApproval}
-                                    className="flex-[2] py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/20 active:scale-95 transition-transform text-xs uppercase"
-                                >
-                                    Valider
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            {confirmAction && (
+                <ConfirmModal
+                    isOpen={!!confirmAction}
+                    title={confirmAction.type === 'revoke' ? "Révoquer l'accès" : "Supprimer le compte"}
+                    message="Cette action est irréversible. Voulez-vous continuer ?"
+                    confirmLabel="Confirmer"
+                    onConfirm={confirmAction.type === 'revoke' ? () => handleRevoke(confirmAction.profileId) : handleDelete}
+                    onClose={() => setConfirmAction(null)}
+                    loading={isProcessing}
+                />
             )}
-
-            <ConfirmModal
-                isOpen={!!confirmAction}
-                title={confirmAction?.type === 'revoke' ? 'Révoquer Accès' : 'Supprimer Compte'}
-                message={confirmAction?.type === 'revoke'
-                    ? "Voulez-vous vraiment révoquer l'accès de cet utilisateur ? Il ne pourra plus se connecter."
-                    : "Voulez-vous vraiment supprimer définitivement ce compte ? Cette action est irréversible."
-                }
-                confirmLabel={confirmAction?.type === 'revoke' ? 'REVOQUER' : 'SUPPRIMER'}
-                onConfirm={confirmAction?.type === 'revoke' ? handleRevoke : handleDelete}
-                onClose={() => setConfirmAction(null)}
-                loading={isProcessing}
-            />
-        </div>
+        </PageLayout>
     );
 };
 

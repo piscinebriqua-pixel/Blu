@@ -161,14 +161,14 @@ const ServicesManager: React.FC = () => {
 
     const toolbar = (
         <div className="flex items-center gap-3">
-            <div className="relative">
+            <div className="relative flex-1">
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60" size={15} />
                 <input
                     type="text"
                     placeholder="Rechercher..."
                     value={activeTab === 'services' ? serviceSearch : productSearch}
                     onChange={e => activeTab === 'services' ? setServiceSearch(e.target.value) : setProductSearch(e.target.value)}
-                    className="pl-9 pr-4 py-2.5 bg-white/20 backdrop-blur-sm text-white placeholder-white/60 rounded-xl border border-white/20 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/30 w-40"
+                    className="pl-9 pr-4 py-2.5 bg-white/20 backdrop-blur-sm text-white placeholder-white/60 rounded-xl border border-white/20 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/30 flex-1 min-w-0"
                 />
             </div>
             <button

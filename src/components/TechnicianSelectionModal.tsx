@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Search, Check, User } from 'lucide-react';
+import { Search, Check, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import ModalLayout from './ModalLayout';
 
 interface Technician {
     id: string;
@@ -48,37 +49,40 @@ const TechnicianSelectionModal: React.FC<TechnicianSelectionModalProps> = ({ isO
     if (!isOpen) return null;
 
     const filtered = technicians.filter(t =>
-        t.full_name.toLowerCase().includes(search.toLowerCase())
+        (t.full_name || '').toLowerCase().includes(search.toLowerCase())
+    );
+
+    const actions = (
+        <button
+            onClick={onClose}
+            className="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95"
+        >
+            Annuler
+        </button>
     );
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                {/* Header */}
-                <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
-                    <h3 className="text-base font-black uppercase tracking-widest text-slate-800 dark:text-white">Sélectionner un technicien</h3>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors" title="Fermer">
-                        <X size={20} className="text-slate-500 dark:text-slate-500" />
-                    </button>
-                </div>
-
+        <ModalLayout
+            title="SÉLECTIONNER UN TECHNICIEN"
+            onClose={onClose}
+            actions={actions}
+        >
+            <div className="flex flex-col gap-4 p-4">
                 {/* Search */}
-                <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Rechercher..."
-                            className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-base font-bold text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            autoFocus
-                        />
-                    </div>
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Rechercher..."
+                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-base font-bold text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        autoFocus
+                    />
                 </div>
 
                 {/* List */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar bg-slate-50 dark:bg-slate-900/50">
+                <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
                     {loading ? (
                         <div className="flex justify-center py-8">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -103,9 +107,9 @@ const TechnicianSelectionModal: React.FC<TechnicianSelectionModalProps> = ({ isO
                                     <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black mr-4 uppercase shrink-0 ${isSelected ? 'bg-blue-500 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-500 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 group-hover:text-blue-600 dark:group-hover:text-blue-400'
                                         }`}>
                                         {tech.photo_url ? (
-                                            <img src={tech.photo_url} alt={tech.full_name} className="w-full h-full object-cover rounded-xl" />
+                                            <img src={tech.photo_url} alt={tech.full_name || 'Technicien'} className="w-full h-full object-cover rounded-xl" />
                                         ) : (
-                                            tech.full_name.charAt(0)
+                                            (tech.full_name?.[0] || '?')
                                         )}
                                     </div>
                                     <div className="text-left flex-1">
@@ -123,7 +127,7 @@ const TechnicianSelectionModal: React.FC<TechnicianSelectionModalProps> = ({ isO
                     )}
                 </div>
             </div>
-        </div>
+        </ModalLayout>
     );
 };
 

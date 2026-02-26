@@ -139,11 +139,25 @@ const Payments: React.FC = () => {
 
     const totalAmount = filteredPayments.reduce((acc, p) => acc + p.amount, 0);
 
+    const toolbar = (
+        <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input
+                type="text"
+                placeholder="Rechercher par client ou technicien..."
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+            />
+        </div>
+    );
+
     return (
         <PageLayout
             title="ENCAISSEMENTS"
             subtitle="GESTION DES PAIEMENTS"
             showBackButton={true}
+            toolbar={toolbar}
         >
             <div className="flex flex-col gap-6">
 
@@ -188,81 +202,60 @@ const Payments: React.FC = () => {
                     </button>
                 </div>
 
-                {/* Search Bar */}
-                <div className="relative group">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Rechercher par client ou technicien..."
-                        className="search-input !pl-14 !h-16 !text-base focus:ring-4 focus:ring-primary/10"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-
                 {/* Payments List */}
                 <div className="flex flex-col gap-4">
                     {filteredPayments.map((p, idx) => (
                         <div
                             key={p.id}
                             onClick={() => setSelectedPayment(p)}
-                            className={`card-white !flex-row !items-center !gap-5 !p-6 group animate-in fade-in slide-in-from-bottom-4 stagger-${(idx % 5) + 1} cursor-pointer hover:border-primary/30 hover:shadow-xl transition-all relative overflow-hidden`}
+                            className={`card-white !flex-row !items-center !gap-3.5 !p-3.5 group animate-in fade-in slide-in-from-bottom-4 stagger-${(idx % 5) + 1} cursor-pointer hover:border-primary/30 hover:shadow-xl transition-all relative overflow-hidden`}
                         >
-                            <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100/50 dark:border-emerald-800/30 group-hover:scale-110 transition-transform">
-                                <Wallet size={24} />
+                            <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100/50 dark:border-emerald-800/30 group-hover:scale-110 transition-transform">
+                                <Wallet size={18} />
                             </div>
 
                             <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h4 className="text-base font-black text-slate-900 dark:text-white truncate uppercase tracking-tight">
+                                <div className="flex justify-between items-center mb-1">
+                                    <h4 className="text-[15px] font-black text-slate-900 dark:text-white truncate uppercase tracking-tight">
                                         {p.client?.first_name} {p.client?.last_name}
                                     </h4>
-                                    <div className="flex flex-col items-end">
-                                        <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
-                                            +{(p.amount || 0).toFixed(0)} <span className="text-xs opacity-60">DT</span>
-                                        </span>
-                                    </div>
+                                    <span className="text-[15px] font-black text-emerald-600 dark:text-emerald-400">
+                                        +{(p.amount || 0).toFixed(0)} <span className="text-[10px] opacity-60 uppercase">DT</span>
+                                    </span>
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                                    <div className="flex items-center gap-1.5 text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-wider">
-                                        <User size={14} className="text-slate-300 dark:text-slate-600" />
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                        <User size={12} className="text-slate-300 dark:text-slate-600" />
                                         {p.technician?.full_name}
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-wider">
-                                        <Calendar size={14} className="text-slate-300 dark:text-slate-600" />
+                                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                        <Calendar size={12} className="text-slate-300 dark:text-slate-600" />
                                         {new Date(p.payment_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
                                     </div>
-
-                                    <div className={`px-2.5 py-1 rounded-lg text-[13px] font-black uppercase tracking-[0.1em] border ${p.method === 'Espèces' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' :
+                                    <div className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-[0.1em] border ${p.method === 'Espèces' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' :
                                         p.method === 'Carte' ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30' :
                                             'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/30'
                                         }`}>
                                         {p.method}
                                     </div>
                                 </div>
-
-                                {p.notes && p.notes !== 'Paiement direct' && (
-                                    <div className="mt-3 flex items-start gap-2 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800/30">
-                                        <p className="text-xs text-slate-500 dark:text-slate-500 italic font-medium truncate">"{p.notes}"</p>
-                                    </div>
-                                )}
                             </div>
 
-                            <div className="flex items-center gap-3 shrink-0">
+                            <div className="flex items-center gap-2 shrink-0">
                                 {isAdmin && (
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setPaymentToDelete({ id: p.id, clientId: p.client_id, amount: p.amount });
                                         }}
-                                        className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm border border-red-100/50 dark:border-red-800/20"
+                                        className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all border border-red-100/50 dark:border-red-800/20"
                                         title="Supprimer"
                                     >
-                                        <Trash2 size={18} />
+                                        <Trash2 size={14} />
                                     </button>
                                 )}
-                                <ChevronRight size={20} className="text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                <ChevronRight size={16} className="text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                             </div>
                         </div>
                     ))}
@@ -284,7 +277,7 @@ const Payments: React.FC = () => {
             {/* Floating Action Button */}
             <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-emerald-600 text-white rounded-full shadow-xl shadow-emerald-600/30 flex items-center justify-center hover:bg-emerald-700 hover:scale-110 active:scale-95 transition-all z-30"
+                className="fab-adaptive w-14 h-14 bg-emerald-600 text-white rounded-full shadow-xl shadow-emerald-600/30 flex items-center justify-center hover:bg-emerald-700 hover:scale-110 active:scale-95 transition-all"
                 aria-label="Enregistrer un paiement"
             >
                 <Plus size={28} />

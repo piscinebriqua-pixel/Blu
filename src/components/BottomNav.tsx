@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Users, Scissors, Grid, LogOut } from 'lucide-react';
+import { Home, Users, Calendar, Waves, Grid, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const BottomNav: React.FC = () => {
@@ -24,10 +24,10 @@ const BottomNav: React.FC = () => {
                 )}
             </NavLink>
 
-            <NavLink to="/interventions" className={({ isActive }) => `nav-item-premium ${isActive ? 'active' : ''}`}>
+            <NavLink to="/planning" className={({ isActive }) => `nav-item-premium ${isActive ? 'active' : ''}`}>
                 {({ isActive }) => (
                     <>
-                        <Scissors size={22} strokeWidth={isActive ? 2.5 : 2} />
+                        <Calendar size={22} strokeWidth={isActive ? 2.5 : 2} />
                         <span>Planning</span>
                     </>
                 )}
@@ -36,7 +36,7 @@ const BottomNav: React.FC = () => {
             <NavLink to="/settings/services" className={({ isActive }) => `nav-item-premium ${isActive ? 'active' : ''}`}>
                 {({ isActive }) => (
                     <>
-                        <Scissors size={22} strokeWidth={isActive ? 2.5 : 2} />
+                        <Waves size={22} strokeWidth={isActive ? 2.5 : 2} />
                         <span>Services</span>
                     </>
                 )}

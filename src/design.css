@@ -65,14 +65,28 @@ body {
 
 .header-gradient {
     background: linear-gradient(135deg, var(--primary), #023E8A);
-    padding: 40px 40px 60px;
+    padding: 0;
     color: white;
-    border-bottom-left-radius: var(--radius-lg);
-    border-bottom-right-radius: var(--radius-lg);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
     flex-shrink: 0;
-    /* Ensure tiles scroll UNDER the header, not over it */
     position: relative;
-    z-index: 20;
+    z-index: 10;
+}
+
+@media (max-width: 1024px) {
+    .header-gradient {
+        padding: 0;
+    }
+
+    .logo-adaptive {
+        width: 22px;
+    }
+}
+
+.logo-adaptive {
+    width: 28px;
+    transition: width 0.3s ease;
 }
 
 .header-gradient h1 {
@@ -94,6 +108,12 @@ body {
 
     @supports (scrollbar-width: none) {
         scrollbar-width: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        padding: 12px 16px 120px;
     }
 }
 
@@ -291,6 +311,18 @@ body {
 }
 
 /* --- BENTO LAYOUT --- */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 .bento-grid-2 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -398,18 +430,53 @@ body {
     background: white;
     padding: 16px;
     border-radius: var(--radius-std);
-    text-align: center;
+    text-align: left;
     box-shadow: var(--card-shadow);
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 640px) {
+    .action-item {
+        padding: 12px;
+        gap: 8px;
+    }
+}
+
+.action-item .icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.action-item .content-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
 }
 
 .action-item span {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+
+.action-item p {
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--text-main);
+    line-height: 1.2;
+    margin-top: 2px;
 }
 
 /* Photo Dropzone */
@@ -440,4 +507,73 @@ body {
 
 .btn-complete:active {
     transform: scale(0.98);
+}
+
+/* --- BOTTOM NAV PREMIUM --- */
+.bottom-nav-premium {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 72px;
+    background: rgba(255, 255, 255, 0.8);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    z-index: 999;
+    padding: 0 16px env(safe-area-inset-bottom);
+    justify-content: space-around;
+    align-items: center;
+}
+
+[data-theme='dark'] .bottom-nav-premium {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.nav-item-premium {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: #64748B;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    min-width: 64px;
+}
+
+.nav-item-premium span {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.nav-item-premium.active {
+    color: var(--primary);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 1024px) {
+    .bottom-nav-premium {
+        display: flex;
+    }
+}
+
+/* --- ADAPTIVE FLOATING ACTION BUTTON --- */
+.fab-adaptive {
+    position: fixed !important;
+    right: 24px !important;
+    bottom: 24px !important;
+    z-index: 30 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 1024px) {
+    .fab-adaptive {
+        bottom: 100px !important;
+        /* Positionné au-dessus de la barre de navigation (72px + 28px) */
+        z-index: 1100 !important;
+    }
 }

@@ -10,6 +10,8 @@ interface PageLayoutProps {
     loading?: boolean;
     children: React.ReactNode;
     className?: string;
+    rightContent?: React.ReactNode;
+    leftContent?: React.ReactNode;
 }
 
 const PageLayout: React.FC<PageLayoutProps> = ({
@@ -19,7 +21,9 @@ const PageLayout: React.FC<PageLayoutProps> = ({
     toolbar,
     loading = false,
     children,
-    className = "" // Initialize className
+    className = "",
+    rightContent,
+    leftContent
 }) => {
     const navigate = useNavigate();
 
@@ -27,43 +31,54 @@ const PageLayout: React.FC<PageLayoutProps> = ({
 
     return (
         <div className="gabarit-wrapper dark:bg-[#0F172A] min-h-screen flex flex-col animate-in fade-in duration-500">
-            {/* Header */}
-            <header className="header-gradient px-6 md:px-10 pt-12 pb-24 md:pb-32 shadow-lg relative z-10 transition-all duration-300">
+            {/* Header Fixe Standardisé */}
+            <header className="page-header h-20 md:h-24 shadow-lg flex items-center relative transition-all duration-300">
                 <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 overflow-hidden">
                         {showBackButton && (
                             <button
                                 onClick={handleBack}
-                                className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 hover:scale-105 active:scale-95 transition-all backdrop-blur-md shadow-lg"
+                                className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md shadow-lg border border-white/10 shrink-0"
                                 aria-label="Retour"
                             >
-                                <ArrowLeft size={22} strokeWidth={2.5} />
+                                <ArrowLeft size={22} />
                             </button>
                         )}
-                        <div className="flex flex-col">
-                            {title && (
-                                <h1 className="text-2xl md:text-3xl font-black text-white leading-tight uppercase tracking-tight drop-shadow-sm">
-                                    {title}
-                                </h1>
-                            )}
-                            {subtitle && (
-                                <p className="text-blue-100 text-xs md:text-base font-bold uppercase tracking-widest opacity-90 mt-1">
-                                    {subtitle}
-                                </p>
-                            )}
-                        </div>
+                        {leftContent ? leftContent : (
+                            <div className="flex flex-col truncate">
+                                {title && (
+                                    <h1 className="text-lg md:text-xl font-black text-white leading-tight uppercase tracking-tight truncate">
+                                        {title}
+                                    </h1>
+                                )}
+                                {subtitle && (
+                                    <p className="text-blue-100 text-[10px] font-black uppercase tracking-[0.2em] opacity-80 leading-none truncate">
+                                        {subtitle}
+                                    </p>
+                                )}
+                            </div>
+                        )}
                     </div>
 
-                    {toolbar && (
-                        <div className="flex-shrink-0 animate-in fade-in slide-in-from-right-4 duration-500 delay-100">
-                            {toolbar}
+                    {rightContent && (
+                        <div className="flex items-center gap-3 shrink-0">
+                            {rightContent}
                         </div>
                     )}
                 </div>
             </header>
 
+            {/* Barre d'outils secondaire (Toolbar) */}
+            {toolbar && (
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 page-toolbar py-3 sticky top-0 z-30 transition-all flex items-center">
+                    <div className="max-w-7xl mx-auto w-full">
+                        {toolbar}
+                    </div>
+                </div>
+            )}
+
             {/* Main Content */}
-            <main className={`main-container relative z-20 flex-1 -mt-16 md:-mt-24 px-6 md:px-10 pb-12 transition-all duration-300 ${className}`}>
+            <main className={`main-container relative flex-1 pt-6 page-content pb-12 transition-all duration-300 ${className}`}>
                 <div className="max-w-7xl mx-auto w-full">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-32 animate-pulse">

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Search, Plus, ArrowLeft, Filter, MapPin, ChevronRight, Mail, LayoutList, Map as MapIcon } from 'lucide-react';
+import { Search, Plus, Filter, MapPin, ChevronRight, LayoutList, Map as MapIcon } from 'lucide-react';
 import AddClientModal from '../components/AddClientModal';
 import GlobalMap from '../components/GlobalMap';
+import PageLayout from '../components/PageLayout';
 
 const ClientsList: React.FC = () => {
     const navigate = useNavigate();
@@ -78,83 +79,59 @@ const ClientsList: React.FC = () => {
     //     </div>
     // );
 
+    const toolbar = (
+        <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+                <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Rechercher un client..."
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                    <button title="Mode Liste" onClick={() => setViewMode('list')} className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                        <LayoutList size={20} />
+                    </button>
+                    <button title="Mode Carte" onClick={() => setViewMode('map')} className={`p-2 rounded-xl transition-all ${viewMode === 'map' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                        <MapIcon size={20} />
+                    </button>
+                </div>
+                <button title="Filtrer les clients" onClick={() => setShowFilters(!showFilters)} className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all border shrink-0 ${showFilters ? 'bg-primary text-white border-primary shadow-lg' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200/50 dark:border-slate-700'}`}>
+                    <Filter size={18} />
+                </button>
+            </div>
+
+            {showFilters && (
+                <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar animate-in fade-in slide-in-from-top-2">
+                    {['Tous', 'Dettes', 'Actifs', 'En attente', 'Archivés'].map((filter) => (
+                        <button
+                            key={filter}
+                            onClick={() => setActiveFilter(filter)}
+                            className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider shadow-sm border whitespace-nowrap transition-all ${activeFilter === filter ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-100 dark:border-slate-700 hover:bg-slate-50'}`}
+                        >
+                            {filter}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
     return (
-        <div className="gabarit-wrapper">
-            <header className="header-gradient flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                    <button
-                        onClick={() => navigate('/')}
-                        className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md"
-                        aria-label="Retour"
-                    >
-                        <ArrowLeft size={20} />
-                    </button>
-                    <div>
-                        <h1 className="text-xl font-black text-white leading-tight">Fiches Clients</h1>
-                        <p className="text-blue-100 text-xs font-medium opacity-80">{filteredClients.length} dossiers actifs</p>
-                    </div>
-                </div>
-
-                <div className="flex gap-2">
-                    <div className="flex bg-white/10 backdrop-blur-md rounded-xl p-1 border border-white/10">
-                        <button
-                            onClick={() => setViewMode('list')}
-                            title="Vue Liste"
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-lg scale-105' : 'text-white/60 hover:text-white'}`}
-                        >
-                            <LayoutList size={20} />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('map')}
-                            title="Vue Carte"
-                            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${viewMode === 'map' ? 'bg-white text-blue-600 shadow-lg scale-105' : 'text-white/60 hover:text-white'}`}
-                        >
-                            <MapIcon size={20} />
-                        </button>
-                    </div>
-                    <button
-                        onClick={() => setShowFilters(!showFilters)}
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all backdrop-blur-md ${showFilters ? 'bg-white text-blue-600' : 'bg-white/20 text-white hover:bg-white/30'}`}
-                        aria-label="Filtres"
-                    >
-                        <Filter size={20} />
-                    </button>
-                </div>
-            </header>
-
-            <main className={`main-container relative z-0 ${viewMode === 'map' ? '!mt-0 !p-0 !max-w-none !h-full' : ''}`}>
-                {/* Search & Filters */}
-                <div className="sticky top-0 z-20 pb-4 pt-1">
-                    <div className="flex gap-2 mb-4">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-                            <input
-                                type="text"
-                                placeholder="Rechercher un client..."
-                                className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-slate-800 rounded-2xl border-none shadow-sm text-slate-800 dark:text-white font-bold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    {showFilters && (
-                        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar animate-in fade-in slide-in-from-top-2">
-                            {['Tous', 'Dettes', 'Actifs', 'En attente', 'Archivés'].map((filter) => (
-                                <button
-                                    key={filter}
-                                    onClick={() => setActiveFilter(filter)}
-                                    className={`px-4 py-2 rounded-xl text-[13px] font-bold shadow-sm border whitespace-nowrap transition-colors ${activeFilter === filter ? 'bg-blue-600 text-white border-blue-600' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400'}`}
-                                >
-                                    {filter}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
+        <>
+            <PageLayout
+                title="Fiches Clients"
+                subtitle={`${filteredClients.length} dossiers actifs`}
+                showBackButton={true}
+                toolbar={toolbar}
+                className={viewMode === 'map' ? '!pt-0 !px-0' : ''}
+            >
                 {/* Content Area */}
-                <div className="pb-24">
+                <main className="pb-12">
                     {viewMode === 'list' ? (
                         <div className="flex flex-col gap-3">
                             {filteredClients.length > 0 ? (
@@ -163,49 +140,32 @@ const ClientsList: React.FC = () => {
                                     <div
                                         key={client.id}
                                         onClick={() => navigate(`/client/${client.id}`)}
-                                        className={`bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-slate-100/50 dark:border-slate-700 flex flex-col gap-3 active:scale-[0.98] transition-all cursor-pointer group animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards ${idx < 10 ? `stagger-${idx + 1}` : ''}`}
+                                        className={`bg-white dark:bg-slate-800 p-3.5 rounded-2xl shadow-sm border border-slate-100/50 dark:border-slate-700 flex flex-col gap-2.5 active:scale-[0.98] transition-all cursor-pointer group animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards ${idx < 10 ? `stagger-${idx + 1}` : ''}`}
                                     >
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-black text-sm shadow-md shadow-blue-500/20 group-hover:scale-110 transition-transform">
                                                     {(client.first_name || '?').charAt(0)}{(client.last_name || '').charAt(0)}
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-bold text-slate-800 dark:text-white leading-tight">
+                                                    <h3 className="text-[15px] font-black text-slate-800 dark:text-white leading-tight uppercase tracking-tight">
                                                         {client.first_name || 'Sans Prénom'} {client.last_name || ''}
                                                     </h3>
-                                                    <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-500 mt-0.5">
-                                                        <MapPin size={12} className="text-slate-300 dark:text-slate-600" />
+                                                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5 opacity-80">
+                                                        <MapPin size={10} className="text-slate-300 dark:text-slate-600" />
                                                         {client.city || 'Ville inconnue'}
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                                <ChevronRight size={20} className="text-slate-300 dark:text-slate-600" />
-                                            </div>
-                                        </div>
-
-                                        <hr className="border-slate-50 dark:border-slate-700" />
-
-                                        <div className="flex justify-between items-center">
-                                            <div className="flex items-center gap-2">
-                                                <div className={`px-2.5 py-1 rounded-lg text-[13px] font-black uppercase tracking-wide border ${client.balance < 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'}`}>
-                                                    {client.balance < 0 ? 'Credit Client' : 'À jour'}
+                                            <div className="flex items-center gap-3">
+                                                <div className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-[0.1em] border ${client.balance < 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'}`}>
+                                                    {client.balance < 0 ? 'Dette' : 'À jour'}
                                                 </div>
-                                                {client.email && (
-                                                    <div className="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 flex items-center justify-center">
-                                                        <Mail size={12} />
-                                                    </div>
-                                                )}
+                                                <span className="text-sm font-black text-slate-700 dark:text-slate-200">
+                                                    {Math.abs(client.balance || 0).toFixed(0)} <span className="text-[10px] opacity-50 uppercase">DT</span>
+                                                </span>
+                                                <ChevronRight size={16} className="text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                             </div>
-                                            <span className={`text-base font-black ${client.balance < 0 ? 'text-red-500 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'}`}>
-                                                {client.balance < 0 ? (
-                                                    <>Credit <span className="text-base">{(Math.abs(client.balance) || 0).toFixed(0)}</span></>
-                                                ) : (
-                                                    <>{(client.balance || 0).toFixed(0)}</>
-                                                )}
-                                                <span className="text-[13px] font-bold opacity-60 ml-1">DT</span>
-                                            </span>
                                         </div>
                                     </div>
                                 ))
@@ -228,26 +188,26 @@ const ClientsList: React.FC = () => {
                             <GlobalMap clients={filteredClients} />
                         </div>
                     )}
-                </div>
-            </main>
+                </main>
 
-            {/* Floating Action Button */}
-            <button
-                onClick={() => setIsAddModalOpen(true)}
-                className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-600/30 flex items-center justify-center hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all z-30"
-                aria-label="Ajouter un client"
-            >
-                <Plus size={28} />
-            </button>
+                {/* Floating Action Button */}
+                <button
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="fab-adaptive w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-600/30 flex items-center justify-center hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all"
+                    aria-label="Ajouter un client"
+                >
+                    <Plus size={28} />
+                </button>
 
-            {/* Modals */}
+            </PageLayout>
+
             {isAddModalOpen && (
                 <AddClientModal
                     onClose={() => setIsAddModalOpen(false)}
                     onSuccess={fetchClients}
                 />
             )}
-        </div>
+        </>
     );
 };
 

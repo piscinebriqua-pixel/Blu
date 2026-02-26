@@ -14,8 +14,9 @@ The project uses a custom design system based on CSS variables defined in `src/i
 - **Primary Dark**: `var(--primary-dark)` (#023E8A) - Used for gradients and hover states.
 - **Secondary**: `var(--secondary)` (#90E0EF) - Accents and lighter elements.
 - **Accent**: `var(--accent)` (#FFB703) - Highlights and important calls to action.
-- **Status Green**: `var(--status-green)` (#22C55E) - Positive actions/states.
-- **Status Red**: `var(--status-red)` (#EF4444) - Errors/Alerts.
+- **Status Green (Done)**: `emerald-500` / `emerald-600` - Used for "Completed" interventions and positive balances.
+- **Status Blue (Todo)**: `blue-500` / `blue-600` - Used for "Scheduled" tasks.
+- **Status Red**: `var(--status-red)` (#EF4444) - Errors/Alerts/Debt.
 - **Text Main**: `var(--text-main)` (#1E293B) - Primary text color.
 - **Text Dim**: `var(--text-dim)` (#64748B) - Secondary text/descriptions.
 
@@ -31,23 +32,32 @@ The project uses a custom design system based on CSS variables defined in `src/i
 - **Card Shadow**: `var(--card-shadow)`
 - **Card Border**: `var(--card-border)`
 
+### Glassmorphism (Premium UI)
+Used for floating headers, filter bars, and view switchers.
+- **Base**: `bg-white/10` or `bg-black/20` (depending on background).
+- **Blur**: `backdrop-blur-xl` or `backdrop-blur-md`.
+- **Border**: `border border-white/10` or `border-white/5`.
+- **Shadow**: `shadow-2xl shadow-black/10`.
+
 ## Mobile Typography Standards (MANDATORY)
 
 This application runs primarily on **smartphones**. Every component you create must respect the following minimum sizes. These are non-negotiable — violating them breaks usability on mobile.
 
 ### Minimum Font Sizes
 
-| Element | Tailwind Class | Minimum Size |
-|---|---|---|
-| Card titles / names | `text-base font-black` | **16px** |
-| Descriptions / body text | `text-base` | **16px** |
-| Form labels / Category labels | `text-[13px] font-bold` | **13px** |
-| Badges, status pills | `text-xs` | **12px** |
+| Element | Tailwind Class | Minimum Size | Usage |
+|---|---|---|---|
+| Main Titles | `text-xl font-black` | **20px** | Page headers, large sections |
+| Card titles / names | `text-base font-black` | **16px** | Client names, pool names |
+| Descriptions / body text | `text-base` | **16px** | Standard info, notes |
+| Form labels / Categories | `text-[13px] font-bold` | **13px** | Input labels, group headers |
+| Data-dense labels | `text-[11px] font-black` | **11px** | Dashboard indicators, micro-metadata |
+| Status badges | `text-xs` | **12px** | Tags and pills |
 
-### ❌ Forbidden Classes
-- `text-[8px]` to `text-[10px]` — **NEVER USE**
-- `text-xs` — Avoid for body text, only for small badges/pills.
-- `text-sm` — Avoid for main content, prefer `text-base` (16px).
+### ❌ Forbidden Classes (Except for Data Visualization)
+- `text-[8px]` to `text-[10px]` — **AVOID** unless strictly necessary for complex dashboard layouts (e.g., Mini-Calendar).
+- `text-xs` — Use only for small badges/pills.
+- `text-sm` — Standard for secondary info, but prefer `text-base` for primary content.
 
 ### Inputs: Prevent iOS Auto-Zoom
 Always use `text-base` (16px) on `<input>`, `<select>`, and `<textarea>`. If font-size is below 16px, iOS Safari automatically zooms in on the field — this breaks the layout and UX.

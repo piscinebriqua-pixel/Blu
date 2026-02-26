@@ -19,6 +19,7 @@ import Planning from './pages/Planning';
 import Revenue from './pages/Revenue';
 import { Toaster } from 'react-hot-toast';
 import BccpLogo from './components/BccpLogo';
+import BottomNav from './components/BottomNav';
 import './index.css';
 
 const ClientRedirect = () => {
@@ -236,6 +237,7 @@ function App() {
             {/* Catch-all redirect */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <BottomNav />
         </div>
 
         <Toaster

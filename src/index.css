@@ -29,6 +29,12 @@
   --side-margin: 40px;
 }
 
+@media (max-width: 1024px) {
+  :root {
+    --side-margin: 24px;
+  }
+}
+
 [data-theme='dark'] {
   --bg-app: #0F172A;
   --card-bg: #1E293B;
@@ -131,8 +137,8 @@ a,
 .flow-header,
 .page-header {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  padding-top: calc(20px + var(--side-area-top));
-  padding-bottom: 60px;
+  padding-top: calc(12px + var(--safe-area-top));
+  padding-bottom: 40px;
   padding-left: var(--side-margin);
   padding-right: var(--side-margin);
   color: var(--text-white);
@@ -150,9 +156,8 @@ a,
   justify-content: space-between;
   align-items: flex-start;
   /* Align start to match Dashboard vertical feel if needed, or keep center but ensure height */
-  padding-top: calc(40px + var(--safe-area-top));
-  /* Match Dashboard 40px */
-  padding-bottom: 60px;
+  padding-top: calc(20px + var(--safe-area-top));
+  padding-bottom: 40px;
   /* Match Dashboard 60px */
 }
 
@@ -167,8 +172,8 @@ a,
 .flow-main,
 .page-content,
 .page-toolbar {
-  padding-left: var(--side-margin);
-  padding-right: var(--side-margin);
+  padding-left: var(--side-margin) !important;
+  padding-right: var(--side-margin) !important;
   width: 100%;
 }
 
@@ -193,18 +198,17 @@ a,
   background: rgba(0, 0, 0, 0.5);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
-  z-index: 1000;
+  z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
   transition: all 0.3s ease;
 }
 
 @media (max-width: 640px) {
   .modal-overlay {
-    align-items: flex-end;
-    padding: 0;
+    padding: 12px;
   }
 }
 
@@ -228,19 +232,20 @@ a,
     max-width: none;
     min-height: auto;
     max-height: 92vh;
-    border-radius: 32px 32px 0 0;
-    border-bottom: none;
+    border-radius: 24px;
     transform: translateY(0);
-    animation: drawerUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  @keyframes drawerUp {
+  @keyframes modalIn {
     from {
-      transform: translateY(100%);
+      opacity: 0;
+      transform: scale(0.9) translateY(10px);
     }
 
     to {
-      transform: translateY(0);
+      opacity: 1;
+      transform: scale(1) translateY(0);
     }
   }
 }

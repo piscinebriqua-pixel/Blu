@@ -5,11 +5,9 @@ import InterventionDetailsModal from "../components/InterventionDetailsModal";
 import { supabase } from "../lib/supabase";
 import {
   Search,
-  Calendar,
   ChevronRight,
   FileText,
   Clock,
-  CreditCard,
   Plus,
 } from "lucide-react";
 
@@ -128,31 +126,37 @@ const Interventions: React.FC = () => {
   });
 
 
-  const searchBar = (
-    <div className="relative mb-6 animate-in fade-in slide-in-from-top-2 duration-500">
-      <Search
-        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-500"
-        size={18}
-      />
-      <input
-        type="text"
-        placeholder="Rechercher un client ou un technicien..."
-        className="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-800 rounded-2xl border-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none text-slate-800 dark:text-white font-bold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-base"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
+  const toolbar = (
+    <div className="flex flex-col gap-4">
+      <div className="relative">
+        <Search
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+          size={18}
+        />
+        <input
+          type="text"
+          placeholder="Rechercher un client ou un technicien..."
+          className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
+      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
+        <button
+          onClick={() => setActiveTab("planning")}
+          className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "planning" ? "bg-white dark:bg-slate-700 text-primary shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
+        >
+          Planification
+        </button>
+        <button
+          onClick={() => setActiveTab("history")}
+          className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "history" ? "bg-white dark:bg-slate-700 text-primary shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
+        >
+          Historique
+        </button>
+      </div>
     </div>
-  );
-
-  const todayInterventions = interventions.filter((i) => {
-    const today = new Date().toISOString().split("T")[0];
-    const interDate = (i.visit_date || i.created_at).split("T")[0];
-    return interDate === today;
-  });
-
-  const totalRevenue = interventions.reduce(
-    (acc, i) => acc + calculateTotal(i),
-    0,
   );
 
   return (
@@ -161,59 +165,9 @@ const Interventions: React.FC = () => {
       subtitle={`${interventions.length} TOTAL`}
       loading={loading && interventions.length === 0}
       showBackButton={true}
+      toolbar={toolbar}
     >
-      {searchBar}
 
-      {/* Custom Tabs */}
-      <div className="flex gap-1 p-1.5 bg-slate-100/80 dark:bg-slate-800/50 rounded-[20px] mb-8 border border-slate-200/50 dark:border-slate-700/50">
-        <button
-          onClick={() => setActiveTab("planning")}
-          className={`flex-1 py-3.5 rounded-[14px] text-[13px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === "planning" ? "bg-primary text-white shadow-xl shadow-blue-500/30 scale-[1.02]" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
-        >
-          Plannification
-        </button>
-        <button
-          onClick={() => setActiveTab("history")}
-          className={`flex-1 py-3.5 rounded-[14px] text-[13px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${activeTab === "history" ? "bg-primary text-white shadow-xl shadow-blue-500/30 scale-[1.02]" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
-        >
-          Historique
-        </button>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <div className="card-premium vibrant grad-blue p-6 flex flex-col gap-4 shadow-lg border-white/10">
-          <div className="flex justify-between items-start">
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-bold text-white/90 uppercase tracking-widest">
-                Aujourd'hui
-              </span>
-              <span className="text-4xl font-black text-white leading-none">
-                {todayInterventions.length}
-              </span>
-            </div>
-            <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/20">
-              <Calendar size={20} className="text-white" />
-            </div>
-          </div>
-        </div>
-        <div className="card-premium vibrant grad-violet p-6 flex flex-col gap-4 shadow-lg border-white/10">
-          <div className="flex justify-between items-start">
-            <div className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-bold text-white/90 uppercase tracking-widest">
-                Valeur
-              </span>
-              <span className="text-4xl font-black text-white leading-none">
-                {(totalRevenue || 0).toFixed(0)}{" "}
-                <span className="text-base font-bold text-white/80 ml-0.5">DT</span>
-              </span>
-            </div>
-            <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/20">
-              <CreditCard size={20} className="text-white" />
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* List Section */}
       <div className="flex flex-col gap-4">
@@ -227,90 +181,70 @@ const Interventions: React.FC = () => {
         {filteredInterventions.map((inter) => (
           <div
             key={inter.id}
-            className="card-white !flex-col !items-stretch !p-5 text-left hover:scale-[1.01] transition-all cursor-pointer relative"
+            className="card-white !flex-col !items-stretch !p-3.5 mb-1 text-left hover:scale-[1.01] transition-all cursor-pointer relative"
             onClick={() => setSelectedIntervention(inter)}
           >
             {/* Top Row: Icon + Title | Price */}
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-primary-glow flex items-center justify-center text-primary shrink-0 transition-transform">
-                  <FileText size={20} />
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-primary-glow flex items-center justify-center text-primary shrink-0 transition-transform">
+                  <FileText size={18} />
                 </div>
-                <h4 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-none">
+                <h4 className="text-[14px] font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-none">
                   {inter.pool?.client?.first_name}{" "}
                   {inter.pool?.client?.last_name}
                 </h4>
               </div>
-              <span className="text-lg font-black text-primary bg-primary/5 px-3 py-1.5 rounded-xl shrink-0">
+              <span className="text-[15px] font-black text-primary bg-primary/5 px-2.5 py-1 rounded-lg shrink-0">
                 {(calculateTotal(inter) || 0).toFixed(0)} DT
               </span>
             </div>
 
-            {/* Middle Row: Tech | Date */}
-            <div className="flex items-center gap-4 text-slate-500 mb-4 px-1">
-              <div className="flex items-center gap-2 min-w-0">
-                <div
-                  className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${inter.status === "completed" ? "bg-emerald-500" : "bg-blue-400"}`}
-                />
-                <span className="text-base font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide truncate">
-                  {inter.technician?.full_name || "Non assigné"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Clock size={16} className="text-slate-400" />
-                <span className="text-base font-bold text-slate-500 dark:text-slate-400">
-                  {inter.status === "scheduled" || inter.status === "pending"
-                    ? inter.scheduled_date
-                      ? new Date(inter.scheduled_date).toLocaleDateString(
-                        "fr-FR",
-                        { day: "2-digit", month: "2-digit" },
-                      )
-                      : "À planifier"
-                    : new Date(inter.created_at).toLocaleDateString("fr-FR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                    })}
-                </span>
-              </div>
-            </div>
-
-            {/* Bottom Row: Status + Start Button */}
-            <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-50 dark:border-slate-800/50">
-              <div className="flex items-center gap-3">
-                {inter.status !== "completed" && inter.status !== "cancelled" && (
-                  <span
-                    className={`text-[13px] font-black uppercase px-3 py-1.5 rounded-xl border ${inter.status === "scheduled"
-                      ? "bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 text-blue-600"
-                      : inter.status === "in_progress"
-                        ? "bg-orange-50 dark:bg-orange-900/20 border-orange-100 dark:border-orange-800 text-orange-600"
-                        : "bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-700 text-slate-500"
-                      }`}
-                  >
-                    {inter.status === "scheduled"
-                      ? "Planifié"
-                      : inter.status === "in_progress"
-                        ? "En Cours"
-                        : "En Attente"}
+            {/* Middle Row: Tech | Date + Action */}
+            <div className="flex items-center justify-between px-0.5">
+              <div className="flex items-center gap-3 text-slate-500">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div
+                    className={`w-2 h-2 rounded-full flex-shrink-0 ${inter.status === "completed" ? "bg-emerald-500" : "bg-blue-400"}`}
+                  />
+                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide truncate">
+                    {inter.technician?.full_name || "Non assigné"}
                   </span>
-                )}
-
-                {inter.status === "scheduled" && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelPoolId(inter.pool_id);
-                      setSelClient(inter.pool?.client || null);
-                      setEditingId(inter.id);
-                      setIsNewInterventionModalOpen(true);
-                    }}
-                    className="px-6 py-2.5 bg-primary text-white text-[13px] font-black uppercase rounded-xl hover:bg-primary-dark transition-all shadow-lg shadow-blue-500/20 active:scale-95 flex items-center gap-2"
-                  >
-                    DÉMARRER
-                  </button>
-                )}
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Clock size={13} className="text-slate-400" />
+                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    {inter.status === "scheduled" || inter.status === "pending"
+                      ? inter.scheduled_date
+                        ? new Date(inter.scheduled_date).toLocaleDateString(
+                          "fr-FR",
+                          { day: "2-digit", month: "2-digit" },
+                        )
+                        : "À planifier"
+                      : new Date(inter.created_at).toLocaleDateString("fr-FR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                      })}
+                  </span>
+                </div>
               </div>
 
-              <ChevronRight size={20} className="text-slate-300" />
+              {inter.status === "scheduled" ? (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelPoolId(inter.pool_id);
+                    setSelClient(inter.pool?.client || null);
+                    setEditingId(inter.id);
+                    setIsNewInterventionModalOpen(true);
+                  }}
+                  className="px-4 py-1.5 bg-primary text-white text-[10px] font-black uppercase rounded-lg hover:bg-primary-dark transition-all shadow-md active:scale-95"
+                >
+                  DÉMARRER
+                </button>
+              ) : (
+                <ChevronRight size={16} className="text-slate-300" />
+              )}
             </div>
           </div>
         ))}
@@ -332,7 +266,7 @@ const Interventions: React.FC = () => {
       {/* Floating Action Button */}
       <button
         onClick={handleOpenAddModal}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-600/30 flex items-center justify-center hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all z-30"
+        className="fab-adaptive w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-600/30 flex items-center justify-center hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all"
         aria-label="Nouvelle intervention"
       >
         <Plus size={28} />

@@ -29,9 +29,9 @@ const ThemeToggle: React.FC = () => {
         <button
             onClick={toggleTheme}
             title="Changer le mode"
-            className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md"
+            className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md border border-white/10 shadow-lg"
         >
-            {isDark ? <Moon size={20} /> : <Sun size={20} />}
+            {isDark ? <Moon size={22} /> : <Sun size={22} />}
         </button>
     );
 };
