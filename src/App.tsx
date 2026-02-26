@@ -96,44 +96,43 @@ function App() {
     isFetchingRef.current = userId;
 
     setLoading(true);
-    let attempts = 8; // Increased attempts to 8 (better for slow cold starts)
-    let delay = 1000; // Start with 1s delay
+    let attempts = 10; // Increased to 10 attempts
+    let delay = 1000;
 
-    console.log(`Initialisation de la récupération du profil pour ${userId}...`);
+    console.log(`[Auth] Récupération du profil pour: ${userId}`);
 
     while (attempts > 0) {
       try {
-        // Use select() instead of single() to avoid 406 errors on empty results
+        // maybeSingle() returns null if no row is found, no error 406/404
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', userId);
+          .eq('id', userId)
+          .maybeSingle();
 
         if (error) throw error;
 
-        const profile = data?.[0];
-
-        if (profile) {
-          console.log('Profil chargé avec succès:', profile.email);
-          setUserProfile(profile);
+        if (data) {
+          console.log('[Auth] Profil trouvé !', data.email);
+          setUserProfile(data);
           setLoading(false);
           isFetchingRef.current = null;
           return;
         }
 
-        console.log(`Profil introuvable en base (tentative ${9 - attempts}/8), attente de ${delay}ms...`);
+        console.log(`[Auth] Profil pas encore créé (tentative ${11 - attempts}/10), nouvel essai dans ${delay}ms...`);
       } catch (e: any) {
-        console.error(`Erreur lors de la récupération du profil (tentative ${9 - attempts}/8):`, e.message);
+        console.error(`[Auth] Erreur SQL (tentative ${11 - attempts}/10):`, e.message);
       }
 
       attempts--;
       if (attempts > 0) {
         await new Promise(r => setTimeout(r, delay));
-        delay = Math.min(delay + 1000, 5000); // Progressively wait longer, max 5s
+        delay = Math.min(delay + 1000, 4000); // Gradual backoff
       }
     }
 
-    console.error('Échec définitif de la récupération du profil après toutes les tentatives.');
+    console.error('[Auth] Échec : Le profil n\'existe pas en base de données.');
     isFetchingRef.current = null;
     setLoading(false);
   };
