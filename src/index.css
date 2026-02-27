@@ -551,3 +551,19 @@ a,
 .stagger-10 {
   animation-delay: 500ms;
 }
+
+/* --- PAYMENT INPUT OVERRIDE (Match text-5xl) --- */
+.massive-amount-input {
+  font-size: 3rem !important;
+  line-height: 1 !important;
+  height: auto !important;
+  letter-spacing: -0.05em !important;
+  /* Matches tracking-tighter */
+}
+
+@media (max-width: 768px) {
+  .massive-amount-input {
+    font-size: 2.25rem !important;
+    /* Adjust for mobile if needed */
+  }
+}

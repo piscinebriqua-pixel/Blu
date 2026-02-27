@@ -257,9 +257,15 @@ const Revenue: React.FC = () => {
 
                 {/* Primary Stats Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
-                    <div className="card-premium vibrant grad-blue p-4 md:p-6 relative overflow-hidden group">
+                    <div
+                        onClick={() => navigate(`/payments?range=${timeRange}`)}
+                        className="card-premium vibrant grad-blue p-4 md:p-6 relative overflow-hidden group cursor-pointer hover:shadow-2xl hover:-translate-y-1 transition-all active:scale-95"
+                    >
+                        <div className="flex justify-between items-start relative z-10 mb-1">
+                            <p className="text-premium-label !text-white/70">Encaissements (Cash)</p>
+                            <ChevronRight size={18} className="text-white/30 group-hover:text-white/50 group-hover:translate-x-1 transition-all" />
+                        </div>
                         <div className="relative z-10">
-                            <p className="text-premium-label !text-white/70 mb-1">Encaissements (Cash)</p>
                             <h3 className="text-4xl font-black text-white tracking-tighter">
                                 {stats.total.toLocaleString()} <span className="text-sm opacity-60">DT</span>
                             </h3>

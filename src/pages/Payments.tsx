@@ -49,11 +49,17 @@ const Payments: React.FC = () => {
     const [paymentToEdit, setPaymentToEdit] = useState<Payment | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
-    useEffect(() => {
-        fetchUserAndPayments();
-    }, []);
+    const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year' | 'all'>('all');
 
-    const fetchUserAndPayments = async () => {
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const rangeParam = params.get('range') as any;
+        if (rangeParam) setTimeRange(rangeParam);
+
+        fetchUserAndPayments(rangeParam || 'all');
+    }, [window.location.search]);
+
+    const fetchUserAndPayments = async (range: string = 'all') => {
         try {
             setLoading(true);
             const { data: { session } } = await supabase.auth.getSession();
@@ -68,6 +74,17 @@ const Payments: React.FC = () => {
             const isUserAdmin = profile?.role === 'admin';
             setIsAdmin(isUserAdmin);
 
+            // Define dates if range is specified
+            let startDate: Date | null = null;
+            if (range !== 'all') {
+                const now = new Date();
+                startDate = new Date();
+                if (range === 'day') startDate.setHours(0, 0, 0, 0);
+                else if (range === 'week') startDate.setDate(now.getDate() - 7);
+                else if (range === 'month') startDate.setMonth(now.getMonth() - 1);
+                else if (range === 'year') startDate.setFullYear(now.getFullYear() - 1);
+            }
+
             let query = supabase
                 .from('payments')
                 .select(`
@@ -76,6 +93,10 @@ const Payments: React.FC = () => {
                     technician:technicians(full_name)
                 `)
                 .order('payment_date', { ascending: false });
+
+            if (startDate) {
+                query = query.gte('payment_date', startDate.toISOString());
+            }
 
             if (!isUserAdmin) {
                 if (profile?.technician_id) {
@@ -160,6 +181,25 @@ const Payments: React.FC = () => {
             toolbar={toolbar}
         >
             <div className="flex flex-col gap-6">
+
+                {/* Range Selector */}
+                <div className="flex bg-white dark:bg-slate-800 p-1 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm self-start">
+                    {(['all', 'day', 'week', 'month', 'year'] as const).map((range) => (
+                        <button
+                            key={range}
+                            onClick={() => {
+                                setTimeRange(range);
+                                navigate(`/payments?range=${range}`);
+                            }}
+                            className={`px-2 md:px-4 py-1.5 md:py-2 rounded-xl text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all ${timeRange === range
+                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                }`}
+                        >
+                            {range === 'all' ? 'Tous' : range === 'day' ? 'Jour' : range === 'week' ? 'Semaine' : range === 'month' ? 'Mois' : 'Année'}
+                        </button>
+                    ))}
+                </div>
 
                 {/* Stats Header */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import {
   Save,
@@ -11,6 +11,7 @@ import {
   CheckSquare,
   Square,
   Calculator,
+  Wallet,
 } from "lucide-react";
 import ModalLayout from "./ModalLayout";
 import TechnicianSelectionModal from "./TechnicianSelectionModal";
@@ -57,33 +58,14 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const mountedRef = React.useRef(true);
+  const amountInputRef = useRef<HTMLInputElement>(null);
+  const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
 
   const [loading, setLoading] = useState(false);
-  const [interventionType] = useState<"direct" | "scheduled">(type);
-  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
-  const [isTechModalOpen, setIsTechModalOpen] = useState(false);
-
-  const [dbClients, setDbClients] = useState<{ id: string; first_name: string; last_name: string; city: string }[]>([]);
-  const [dbPools, setDbPools] = useState<{ id: string; name: string }[]>([]);
-  const [selectedClientId, setSelectedClientId] = useState(initialClientId || "");
-  const [selectedPoolId, setSelectedPoolId] = useState(initialPoolId || "");
-
-  const [dbServices, setDbServices] = useState<Service[]>([]);
-  const [dbTechnicians, setDbTechnicians] = useState<Technician[]>([]);
-  const [dbProducts, setDbProducts] = useState<Product[]>([]);
-
-  const [selectedServices, setSelectedServices] = useState<Record<string, number>>({});
-  const [referencePrices] = useState<Record<string, number>>({});
-  const [serviceModalOpen, setServiceModalOpen] = useState(false);
-  const [productModalOpen, setProductModalOpen] = useState(false);
-  const [usedProducts, setUsedProducts] = useState<{ [key: string]: { quantity: number; unitPrice: number } }>({});
-  const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
-
   const [formData, setFormData] = useState({
     technician_id: "",
     ph_level: "",
@@ -94,6 +76,8 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
     scheduled_date: (initialScheduledDate || new Date().toISOString()).split("T")[0],
     payment_amount: "",
     payment_method: "espèces" as "espèces" | "chèque" | "virement" | "autre",
+    payment_technician_id: "",
+    payment_date: new Date().toISOString().split("T")[0],
     record_payment: false,
     photo_before_url: "",
     photo_after_url: "",
@@ -110,6 +94,41 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
     task_temps_fonctionnement: false,
   });
 
+  const [interventionType] = useState<"direct" | "scheduled">(type);
+  const [isClientModalOpen, setIsClientModalOpen] = useState(false);
+  const [isTechModalOpen, setIsTechModalOpen] = useState(false);
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [existingPayment, setExistingPayment] = useState<any>(null);
+  const [oldTotalAmount, setOldTotalAmount] = useState(0);
+  const [dbClients, setDbClients] = useState<{ id: string; first_name: string; last_name: string; city: string }[]>([]);
+  const [dbPools, setDbPools] = useState<{ id: string; name: string }[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState(initialClientId || "");
+  const [selectedPoolId, setSelectedPoolId] = useState(initialPoolId || "");
+
+  const [dbServices, setDbServices] = useState<Service[]>([]);
+  const [dbTechnicians, setDbTechnicians] = useState<Technician[]>([]);
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+
+  const [selectedServices, setSelectedServices] = useState<Record<string, number>>({});
+  const [referencePrices] = useState<Record<string, number>>({});
+  const [serviceModalOpen, setServiceModalOpen] = useState(false);
+  const [productModalOpen, setProductModalOpen] = useState(false);
+  const [usedProducts, setUsedProducts] = useState<{ [key: string]: { quantity: number; unitPrice: number } }>({});
+  const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
+
+  // Focus amount input when payment is enabled
+  const [prevRecordPayment, setPrevRecordPayment] = useState(false);
+  useEffect(() => {
+    if (formData.record_payment && !prevRecordPayment) {
+      setTimeout(() => {
+        amountInputRef.current?.focus();
+        amountInputRef.current?.select();
+      }, 100);
+    }
+    setPrevRecordPayment(formData.record_payment);
+  }, [formData.record_payment, prevRecordPayment]);
+
   const fetchInitialData = useCallback(async () => {
     const [sv, tc, pr, cl, session] = await Promise.all([
       supabase.from("services").select("*").order("name"),
@@ -124,10 +143,24 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
     if (pr.data) setDbProducts(pr.data);
     if (cl.data) setDbClients(cl.data);
 
-    if (session.data?.session?.user?.email) {
-      const tech = tc.data?.find((t) => t.email === session.data?.session?.user?.email);
-      if (tech) {
-        setFormData((prev) => ({ ...prev, technician_id: tech.id }));
+    if (session.data?.session?.user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.data.session.user.id)
+        .single();
+      setIsAdmin(profile?.role === "admin");
+      console.log(`[BCCP] Rôle détecté: ${profile?.role}, isAdmin: ${profile?.role === "admin"}`);
+
+      if (session.data.session.user.email) {
+        const tech = tc.data?.find((t) => t.email === session.data?.session?.user?.email);
+        if (tech) {
+          setFormData((prev) => ({
+            ...prev,
+            technician_id: tech.id,
+            payment_technician_id: tech.id
+          }));
+        }
       }
     }
   }, []);
@@ -188,6 +221,30 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           };
         });
         setUsedProducts(prdObj);
+
+        // Calculate old total
+        const servicesTotal = data.services?.reduce((acc: number, s: any) => acc + (s.price_at_time || 0), 0) || 0;
+        const productsTotal = data.products?.reduce((acc: number, p: any) => acc + (p.total_price || 0), 0) || 0;
+        setOldTotalAmount(servicesTotal + productsTotal);
+
+        // Fetch existing payment
+        const { data: paymentData } = await supabase
+          .from("payments")
+          .select("*")
+          .eq("intervention_id", interventionId)
+          .maybeSingle();
+
+        if (paymentData) {
+          setExistingPayment(paymentData);
+          setFormData(prev => ({
+            ...prev,
+            record_payment: true,
+            payment_amount: paymentData.amount.toString(),
+            payment_method: paymentData.method,
+            payment_technician_id: paymentData.technician_id,
+            payment_date: paymentData.payment_date?.split('T')[0] || prev.payment_date,
+          }));
+        }
       }
     } catch (error) {
       console.error("Error fetching intervention:", error);
@@ -344,20 +401,38 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       }
 
       if (interventionType === "direct") {
+        const newPaymentAmount = (snapshotFormData.record_payment && snapshotFormData.payment_amount) ? parseFloat(snapshotFormData.payment_amount) : 0;
+        const oldPaymentAmount = existingPayment ? existingPayment.amount : 0;
+
         if (snapshotFormData.record_payment && snapshotFormData.payment_amount) {
-          await supabase.from("payments").insert([{
+          const paymentPayload = {
             client_id: snapshotClientId,
             intervention_id: activeInterId,
-            technician_id: snapshotFormData.technician_id,
-            amount: parseFloat(snapshotFormData.payment_amount),
+            technician_id: isAdmin ? (snapshotFormData.payment_technician_id || snapshotFormData.technician_id) : snapshotFormData.technician_id,
+            amount: newPaymentAmount,
             method: snapshotFormData.payment_method,
+            payment_date: isAdmin ? snapshotFormData.payment_date : (existingPayment?.payment_date || new Date().toISOString()),
             notes: `Paiement lors de l'intervention ${activeInterId}`,
-          }]);
+          };
+
+          if (existingPayment) {
+            await supabase.from("payments").update(paymentPayload).eq("id", existingPayment.id);
+          } else {
+            await supabase.from("payments").insert([paymentPayload]);
+          }
+        } else if (existingPayment) {
+          // User unchecked "Encaisser", delete the existing payment
+          await supabase.from("payments").delete().eq("id", existingPayment.id);
         }
+
         const { data: clientData } = await supabase.from("clients").select("balance").eq("id", snapshotClientId).single();
         const currentBalance = clientData?.balance || 0;
-        const paymentReceived = (snapshotFormData.record_payment && snapshotFormData.payment_amount) ? parseFloat(snapshotFormData.payment_amount) : 0;
-        const newBalance = currentBalance + paymentReceived - localTotalAmount;
+
+        // Correct balance calculation for updates:
+        // Adjust by (NewPayment - OldPayment) - (NewTotal - OldTotal)
+        const balanceAdjustment = (newPaymentAmount - oldPaymentAmount) - (localTotalAmount - oldTotalAmount);
+        const newBalance = currentBalance + balanceAdjustment;
+
         await supabase.from("clients").update({ balance: newBalance }).eq("id", snapshotClientId);
       }
 
@@ -378,11 +453,11 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
 
   const actions = (
     <div className="flex flex-col w-full gap-4">
-      <div className="flex gap-3">
+      <div className="flex gap-4">
         <button
           type="button"
           onClick={onClose}
-          className="px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-slate-200 transition-all flex-1"
+          className="flex-1 px-8 py-4 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 font-black rounded-2xl uppercase tracking-[0.2em] text-[11px] hover:bg-slate-200 dark:hover:bg-white/10 transition-all active:scale-95"
           disabled={loading}
         >
           ANNULER
@@ -390,12 +465,17 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         <button
           type="button"
           onClick={handleSubmit}
-          className="h-[58px] flex-[2] relative overflow-hidden group rounded-2xl font-black uppercase tracking-widest text-xs transition-all bg-blue-600 shadow-lg text-white hover:scale-[1.02] disabled:opacity-40"
+          className="flex-[2] px-8 py-4 bg-blue-600 text-white font-black rounded-2xl uppercase tracking-[0.2em] text-[11px] hover:bg-blue-700 shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:grayscale"
           disabled={loading || !formData.technician_id || !selectedClientId}
         >
-          <div className="relative z-10 flex items-center justify-center gap-2">
-            {loading ? <Loader2 className="animate-spin" size={24} /> : <><Save size={20} strokeWidth={2.5} /> ENREGISTRER</>}
-          </div>
+          {loading ? (
+            <Loader2 className="animate-spin" size={18} />
+          ) : (
+            <>
+              <Save size={18} />
+              ENREGISTRER LE RAPPORT
+            </>
+          )}
         </button>
       </div>
     </div>
@@ -501,7 +581,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
               <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-slate-700" />
               <div className="flex items-center gap-2 text-blue-500">
                 <FlaskConical size={18} strokeWidth={2.5} />
-                <span className="text-[11px] font-black uppercase tracking-[0.3em]">Analyse de l'eau</span>
+                <span className="text-[13px] font-black uppercase tracking-[0.3em]">Analyse de l'eau</span>
               </div>
               <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-slate-700" />
             </div>
@@ -553,7 +633,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                 <div className={`w-6 h-6 rounded-lg flex items-center justify-center ${formData.water_level_adjusted ? "bg-white text-blue-600" : "bg-slate-100 dark:bg-slate-700 text-slate-400"}`}>
                   <Waves size={16} strokeWidth={3} />
                 </div>
-                <span className="text-xs font-black uppercase tracking-widest">Niveau d'eau ajusté</span>
+                <span className="text-[14px] font-black uppercase tracking-widest">Niveau d'eau ajusté</span>
               </div>
               {formData.water_level_adjusted ? <CheckSquare size={20} strokeWidth={3} /> : <Square size={20} strokeWidth={2.5} />}
             </button>
@@ -562,7 +642,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-2 mb-2">
                 <CheckSquare size={16} className="text-blue-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Tâches d'entretien effectuées</span>
+                <span className="text-[12px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Tâches d'entretien effectuées</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {[
@@ -581,11 +661,11 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                     key={task.id}
                     type="button"
                     onClick={() => setFormData({ ...formData, [task.id]: !formData[task.id as keyof typeof formData] })}
-                    className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all text-left ${formData[task.id as keyof typeof formData] ? "bg-blue-50/50 dark:bg-blue-900/10 border-blue-500/30 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-500/10" : "bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-500 hover:border-blue-500/20"}`}
+                    className={`flex items-center justify-between px-6 py-4 rounded-xl border transition-all text-left ${formData[task.id as keyof typeof formData] ? "bg-blue-50/50 dark:bg-blue-900/10 border-blue-500/30 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-500/10" : "bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-500 hover:border-blue-500/20"}`}
                   >
-                    <span className="text-[11px] font-black uppercase tracking-tight">{task.label}</span>
-                    <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${formData[task.id as keyof typeof formData] ? "bg-blue-500 text-white" : "bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600"}`}>
-                      {formData[task.id as keyof typeof formData] && <CheckSquare size={14} strokeWidth={3} />}
+                    <span className="text-[14px] font-black uppercase tracking-tight">{task.label}</span>
+                    <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${formData[task.id as keyof typeof formData] ? "bg-blue-500 text-white" : "bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600"}`}>
+                      {formData[task.id as keyof typeof formData] && <CheckSquare size={16} strokeWidth={3} />}
                     </div>
                   </button>
                 ))}
@@ -600,7 +680,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-slate-700" />
             <div className="flex items-center gap-2 text-violet-500">
               <Calculator size={18} strokeWidth={2.5} />
-              <span className="text-[11px] font-black uppercase tracking-[0.3em]">Intervention & Coûts</span>
+              <span className="text-[13px] font-black uppercase tracking-[0.3em]">Intervention & Coûts</span>
             </div>
             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-slate-700" />
           </div>
@@ -608,14 +688,14 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           <div className="flex flex-wrap gap-2 mb-2 min-h-[40px] p-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
             {Object.entries(selectedServices).map(([sId, price]) => (
               <div key={sId} className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-full animate-in zoom-in duration-200">
-                <span className="text-[11px] font-black text-blue-700 dark:text-blue-300 uppercase truncate max-w-[150px]">{dbServices.find(s => s.id === sId)?.name}</span>
+                <span className="text-[13px] font-black text-blue-700 dark:text-blue-300 uppercase truncate max-w-[150px]">{dbServices.find(s => s.id === sId)?.name}</span>
                 <span className="text-[11px] font-bold text-blue-500">{price} DT</span>
                 <button onClick={() => { const next = { ...selectedServices }; delete next[sId]; setSelectedServices(next); }} className="text-blue-400 hover:text-red-500" title="Supprimer ce service"><X size={14} strokeWidth={3} /></button>
               </div>
             ))}
             {Object.entries(usedProducts).map(([pId, item]) => (
               <div key={pId} className="flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-800 rounded-full animate-in zoom-in duration-200">
-                <span className="text-[11px] font-black text-violet-700 dark:text-violet-300 uppercase truncate max-w-[150px]">{dbProducts.find(p => p.id === pId)?.name}</span>
+                <span className="text-[13px] font-black text-violet-700 dark:text-violet-300 uppercase truncate max-w-[150px]">{dbProducts.find(p => p.id === pId)?.name}</span>
                 <span className="text-[11px] font-bold text-violet-500">x{item.quantity} ({item.unitPrice} DT)</span>
                 <button onClick={() => { const next = { ...usedProducts }; delete next[pId]; setUsedProducts(next); }} className="text-violet-400 hover:text-red-500" title="Supprimer ce produit"><X size={14} strokeWidth={3} /></button>
               </div>
@@ -642,7 +722,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-3">
             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-slate-700" />
-            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400">Preuves & Observations</span>
+            <span className="text-[13px] font-black uppercase tracking-[0.3em] text-slate-400">Preuves & Observations</span>
             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-slate-700" />
           </div>
 
@@ -667,60 +747,135 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           />
         </div>
 
-        {/* SECTION 5: PAIEMENT & RÉSUMÉ (SI DIRECT) */}
+        {/* SECTION 5: RÉSUMÉ & PAIEMENT */}
         {interventionType === "direct" && (
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] p-8 text-white shadow-2xl shadow-blue-500/30 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
-            <div className="relative z-10 space-y-8">
-              <div className="flex justify-between items-start">
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase tracking-[0.4em] opacity-60 mb-2">Total Intervention</span>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-5xl font-black tracking-tighter">{totalAmount.toFixed(0)}</span>
-                    <span className="text-xl font-bold opacity-60">DT</span>
-                  </div>
+          <div className="space-y-6">
+            {/* Subtle technical gradients */}
+            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-blue-500/10 via-transparent to-transparent pointer-events-none" />
+
+            {/* Block 1: Total Intervention Display (Indigo Theme) */}
+            <div className="bg-indigo-50/50 dark:bg-indigo-500/10 rounded-[2rem] p-6 border border-indigo-100 dark:border-indigo-500/20 flex items-center justify-between group hover:border-indigo-500/30 transition-all shadow-sm">
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-400 dark:text-indigo-500/60 mb-1">Total de l'intervention</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-5xl font-black tracking-tighter text-indigo-950 dark:text-indigo-50 leading-none">
+                    {totalAmount.toFixed(0)}
+                  </span>
+                  <span className="text-xl font-black text-indigo-200 dark:text-indigo-500/40">DT</span>
                 </div>
               </div>
+              <div className="w-16 h-16 bg-white dark:bg-indigo-950 rounded-2xl flex items-center justify-center border border-indigo-100 dark:border-indigo-500/30 shadow-sm group-hover:scale-110 transition-transform">
+                <Calculator size={28} className="text-indigo-600 dark:text-indigo-400" />
+              </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-6 pt-4">
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3 bg-white/10 p-2 pr-4 rounded-2xl border border-white/10 backdrop-blur-sm">
-                    <button type="button"
-                      onClick={() => setFormData(prev => ({ ...prev, record_payment: !prev.record_payment }))}
-                      className={`w-12 h-6 rounded-full relative transition-all ${formData.record_payment ? "bg-white" : "bg-white/20"}`}
-                      aria-label="Enregistrer le paiement"
-                      title="Enregistrer le paiement"
-                    >
-                      <div className={`absolute top-1 w-4 h-4 rounded-full transition-all ${formData.record_payment ? "left-7 bg-blue-600" : "left-1 bg-white"}`} />
-                    </button>
-                    <span className="text-[10px] font-black uppercase tracking-widest">Reçu ?</span>
-                  </div>
-
-                  {formData.record_payment && (
-                    <div className="animate-in slide-in-from-left-4 duration-300">
-                      <input
-                        type="number"
-                        placeholder="Montant"
-                        className="w-full bg-white/10 border border-white/20 rounded-2xl py-4 px-4 font-black text-xl placeholder:text-white/40 focus:bg-white/20 outline-none transition-all"
-                        value={formData.payment_amount}
-                        onChange={(e) => setFormData({ ...formData, payment_amount: e.target.value })}
-                      />
+            {/* Block 2: Payment Details - Vertical Alignment */}
+            <div className="bg-white dark:bg-white/5 rounded-[2rem] border border-slate-200 dark:border-white/10 p-6 md:p-10 space-y-8 shadow-sm">
+              <div className="max-w-xl mx-auto space-y-8">
+                {/* 0. Toggle Enable Payment */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-1">Statut Règlement</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, record_payment: !prev.record_payment }))}
+                    className={`flex items-center justify-between w-full p-4 rounded-2xl border transition-all duration-300 ${formData.record_payment
+                      ? "bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-400"
+                      : "bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 text-slate-400 hover:border-slate-300"}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${formData.record_payment ? "bg-blue-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-400"}`}>
+                        <Wallet size={16} />
+                      </div>
+                      <span className="text-[11px] font-black uppercase tracking-widest">Encaisser le paiement</span>
                     </div>
-                  )}
+                    <div className={`w-10 h-5 rounded-full relative transition-colors duration-300 ${formData.record_payment ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                      <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all duration-300 ${formData.record_payment ? 'right-1' : 'left-1'}`} />
+                    </div>
+                  </button>
                 </div>
 
                 {formData.record_payment && (
-                  <div className="flex flex-col gap-2 pt-1 animate-in slide-in-from-right-4 duration-300">
-                    <select
-                      className="w-full bg-white/10 border border-white/20 rounded-2xl py-3 px-3 font-bold text-[10px] uppercase tracking-widest outline-none focus:bg-white/20 appearance-none cursor-pointer"
-                      value={formData.payment_method}
-                      onChange={(e) => setFormData({ ...formData, payment_method: e.target.value as any })}
-                      title="Mode de paiement"
-                    >
-                      <option value="espèces" className="text-slate-900">💵 Espèces</option>
-                      <option value="chèque" className="text-slate-900">✍️ Chèque</option>
-                      <option value="virement" className="text-slate-900">📱 Virement</option>
-                    </select>
+                  <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                    {/* 1. Date (Defaults to intervention date) */}
+                    {isAdmin && (
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-1">Date d'encaissement</label>
+                        <div className="relative group">
+                          <input
+                            type="date"
+                            title="Date d'encaissement"
+                            className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl py-4 px-6 font-black text-[13px] uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:border-blue-500 transition-all appearance-none cursor-pointer"
+                            value={formData.payment_date || formData.scheduled_date}
+                            onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 2. Technician (Defaults to intervention technician) */}
+                    {isAdmin && (
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-1">Technicien Récepteur</label>
+                        <select
+                          title="Technicien Récepteur"
+                          className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl py-4 px-6 font-black text-[13px] uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:border-blue-500 appearance-none cursor-pointer transition-all"
+                          value={formData.payment_technician_id || formData.technician_id}
+                          onChange={(e) => setFormData({ ...formData, payment_technician_id: e.target.value })}
+                        >
+                          <option value="">Sélectionner</option>
+                          {dbTechnicians.map(t => (
+                            <option key={t.id} value={t.id}>{t.full_name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* 3. Amount Received (Style matching the capture) */}
+                    <div className="space-y-3">
+                      <div className="bg-violet-50/50 dark:bg-violet-500/10 rounded-[2rem] p-6 border border-violet-100 dark:border-violet-500/20 flex items-center justify-between group hover:border-violet-500/30 transition-all shadow-sm relative overflow-hidden">
+                        <div className="flex flex-col flex-1">
+                          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-violet-400 dark:text-violet-500/60 mb-2">Montant Reçu / Encaissé</span>
+                          <div className="flex items-baseline gap-3 relative">
+                            <input
+                              ref={amountInputRef}
+                              type="number"
+                              title="Montant encaissé"
+                              placeholder="0"
+                              className="bg-transparent border-none outline-none font-black tracking-tighter text-violet-950 dark:text-white p-0 m-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none massive-amount-input"
+                              style={{
+                                width: '150px'
+                              }}
+                              value={formData.payment_amount}
+                              onChange={(e) => setFormData({ ...formData, payment_amount: e.target.value })}
+                              onFocus={(e) => e.target.select()}
+                            />
+                            <span className="text-xl font-black text-violet-200 dark:text-violet-500/40 select-none">DT</span>
+                          </div>
+                        </div>
+                        <div className="w-16 h-16 bg-white dark:bg-violet-950 rounded-2xl flex items-center justify-center border border-violet-100 dark:border-violet-500/30 shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                          <Wallet size={28} className="text-violet-500" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 4. Payment Method */}
+                    <div className="space-y-4">
+                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-1">Mode de règlement</label>
+                      <div className="grid grid-cols-3 gap-3">
+                        {['espèces', 'chèque', 'virement'].map((method) => (
+                          <button
+                            key={method}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, payment_method: method as any })}
+                            className={`py-4 rounded-2xl text-[11px] font-black uppercase tracking-[0.1em] border-2 transition-all ${formData.payment_method === method
+                              ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-xl scale-105"
+                              : "bg-white dark:bg-slate-800 text-slate-400 border-slate-100 dark:border-slate-700 hover:border-slate-300"}`}
+                          >
+                            {method}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

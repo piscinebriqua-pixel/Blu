@@ -34,6 +34,7 @@ interface Intervention {
     }[];
     photo_before_url?: string;
     photo_after_url?: string;
+    water_level_adjusted?: boolean;
     task_balai?: boolean;
     task_lavage?: boolean;
     task_rincage?: boolean;
@@ -176,17 +177,17 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                     </div>
                 </div>
 
-                {/* Technical Measures Section - Only shows if data exists */}
-                {(intervention.ph_level || intervention.chlorine_level) && (
+                {/* Technical Measures & Tasks Section */}
+                {(intervention.ph_level || intervention.chlorine_level || intervention.water_level_adjusted !== undefined || true) && (
                     <div className="space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
-                            <h5 className="text-[11px] font-black text-blue-400 uppercase tracking-[0.3em]">Mesures Techniques</h5>
+                            <h5 className="text-[11px] font-black text-blue-400 uppercase tracking-[0.3em]">Mesures & Contrôles</h5>
                             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
-                            {intervention.ph_level && (
+                            {intervention.ph_level !== undefined && intervention.ph_level !== null && (
                                 <div className="flex items-center gap-4 p-4 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-primary/30 transition-all">
                                     <div className="w-10 h-10 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center text-cyan-500">
                                         <Droplets size={20} />
@@ -198,7 +199,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                                 </div>
                             )}
 
-                            {intervention.chlorine_level && (
+                            {intervention.chlorine_level !== undefined && intervention.chlorine_level !== null && (
                                 <div className="flex items-center gap-4 p-4 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-blue-400/30 transition-all">
                                     <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
                                         <Droplets size={20} />
@@ -209,10 +210,24 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                                     </div>
                                 </div>
                             )}
+
+                            {intervention.water_level_adjusted !== undefined && (
+                                <div className={`flex items-center gap-4 p-4 rounded-3xl shadow-sm border col-span-2 transition-all ${intervention.water_level_adjusted ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/30 text-blue-600 dark:text-blue-400' : 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 opacity-60'}`}>
+                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${intervention.water_level_adjusted ? 'bg-blue-500 text-white' : 'bg-white dark:bg-slate-700 text-slate-400'}`}>
+                                        <Droplets size={20} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-black uppercase tracking-widest mb-0.5">Niveau d'eau</span>
+                                        <span className="text-[13px] font-black uppercase tracking-tight">
+                                            {intervention.water_level_adjusted ? 'Ajusté durant l\'intervention' : 'Aucun ajustement nécessaire'}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Maintenance Tasks Checklist */}
-                        <div className="flex flex-wrap gap-2 pt-2">
+                        {/* Maintenance Tasks Checklist - SHOW ALL */}
+                        <div className="grid grid-cols-2 gap-2 pt-2">
                             {[
                                 { key: 'task_balai', label: 'Balai' },
                                 { key: 'task_lavage', label: 'Lavage' },
@@ -226,13 +241,22 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                                 { key: 'task_temps_fonctionnement', label: 'Temps Fonct.' }
                             ].map(task => {
                                 const isDone = intervention[task.key as keyof Intervention];
-                                if (!isDone) return null;
                                 return (
-                                    <div key={task.key} className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-100 dark:border-emerald-800/30 shadow-sm animate-in zoom-in duration-300">
-                                        <div className="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                    <div
+                                        key={task.key}
+                                        className={`flex items-center justify-between px-3 py-2.5 rounded-2xl border transition-all duration-300 ${isDone
+                                            ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-400 shadow-sm"
+                                            : "bg-slate-50/50 dark:bg-white/5 border-slate-100/50 dark:border-white/5 text-slate-400 opacity-50"
+                                            }`}
+                                    >
+                                        <span className="text-[10px] font-black uppercase tracking-tight truncate mr-2">{task.label}</span>
+                                        <div className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 ${isDone ? "bg-emerald-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-400"}`}>
+                                            {isDone ? (
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                            ) : (
+                                                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+                                            )}
                                         </div>
-                                        <span className="text-[10px] font-black uppercase tracking-tight">{task.label}</span>
                                     </div>
                                 );
                             })}
