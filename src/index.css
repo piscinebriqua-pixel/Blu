@@ -31,7 +31,13 @@
 
 @media (max-width: 1024px) {
   :root {
-    --side-margin: 24px;
+    --side-margin: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --side-margin: 16px;
   }
 }
 
@@ -137,8 +143,8 @@ a,
 .flow-header,
 .page-header {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  padding-top: calc(12px + var(--safe-area-top));
-  padding-bottom: 40px;
+  padding-top: calc(16px + var(--safe-area-top));
+  padding-bottom: 32px;
   padding-left: var(--side-margin);
   padding-right: var(--side-margin);
   color: var(--text-white);
@@ -156,8 +162,8 @@ a,
   justify-content: space-between;
   align-items: flex-start;
   /* Align start to match Dashboard vertical feel if needed, or keep center but ensure height */
-  padding-top: calc(20px + var(--safe-area-top));
-  padding-bottom: 40px;
+  padding-top: calc(16px + var(--safe-area-top));
+  padding-bottom: 32px;
   /* Match Dashboard 60px */
 }
 
@@ -181,8 +187,8 @@ a,
 .page-content {
   flex: 1;
   overflow-y: auto;
-  padding-top: 16px;
-  padding-bottom: 140px;
+  padding-top: 12px;
+  padding-bottom: 120px;
 }
 
 .page-toolbar {
@@ -321,11 +327,17 @@ a,
 /* --- CARDS & BLOCKS --- */
 .card-white {
   background: white;
-  padding: 24px;
+  padding: 20px;
   border-radius: var(--radius-std);
   box-shadow: var(--card-shadow);
   border: var(--card-border);
   transition: all 0.2s ease-out;
+}
+
+@media (min-width: 768px) {
+  .card-white {
+    padding: 24px;
+  }
 }
 
 [data-theme='dark'] .card-white {
@@ -342,12 +354,18 @@ a,
   background: var(--card-bg);
   border: var(--card-border);
   border-radius: var(--radius-std);
-  padding: 20px;
+  padding: 16px;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   box-shadow: var(--card-shadow);
+}
+
+@media (min-width: 768px) {
+  .card-premium {
+    padding: 20px;
+  }
 }
 
 .card-premium.vibrant {
@@ -381,7 +399,20 @@ a,
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .smart-tile {
