@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ModalLayout from './ModalLayout';
-import { MessageCircle, Edit2, Trash2, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { MessageCircle, Edit2, Trash2, Clock, CheckCircle2, XCircle, Loader2, Download } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 
@@ -94,6 +94,10 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
         }
 
         window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+    };
+
+    const handleGeneratePDF = () => {
+        window.print();
     };
 
     return (
@@ -291,6 +295,15 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
                     </div>
 
                     <div className="flex flex-wrap flex-1 justify-end gap-3 min-w-[200px]">
+                        <button
+                            onClick={handleGeneratePDF}
+                            title="Télécharger en PDF"
+                            className="flex-1 md:flex-none btn-flow bg-slate-800 hover:bg-slate-900 !text-white !h-12 shadow-md transition-all flex items-center justify-center gap-2 px-6"
+                        >
+                            <Download size={18} strokeWidth={2.5} />
+                            <span className="font-black uppercase tracking-[0.2em] text-[11px] hidden sm:block">PDF</span>
+                        </button>
+
                         {devis.client?.phone && (
                             <button
                                 className="flex-1 md:flex-none btn-flow bg-emerald-500 hover:bg-emerald-600 !text-white !h-12 shadow-md shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 px-6"
