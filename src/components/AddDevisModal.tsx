@@ -43,6 +43,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
     const [notes, setNotes] = useState('');
     const [poolDetails, setPoolDetails] = useState('');
     const [paymentTerms, setPaymentTerms] = useState('');
+    const [status, setStatus] = useState<'pending' | 'closed' | 'cancelled'>('pending');
     const [extractedClientName, setExtractedClientName] = useState<{ first: string, last: string } | null>(null);
     const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -73,6 +74,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
             setPoolDetails(devisData.pool_details || '');
             setPaymentTerms(devisData.payment_terms || '');
             setNotes(devisData.notes || '');
+            setStatus(devisData.status || 'pending');
 
             const { data: itemsData, error: itemsError } = await supabase
                 .from('devis_items')
@@ -367,6 +369,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
                         number,
                         title,
                         total_amount: total,
+                        status,
                         pool_details: poolDetails,
                         payment_terms: paymentTerms,
                         notes
@@ -390,7 +393,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
                         number,
                         title,
                         total_amount: total,
-                        status: 'pending',
+                        status,
                         pool_details: poolDetails,
                         payment_terms: paymentTerms,
                         notes
@@ -532,10 +535,24 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
                             </div>
                         )}
 
-                        <div className="flex flex-col gap-1 md:col-span-2">
+                        <div className="flex flex-col gap-1 md:col-span-1">
+                            <select
+                                title="Statut du Devis"
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value as any)}
+                                className={`w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-black px-4 outline-none focus:border-blue-500 transition-all ${status === 'closed' ? 'text-emerald-500' :
+                                        status === 'cancelled' ? 'text-rose-500' : 'text-blue-500'
+                                    }`}
+                            >
+                                <option value="pending" className="text-blue-500">EN COURS</option>
+                                <option value="closed" className="text-emerald-500">CLÔTURÉ</option>
+                                <option value="cancelled" className="text-rose-500">ANNULÉ</option>
+                            </select>
+                        </div>
+                        <div className="flex flex-col gap-1 md:col-span-1">
                             <input
                                 title="Titre du Projet"
-                                placeholder="Titre du projet (Ex: Rénovation Piscine à Hammamet)"
+                                placeholder="Titre du projet (Ex: Rénovation Piscine)"
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 className="w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-black px-4 text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all placeholder:text-slate-400"

@@ -56,20 +56,25 @@ const Dashboard: React.FC = () => {
                 let techCount = 0;
                 let interventionCount = 0;
                 let scheduledCount = 0;
+                let devisCount = 0;
 
                 try {
-                    const [clientsRes, techRes, intRes, schedRes, devisRes] = await Promise.all([
+                    const [clientsRes, techRes, intRes, schedRes] = await Promise.all([
                         supabase.from('clients').select('id', { count: 'exact', head: true }),
                         supabase.from('technicians').select('id', { count: 'exact', head: true }),
                         supabase.from('interventions').select('id', { count: 'exact', head: true }),
-                        supabase.from('interventions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled'),
-                        supabase.from('devis').select('id', { count: 'exact', head: true }).eq('status', 'pending')
+                        supabase.from('interventions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled')
                     ]);
                     clientCount = clientsRes.count ?? 0;
                     techCount = techRes.count ?? 0;
                     interventionCount = intRes.count ?? 0;
                     scheduledCount = schedRes.count ?? 0;
-                    setCounts(prev => ({ ...prev, devis: devisRes.count ?? 0 }));
+
+                    // Fetch devis separately to avoid affecting other stats if it fails
+                    const devisRes = await supabase.from('devis').select('id, status');
+                    if (devisRes.data) {
+                        devisCount = devisRes.data.filter(d => d.status === 'pending' || !d.status).length;
+                    }
                 } catch (e) {
                     console.warn('Counts fetch failed:', e);
                 }
@@ -103,7 +108,7 @@ const Dashboard: React.FC = () => {
                     scheduled: scheduledCount,
                     revenue: monthlyRevenue,
                     lastMonthRevenue: lastMonthRevenue,
-                    devis: counts.devis // preserve the devis count fetched above
+                    devis: devisCount
                 });
 
                 // RESTORE: Fetch 3 dernières interventions

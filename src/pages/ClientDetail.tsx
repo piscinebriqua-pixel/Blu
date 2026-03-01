@@ -904,7 +904,7 @@ const ClientDetail: React.FC = () => {
                                 <div className="space-y-4">
                                     {devis.length > 0 ? (
                                         devis.map((d) => (
-                                            <div key={d.id} className="p-5 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                                            <div key={d.id} onClick={() => setEditingDevisId(d.id)} className="p-5 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-700 flex items-center justify-between cursor-pointer hover:border-blue-500/50 hover:shadow-sm transition-all group">
                                                 <div className="flex items-center gap-4">
                                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${d.status === 'closed' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
                                                         <FileText size={20} />
@@ -921,21 +921,21 @@ const ClientDetail: React.FC = () => {
                                                     </span>
                                                     <div className="flex items-center justify-end gap-2 mt-2">
                                                         <button
-                                                            onClick={() => setEditingDevisId(d.id)}
+                                                            onClick={(e) => { e.stopPropagation(); setEditingDevisId(d.id); }}
                                                             className="text-[10px] font-black text-slate-400 hover:text-blue-500 uppercase flex items-center gap-1"
                                                             title="Modifier ce devis"
                                                         >
                                                             <Edit2 size={12} /> Modif.
                                                         </button>
                                                         <button
-                                                            onClick={() => handleDuplicateDevis(d)}
+                                                            onClick={(e) => { e.stopPropagation(); handleDuplicateDevis(d); }}
                                                             className="text-[10px] font-black text-slate-400 hover:text-emerald-500 uppercase flex items-center gap-1"
                                                             title="Dupliquer ce devis"
                                                         >
                                                             <Copy size={12} /> Copier
                                                         </button>
                                                         <button
-                                                            onClick={() => setDevisToDelete(d)}
+                                                            onClick={(e) => { e.stopPropagation(); setDevisToDelete(d); }}
                                                             className="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase flex items-center gap-1"
                                                             title="Supprimer ce devis"
                                                         >

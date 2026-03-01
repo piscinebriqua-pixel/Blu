@@ -197,7 +197,8 @@ const Chantiers: React.FC = () => {
                     filteredDevis.map((item) => (
                         <div
                             key={item.id}
-                            className="bg-white dark:bg-slate-800 rounded-[2rem] p-5 shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden"
+                            onClick={() => setEditingDevisId(item.id)}
+                            className="bg-white dark:bg-slate-800 rounded-[2rem] p-5 shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden cursor-pointer"
                         >
                             <div className={`absolute top-0 left-0 bottom-0 w-1.5 ${item.status === 'closed' ? 'bg-emerald-500' :
                                 item.status === 'cancelled' ? 'bg-rose-500' : 'bg-blue-500'
@@ -248,14 +249,14 @@ const Chantiers: React.FC = () => {
                                         {item.status === 'pending' && (
                                             <>
                                                 <button
-                                                    onClick={() => handleStatusChange(item.id, 'closed')}
+                                                    onClick={(e) => { e.stopPropagation(); handleStatusChange(item.id, 'closed'); }}
                                                     className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all flex items-center justify-center"
                                                     title="Clôturer le devis"
                                                 >
                                                     <CheckCircle2 size={16} />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleStatusChange(item.id, 'cancelled')}
+                                                    onClick={(e) => { e.stopPropagation(); handleStatusChange(item.id, 'cancelled'); }}
                                                     className="w-8 h-8 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center"
                                                     title="Annuler le devis"
                                                 >
@@ -265,7 +266,7 @@ const Chantiers: React.FC = () => {
                                         )}
                                         {item.status !== 'pending' && (
                                             <button
-                                                onClick={() => handleStatusChange(item.id, 'pending')}
+                                                onClick={(e) => { e.stopPropagation(); handleStatusChange(item.id, 'pending'); }}
                                                 className="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-600 hover:text-white transition-all flex items-center justify-center"
                                                 title="Remettre en cours"
                                             >
@@ -273,21 +274,21 @@ const Chantiers: React.FC = () => {
                                             </button>
                                         )}
                                         <button
-                                            onClick={() => setEditingDevisId(item.id)}
+                                            onClick={(e) => { e.stopPropagation(); setEditingDevisId(item.id); }}
                                             className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center"
                                             title="Modifier le devis"
                                         >
                                             <Edit2 size={16} />
                                         </button>
                                         <button
-                                            onClick={() => setDevisToDelete(item)}
+                                            onClick={(e) => { e.stopPropagation(); setDevisToDelete(item); }}
                                             className="w-8 h-8 rounded-full bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white transition-all flex items-center justify-center"
                                             title="Supprimer le devis"
                                         >
                                             <Trash2 size={16} />
                                         </button>
                                         <button
-                                            onClick={() => navigate(`/client/${item.client_id}`)}
+                                            onClick={(e) => { e.stopPropagation(); navigate(`/client/${item.client_id}`); }}
                                             className="w-8 h-8 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center"
                                             title="Voir Client"
                                         >
