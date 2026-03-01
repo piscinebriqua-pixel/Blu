@@ -18,6 +18,7 @@ import {
 import { toast } from 'react-hot-toast';
 import PageLayout from '../components/PageLayout';
 import AddDevisModal from '../components/AddDevisModal';
+import DevisDetailsModal from '../components/DevisDetailsModal';
 
 interface Devis {
     id: string;
@@ -44,6 +45,7 @@ const Chantiers: React.FC = () => {
     const [editingDevisId, setEditingDevisId] = useState<string | undefined>(undefined);
     const [devisToDelete, setDevisToDelete] = useState<Devis | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [selectedDevisForView, setSelectedDevisForView] = useState<Devis | null>(null);
 
     useEffect(() => {
         fetchDevis();
@@ -197,7 +199,7 @@ const Chantiers: React.FC = () => {
                     filteredDevis.map((item) => (
                         <div
                             key={item.id}
-                            onClick={() => setEditingDevisId(item.id)}
+                            onClick={() => setSelectedDevisForView(item)}
                             className="bg-white dark:bg-slate-800 rounded-[2rem] p-5 shadow-sm border border-slate-100 dark:border-slate-700/50 hover:shadow-xl hover:border-primary/20 transition-all group relative overflow-hidden cursor-pointer"
                         >
                             <div className={`absolute top-0 left-0 bottom-0 w-1.5 ${item.status === 'closed' ? 'bg-emerald-500' :
@@ -319,6 +321,22 @@ const Chantiers: React.FC = () => {
                         setEditingDevisId(undefined);
                     }}
                     onSuccess={fetchDevis}
+                />
+            )}
+
+            {selectedDevisForView && (
+                <DevisDetailsModal
+                    devis={selectedDevisForView}
+                    onClose={() => setSelectedDevisForView(null)}
+                    onEdit={(id) => {
+                        setSelectedDevisForView(null);
+                        setEditingDevisId(id);
+                    }}
+                    onDelete={(devisItem) => {
+                        setSelectedDevisForView(null);
+                        setDevisToDelete(devisItem);
+                    }}
+                    onStatusChange={handleStatusChange}
                 />
             )}
 

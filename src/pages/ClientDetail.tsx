@@ -29,7 +29,8 @@ import InterventionDetailsModal from '../components/InterventionDetailsModal';
 import ModalLayout from '../components/ModalLayout';
 import Button from '../components/ui/Button';
 import ConfirmModal from '../components/ConfirmModal';
-import AddDevisModal from '../components/AddDevisModal'; // Added AddDevisModal import
+import AddDevisModal from '../components/AddDevisModal';
+import DevisDetailsModal from '../components/DevisDetailsModal';
 
 interface Pool {
     id: string;
@@ -105,7 +106,6 @@ const ClientDetail: React.FC = () => {
     const [isEditPoolModalOpen, setIsEditPoolModalOpen] = useState(false);
     const [selectedPoolId, setSelectedPoolId] = useState<string | null>(null);
     const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
-    const [selectedInterventionForView, setSelectedInterventionForView] = useState<any | null>(null);
     const [paymentToEdit, setPaymentToEdit] = useState<any | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
     const [activeCategory, setActiveCategory] = useState<'pools' | 'interventions' | 'payments' | 'balance' | 'gps' | 'devis' | null>(null); // Updated activeCategory type
@@ -121,6 +121,8 @@ const ClientDetail: React.FC = () => {
     const [interventionToDelete, setInterventionToDelete] = useState<string | null>(null);
     const [devisToDelete, setDevisToDelete] = useState<Devis | null>(null);
     const [isDeletingDevis, setIsDeletingDevis] = useState(false);
+    const [selectedInterventionForView, setSelectedInterventionForView] = useState<any>(null);
+    const [selectedDevisForView, setSelectedDevisForView] = useState<any>(null);
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
         const sTotal = inter.services?.reduce((sAcc: number, s: any) => sAcc + (s.price_at_time || 0), 0) || 0;
@@ -313,6 +315,27 @@ const ClientDetail: React.FC = () => {
             navigate('/clients');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleStatusChange = async (devisId: string, status: 'pending' | 'closed' | 'cancelled') => {
+        try {
+            const { error } = await supabase
+                .from('devis')
+                .update({ status })
+                .eq('id', devisId);
+
+            if (error) throw error;
+
+            if (selectedDevisForView?.id === devisId) {
+                setSelectedDevisForView({ ...selectedDevisForView, status });
+            }
+
+            fetchClientData();
+            toast.success('Statut mis à jour');
+        } catch (error) {
+            console.error('Erreur status:', error);
+            toast.error('Erreur lors de la mise à jour du statut');
         }
     };
 
@@ -904,7 +927,7 @@ const ClientDetail: React.FC = () => {
                                 <div className="space-y-4">
                                     {devis.length > 0 ? (
                                         devis.map((d) => (
-                                            <div key={d.id} onClick={() => setEditingDevisId(d.id)} className="p-5 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-700 flex items-center justify-between cursor-pointer hover:border-blue-500/50 hover:shadow-sm transition-all group">
+                                            <div key={d.id} onClick={() => setSelectedDevisForView(d)} className="p-5 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-700 flex items-center justify-between cursor-pointer hover:border-blue-500/50 hover:shadow-sm transition-all group">
                                                 <div className="flex items-center gap-4">
                                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${d.status === 'closed' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
                                                         <FileText size={20} />
@@ -1063,6 +1086,23 @@ const ClientDetail: React.FC = () => {
                             setInterventionToDelete(inter.id);
                             setSelectedInterventionForView(null);
                         }}
+                    />
+                )
+            }
+            {
+                selectedDevisForView && (
+                    <DevisDetailsModal
+                        devis={{ ...selectedDevisForView, client }} // Passing client details to devis
+                        onClose={() => setSelectedDevisForView(null)}
+                        onEdit={(id) => {
+                            setSelectedDevisForView(null);
+                            setEditingDevisId(id);
+                        }}
+                        onDelete={(d) => {
+                            setSelectedDevisForView(null);
+                            setDevisToDelete(d);
+                        }}
+                        onStatusChange={handleStatusChange}
                     />
                 )
             }
