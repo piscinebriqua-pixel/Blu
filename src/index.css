@@ -567,3 +567,71 @@ a,
     /* Adjust for mobile if needed */
   }
 }
+
+/* --- PRINT STYLES --- */
+@media print {
+
+  /* Enlever les limitations de hauteur et d'overflow pour permettre l'impression de toutes les pages */
+  html,
+  body {
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Si une modale est ouverte, cacher le reste de l'application */
+  body:has(.modal-overlay) #root {
+    display: none !important;
+  }
+
+  .modal-overlay {
+    position: relative !important;
+    background: transparent !important;
+    padding: 0 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    align-items: flex-start !important;
+  }
+
+  .modal-container {
+    box-shadow: none !important;
+    border: none !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    height: auto !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+  }
+
+  .modal-body {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    padding: 0 !important;
+  }
+
+  .modal-header {
+    border-bottom: 2px solid black !important;
+    padding: 10px 0 !important;
+  }
+
+  /* Cacher les boutons et actions qui ne doivent pas s'imprimer */
+  .modal-header button,
+  .modal-footer,
+  button[title],
+  .btn-flow,
+  .fab-adaptive {
+    display: none !important;
+  }
+
+  /* Forcer les couleurs des headers d'articles */
+  .bg-blue-500 {
+    background-color: #3b82f6 !important;
+    color: white !important;
+  }
+}
