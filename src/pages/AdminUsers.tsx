@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
-import { UserPlus, X } from 'lucide-react';
+import { UserPlus, X, FileText, Wrench, Package, Settings } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
 import PageLayout from '../components/PageLayout';
 
@@ -29,6 +30,7 @@ interface Client {
 }
 
 const AdminUsers: React.FC = () => {
+    const navigate = useNavigate();
     const [profiles, setProfiles] = useState<Profile[]>([]);
     const [loading, setLoading] = useState(true);
     const [technicians, setTechnicians] = useState<Technician[]>([]);
@@ -40,6 +42,7 @@ const AdminUsers: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
     const [confirmAction, setConfirmAction] = useState<{ type: 'revoke' | 'delete', profileId: string } | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [devisCount, setDevisCount] = useState(0);
 
     const fetchData = async () => {
         try {
@@ -59,6 +62,9 @@ const AdminUsers: React.FC = () => {
 
             const { data: cli } = await supabase.from('clients').select('*').order('last_name');
             if (cli) setClients(cli);
+
+            const { count: dCount } = await supabase.from('devis').select('*', { count: 'exact', head: true });
+            setDevisCount(dCount || 0);
 
         } catch (error: any) {
             console.error('Erreur fetchData:', error);
@@ -226,6 +232,74 @@ const AdminUsers: React.FC = () => {
                     ) : (
                         <div className="py-20 text-center opacity-40">Aucun utilisateur trouvé</div>
                     )}
+                </div>
+
+                {/* Administration Bottom Section */}
+                <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Devis Counter Section */}
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600">
+                                <FileText size={24} />
+                            </div>
+                            <div>
+                                <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-tight">Compteur de Devis</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Configuration & Statistiques</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between p-6 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-700">
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Total des Devis émis</span>
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-4xl font-black text-primary">{devisCount}</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">Documents</span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => navigate('/chantiers')}
+                            className="w-full mt-4 py-4 bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-300 rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-200 transition-all"
+                        >
+                            <Settings size={14} /> Gérer la base chantiers
+                        </button>
+                    </div>
+
+                    {/* Quick Add Catalog Section */}
+                    <div className="bg-white dark:bg-slate-800 p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-700/50 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600">
+                                <Package size={24} />
+                            </div>
+                            <div>
+                                <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-tight">Catalogue Quick-Add</h3>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Prestations & Matériels</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                onClick={() => navigate('/settings/services')}
+                                className="group flex flex-col items-center gap-3 p-6 bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/20 rounded-3xl hover:bg-blue-100 transition-all"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-white dark:bg-blue-900/50 flex items-center justify-center text-blue-600 shadow-sm">
+                                    <Wrench size={18} />
+                                </div>
+                                <span className="text-[10px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-widest">Ajouter Service</span>
+                            </button>
+
+                            <button
+                                onClick={() => navigate('/settings/services')}
+                                className="group flex flex-col items-center gap-3 p-6 bg-emerald-50/50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/20 rounded-3xl hover:bg-emerald-100 transition-all"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-white dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600 shadow-sm">
+                                    <Package size={18} />
+                                </div>
+                                <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Ajouter Produit</span>
+                            </button>
+                        </div>
+
+                        <p className="mt-6 text-[10px] text-center font-bold text-slate-400 uppercase tracking-widest italic opacity-60">L'ajout direct ouvrira le gestionnaire de catalogue</p>
+                    </div>
                 </div>
             </main>
 

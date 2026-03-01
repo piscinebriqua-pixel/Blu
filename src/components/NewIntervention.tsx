@@ -12,6 +12,7 @@ import {
   Square,
   Calculator,
   Wallet,
+  FileText,
 } from "lucide-react";
 import ModalLayout from "./ModalLayout";
 import TechnicianSelectionModal from "./TechnicianSelectionModal";
@@ -47,6 +48,25 @@ interface NewInterventionProps {
   type?: "direct" | "scheduled";
   onClose: () => void;
   onSuccess: () => void;
+}
+
+interface Devis {
+  id: string;
+  number: string;
+  title: string;
+  total_amount: number;
+  status: 'pending' | 'closed';
+}
+
+interface DevisItemConsumption {
+  id: string;
+  designation: string;
+  unit_price: number;
+  total_quantity: number;
+  consumed: number;
+  to_consume: number;
+  is_header: boolean;
+  unit: string;
 }
 
 const NewIntervention: React.FC<NewInterventionProps> = ({
@@ -92,6 +112,8 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
     task_traitement: false,
     task_verif_vanne: false,
     task_temps_fonctionnement: false,
+    devis_id: "",
+    is_final_devis_billing: false,
   });
 
   const [interventionType] = useState<"direct" | "scheduled">(type);
@@ -116,6 +138,8 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [usedProducts, setUsedProducts] = useState<{ [key: string]: { quantity: number; unitPrice: number } }>({});
   const [isPoolModalOpen, setIsPoolModalOpen] = useState(false);
+  const [availableDevis, setAvailableDevis] = useState<Devis[]>([]);
+  const [devisConsumption, setDevisConsumption] = useState<DevisItemConsumption[]>([]);
 
   // Focus amount input when payment is enabled
   const [prevRecordPayment, setPrevRecordPayment] = useState(false);
@@ -205,6 +229,8 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           task_traitement: data.task_traitement || false,
           task_verif_vanne: data.task_verif_vanne || false,
           task_temps_fonctionnement: data.task_temps_fonctionnement || false,
+          devis_id: data.devis_id || "",
+          is_final_devis_billing: false,
         }));
 
         const srvObj: Record<string, number> = {};
@@ -277,15 +303,87 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
   }, [selectedClientId, selectedPoolId]);
 
   useEffect(() => {
-    if (selectedClientId) fetchPools();
+    if (selectedClientId) {
+      fetchPools();
+      fetchAvailableDevis();
+    }
   }, [selectedClientId, fetchPools]);
 
+  const fetchAvailableDevis = async () => {
+    if (!selectedClientId) return;
+    const { data } = await supabase
+      .from('devis')
+      .select('*')
+      .eq('client_id', selectedClientId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+    if (data) setAvailableDevis(data);
+  };
+
+  useEffect(() => {
+    const fetchDevisConsumptionData = async () => {
+      if (!formData.devis_id) {
+        setDevisConsumption([]);
+        return;
+      }
+      try {
+        const { data: items } = await supabase.from('devis_items').select('*').eq('devis_id', formData.devis_id).order('id');
+        if (!items || items.length === 0) {
+          setDevisConsumption([]);
+          return;
+        }
+
+        const itemIds = items.map(i => i.id);
+        const { data: consumptions } = await supabase
+          .from('intervention_devis_items')
+          .select('devis_item_id, quantity_consumed, intervention_id')
+          .in('devis_item_id', itemIds);
+
+        const merged = items.map(item => {
+          const priorConsumptions = consumptions?.filter(c => c.devis_item_id === item.id && c.intervention_id !== interventionId) || [];
+          const totalPriorConsumed = priorConsumptions.reduce((acc, current) => acc + Number(current.quantity_consumed), 0);
+
+          const currentConsumption = consumptions?.find(c => c.devis_item_id === item.id && c.intervention_id === interventionId);
+          const currentlyConsumed = currentConsumption ? Number(currentConsumption.quantity_consumed) : 0;
+
+          return {
+            id: item.id,
+            designation: item.designation,
+            unit_price: Number(item.unit_price) || 0,
+            total_quantity: Number(item.quantity) || 0,
+            consumed: totalPriorConsumed,
+            to_consume: currentlyConsumed,
+            is_header: item.is_header,
+            unit: item.unit || ''
+          };
+        });
+        setDevisConsumption(merged);
+      } catch (err) {
+        console.error("Error fetching devis consumption", err);
+      }
+    };
+    fetchDevisConsumptionData();
+  }, [formData.devis_id, interventionId]);
+
   const calculateTotal = () => {
+    if (formData.devis_id && !formData.is_final_devis_billing) return 0; // The prompt requires me to update calculateTotal but wait! If is_final_devis_billing is true, we invoice the whole thing. If false, we invoice the parts!
+
+    // Changing the logic:
+    if (formData.devis_id && formData.is_final_devis_billing) {
+      const selectedDevis = availableDevis.find(d => d.id === formData.devis_id);
+      return selectedDevis?.total_amount || 0;
+    }
+
+    let devisTotal = 0;
+    if (formData.devis_id && !formData.is_final_devis_billing) {
+      devisTotal = devisConsumption.reduce((acc, item) => acc + (item.to_consume * item.unit_price), 0);
+    }
+
     const servicesTotal = Object.values(selectedServices).reduce((acc, price) => acc + price, 0);
     const productsTotal = Object.values(usedProducts).reduce((acc, item) => {
       return acc + (item.unitPrice || 0) * item.quantity;
     }, 0);
-    return servicesTotal + productsTotal;
+    return servicesTotal + productsTotal + devisTotal;
   };
 
   const handleSubmit = async () => {
@@ -309,7 +407,14 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
     const productsTotal = Object.values(snapshotProducts).reduce((a, item) => {
       return a + (item.unitPrice || 0) * item.quantity;
     }, 0);
-    const localTotalAmount = servicesTotal + productsTotal;
+    let devisTotal = 0;
+    if (snapshotFormData.devis_id && !snapshotFormData.is_final_devis_billing) {
+      devisTotal = devisConsumption.reduce((acc, item) => acc + (item.to_consume * item.unit_price), 0);
+    }
+    const localTotalAmount = servicesTotal + productsTotal + devisTotal;
+
+    // We will save devisConsumption state to a snapshot so we can insert them later
+    const snapshotDevisConsumption = devisConsumption.map(dc => ({ ...dc }));
 
     try {
       let tempId = "";
@@ -335,6 +440,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           task_traitement: snapshotFormData.task_traitement,
           task_verif_vanne: snapshotFormData.task_verif_vanne,
           task_temps_fonctionnement: snapshotFormData.task_temps_fonctionnement,
+          devis_id: snapshotFormData.devis_id || null,
         }).eq("id", interventionId);
         if (error) throw error;
       } else {
@@ -360,6 +466,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           task_traitement: snapshotFormData.task_traitement,
           task_verif_vanne: snapshotFormData.task_verif_vanne,
           task_temps_fonctionnement: snapshotFormData.task_temps_fonctionnement,
+          devis_id: snapshotFormData.devis_id || null,
         }]).select().single();
         if (error) throw error;
         tempId = data.id;
@@ -371,7 +478,8 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       if (interventionId) {
         await Promise.all([
           supabase.from("intervention_services").delete().eq("intervention_id", interventionId),
-          supabase.from("intervention_products").delete().eq("intervention_id", interventionId)
+          supabase.from("intervention_products").delete().eq("intervention_id", interventionId),
+          supabase.from("intervention_devis_items").delete().eq("intervention_id", interventionId)
         ]);
       }
 
@@ -398,6 +506,21 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           })
         );
         if (prodError) throw prodError;
+      }
+
+      if (snapshotFormData.devis_id && !snapshotFormData.is_final_devis_billing && snapshotDevisConsumption.length > 0) {
+        const itemsToInsert = snapshotDevisConsumption
+          .filter(item => item.to_consume > 0 && !item.is_header)
+          .map(item => ({
+            intervention_id: activeInterId,
+            devis_item_id: item.id,
+            quantity_consumed: item.to_consume
+          }));
+
+        if (itemsToInsert.length > 0) {
+          const { error: devisItemsError } = await supabase.from("intervention_devis_items").insert(itemsToInsert);
+          if (devisItemsError) throw devisItemsError;
+        }
       }
 
       if (interventionType === "direct") {
@@ -434,6 +557,14 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         const newBalance = currentBalance + balanceAdjustment;
 
         await supabase.from("clients").update({ balance: newBalance }).eq("id", snapshotClientId);
+
+        // Clôture du devis si facturation finale
+        if (snapshotFormData.devis_id && snapshotFormData.is_final_devis_billing) {
+          await supabase
+            .from('devis')
+            .update({ status: 'closed', closed_at: new Date().toISOString() })
+            .eq('id', snapshotFormData.devis_id);
+        }
       }
 
       if (!mountedRef.current) return;
@@ -577,6 +708,52 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         {/* SECTION 2: ANALYSE EAU (SI DIRECT) */}
         {interventionType === "direct" && (
           <div className="flex flex-col gap-6">
+            {/* DEVIS SELECTION */}
+            {availableDevis.length > 0 && (
+              <div className="mt-4 p-5 bg-blue-50/50 dark:bg-blue-900/10 border-2 border-dashed border-blue-500/20 rounded-[2rem] animate-in zoom-in duration-300">
+                <div className="flex items-center gap-3 mb-4">
+                  <FileText size={20} className="text-blue-500" />
+                  <h4 className="text-[11px] font-black text-blue-900 dark:text-blue-100 uppercase tracking-widest">Lier à un Chantier / Devis</h4>
+                </div>
+
+                <div className="relative mb-4">
+                  <select
+                    title="Sélectionner un devis (Chantier)"
+                    className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-800 rounded-2xl border-2 border-slate-100 dark:border-slate-700 font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all appearance-none"
+                    value={formData.devis_id}
+                    onChange={(e) => setFormData({ ...formData, devis_id: e.target.value })}
+                  >
+                    <option value="">-- Visite Classique (Hors Chantier) --</option>
+                    {availableDevis.map(d => (
+                      <option key={d.id} value={d.id}>{d.number} - {d.title}</option>
+                    ))}
+                  </select>
+                  {formData.devis_id && (
+                    <button
+                      title="Effacer la sélection"
+                      onClick={() => setFormData({ ...formData, devis_id: '', is_final_devis_billing: false })}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 hover:text-red-500 transition-colors"
+                    >
+                      <X size={16} strokeWidth={3} />
+                    </button>
+                  )}
+                </div>
+
+                {formData.devis_id && (
+                  <div className="flex items-center gap-3 p-1">
+                    <button
+                      title="Activer la facturation finale du devis"
+                      onClick={() => setFormData({ ...formData, is_final_devis_billing: !formData.is_final_devis_billing })}
+                      className={`w-10 h-6 rounded-full transition-all relative ${formData.is_final_devis_billing ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                    >
+                      <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.is_final_devis_billing ? 'left-5' : 'left-1'}`} />
+                    </button>
+                    <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase">Facturation Finale du Chantier</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex items-center gap-3">
               <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-slate-700" />
               <div className="flex items-center gap-2 text-blue-500">
@@ -685,14 +862,130 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-slate-700" />
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-2 min-h-[40px] p-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
-            {Object.entries(selectedServices).map(([sId, price]) => (
-              <div key={sId} className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-full animate-in zoom-in duration-200">
-                <span className="text-[13px] font-black text-blue-700 dark:text-blue-300 uppercase truncate max-w-[150px]">{dbServices.find(s => s.id === sId)?.name}</span>
-                <span className="text-[11px] font-bold text-blue-500">{price} DT</span>
-                <button onClick={() => { const next = { ...selectedServices }; delete next[sId]; setSelectedServices(next); }} className="text-blue-400 hover:text-red-500" title="Supprimer ce service"><X size={14} strokeWidth={3} /></button>
+          {/* DEVIS CONSUMPTION SECTION */}
+          {formData.devis_id && !formData.is_final_devis_billing && (
+            <div className={`p-6 bg-slate-50 dark:bg-slate-900/40 rounded-[2.5rem] border border-slate-100 dark:border-slate-800`}>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                  <FileText size={20} />
+                </div>
+                <h4 className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-widest">Articles du Devis Sélectionné</h4>
               </div>
-            ))}
+
+              <div className="space-y-3">
+                {devisConsumption.length === 0 ? (
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest text-center py-4">Recherche des articles...</p>
+                ) : (
+                  devisConsumption.map((item, index) => {
+                    if (item.is_header) {
+                      return (
+                        <div key={item.id} className="pt-4 pb-2">
+                          <h5 className="text-[12px] font-black text-blue-500 uppercase tracking-[0.2em]">{item.designation}</h5>
+                        </div>
+                      );
+                    }
+
+                    const remaining = Math.max(0, item.total_quantity - item.consumed);
+                    const isFullyConsumed = remaining <= 0;
+
+                    return (
+                      <div key={item.id} className={`flex items-center gap-4 p-3 rounded-2xl border transition-all ${isFullyConsumed ? 'bg-slate-100 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/50 opacity-60' : item.to_consume > 0 ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-500/30' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'}`}>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[13px] font-black text-slate-800 dark:text-white truncate">{item.designation}</p>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                            PU: <span className="text-blue-500">{item.unit_price} DT</span> <span className="mx-2 opacity-50">|</span> <span className={`${remaining > 0 ? 'text-emerald-500' : 'text-slate-400'}`}>Reste: {remaining} {item.unit}</span>
+                          </p>
+                        </div>
+
+                        {!isFullyConsumed ? (
+                          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newConsumptions = [...devisConsumption];
+                                newConsumptions[index].to_consume = Math.max(0, item.to_consume - 1);
+                                setDevisConsumption(newConsumptions);
+                              }}
+                              className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 text-slate-400 hover:text-red-500 shadow-sm flex items-center justify-center font-black active:scale-95 transition-all"
+                            >
+                              -
+                            </button>
+                            <span className="w-6 text-center text-xs font-black text-slate-800 dark:text-white">{item.to_consume}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newConsumptions = [...devisConsumption];
+                                newConsumptions[index].to_consume = Math.min(remaining, item.to_consume + 1);
+                                setDevisConsumption(newConsumptions);
+                              }}
+                              className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 text-slate-400 hover:text-blue-500 shadow-sm flex items-center justify-center font-black active:scale-95 transition-all"
+                            >
+                              +
+                            </button>
+                            {Number(remaining) > 0 && Number(remaining) !== Number(item.to_consume) && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const newConsumptions = [...devisConsumption];
+                                  newConsumptions[index].to_consume = remaining;
+                                  setDevisConsumption(newConsumptions);
+                                }}
+                                className="px-2 ml-1 h-8 rounded-lg bg-blue-500/10 text-blue-500 text-[9px] flex items-center justify-center font-black active:scale-95 transition-all hover:bg-blue-500 hover:text-white uppercase tracking-widest shadow-sm border border-blue-500/20 hover:border-blue-500"
+                                title="Consommer tout le reste"
+                              >
+                                Max
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-xl border border-emerald-500/20">
+                            <span className="font-black text-[10px] uppercase tracking-widest">Achevé</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* SERVICES SECTION */}
+          <div className={`p-6 bg-slate-50 dark:bg-slate-900/40 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 relative transition-all ${formData.devis_id && !formData.is_final_devis_billing ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary-glow flex items-center justify-center text-primary">
+                  <Waves size={20} />
+                </div>
+                <h4 className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-widest">Services Effectués (Hors-Devis)</h4>
+              </div>
+              {!formData.devis_id && (
+                <button
+                  title="Ajouter un service"
+                  onClick={() => setServiceModalOpen(true)} className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+                  <Plus size={18} />
+                </button>
+              )}
+            </div>
+
+            {formData.devis_id && !formData.is_final_devis_billing ? (
+              <div className="py-4 text-center">
+                <p className="text-[11px] font-black text-blue-500 uppercase tracking-widest">🔒 Sélectionnez les articles du devis ci-dessus</p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2 mb-2 min-h-[40px] p-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+                {Object.entries(selectedServices).map(([sId, price]) => (
+                  <div key={sId} className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-full animate-in zoom-in duration-200">
+                    <span className="text-[13px] font-black text-blue-700 dark:text-blue-300 uppercase truncate max-w-[150px]">{dbServices.find(s => s.id === sId)?.name}</span>
+                    <span className="text-[11px] font-bold text-blue-500">{price} DT</span>
+                    <button onClick={() => { const next = { ...selectedServices }; delete next[sId]; setSelectedServices(next); }} className="text-blue-400 hover:text-red-500" title="Supprimer ce service"><X size={14} strokeWidth={3} /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-2 min-h-[40px] p-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
             {Object.entries(usedProducts).map(([pId, item]) => (
               <div key={pId} className="flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-800 rounded-full animate-in zoom-in duration-200">
                 <span className="text-[13px] font-black text-violet-700 dark:text-violet-300 uppercase truncate max-w-[150px]">{dbProducts.find(p => p.id === pId)?.name}</span>
@@ -841,10 +1134,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                               type="number"
                               title="Montant encaissé"
                               placeholder="0"
-                              className="bg-transparent border-none outline-none font-black tracking-tighter text-violet-950 dark:text-white p-0 m-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none massive-amount-input"
-                              style={{
-                                width: '150px'
-                              }}
+                              className="bg-transparent border-none outline-none font-black tracking-tighter text-violet-950 dark:text-white p-0 m-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none massive-amount-input w-[150px]"
                               value={formData.payment_amount}
                               onChange={(e) => setFormData({ ...formData, payment_amount: e.target.value })}
                               onFocus={(e) => e.target.select()}

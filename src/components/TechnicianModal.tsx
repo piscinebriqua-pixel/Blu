@@ -106,6 +106,20 @@ const TechnicianModal: React.FC<TechnicianModalProps> = ({
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                     placeholder="adresse@email.com"
                 />
+                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <div className="flex flex-col">
+                        <span className="text-[13px] font-black text-slate-800 dark:text-white uppercase">Compte Actif</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{formData.active ? 'Le technicien pourra recevoir des interventions' : 'Le technicien sera masqué des plannings'}</span>
+                    </div>
+                    <button
+                        type="button"
+                        title="Activer ou désactiver le compte"
+                        onClick={() => setFormData({ ...formData, active: !formData.active })}
+                        className={`w-14 h-8 flex items-center rounded-full p-1 transition-colors duration-300 ${formData.active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}
+                    >
+                        <div className={`bg-white w-6 h-6 rounded-full shadow-md transform transition-transform duration-300 ${formData.active ? 'translate-x-6' : 'translate-x-0'}`} />
+                    </button>
+                </div>
             </form>
         </ModalLayout>
     );

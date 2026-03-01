@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Search as SearchIcon, Plus, ChevronRight } from 'lucide-react';
+import { Search as SearchIcon, Plus, ChevronRight, Edit3 } from 'lucide-react';
 import TechnicianModal from '../components/TechnicianModal';
 import PageLayout from '../components/PageLayout';
+import { toast } from 'react-hot-toast';
 
 interface Technician {
     id: string;
@@ -20,7 +21,11 @@ const Technicians: React.FC = () => {
     const [technicians, setTechnicians] = useState<Technician[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeTab, setActiveTab] = useState<'active' | 'inactive'>('active');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [selectedTechnician, setSelectedTechnician] = useState<Technician | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
         fetchTechnicians();
@@ -43,23 +48,42 @@ const Technicians: React.FC = () => {
         }
     };
 
-    const filteredTechnicians = technicians.filter(t =>
+    const searchFiltered = technicians.filter(t =>
         t.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (t.phone && t.phone.includes(searchTerm))
     );
 
+    const filteredTechnicians = searchFiltered.filter(t => activeTab === 'active' ? t.active : !t.active);
+
     const activeCount = technicians.filter(t => t.active).length;
+    const inactiveCount = technicians.length - activeCount;
 
     const toolbar = (
-        <div className="relative">
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input
-                type="text"
-                placeholder="Rechercher un technicien..."
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-4 w-full">
+            <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl w-full md:w-auto">
+                <button
+                    onClick={() => setActiveTab('active')}
+                    className={`flex-1 md:flex-none px-6 py-2 rounded-[10px] text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'active' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                >
+                    Actifs ({activeCount})
+                </button>
+                <button
+                    onClick={() => setActiveTab('inactive')}
+                    className={`flex-1 md:flex-none px-6 py-2 rounded-[10px] text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'inactive' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                >
+                    Inactifs ({inactiveCount})
+                </button>
+            </div>
+            <div className="relative flex-1 w-full max-w-[300px]">
+                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                    type="text"
+                    placeholder="Rechercher..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-bold"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
         </div>
     );
 
@@ -94,7 +118,22 @@ const Technicians: React.FC = () => {
                                             <p className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5 opacity-80">{tech.email}</p>
                                         </div>
                                     </div>
-                                    <ChevronRight size={16} className="text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedTechnician(tech);
+                                                setIsEditModalOpen(true);
+                                            }}
+                                            className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-400 hover:text-blue-500 hover:bg-white dark:hover:bg-slate-700 hover:border-blue-100 flex items-center justify-center transition-all z-10"
+                                            title="Modifier"
+                                        >
+                                            <Edit3 size={16} />
+                                        </button>
+                                        <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-400 flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
+                                            <ChevronRight size={16} className="" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         ))
@@ -116,7 +155,7 @@ const Technicians: React.FC = () => {
 
             <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="fab-adaptive w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-600/30 flex items-center justify-center hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all"
+                className="fab-adaptive w-14 h-14 bg-primary text-white rounded-full shadow-xl shadow-primary/30 flex items-center justify-center hover:bg-primary-dark hover:scale-110 active:scale-95 transition-all"
                 aria-label="Ajouter un technicien"
             >
                 <Plus size={28} />
@@ -135,7 +174,39 @@ const Technicians: React.FC = () => {
                         }
                     }}
                     technician={null}
-                    loading={false}
+                    loading={actionLoading}
+                />
+            )}
+
+            {isEditModalOpen && selectedTechnician && (
+                <TechnicianModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => {
+                        setIsEditModalOpen(false);
+                        setSelectedTechnician(null);
+                    }}
+                    onSubmit={async (e, data) => {
+                        e.preventDefault();
+                        setActionLoading(true);
+                        try {
+                            const { error } = await supabase
+                                .from('technicians')
+                                .update({ full_name: data.full_name, phone: data.phone, email: data.email, active: data.active })
+                                .eq('id', selectedTechnician.id);
+
+                            if (error) throw error;
+                            toast.success("Technicien mis à jour");
+                            setIsEditModalOpen(false);
+                            setSelectedTechnician(null);
+                            fetchTechnicians();
+                        } catch (err: any) {
+                            toast.error(err.message || 'Erreur lors de la modification');
+                        } finally {
+                            setActionLoading(false);
+                        }
+                    }}
+                    technician={selectedTechnician}
+                    loading={actionLoading}
                 />
             )}
         </PageLayout>

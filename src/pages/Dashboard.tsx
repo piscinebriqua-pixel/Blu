@@ -10,7 +10,8 @@ import {
     Activity,
     Shield,
     Wallet,
-    Settings
+    Settings,
+    FileText
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import BccpLogo from '../components/BccpLogo';
@@ -19,7 +20,7 @@ import PageLayout from '../components/PageLayout';
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [counts, setCounts] = useState({ clients: 0, technicians: 0, interventions: 0, scheduled: 0, revenue: 0, lastMonthRevenue: 0 });
+    const [counts, setCounts] = useState({ clients: 0, technicians: 0, interventions: 0, scheduled: 0, revenue: 0, lastMonthRevenue: 0, devis: 0 });
     const [profile, setProfile] = useState<{ name: string, role: string } | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [recentInterventions, setRecentInterventions] = useState<any[]>([]);
@@ -57,16 +58,18 @@ const Dashboard: React.FC = () => {
                 let scheduledCount = 0;
 
                 try {
-                    const [clientsRes, techRes, intRes, schedRes] = await Promise.all([
+                    const [clientsRes, techRes, intRes, schedRes, devisRes] = await Promise.all([
                         supabase.from('clients').select('id', { count: 'exact', head: true }),
                         supabase.from('technicians').select('id', { count: 'exact', head: true }),
                         supabase.from('interventions').select('id', { count: 'exact', head: true }),
-                        supabase.from('interventions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled')
+                        supabase.from('interventions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled'),
+                        supabase.from('devis').select('id', { count: 'exact', head: true }).eq('status', 'pending')
                     ]);
                     clientCount = clientsRes.count ?? 0;
                     techCount = techRes.count ?? 0;
                     interventionCount = intRes.count ?? 0;
                     scheduledCount = schedRes.count ?? 0;
+                    setCounts(prev => ({ ...prev, devis: devisRes.count ?? 0 }));
                 } catch (e) {
                     console.warn('Counts fetch failed:', e);
                 }
@@ -99,7 +102,8 @@ const Dashboard: React.FC = () => {
                     interventions: interventionCount,
                     scheduled: scheduledCount,
                     revenue: monthlyRevenue,
-                    lastMonthRevenue: lastMonthRevenue
+                    lastMonthRevenue: lastMonthRevenue,
+                    devis: counts.devis // preserve the devis count fetched above
                 });
 
                 // RESTORE: Fetch 3 dernières interventions
@@ -268,6 +272,16 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
+                <div onClick={() => navigate('/chantiers')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-800/20">
+                    <div className="icon-wrapper bg-white dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 shadow-sm border border-blue-100/50">
+                        <FileText size={22} />
+                    </div>
+                    <div className="content-wrapper">
+                        <span>Chantiers</span>
+                        <p className="text-blue-600 dark:text-blue-400">{counts.devis} <span className="text-[10px] font-normal text-slate-500">en cours</span></p>
+                    </div>
+                </div>
+
                 <div onClick={() => navigate('/technician-portal')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-orange-50/30 border-orange-100/50 dark:bg-orange-900/10 dark:border-orange-800/20">
                     <div className="icon-wrapper bg-white dark:bg-orange-900/50 text-orange-600 dark:text-orange-400">
                         <Activity size={22} />
@@ -320,8 +334,7 @@ const Dashboard: React.FC = () => {
                                 <div
                                     key={inter.id}
                                     onClick={() => navigate('/interventions')}
-                                    className="group bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-4 rounded-[2rem] shadow-sm hover:shadow-xl hover:border-primary/20 transition-all cursor-pointer flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards"
-                                    style={{ animationDelay: `${idx * 100}ms` }}
+                                    className={`group bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-4 rounded-[2rem] shadow-sm hover:shadow-xl hover:border-primary/20 transition-all cursor-pointer flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards stagger-${(idx % 10) + 1}`}
                                 >
                                     <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center relative shrink-0">
                                         <Activity size={20} className="text-slate-400 group-hover:text-primary transition-colors" />

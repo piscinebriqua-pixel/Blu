@@ -12,14 +12,16 @@ import { TUNISIAN_CITIES } from '../lib/constants';
 interface AddClientModalProps {
     onClose: () => void;
     onSuccess: () => void;
+    initialFirstName?: string;
+    initialLastName?: string;
 }
 
-const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess }) => {
+const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess, initialFirstName = '', initialLastName = '' }) => {
     const [loading, setLoading] = useState(false);
     const [isWhatsAppEnabled, setIsWhatsAppEnabled] = useState(true);
     const [formData, setFormData] = useState({
-        first_name: '',
-        last_name: '',
+        first_name: initialFirstName,
+        last_name: initialLastName,
         phone: '',
         phone2: '',
         email: '',

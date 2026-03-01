@@ -193,7 +193,7 @@ const ClientsList: React.FC = () => {
                 {/* Floating Action Button */}
                 <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="fab-adaptive w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-600/30 flex items-center justify-center hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all"
+                    className="fab-adaptive w-14 h-14 bg-primary text-white rounded-full shadow-xl shadow-primary/30 flex items-center justify-center hover:bg-primary-dark hover:scale-110 active:scale-95 transition-all"
                     aria-label="Ajouter un client"
                 >
                     <Plus size={28} />

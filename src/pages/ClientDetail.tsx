@@ -14,7 +14,9 @@ import {
     MessageCircle,
     Navigation,
     Trash2,
-    AlertCircle
+    AlertCircle,
+    FileText, // Added FileText import
+    Copy // Added Copy import
 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import NewIntervention from '../components/NewIntervention';
@@ -27,6 +29,7 @@ import InterventionDetailsModal from '../components/InterventionDetailsModal';
 import ModalLayout from '../components/ModalLayout';
 import Button from '../components/ui/Button';
 import ConfirmModal from '../components/ConfirmModal';
+import AddDevisModal from '../components/AddDevisModal'; // Added AddDevisModal import
 
 interface Pool {
     id: string;
@@ -60,6 +63,16 @@ interface Intervention {
     }[];
 }
 
+interface Devis { // Added Devis interface
+    id: string;
+    number: string;
+    title: string;
+    total_amount: number;
+    status: 'pending' | 'closed';
+    created_at: string;
+    pdf_url?: string;
+}
+
 interface Client {
     id: string;
     first_name: string;
@@ -82,6 +95,7 @@ const ClientDetail: React.FC = () => {
     const [pools, setPools] = useState<Pool[]>([]);
     const [interventions, setInterventions] = useState<Intervention[]>([]);
     const [payments, setPayments] = useState<any[]>([]);
+    const [devis, setDevis] = useState<Devis[]>([]); // Added devis state
     const [loading, setLoading] = useState(true);
 
     const [isInterventionModalOpen, setIsInterventionModalOpen] = useState(false);
@@ -94,13 +108,19 @@ const ClientDetail: React.FC = () => {
     const [selectedInterventionForView, setSelectedInterventionForView] = useState<any | null>(null);
     const [paymentToEdit, setPaymentToEdit] = useState<any | null>(null);
     const [isAdmin, setIsAdmin] = useState(false);
-    const [activeCategory, setActiveCategory] = useState<'pools' | 'interventions' | 'payments' | 'balance' | 'gps' | null>(null);
+    const [activeCategory, setActiveCategory] = useState<'pools' | 'interventions' | 'payments' | 'balance' | 'gps' | 'devis' | null>(null); // Updated activeCategory type
     const [paymentToDelete, setPaymentToDelete] = useState<string | null>(null);
     const [poolToDelete, setPoolToDelete] = useState<Pool | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDeletingPool, setIsDeletingPool] = useState(false);
     const [isDeletingClient, setIsDeletingClient] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [isDevisModalOpen, setIsDevisModalOpen] = useState(false); // Added isDevisModalOpen state
+    const [editingDevisId, setEditingDevisId] = useState<string | null>(null);
+    const [editingInterventionId, setEditingInterventionId] = useState<string | null>(null);
+    const [interventionToDelete, setInterventionToDelete] = useState<string | null>(null);
+    const [devisToDelete, setDevisToDelete] = useState<Devis | null>(null);
+    const [isDeletingDevis, setIsDeletingDevis] = useState(false);
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
         const sTotal = inter.services?.reduce((sAcc: number, s: any) => sAcc + (s.price_at_time || 0), 0) || 0;
@@ -126,11 +146,68 @@ const ClientDetail: React.FC = () => {
         }
     };
 
+    const handleDeleteDevis = async () => {
+        if (!devisToDelete) return;
+        setIsDeletingDevis(true);
+        try {
+            await supabase.from('devis_items').delete().eq('devis_id', devisToDelete.id);
+            const { error } = await supabase.from('devis').delete().eq('id', devisToDelete.id);
+            if (error) throw error;
+            toast.success(`Devis ${devisToDelete.number} supprimé`);
+            setDevisToDelete(null);
+            fetchClientData();
+        } catch (error: any) {
+            console.error(error);
+            toast.error("Erreur lors de la suppression");
+        } finally {
+            setIsDeletingDevis(false);
+        }
+    };
+
     useEffect(() => {
         if (id) {
             fetchClientData();
         }
-    }, [id]);
+    }, [id, navigate]);
+
+    const handleDuplicateDevis = async (originalDevis: Devis) => {
+        try {
+            setLoading(true);
+            const { data: items } = await supabase.from('devis_items').select('*').eq('devis_id', originalDevis.id);
+
+            const newDevisNumber = `${originalDevis.number}-COPY`;
+            const { data: newDevis, error: dError } = await supabase
+                .from('devis')
+                .insert([{
+                    client_id: id,
+                    number: newDevisNumber,
+                    title: `${originalDevis.title} (Copie)`,
+                    total_amount: originalDevis.total_amount,
+                    status: 'pending'
+                }])
+                .select()
+                .single();
+
+            if (dError) throw dError;
+
+            if (items && items.length > 0) {
+                const itemsToInsert = items.map(item => ({
+                    devis_id: newDevis.id,
+                    designation: item.designation,
+                    quantity: item.quantity,
+                    unit_price: item.unit_price
+                }));
+                await supabase.from('devis_items').insert(itemsToInsert);
+            }
+
+            toast.success('Devis dupliqué avec succès');
+            fetchClientData();
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Auto-sync balance to database if there's a discrepancy
     useEffect(() => {
@@ -224,6 +301,13 @@ const ClientDetail: React.FC = () => {
                 .order('payment_date', { ascending: false });
             setPayments(payData || []);
 
+            const { data: devisData } = await supabase // Fetch devis data
+                .from('devis')
+                .select('*')
+                .eq('client_id', id)
+                .order('created_at', { ascending: false });
+            setDevis(devisData || []);
+
         } catch (error) {
             console.error('Erreur:', error);
             navigate('/clients');
@@ -272,6 +356,28 @@ const ClientDetail: React.FC = () => {
         } finally {
             setIsDeletingClient(false);
             setShowDeleteConfirm(false);
+        }
+    };
+
+    const handleDeleteIntervention = async () => {
+        if (!interventionToDelete) return;
+
+        try {
+            setIsDeleting(true);
+            const { error } = await supabase
+                .from('interventions')
+                .delete()
+                .eq('id', interventionToDelete);
+
+            if (error) throw error;
+
+            toast.success('Intervention supprimée');
+            setInterventionToDelete(null);
+            fetchClientData();
+        } catch (error: any) {
+            toast.error('Erreur lors de la suppression : ' + error.message);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -497,7 +603,11 @@ const ClientDetail: React.FC = () => {
                             </button>
                             <button onClick={() => setIsPaymentModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-emerald-500 transition-all group">
                                 <Wallet size={16} className="text-emerald-500 group-hover:scale-125 transition-transform" />
-                                <span className="text-[13px] font-black text-slate-600 dark:text-slate-300 uppercase">Encaissement</span>
+                                <span className="text-[13px] font-black text-slate-600 dark:text-slate-300 uppercase">Versement</span>
+                            </button>
+                            <button onClick={() => setIsDevisModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-blue-500 transition-all group">
+                                <FileText size={16} className="text-blue-500 group-hover:scale-125 transition-transform" />
+                                <span className="text-[13px] font-black text-slate-600 dark:text-slate-300 uppercase">Nouveau Devis</span>
                             </button>
                             <button onClick={() => setIsPoolModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-indigo-500 transition-all group">
                                 <Plus size={16} className="text-indigo-500 group-hover:scale-125 transition-transform" />
@@ -558,7 +668,8 @@ const ClientDetail: React.FC = () => {
                             activeCategory === 'pools' ? 'Parc Aquatique' :
                                 activeCategory === 'interventions' ? 'Historique des Entretiens' :
                                     activeCategory === 'payments' ? 'Historique des Paiements' :
-                                        activeCategory === 'balance' ? 'Détails du Solde' : 'Localisation GPS'
+                                        activeCategory === 'devis' ? 'Chantiers & Devis' : // Updated title for devis
+                                            activeCategory === 'balance' ? 'Détails du Solde' : 'Localisation GPS'
                         }
                         onClose={() => setActiveCategory(null)}
                         className="max-w-4xl"
@@ -584,6 +695,11 @@ const ClientDetail: React.FC = () => {
                                 {(activeCategory === 'payments' || activeCategory === 'balance') && (
                                     <Button onClick={() => setIsPaymentModalOpen(true)} className="btn-primary">
                                         <Wallet size={18} className="mr-2" /> ENCAISSER
+                                    </Button>
+                                )}
+                                {activeCategory === 'devis' && ( // Added button for devis
+                                    <Button onClick={() => setIsDevisModalOpen(true)} className="btn-primary">
+                                        <Plus size={18} className="mr-2" /> CRÉER UN DEVIS
                                     </Button>
                                 )}
                                 <Button onClick={() => setActiveCategory(null)} variant="secondary">FERMER</Button>
@@ -784,6 +900,60 @@ const ClientDetail: React.FC = () => {
                                 </div>
                             )}
 
+                            {activeCategory === 'devis' && ( // Added devis section
+                                <div className="space-y-4">
+                                    {devis.length > 0 ? (
+                                        devis.map((d) => (
+                                            <div key={d.id} className="p-5 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-700 flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${d.status === 'closed' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                        <FileText size={20} />
+                                                    </div>
+                                                    <div>
+                                                        <h5 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">{d.title}</h5>
+                                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{d.number} • {new Date(d.created_at).toLocaleDateString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-lg font-black text-slate-900 dark:text-white">{d.total_amount.toFixed(0)} DT</div>
+                                                    <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md ${d.status === 'closed' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
+                                                        {d.status === 'closed' ? 'Terminé' : 'En cours'}
+                                                    </span>
+                                                    <div className="flex items-center justify-end gap-2 mt-2">
+                                                        <button
+                                                            onClick={() => setEditingDevisId(d.id)}
+                                                            className="text-[10px] font-black text-slate-400 hover:text-blue-500 uppercase flex items-center gap-1"
+                                                            title="Modifier ce devis"
+                                                        >
+                                                            <Edit2 size={12} /> Modif.
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDuplicateDevis(d)}
+                                                            className="text-[10px] font-black text-slate-400 hover:text-emerald-500 uppercase flex items-center gap-1"
+                                                            title="Dupliquer ce devis"
+                                                        >
+                                                            <Copy size={12} /> Copier
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setDevisToDelete(d)}
+                                                            className="text-[10px] font-black text-slate-400 hover:text-rose-500 uppercase flex items-center gap-1"
+                                                            title="Supprimer ce devis"
+                                                        >
+                                                            <Trash2 size={12} /> Suppr.
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-20 text-center opacity-30">
+                                            <FileText size={48} className="mx-auto mb-4" />
+                                            <p className="text-base font-black uppercase tracking-widest">Aucun devis enregistré</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {activeCategory === 'gps' && client?.gps_lat && client?.gps_lng && (
                                 <div className="rounded-[2.5rem] overflow-hidden bg-slate-100 dark:bg-slate-800 h-[500px] border border-slate-200 dark:border-slate-700 p-1">
                                     <MapPicker
@@ -800,12 +970,33 @@ const ClientDetail: React.FC = () => {
 
             {/* Modals */}
             {
-                isInterventionModalOpen && (
+                (isDevisModalOpen || editingDevisId) && (
+                    <AddDevisModal
+                        clientId={client?.id}
+                        devisId={editingDevisId || undefined}
+                        onClose={() => {
+                            setIsDevisModalOpen(false);
+                            setEditingDevisId(null);
+                        }}
+                        onSuccess={fetchClientData}
+                    />
+                )
+            }
+            {
+                (isInterventionModalOpen || editingInterventionId) && (
                     <NewIntervention
                         poolId={selectedPoolId || undefined}
                         clientId={id!}
-                        onClose={() => setIsInterventionModalOpen(false)}
-                        onSuccess={fetchClientData}
+                        interventionId={editingInterventionId || undefined}
+                        onClose={() => {
+                            setIsInterventionModalOpen(false);
+                            setEditingInterventionId(null);
+                        }}
+                        onSuccess={() => {
+                            setIsInterventionModalOpen(false);
+                            setEditingInterventionId(null);
+                            fetchClientData();
+                        }}
                     />
                 )
             }
@@ -864,6 +1055,14 @@ const ClientDetail: React.FC = () => {
                     <InterventionDetailsModal
                         intervention={selectedInterventionForView}
                         onClose={() => setSelectedInterventionForView(null)}
+                        onEdit={(inter) => {
+                            setEditingInterventionId(inter.id);
+                            setSelectedInterventionForView(null);
+                        }}
+                        onDelete={(inter) => {
+                            setInterventionToDelete(inter.id);
+                            setSelectedInterventionForView(null);
+                        }}
                     />
                 )
             }
@@ -896,6 +1095,28 @@ const ClientDetail: React.FC = () => {
                 onConfirm={handleDeleteClient}
                 onClose={() => setShowDeleteConfirm(false)}
                 loading={isDeletingClient}
+                variant="danger"
+            />
+
+            <ConfirmModal
+                isOpen={!!interventionToDelete}
+                title="Supprimer Intervention"
+                message="Voulez-vous vraiment supprimer ce rapport d'intervention ? Cette action est irréversible et le solde du client sera ajusté."
+                confirmLabel="SUPPRIMER"
+                onConfirm={handleDeleteIntervention}
+                onClose={() => setInterventionToDelete(null)}
+                loading={isDeleting}
+                variant="danger"
+            />
+
+            <ConfirmModal
+                isOpen={!!devisToDelete}
+                title="Supprimer le Devis"
+                message={`Êtes-vous sûr de vouloir supprimer définitivement le devis ${devisToDelete?.number} ? Cette action est irréversible.`}
+                confirmLabel="SUPPRIMER"
+                onConfirm={handleDeleteDevis}
+                onClose={() => setDevisToDelete(null)}
+                loading={isDeletingDevis}
                 variant="danger"
             />
         </PageLayout>

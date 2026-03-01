@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Settings, Moon, Sun, Home } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { useEffect, useState } from 'react';
 
 interface PageLayoutProps {
     title: string;
@@ -26,6 +28,42 @@ const PageLayout: React.FC<PageLayoutProps> = ({
     leftContent
 }) => {
     const navigate = useNavigate();
+    const [userInitial, setUserInitial] = useState('U');
+    const [isDark, setIsDark] = useState(false);
+
+    useEffect(() => {
+        // Theme sync
+        const savedTheme = localStorage.getItem('theme');
+        setIsDark(savedTheme === 'dark');
+
+        // User initial sync
+        const getProfile = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('full_name')
+                    .eq('id', session.user.id)
+                    .single();
+                if (profile?.full_name) {
+                    setUserInitial(profile.full_name.charAt(0).toUpperCase());
+                }
+            }
+        };
+        getProfile();
+    }, []);
+
+    const toggleTheme = () => {
+        const newTheme = isDark ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        if (newTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        localStorage.setItem('theme', newTheme);
+        setIsDark(!isDark);
+    };
 
     const handleBack = () => navigate(-1); // Added handleBack function
 
@@ -63,6 +101,48 @@ const PageLayout: React.FC<PageLayoutProps> = ({
                     {rightContent && (
                         <div className="flex items-center gap-3 shrink-0">
                             {rightContent}
+                        </div>
+                    )}
+
+                    {!rightContent && (
+                        <div className="flex items-center gap-2.5 shrink-0">
+                            {/* Theme Toggle */}
+                            <button
+                                onClick={toggleTheme}
+                                title="Changer le mode"
+                                className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-[18px] flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md border border-white/10 shadow-lg"
+                            >
+                                {isDark ? <Moon size={20} /> : <Sun size={20} />}
+                            </button>
+
+                            {/* Home Button */}
+                            <button
+                                onClick={() => navigate('/')}
+                                title="Accueil"
+                                className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-[18px] flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md border border-white/10 shadow-lg"
+                            >
+                                <Home size={20} />
+                            </button>
+
+                            {/* Settings */}
+                            <button
+                                onClick={() => navigate('/profile')}
+                                title="Paramètres"
+                                className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-[18px] flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md border border-white/10 shadow-lg"
+                            >
+                                <Settings size={20} />
+                            </button>
+
+                            {/* Profile Button with initial "U" */}
+                            <button
+                                onClick={() => navigate('/profile')}
+                                title="Profil"
+                                className="w-10 h-10 md:w-12 md:h-12 bg-white/20 rounded-[18px] flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md border border-white/15 shadow-xl relative overflow-visible"
+                            >
+                                <span className="font-black text-lg md:text-xl tracking-tighter">{userInitial}</span>
+                                {/* Green Dot (Online Status) */}
+                                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-[#1E40AF] shadow-sm transform translate-x-1/4 translate-y-1/4" />
+                            </button>
                         </div>
                     )}
                 </div>

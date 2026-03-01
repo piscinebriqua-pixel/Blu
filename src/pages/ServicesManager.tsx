@@ -160,24 +160,15 @@ const ServicesManager: React.FC = () => {
     const filteredProducts = products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()));
 
     const toolbar = (
-        <div className="flex items-center gap-3">
-            <div className="relative flex-1">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60" size={15} />
-                <input
-                    type="text"
-                    placeholder="Rechercher..."
-                    value={activeTab === 'services' ? serviceSearch : productSearch}
-                    onChange={e => activeTab === 'services' ? setServiceSearch(e.target.value) : setProductSearch(e.target.value)}
-                    className="pl-9 pr-4 py-2.5 bg-white/20 backdrop-blur-sm text-white placeholder-white/60 rounded-xl border border-white/20 text-base font-medium focus:outline-none focus:ring-2 focus:ring-white/30 flex-1 min-w-0"
-                />
-            </div>
-            <button
-                onClick={() => activeTab === 'services' ? handleOpenServiceModal() : handleOpenProductModal()}
-                aria-label="Ajouter"
-                className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md"
-            >
-                <Plus size={20} />
-            </button>
+        <div className="relative w-full">
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input
+                type="text"
+                placeholder="Rechercher..."
+                value={activeTab === 'services' ? serviceSearch : productSearch}
+                onChange={e => activeTab === 'services' ? setServiceSearch(e.target.value) : setProductSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+            />
         </div>
     );
 
@@ -291,6 +282,15 @@ const ServicesManager: React.FC = () => {
                     ))}
                 </div>
             )}
+
+            {/* Floating Action Button */}
+            <button
+                onClick={() => activeTab === 'services' ? handleOpenServiceModal() : handleOpenProductModal()}
+                className="fab-adaptive w-14 h-14 bg-primary text-white rounded-full shadow-xl shadow-primary/30 flex items-center justify-center hover:bg-primary-dark hover:scale-110 active:scale-95 transition-all"
+                aria-label="Ajouter"
+            >
+                <Plus size={28} />
+            </button>
 
             {/* ── Modal Service ── */}
             {isServiceModalOpen && (

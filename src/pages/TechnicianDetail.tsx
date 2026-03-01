@@ -10,9 +10,14 @@ import {
     Wallet,
     Phone,
     Mail,
-    User
+    User,
+    Edit3,
+    Trash2
 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
+import { toast } from 'react-hot-toast';
+import TechnicianModal from '../components/TechnicianModal';
+import ConfirmModal from '../components/ConfirmModal';
 
 interface Technician {
     id: string;
@@ -28,6 +33,9 @@ const TechnicianDetail: React.FC = () => {
     const [interventions, setInterventions] = useState<any[]>([]);
     const [payments, setPayments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -79,6 +87,48 @@ const TechnicianDetail: React.FC = () => {
         }
     };
 
+    const handleEditSubmit = async (e: React.FormEvent, data: any) => {
+        e.preventDefault();
+        setActionLoading(true);
+        try {
+            const { error } = await supabase
+                .from('technicians')
+                .update({ full_name: data.full_name, phone: data.phone, email: data.email, active: data.active })
+                .eq('id', id);
+
+            if (error) throw error;
+            toast.success('Technicien modifié avec succès');
+            setIsEditModalOpen(false);
+            fetchTechnicianData();
+        } catch (error: any) {
+            toast.error(error.message || 'Erreur lors de la modification');
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        setActionLoading(true);
+        try {
+            const { error } = await supabase
+                .from('technicians')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            toast.success('Technicien supprimé avec succès');
+            // We use window.location.href or navigate back to the list. 
+            // We need to import useNavigate but actually we could just use window.history.back() or similar.
+            // Let's rely on browser history or just window.location.href.
+            window.location.href = '/technicians';
+        } catch (error: any) {
+            toast.error(error.message || 'Erreur lors de la suppression. Le technicien est peut-être lié à des interventions.');
+        } finally {
+            setActionLoading(false);
+            setIsDeleteModalOpen(false);
+        }
+    };
+
     if (loading) {
         return (
             <PageLayout title="Chargement..." subtitle="Veuillez patienter" showBackButton={true}>
@@ -103,11 +153,31 @@ const TechnicianDetail: React.FC = () => {
     const scheduledInters = interventions.filter(i => i.status === 'scheduled');
     const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
 
+    const toolbar = (
+        <div className="flex gap-2">
+            <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-blue-500 hover:bg-white flex items-center justify-center transition-all"
+                title="Modifier le technicien"
+            >
+                <Edit3 size={18} />
+            </button>
+            <button
+                onClick={() => setIsDeleteModalOpen(true)}
+                className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-red-500 hover:bg-white flex items-center justify-center transition-all"
+                title="Supprimer le technicien"
+            >
+                <Trash2 size={18} />
+            </button>
+        </div>
+    );
+
     return (
         <PageLayout
             title={technician.full_name}
-            subtitle="Fiche Technicien Performance"
+            subtitle={technician.active ? "Technicien Actif" : "Technicien Inactif"}
             showBackButton={true}
+            toolbar={toolbar}
         >
             <div className="flex flex-col gap-6 pb-24">
                 {/* Dashboard Stats - BENTO STYLE */}
@@ -247,6 +317,28 @@ const TechnicianDetail: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {isEditModalOpen && (
+                <TechnicianModal
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSubmit={handleEditSubmit}
+                    technician={technician}
+                    loading={actionLoading}
+                />
+            )}
+
+            {isDeleteModalOpen && (
+                <ConfirmModal
+                    isOpen={isDeleteModalOpen}
+                    title="Supprimer le technicien"
+                    message={`Êtes-vous sûr de vouloir supprimer le technicien ${technician.full_name} ?`}
+                    onConfirm={handleDelete}
+                    onClose={() => setIsDeleteModalOpen(false)}
+                    confirmLabel="Supprimer"
+                    variant="danger"
+                />
+            )}
         </PageLayout>
     );
 };

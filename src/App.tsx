@@ -17,6 +17,7 @@ import Profile from './pages/Profile';
 import Payments from './pages/Payments';
 import Planning from './pages/Planning';
 import Revenue from './pages/Revenue';
+import Chantiers from './pages/Chantiers';
 import { Toaster } from 'react-hot-toast';
 import BccpLogo from './components/BccpLogo';
 import BottomNav from './components/BottomNav';
@@ -268,6 +269,11 @@ function App() {
             <Route path="/planning" element={
               <ProtectedRoute>
                 <div className="app-container"><Planning /></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/chantiers" element={
+              <ProtectedRoute>
+                <div className="app-container"><Chantiers /></div>
               </ProtectedRoute>
             } />
 
