@@ -102,25 +102,25 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
 
     return (
         <ModalLayout onClose={onClose} title="Détails du Devis" className="max-w-4xl">
-            <div className="flex flex-col gap-6 pb-4">
+            <div className="flex flex-col gap-6 print:gap-4 pb-4 print:pb-0">
                 {/* Header Section */}
-                <div className="flex flex-col items-center gap-2">
+                <div className="flex flex-col items-center gap-2 print:gap-1 print:mt-4">
                     <div className="flex flex-col items-center">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/60 mb-1">Résumé du Chantier</span>
-                        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight text-center">
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/60 mb-1 print:mb-0">Résumé du Chantier</span>
+                        <h2 className="text-2xl print:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight text-center">
                             {devis.title || 'Devis'}
                         </h2>
-                        <h3 className="text-base font-bold text-slate-500 dark:text-slate-400 capitalize mt-1">
+                        <h3 className="text-base print:text-sm font-bold text-slate-500 dark:text-slate-400 capitalize mt-1 print:mt-0">
                             {devis.client?.first_name} {devis.client?.last_name}
                         </h3>
                     </div>
 
-                    <div className="flex items-center gap-3 text-4xl font-black text-slate-900 dark:text-white tracking-tighter mt-4">
+                    <div className="flex items-center gap-3 text-4xl print:text-2xl font-black text-slate-900 dark:text-white tracking-tighter mt-4 print:mt-2">
                         {(devis.total_amount || 0).toFixed(0)}
-                        <span className="text-xl font-bold text-primary dark:text-blue-400">DT</span>
+                        <span className="text-xl print:text-sm font-bold text-primary dark:text-blue-400">DT</span>
                     </div>
 
-                    <div className={`mt-2 px-4 py-1.5 rounded-xl uppercase tracking-widest text-[11px] font-black ${devis.status === 'closed' ? 'bg-emerald-100 text-emerald-700' :
+                    <div className={`mt-2 print:mt-1 px-4 py-1.5 print:py-1 rounded-xl uppercase tracking-widest text-[11px] print:text-[9px] font-black ${devis.status === 'closed' ? 'bg-emerald-100 text-emerald-700' :
                         devis.status === 'cancelled' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'
                         }`}>
                         {devis.status === 'closed' ? 'Clôturé' : devis.status === 'cancelled' ? 'Annulé' : 'En cours'}
@@ -128,27 +128,27 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
                 </div>
 
                 {/* Quick Info Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Numéro</span>
-                        <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
+                <div className="grid grid-cols-2 md:grid-cols-4 print:grid-cols-4 gap-2 print:gap-1">
+                    <div className="p-4 print:p-2 bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg border border-slate-100 dark:border-white/5 flex flex-col">
+                        <span className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 print:mb-0">Numéro</span>
+                        <span className="text-[13px] print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
                             {devis.number}
                         </span>
                     </div>
-                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Date Devis</span>
-                        <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase">
+                    <div className="p-4 print:p-2 bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg border border-slate-100 dark:border-white/5 flex flex-col">
+                        <span className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 print:mb-0">Date Devis</span>
+                        <span className="text-[13px] print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase">
                             {new Date(devis.created_at).toLocaleDateString('fr-FR')}
                         </span>
                     </div>
-                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Articles</span>
-                        <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
+                    <div className="p-4 print:p-2 bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg border border-slate-100 dark:border-white/5 flex flex-col">
+                        <span className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 print:mb-0">Articles</span>
+                        <span className="text-[13px] print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
                             {items.length} lignes
                         </span>
                     </div>
-                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Ville</span>
+                    <div className="p-4 print:p-2 bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg border border-slate-100 dark:border-white/5 flex flex-col">
+                        <span className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 print:mb-0">Ville</span>
                         <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
                             {devis.client?.city || 'N/A'}
                         </span>
@@ -163,7 +163,7 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
                         <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
                     </div>
 
-                    <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-2 md:p-6 border border-slate-100 dark:border-white/5 min-h-[150px]">
+                    <div className="bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg p-2 md:p-6 print:p-2 border border-slate-100 dark:border-white/5 min-h-[150px] print:min-h-0">
                         {loading ? (
                             <div className="flex flex-col items-center justify-center p-10 h-full w-full">
                                 <Loader2 size={32} className="animate-spin text-blue-500 mb-4" />
@@ -172,35 +172,35 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
                         ) : items.length === 0 ? (
                             <p className="text-center text-[13px] font-bold text-slate-500 uppercase py-10">Aucun article dans ce devis</p>
                         ) : (
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2 print:gap-1">
                                 {items.map((item) => {
                                     if (item.is_header) {
                                         return (
-                                            <div key={item.id} className="mt-4 mb-2 first:mt-0 p-3 bg-blue-500 text-white rounded-2xl flex items-center justify-between shadow-sm">
-                                                <h4 className="text-sm font-black uppercase tracking-widest">{item.designation}</h4>
+                                            <div key={item.id} className="mt-4 print:mt-2 mb-2 print:mb-1 first:mt-0 p-3 print:p-2 bg-blue-500 text-white rounded-2xl print:rounded flex items-center justify-between shadow-sm">
+                                                <h4 className="text-sm print:text-xs font-black uppercase tracking-widest">{item.designation}</h4>
                                             </div>
                                         );
                                     } else {
                                         const lineTotal = item.quantity * item.unit_price;
                                         return (
-                                            <div key={item.id} className="p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm hover:shadow-md transition-all group">
+                                            <div key={item.id} className="p-4 print:p-2 bg-white dark:bg-slate-800 rounded-2xl print:rounded border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row print:flex-row sm:items-center print:items-center justify-between gap-3 print:gap-1 shadow-sm hover:shadow-md transition-all group">
                                                 <div className="flex-1 min-w-0">
-                                                    <h5 className="text-[13px] font-black text-slate-900 dark:text-white uppercase leading-snug group-hover:text-blue-500 transition-colors">
+                                                    <h5 className="text-[13px] print:text-[11px] font-black text-slate-900 dark:text-white uppercase leading-snug group-hover:text-blue-500 transition-colors">
                                                         {item.designation}
                                                     </h5>
-                                                    <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                                                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-600">
+                                                    <div className="flex flex-wrap items-center gap-3 print:gap-2 mt-1.5 print:mt-0.5">
+                                                        <span className="text-[11px] print:text-[9px] font-bold text-slate-500 uppercase tracking-widest bg-slate-100 dark:bg-slate-700/50 px-2 py-0.5 rounded-lg print:rounded border border-slate-200 dark:border-slate-600">
                                                             Qté: {item.quantity} {item.unit}
                                                         </span>
-                                                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                                                        <span className="text-[11px] print:text-[9px] font-bold text-slate-500 uppercase tracking-widest">
                                                             P.U: {item.unit_price.toFixed(2)} DT
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <div className="text-right flex items-center sm:block justify-between border-t sm:border-0 border-slate-100 dark:border-slate-800 pt-3 sm:pt-0 mt-2 sm:mt-0">
-                                                    <span className="text-[10px] sm:hidden font-black text-slate-400 uppercase tracking-widest">Total Ligne</span>
-                                                    <div className="text-base font-black text-slate-900 dark:text-white">
-                                                        {lineTotal.toFixed(0)} <span className="text-xs font-bold text-slate-500 uppercase">DT</span>
+                                                <div className="text-right flex items-center sm:block print:block justify-between border-t sm:border-0 print:border-0 border-slate-100 dark:border-slate-800 pt-3 sm:pt-0 print:pt-0 mt-2 sm:mt-0 print:mt-0">
+                                                    <span className="text-[10px] sm:hidden print:hidden font-black text-slate-400 uppercase tracking-widest">Total Ligne</span>
+                                                    <div className="text-base print:text-sm font-black text-slate-900 dark:text-white">
+                                                        {lineTotal.toFixed(0)} <span className="text-xs print:text-[10px] font-bold text-slate-500 uppercase">DT</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -214,38 +214,39 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
 
                 {/* Additional Info */}
                 {(devis.pool_details || devis.notes || devis.payment_terms) && (
-                    <div className="space-y-4">
+                    <div className="space-y-4 print:space-y-2">
                         <div className="flex items-center gap-3">
                             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
-                            <h5 className="text-[13px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em]">Informations Complémentaires</h5>
+                            <h5 className="text-[13px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] print:text-[10px]">Informations Complémentaires</h5>
                             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Optimisé pour PDF : grid-cols-3 à l'impression si tout est rempli pour gagner de la hauteur */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-3 gap-4 print:gap-2">
                             {devis.pool_details && (
-                                <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-5 border border-slate-100 dark:border-white/5">
-                                    <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Caractéristiques Bassin</h6>
-                                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-pre-line">{devis.pool_details}</p>
+                                <div className="bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg p-5 print:p-3 border border-slate-100 dark:border-white/5">
+                                    <h6 className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 print:mb-1">Caractéristiques Bassin</h6>
+                                    <p className="text-xs print:text-[10px] font-bold text-slate-600 dark:text-slate-300 whitespace-pre-line leading-relaxed">{devis.pool_details}</p>
                                 </div>
                             )}
                             {devis.payment_terms && (
-                                <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-5 border border-slate-100 dark:border-white/5">
-                                    <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Modalités de Paiement</h6>
-                                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-pre-line">{devis.payment_terms}</p>
+                                <div className="bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg p-5 print:p-3 border border-slate-100 dark:border-white/5">
+                                    <h6 className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 print:mb-1">Modalités de Paiement</h6>
+                                    <p className="text-xs print:text-[10px] font-bold text-slate-600 dark:text-slate-300 whitespace-pre-line leading-relaxed">{devis.payment_terms}</p>
                                 </div>
                             )}
                             {devis.notes && (
-                                <div className={`bg-slate-50 dark:bg-white/5 rounded-3xl p-5 border border-slate-100 dark:border-white/5 ${(!devis.pool_details || !devis.payment_terms) ? 'md:col-span-2' : ''}`}>
-                                    <h6 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Notes</h6>
-                                    <p className="text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-pre-line italic">{devis.notes}</p>
+                                <div className={`bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg p-5 print:p-3 border border-slate-100 dark:border-white/5 ${(!devis.pool_details || !devis.payment_terms) ? 'md:col-span-2 print:col-span-1' : ''}`}>
+                                    <h6 className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 print:mb-1">Notes</h6>
+                                    <p className="text-xs print:text-[10px] font-bold text-slate-600 dark:text-slate-300 whitespace-pre-line leading-relaxed italic">{devis.notes}</p>
                                 </div>
                             )}
                         </div>
                     </div>
                 )}
 
-                {/* Actions Toolbar at Bottom */}
-                <div className="flex flex-wrap items-center justify-between gap-4 mt-4 p-4 bg-slate-50 dark:bg-white/5 rounded-[2rem] border border-slate-100 dark:border-white/10">
+                {/* Actions Toolbar at Bottom - Caché pour l'impression */}
+                <div className="flex flex-wrap items-center justify-between gap-4 mt-4 p-4 bg-slate-50 dark:bg-white/5 rounded-[2rem] border border-slate-100 dark:border-white/10 print:hidden">
                     <div className="flex gap-2">
                         {onStatusChange && devis.status === 'pending' && (
                             <>
