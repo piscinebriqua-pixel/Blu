@@ -69,7 +69,7 @@ interface Devis { // Added Devis interface
     number: string;
     title: string;
     total_amount: number;
-    status: 'pending' | 'closed';
+    status: 'pending' | 'closed' | 'cancelled';
     created_at: string;
     pdf_url?: string;
 }
@@ -645,42 +645,83 @@ const ClientDetail: React.FC = () => {
                 </div>
             </div>
 
-            {/* 6. Activity Timeline Tile (Bottom Wide Box) */}
-            <div className="mt-4">
-                <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6 min-h-[200px]">
+            {/* 6. Bottom Timeline Tiles */}
+            <div className={`mt-4 grid gap-4 ${devis.length > 0 ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+                {/* 6A. Activity Timeline Tile */}
+                <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6 min-h-[200px] flex flex-col">
                     <div className="flex items-center justify-between mb-6">
                         <h4 className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Dernière Activité</h4>
                         <HistoryIcon size={16} className="text-slate-500" />
                     </div>
 
-                    {interventions.length > 0 ? (
-                        <div className="space-y-4">
-                            {interventions.slice(0, 3).map((inter) => (
-                                <div key={inter.id} className="flex items-center gap-4 group cursor-pointer" onClick={() => setSelectedInterventionForView(inter)}>
-                                    <div className="w-1.5 h-12 rounded-full bg-blue-500/30 flex-shrink-0 relative overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-full bg-blue-500 transition-all duration-500 group-hover:h-full h-3" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-start">
-                                            <h5 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">Rapport de Maintenance</h5>
-                                            <span className="text-[13px] font-black text-slate-500">{new Date(inter.created_at).toLocaleDateString('fr-FR')}</span>
+                    <div className="flex-1">
+                        {interventions.length > 0 ? (
+                            <div className="space-y-4">
+                                {interventions.slice(0, 3).map((inter) => (
+                                    <div key={inter.id} className="flex items-center gap-4 group cursor-pointer" onClick={() => setSelectedInterventionForView(inter)}>
+                                        <div className="w-1.5 h-12 rounded-full bg-blue-500/30 flex-shrink-0 relative overflow-hidden">
+                                            <div className="absolute top-0 left-0 w-full bg-blue-500 transition-all duration-500 group-hover:h-full h-3" />
                                         </div>
-                                        <p className="text-xs text-slate-600 dark:text-slate-500 font-black uppercase mt-1">Bassin: {inter.pool_name} • {inter.status || 'Terminé'}</p>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start">
+                                                <h5 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">Rapport de Maintenance</h5>
+                                                <span className="text-[13px] font-black text-slate-500">{new Date(inter.created_at).toLocaleDateString('fr-FR')}</span>
+                                            </div>
+                                            <p className="text-xs text-slate-600 dark:text-slate-500 font-black uppercase mt-1">Bassin: {inter.pool_name} • {inter.status || 'Terminé'}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-20 opacity-30">
-                            <HistoryIcon size={28} />
-                            <p className="text-[13px] font-black uppercase tracking-widest">Aucune activité enregistrée</p>
-                        </div>
-                    )}
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full min-h-[100px] opacity-30">
+                                <HistoryIcon size={28} className="mb-2" />
+                                <p className="text-[13px] font-black uppercase tracking-widest">Aucune activité enregistrée</p>
+                            </div>
+                        )}
+                    </div>
 
-                    <button onClick={() => setActiveCategory('interventions')} className="w-full mt-6 py-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-[13px] font-black text-slate-500 hover:text-blue-600 hover:border-blue-500/50 transition-all uppercase tracking-widest">
+                    <button onClick={() => setActiveCategory('interventions')} className="w-full mt-6 py-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-[13px] font-black text-slate-500 hover:text-blue-600 hover:border-blue-500/50 transition-all uppercase tracking-widest mt-auto">
                         Consulter l'historique complet
                     </button>
                 </div>
+
+                {/* 6B. Devis Timeline Tile */}
+                {devis.length > 0 && (
+                    <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6 min-h-[200px] flex flex-col">
+                        <div className="flex items-center justify-between mb-6">
+                            <h4 className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Derniers Devis</h4>
+                            <FileText size={16} className="text-slate-500" />
+                        </div>
+
+                        <div className="flex-1">
+                            <div className="space-y-4">
+                                {devis.slice(0, 3).map((d) => (
+                                    <div key={d.id} className="flex items-center gap-4 group cursor-pointer" onClick={() => setSelectedDevisForView(d)}>
+                                        <div className={`w-1.5 h-12 rounded-full flex-shrink-0 relative overflow-hidden ${d.status === 'closed' ? 'bg-emerald-500/30' : d.status === 'cancelled' ? 'bg-rose-500/30' : 'bg-blue-500/30'}`}>
+                                            <div className={`absolute top-0 left-0 w-full transition-all duration-500 group-hover:h-full h-3 ${d.status === 'closed' ? 'bg-emerald-500' : d.status === 'cancelled' ? 'bg-rose-500' : 'bg-blue-500'}`} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start">
+                                                <h5 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">{d.title || 'Devis'}</h5>
+                                                <span className="text-[13px] font-black text-slate-500">{new Date(d.created_at).toLocaleDateString('fr-FR')}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between mt-1">
+                                                <p className="text-xs text-slate-600 dark:text-slate-500 font-black uppercase">
+                                                    #{d.number} • {d.status === 'closed' ? 'Clôturé' : d.status === 'cancelled' ? 'Annulé' : 'En cours'}
+                                                </p>
+                                                <span className="text-[13px] font-black text-slate-800 dark:text-white">{(d.total_amount || 0).toFixed(0)} DT</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button onClick={() => setActiveCategory('devis')} className="w-full mt-6 py-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-[13px] font-black text-slate-500 hover:text-blue-600 hover:border-blue-500/50 transition-all uppercase tracking-widest mt-auto">
+                            Voir tous les devis
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Categorized Details Modal */}
