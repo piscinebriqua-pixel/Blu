@@ -625,21 +625,33 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       <div className="flex flex-col gap-8 pb-32">
         {/* SECTION 1: CONFIGURATION */}
         <div className="flex flex-col gap-4 p-1">
-          <div className="grid grid-cols-2 gap-3">
+          {/* Date Selection */}
+          <div className="relative">
+            <input
+              type="date"
+              className="w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-slate-100 dark:border-slate-700 font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
+              value={formData.scheduled_date}
+              onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
+              aria-label="Date de l'intervention"
+              title="Date de l'intervention"
+            />
+          </div>
+
+          <div className="flex flex-col gap-3">
             <button
               type="button"
               onClick={() => setIsClientModalOpen(true)}
-              className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-blue-500/30 transition-all group"
+              className="w-full flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-blue-500/30 transition-all group"
             >
               <div className="w-12 h-12 bg-white dark:bg-slate-700 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform">
                 <User size={24} strokeWidth={2.5} />
               </div>
               <div className="flex flex-col text-left">
                 <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Client</span>
-                <span className="text-[13px] font-black text-slate-800 dark:text-white uppercase truncate max-w-[120px]">
+                <span className="text-[13px] font-black text-slate-800 dark:text-white uppercase truncate max-w-[200px]">
                   {dbClients.find((c) => c.id === selectedClientId)
                     ? `${dbClients.find((c) => c.id === selectedClientId)?.first_name} ${dbClients.find((c) => c.id === selectedClientId)?.last_name}`
-                    : "Choisir"}
+                    : "Choisir un client"}
                 </span>
               </div>
             </button>
@@ -647,15 +659,15 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
             <button
               type="button"
               onClick={() => setIsTechModalOpen(true)}
-              className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-blue-500/30 transition-all group text-left"
+              className="w-full flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-blue-500/30 transition-all group text-left"
             >
               <div className="w-12 h-12 bg-white dark:bg-slate-700 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform">
                 <User size={24} strokeWidth={2.5} />
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Technicien</span>
-                <span className="text-[13px] font-black text-slate-800 dark:text-white uppercase truncate max-w-[120px]">
-                  {dbTechnicians.find((t) => t.id === formData.technician_id)?.full_name || "Choisir"}
+                <span className="text-[13px] font-black text-slate-800 dark:text-white uppercase truncate max-w-[200px]">
+                  {dbTechnicians.find((t) => t.id === formData.technician_id)?.full_name || "Choisir un technicien"}
                 </span>
               </div>
             </button>
@@ -692,17 +704,6 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
               </div>
             </div>
           )}
-
-          <div className="relative">
-            <input
-              type="date"
-              className="w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-slate-100 dark:border-slate-700 font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
-              value={formData.scheduled_date}
-              onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
-              aria-label="Date de l'intervention"
-              title="Date de l'intervention"
-            />
-          </div>
         </div>
 
         {/* SECTION 2: ANALYSE EAU (SI DIRECT) */}
