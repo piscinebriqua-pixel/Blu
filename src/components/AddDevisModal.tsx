@@ -10,9 +10,8 @@ import AddClientModal from './AddClientModal';
 import * as pdfjsLib from 'pdfjs-dist';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Use a stable CDN for the worker to ensure it works across environments
-// Matching the version in package.json: 5.4.624
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.worker.min.mjs`;
+// Use local worker to ensure compatibility and avoid CORS issues on mobile (Android 14)
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "");
