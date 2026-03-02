@@ -4,17 +4,5 @@
             "source": "/(.*)",
             "destination": "/index.html"
         }
-    ],
-    "env": {
-        "VITE_GEMINI_API_KEY": "YOUR_GEMINI_API_KEY",
-        "VITE_GROQ_API_KEY": "YOUR_GROQ_API_KEY",
-        "VITE_GOOGLE_MAPS_API_KEY": "YOUR_GOOGLE_MAPS_API_KEY"
-    },
-    "build": {
-        "env": {
-            "VITE_GEMINI_API_KEY": "YOUR_GEMINI_API_KEY",
-            "VITE_GROQ_API_KEY": "YOUR_GROQ_API_KEY",
-            "VITE_GOOGLE_MAPS_API_KEY": "YOUR_GOOGLE_MAPS_API_KEY"
-        }
-    }
+    ]
 }
