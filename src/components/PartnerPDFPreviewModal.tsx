@@ -1,7 +1,7 @@
 import React from 'react';
 import ModalLayout from './ModalLayout';
 import Button from './ui/Button';
-import { FileText, Download, X, Printer, Mail, Share2 } from 'lucide-react';
+import { FileText, Download, X, Printer, Share2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { toast } from 'react-hot-toast';
