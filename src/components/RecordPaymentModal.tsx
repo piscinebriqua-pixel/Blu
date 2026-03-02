@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Wallet, User, CheckCircle2, Calendar } from 'lucide-react';
 import ModalLayout from './ModalLayout';
 import { toast } from 'react-hot-toast';
+import { recalculateVentilation } from '../lib/paymentService';
 
 interface RecordPaymentModalProps {
     clientId: string;
@@ -102,6 +103,10 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
 
             if (balanceUpdateError) throw balanceUpdateError;
             // ------------------------------------
+
+            // --- RECALCULER LA VENTILATION FIFO ---
+            await recalculateVentilation(clientId);
+            // --------------------------------------
 
             toast.success(payment ? 'Paiement mis à jour' : 'Paiement enregistré');
             onSuccess();

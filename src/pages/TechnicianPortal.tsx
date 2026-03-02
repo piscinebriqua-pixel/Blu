@@ -84,7 +84,10 @@ const TechnicianPortal: React.FC = () => {
     };
 
     const openWhatsApp = (phone: string) => {
-        const formatted = phone.replace(/\s/g, '').replace('+', '');
+        let formatted = phone.replace(/[\s\-\.]/g, '');
+        if (formatted && !formatted.startsWith('216') && !formatted.startsWith('+')) {
+            formatted = `216${formatted}`;
+        }
         window.open(`https://wa.me/${formatted}`, '_blank');
     };
 

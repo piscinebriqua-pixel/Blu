@@ -119,11 +119,11 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
         let phone = intervention.pool.client.phone.replace(/\s+/g, '').replace('+', '');
 
         // Si c'est un numéro tunisien à 8 chiffres, ajouter l'indicatif 216
-        if (phone.length === 8) {
-            phone = `216${phone}`;
+        let cleanPhone = phone.replace(/[\s\-\.]/g, '');
+        if (cleanPhone && !cleanPhone.startsWith('216') && !cleanPhone.startsWith('+')) {
+            cleanPhone = `216${cleanPhone}`;
         }
-
-        window.open(`https://wa.me/${phone}?text=${encodedMessage}`, '_blank');
+        window.open(`https://wa.me/${cleanPhone}?text=${encodedMessage}`, '_blank');
     };
 
     return (

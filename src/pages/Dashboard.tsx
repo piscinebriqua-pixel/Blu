@@ -11,7 +11,8 @@ import {
     Shield,
     Wallet,
     Settings,
-    FileText
+    FileText,
+    Briefcase
 } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import BccpLogo from '../components/BccpLogo';
@@ -304,6 +305,16 @@ const Dashboard: React.FC = () => {
                     <div className="content-wrapper">
                         <span>Techniciens</span>
                         <p className="dark:text-white">{counts.technicians} <span className="text-[10px] font-normal text-slate-500">membres</span></p>
+                    </div>
+                </div>
+
+                <div onClick={() => navigate('/partners')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-slate-100/50 border-slate-200 dark:bg-slate-800/50 dark:border-slate-700/50 shadow-sm shadow-slate-500/5">
+                    <div className="icon-wrapper bg-white dark:bg-slate-900/50 text-slate-600 dark:text-slate-400">
+                        <Briefcase size={22} />
+                    </div>
+                    <div className="content-wrapper">
+                        <span>Partenaires</span>
+                        <p className="text-slate-600/60 dark:text-slate-400/60 uppercase !text-[10px] font-black">Réseau & Tiers-Payant</p>
                     </div>
                 </div>
             </div>

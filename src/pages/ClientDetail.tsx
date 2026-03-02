@@ -15,8 +15,8 @@ import {
     Navigation,
     Trash2,
     AlertCircle,
-    FileText, // Added FileText import
-    Copy // Added Copy import
+    FileText,
+    Copy
 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import NewIntervention from '../components/NewIntervention';
@@ -31,6 +31,8 @@ import Button from '../components/ui/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import AddDevisModal from '../components/AddDevisModal';
 import DevisDetailsModal from '../components/DevisDetailsModal';
+import AssignPartnerModal from '../components/AssignPartnerModal';
+import { User } from 'lucide-react';
 
 interface Pool {
     id: string;
@@ -62,6 +64,7 @@ interface Intervention {
         total_price: number;
         product: { name: string; unit: string; }
     }[];
+    paid_amount?: number; // Added paid amount from distribution
 }
 
 interface Devis { // Added Devis interface
@@ -87,6 +90,13 @@ interface Client {
     notes: string;
     gps_lat: number | null;
     gps_lng: number | null;
+    architect_id?: string;
+    entrepreneur_id?: string;
+    plumber_id?: string;
+    electrician_id?: string;
+    pool_builder_id?: string;
+    site_manager_id?: string;
+    billing_partner_id?: string;
 }
 
 const ClientDetail: React.FC = () => {
@@ -119,10 +129,14 @@ const ClientDetail: React.FC = () => {
     const [editingDevisId, setEditingDevisId] = useState<string | null>(null);
     const [editingInterventionId, setEditingInterventionId] = useState<string | null>(null);
     const [interventionToDelete, setInterventionToDelete] = useState<string | null>(null);
+    const [partnerToUnassign, setPartnerToUnassign] = useState<any | null>(null);
+    const [isUnassigningPartner, setIsUnassigningPartner] = useState(false);
     const [devisToDelete, setDevisToDelete] = useState<Devis | null>(null);
     const [isDeletingDevis, setIsDeletingDevis] = useState(false);
     const [selectedInterventionForView, setSelectedInterventionForView] = useState<any>(null);
     const [selectedDevisForView, setSelectedDevisForView] = useState<any>(null);
+    const [isAssignPartnerOpen, setIsAssignPartnerOpen] = useState(false);
+    const [clientPartners, setClientPartners] = useState<any[]>([]);
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
         const sTotal = inter.services?.reduce((sAcc: number, s: any) => sAcc + (s.price_at_time || 0), 0) || 0;
@@ -250,6 +264,25 @@ const ClientDetail: React.FC = () => {
             }
             setClient(clientData);
 
+            try {
+                const partnerIds = [
+                    clientData.architect_id,
+                    clientData.entrepreneur_id,
+                    clientData.plumber_id,
+                    clientData.electrician_id,
+                    clientData.pool_builder_id,
+                    clientData.site_manager_id,
+                    clientData.billing_partner_id
+                ].filter(Boolean);
+
+                if (partnerIds.length > 0) {
+                    const { data: partnersData } = await supabase.from('partners').select('*').in('id', partnerIds);
+                    if (partnersData) setClientPartners(partnersData);
+                } else {
+                    setClientPartners([]);
+                }
+            } catch (e) { /* ignore error if table does not exist */ }
+
             const { data: poolData } = await supabase.from('pools').select('*').eq('client_id', id);
             setPools(poolData || []);
 
@@ -290,10 +323,22 @@ const ClientDetail: React.FC = () => {
                 .in('pool_id', poolData?.map(p => p.id) || [])
                 .order('created_at', { ascending: false });
 
-            const formattedInters = interData?.map((i: any) => ({
-                ...i,
-                pool_name: i.pool?.name
-            })) || [];
+            // Fetch distributions (intervention payments)
+            const { data: distributions } = await supabase
+                .from('intervention_payments')
+                .select('intervention_id, amount_applied')
+                .in('intervention_id', interData?.map(i => i.id) || []);
+
+            const formattedInters = interData?.map((i: any) => {
+                const appliedPayments = distributions?.filter(d => d.intervention_id === i.id) || [];
+                const totalPaid = appliedPayments.reduce((acc, d) => acc + Number(d.amount_applied), 0);
+
+                return {
+                    ...i,
+                    pool_name: i.pool?.name,
+                    paid_amount: totalPaid
+                };
+            }) || [];
             setInterventions(formattedInters);
 
             const { data: payData } = await supabase
@@ -407,11 +452,68 @@ const ClientDetail: React.FC = () => {
     const openWhatsApp = () => {
         if (client?.phone) {
             let formattedPhone = client.phone.replace(/\s/g, '').replace('+', '');
-            // Si le numéro commence par un chiffre autre que 216 et fait 8 chiffres, on ajoute le préfixe Tunisie
             if (formattedPhone.length === 8 && !formattedPhone.startsWith('216')) {
                 formattedPhone = '216' + formattedPhone;
             }
-            window.open(`https://wa.me/${formattedPhone}`, '_blank');
+
+            // Generate message with unpaid interventions
+            let message = `Bonjour ${client.first_name},\n\nVoici le point sur votre compte :\n`;
+
+            const unpaidInters = interventions.filter(inter => {
+                const sTotal = inter.services?.reduce((acc: number, s: any) => acc + (s.price_at_time || 0), 0) || 0;
+                const pTotal = inter.products?.reduce((acc: number, p: any) => acc + (p.total_price || 0), 0) || 0;
+                const totalBilled = sTotal + pTotal;
+                return (totalBilled - (inter.paid_amount || 0)) > 0.5; // Avoid float precision issues
+            });
+
+            if (unpaidInters.length > 0) {
+                message += `*Interventions en attente de règlement :*\n`;
+                unpaidInters.forEach(inter => {
+                    const sTotal = inter.services?.reduce((acc: number, s: any) => acc + (s.price_at_time || 0), 0) || 0;
+                    const pTotal = inter.products?.reduce((acc: number, p: any) => acc + (p.total_price || 0), 0) || 0;
+                    const totalBilled = sTotal + pTotal;
+                    const remaining = totalBilled - (inter.paid_amount || 0);
+                    const date = new Date(inter.visit_date).toLocaleDateString('fr-FR');
+                    message += `• ${date} (${inter.pool_name}) : *${remaining.toFixed(0)} DT*\n`;
+                });
+                message += `\n*TOTAL RESTANT : ${(totalIntersAmount - totalPaymentsAmount).toFixed(0)} DT*`;
+            } else {
+                message += `Votre compte est à jour (Solde : 0 DT). Merci !`;
+            }
+
+            window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
+        }
+    };
+
+
+    const handleUnassignPartner = async () => {
+        if (!client || !partnerToUnassign) return;
+
+        try {
+            setIsUnassigningPartner(true);
+            const partnerId = partnerToUnassign.id;
+            const updateData: any = {};
+            if (client.architect_id === partnerId) updateData.architect_id = null;
+            if (client.entrepreneur_id === partnerId) updateData.entrepreneur_id = null;
+            if (client.plumber_id === partnerId) updateData.plumber_id = null;
+            if (client.electrician_id === partnerId) updateData.electrician_id = null;
+            if (client.pool_builder_id === partnerId) updateData.pool_builder_id = null;
+            if (client.site_manager_id === partnerId) updateData.site_manager_id = null;
+            if (client.billing_partner_id === partnerId) updateData.billing_partner_id = null;
+
+            const { error } = await supabase
+                .from('clients')
+                .update(updateData)
+                .eq('id', client.id);
+
+            if (error) throw error;
+            toast.success("Partenaire retiré avec succès");
+            setPartnerToUnassign(null);
+            fetchClientData();
+        } catch (error: any) {
+            toast.error("Erreur lors du retrait : " + error.message);
+        } finally {
+            setIsUnassigningPartner(false);
         }
     };
 
@@ -528,6 +630,62 @@ const ClientDetail: React.FC = () => {
                                 </div>
                             )}
                         </div>
+                    </div>
+
+
+                    {/* 2.5 Équipe du Chantier Tile */}
+                    <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">Équipe du Projet</h4>
+                            <button onClick={() => setIsAssignPartnerOpen(true)} className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-500 flex items-center justify-center hover:bg-blue-500 hover:text-white transition-all" title="Assigner un intervenant">
+                                <Plus size={16} />
+                            </button>
+                        </div>
+                        {clientPartners.length > 0 ? (
+                            <div className="space-y-4 pt-2">
+                                {clientPartners.map(p => (
+                                    <div key={p.id} className="flex items-center gap-4 group relative z-0">
+                                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 md:group-hover:scale-110 transition-transform">
+                                            <User size={18} />
+                                        </div>
+                                        <div className="flex-1 min-w-0 pr-2">
+                                            <p className="text-sm font-black text-slate-800 dark:text-white leading-tight">
+                                                {p.first_name} {p.last_name}
+                                                {p.company && <span className="text-xs font-bold text-slate-400 ml-1 block mt-0.5">{p.company}</span>}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest py-0.5 px-2 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                                                    {p.id === client?.billing_partner_id ? 'TIERS-PAYANT' : p.role}
+                                                </span>
+                                                {p.id === client?.billing_partner_id && (
+                                                    <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest py-0.5 px-2 bg-orange-50 dark:bg-orange-900/20 rounded-md">
+                                                        CAISSE
+                                                    </span>
+                                                )}
+                                                {p.phone && <span className="text-[11px] text-slate-400 font-bold md:hover:text-blue-500 cursor-pointer w-max" onClick={() => window.open(`tel:${p.phone}`)}>{p.phone}</span>}
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                setPartnerToUnassign(p);
+                                            }}
+                                            className="w-12 h-12 shrink-0 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-500 md:bg-transparent md:dark:bg-transparent md:hover:bg-red-50 dark:md:hover:bg-red-900/20 transition-all flex items-center justify-center relative z-10"
+                                            title="Retirer du projet"
+                                        >
+                                            <Trash2 size={18} className="pointer-events-none" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-6 opacity-40 text-center">
+                                <User size={24} className="mb-2 text-slate-400" />
+                                <p className="text-[11px] font-black uppercase tracking-widest text-slate-500">Aucun intervenant</p>
+                            </div>
+                        )}
                     </div>
 
                     {/* 2. Payment List Tile (Timeline Style) */}
@@ -885,9 +1043,40 @@ const ClientDetail: React.FC = () => {
                                                                 </span>
                                                                 <p className="text-base text-slate-500 font-bold uppercase mt-1">Bassin: {inter.pool_name}</p>
                                                             </div>
-                                                            <span className="text-[13px] font-black text-indigo-500 bg-indigo-500/10 px-3 py-1 rounded-lg uppercase tracking-widest">
-                                                                {inter.status || 'TERMINE'}
-                                                            </span>
+                                                            <div className="flex flex-col items-end gap-2">
+                                                                <span className={`text-[11px] font-black px-3 py-1 rounded-lg uppercase tracking-widest ${(() => {
+                                                                    const sTotal = inter.services?.reduce((acc: number, s: any) => acc + (s.price_at_time || 0), 0) || 0;
+                                                                    const pTotal = inter.products?.reduce((acc: number, p: any) => acc + (p.total_price || 0), 0) || 0;
+                                                                    const totalBilled = sTotal + pTotal;
+                                                                    const remaining = totalBilled - (inter.paid_amount || 0);
+
+                                                                    if (remaining <= 0.5) return 'bg-emerald-500/10 text-emerald-500';
+                                                                    if (inter.paid_amount && inter.paid_amount > 0) return 'bg-orange-500/10 text-orange-500';
+                                                                    return 'bg-rose-500/10 text-rose-500';
+                                                                })()
+                                                                    }`}>
+                                                                    {(() => {
+                                                                        const sTotal = inter.services?.reduce((acc: number, s: any) => acc + (s.price_at_time || 0), 0) || 0;
+                                                                        const pTotal = inter.products?.reduce((acc: number, p: any) => acc + (p.total_price || 0), 0) || 0;
+                                                                        const totalBilled = sTotal + pTotal;
+                                                                        const remaining = totalBilled - (inter.paid_amount || 0);
+
+                                                                        if (remaining <= 0.5) return 'Payé';
+                                                                        if (inter.paid_amount && inter.paid_amount > 0) return 'Partiel';
+                                                                        return 'À payer';
+                                                                    })()}
+                                                                </span>
+                                                                {(() => {
+                                                                    const sTotal = inter.services?.reduce((acc: number, s: any) => acc + (s.price_at_time || 0), 0) || 0;
+                                                                    const pTotal = inter.products?.reduce((acc: number, p: any) => acc + (p.total_price || 0), 0) || 0;
+                                                                    const totalBilled = sTotal + pTotal;
+                                                                    const remaining = totalBilled - (inter.paid_amount || 0);
+                                                                    if (remaining > 0.5) {
+                                                                        return <span className="text-[12px] font-black text-rose-500">{remaining.toFixed(0)} DT restants</span>;
+                                                                    }
+                                                                    return null;
+                                                                })()}
+                                                            </div>
                                                         </div>
                                                         <div className="flex items-center gap-6 pt-3 border-t border-slate-100 dark:border-slate-700">
                                                             {inter.ph_level && <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest italic">PH: <strong className="text-slate-900 dark:text-white ml-1">{inter.ph_level}</strong></span>}
@@ -1147,6 +1336,16 @@ const ClientDetail: React.FC = () => {
                     />
                 )
             }
+            {isAssignPartnerOpen && (
+                <AssignPartnerModal
+                    clientId={id!}
+                    onClose={() => setIsAssignPartnerOpen(false)}
+                    onSuccess={() => {
+                        setIsAssignPartnerOpen(false);
+                        fetchClientData();
+                    }}
+                />
+            )}
 
             <ConfirmModal
                 isOpen={!!paymentToDelete}
@@ -1198,6 +1397,17 @@ const ClientDetail: React.FC = () => {
                 onConfirm={handleDeleteDevis}
                 onClose={() => setDevisToDelete(null)}
                 loading={isDeletingDevis}
+                variant="danger"
+            />
+
+            <ConfirmModal
+                isOpen={!!partnerToUnassign}
+                title="Retirer le partenaire"
+                message={`Voulez-vous vraiment retirer ${partnerToUnassign?.first_name} ${partnerToUnassign?.last_name} du projet de ce client ?`}
+                confirmLabel="RETIRER"
+                onConfirm={handleUnassignPartner}
+                onClose={() => setPartnerToUnassign(null)}
+                loading={isUnassigningPartner}
                 variant="danger"
             />
         </PageLayout>

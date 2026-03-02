@@ -130,10 +130,13 @@ const ClientsList: React.FC = () => {
                 toolbar={toolbar}
                 className={viewMode === 'map' ? '!pt-0 !px-0' : ''}
             >
-                {/* Content Area */}
-                <main className="pb-12">
-                    {viewMode === 'list' ? (
-                        <div className="flex flex-col gap-3">
+                {viewMode === 'map' ? (
+                    <div className="absolute inset-0 z-0 flex flex-col pb-16">
+                        <GlobalMap clients={filteredClients} />
+                    </div>
+                ) : (
+                    <main className={`pb-12`}>
+                        <div className="flex flex-col gap-3 relative z-10">
                             {filteredClients.length > 0 ? (
                                 filteredClients.map((client, idx) => (
                                     // eslint-disable-next-line
@@ -183,12 +186,8 @@ const ClientsList: React.FC = () => {
                                 )
                             )}
                         </div>
-                    ) : (
-                        <div className="animate-in fade-in zoom-in-95 duration-500">
-                            <GlobalMap clients={filteredClients} />
-                        </div>
-                    )}
-                </main>
+                    </main>
+                )}
 
                 {/* Floating Action Button */}
                 <button

@@ -22,6 +22,7 @@ import AddProductModal from "./AddProductModal";
 import AddPoolModal from "./AddPoolModal";
 import ClientSelectionModal from "./ClientSelectionModal";
 import { toast } from "react-hot-toast";
+import { recalculateVentilation } from "../lib/paymentService";
 
 interface Service {
   id: string;
@@ -557,6 +558,10 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         const newBalance = currentBalance + balanceAdjustment;
 
         await supabase.from("clients").update({ balance: newBalance }).eq("id", snapshotClientId);
+
+        // --- RECALCULER LA VENTILATION FIFO ---
+        await recalculateVentilation(snapshotClientId);
+        // --------------------------------------
 
         // Clôture du devis si facturation finale
         if (snapshotFormData.devis_id && snapshotFormData.is_final_devis_billing) {

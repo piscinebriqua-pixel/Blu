@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Users, Calendar, Waves, Grid, LogOut } from 'lucide-react';
+import { Home, Users, Calendar, Waves, Briefcase, LogOut } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const BottomNav: React.FC = () => {
@@ -42,11 +42,11 @@ const BottomNav: React.FC = () => {
                 )}
             </NavLink>
 
-            <NavLink to="/technicians" className={({ isActive }) => `nav-item-premium ${isActive ? 'active' : ''}`}>
+            <NavLink to="/partners" className={({ isActive }) => `nav-item-premium ${isActive ? 'active' : ''}`}>
                 {({ isActive }) => (
                     <>
-                        <Grid size={22} strokeWidth={isActive ? 2.5 : 2} />
-                        <span>Équipe</span>
+                        <Briefcase size={22} strokeWidth={isActive ? 2.5 : 2} />
+                        <span>Réseau</span>
                     </>
                 )}
             </NavLink>

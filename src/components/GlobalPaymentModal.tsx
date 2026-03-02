@@ -4,6 +4,7 @@ import { Wallet, User, CheckCircle2, Globe } from 'lucide-react';
 import ModalLayout from './ModalLayout';
 import Combobox from './ui/Combobox';
 import { toast } from 'react-hot-toast';
+import { recalculateVentilation } from '../lib/paymentService';
 
 interface GlobalPaymentModalProps {
     onClose: () => void;
@@ -100,6 +101,9 @@ const GlobalPaymentModal: React.FC<GlobalPaymentModalProps> = ({ onClose, onSucc
                 .eq('id', formData.client_id);
 
             if (balanceUpdateError) throw balanceUpdateError;
+
+            // 3. Recalculate FIFO Ventilation
+            await recalculateVentilation(formData.client_id);
 
             toast.success('Paiement enregistré avec succès');
             onSuccess();

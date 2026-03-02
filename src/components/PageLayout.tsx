@@ -158,15 +158,15 @@ const PageLayout: React.FC<PageLayoutProps> = ({
             )}
 
             {/* Main Content */}
-            <main className={`main-container relative flex-1 pt-6 page-content pb-12 transition-all duration-300 ${className}`}>
-                <div className="max-w-7xl mx-auto w-full">
+            <main className={`main-container relative flex-1 pt-6 page-content pb-12 transition-all duration-300 ${className} flex flex-col`}>
+                <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center py-32 animate-pulse">
+                        <div className="flex flex-col items-center justify-center py-32 animate-pulse flex-1">
                             <div className="w-16 h-16 rounded-full border-4 border-slate-200 dark:border-slate-700 border-t-primary animate-spin mb-6"></div>
                             <span className="text-base font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">Chargement en cours...</span>
                         </div>
                     ) : (
-                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 fill-mode-backwards">
+                        <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 fill-mode-backwards flex-1 flex flex-col min-h-0">
                             {children}
                         </div>
                     )}

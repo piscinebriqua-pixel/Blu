@@ -21,6 +21,8 @@ import Chantiers from './pages/Chantiers';
 import { Toaster } from 'react-hot-toast';
 import BccpLogo from './components/BccpLogo';
 import BottomNav from './components/BottomNav';
+import Partners from './pages/Partners';
+import PartnerDetail from './pages/PartnerDetail';
 import './index.css';
 
 const ClientRedirect = () => {
@@ -246,6 +248,16 @@ function App() {
               </ProtectedRoute>
             } />
 
+            <Route path="/partners" element={
+              <ProtectedRoute>
+                <div className="app-container"><Partners /></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/partners/:id" element={
+              <ProtectedRoute>
+                <div className="app-container"><PartnerDetail /></div>
+              </ProtectedRoute>
+            } />
             <Route path="/interventions" element={
               <ProtectedRoute>
                 <div className="app-container"><Interventions /></div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
-import { Maximize2, Minimize2, Loader2, Navigation, User, MapPin } from 'lucide-react';
+import { Loader2, Navigation, User, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface Client {
@@ -23,15 +23,13 @@ const GlobalMap: React.FC<GlobalMapProps> = ({ clients }) => {
         googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
     });
 
-    const [isExpanded, setIsExpanded] = useState(false);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
     const validClients = clients.filter(c => c.gps_lat && c.gps_lng);
 
     const containerStyle = {
         width: '100%',
-        height: isExpanded ? 'calc(100vh - 200px)' : '400px',
-        borderRadius: '2rem',
+        height: '100%',
         transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
     };
 
@@ -41,15 +39,15 @@ const GlobalMap: React.FC<GlobalMapProps> = ({ clients }) => {
 
     if (!isLoaded) {
         return (
-            <div className="w-full h-[400px] bg-slate-100 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center animate-pulse">
+            <div className="w-full h-full min-h-[400px] bg-slate-100 dark:bg-slate-800 rounded-[2rem] flex items-center justify-center animate-pulse">
                 <Loader2 className="w-11 h-11 text-primary animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className={`relative transition-all duration-500 ease-in-out ${isExpanded ? 'fixed inset-0 z-[100] bg-white dark:bg-slate-900' : 'z-0'}`}>
-            <div className={`${isExpanded ? 'h-full w-full' : 'bg-white dark:bg-slate-800 p-2 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-slate-700'}`}>
+        <div className={`relative transition-all duration-500 ease-in-out w-full h-full min-h-[400px] z-0`}>
+            <div className="h-full w-full bg-slate-100 dark:bg-slate-800">
                 <GoogleMap
                     mapContainerStyle={containerStyle}
                     center={center}
@@ -110,17 +108,10 @@ const GlobalMap: React.FC<GlobalMapProps> = ({ clients }) => {
                     )}
                 </GoogleMap>
 
-                {/* Controls */}
-                <button
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="absolute top-6 right-6 w-10 h-10 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-slate-600 dark:text-white rounded-xl shadow-lg border border-slate-100 dark:border-white/10 flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
-                    title={isExpanded ? "Réduire" : "Agrandir"}
-                >
-                    {isExpanded ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-                </button>
+
 
                 {/* Stats Overlay */}
-                <div className="absolute bottom-6 left-6 px-4 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-lg border border-slate-100 dark:border-white/10">
+                <div className="absolute bottom-28 left-6 px-4 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-lg border border-slate-100 dark:border-white/10">
                     <span className="text-[13px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
                         {validClients.length} Localisations affichées
                     </span>
