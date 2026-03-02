@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ModalLayout from './ModalLayout';
-import { Plus, Trash2, Loader2, Upload, FileSignature, UserPlus } from 'lucide-react';
+import { Plus, Trash2, Loader2, Upload, FileSignature, UserPlus, GripVertical } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import type { DropResult } from '@hello-pangea/dnd';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import Button from './ui/Button';
@@ -23,6 +25,7 @@ interface DevisItem {
     unit_price: number;
     unit?: string;
     is_header?: boolean;
+    position?: number;
 }
 
 interface AddDevisModalProps {
@@ -80,6 +83,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
                 .from('devis_items')
                 .select('*')
                 .eq('devis_id', id)
+                .order('position', { ascending: true })
                 .order('id', { ascending: true });
 
             if (itemsError) throw itemsError;
@@ -142,11 +146,11 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
     }, [number]);
 
     const addItem = () => {
-        setItems([...items, { designation: '', quantity: 1, unit_price: 0, unit: 'U', is_header: false }]);
+        setItems([...items, { id: crypto.randomUUID(), designation: '', quantity: 1, unit_price: 0, unit: 'U', is_header: false }]);
     };
 
     const addHeader = () => {
-        setItems([...items, { designation: '', quantity: 0, unit_price: 0, unit: '', is_header: true }]);
+        setItems([...items, { id: crypto.randomUUID(), designation: '', quantity: 0, unit_price: 0, unit: '', is_header: true }]);
     };
 
     const removeItem = (index: number) => {
@@ -317,7 +321,8 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
 
             // 3. Set Items
             if (extractedData.items && extractedData.items.length > 0) {
-                setItems(extractedData.items);
+                const aiItems = extractedData.items.map((it: any) => ({ ...it, id: crypto.randomUUID() }));
+                setItems(aiItems);
                 toast.success(`${extractedData.items.length} prestations importées.`);
             }
 
@@ -347,6 +352,19 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
         } finally {
             setParsing(false);
         }
+    };
+
+    const handleDragEnd = (result: DropResult) => {
+        if (!result.destination) return;
+
+        const startIndex = result.source.index;
+        const endIndex = result.destination.index;
+
+        const newItems = Array.from(items);
+        const [reorderedItem] = newItems.splice(startIndex, 1);
+        newItems.splice(endIndex, 0, reorderedItem);
+
+        setItems(newItems);
     };
 
     const handleSubmit = async () => {
@@ -406,13 +424,14 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
             }
 
             // 2. Create Items
-            const itemsToInsert = items.map(item => ({
+            const itemsToInsert = items.map((item, index) => ({
                 devis_id: devisDataId,
                 designation: item.designation,
                 quantity: item.is_header ? 0 : item.quantity,
                 unit_price: item.is_header ? 0 : item.unit_price,
                 unit: item.unit || '',
-                is_header: !!item.is_header
+                is_header: !!item.is_header,
+                position: index
             }));
 
             const { error: itemsError } = await supabase
@@ -541,7 +560,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
                                 value={status}
                                 onChange={(e) => setStatus(e.target.value as any)}
                                 className={`w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-black px-4 outline-none focus:border-blue-500 transition-all ${status === 'closed' ? 'text-emerald-500' :
-                                        status === 'cancelled' ? 'text-rose-500' : 'text-blue-500'
+                                    status === 'cancelled' ? 'text-rose-500' : 'text-blue-500'
                                     }`}
                             >
                                 <option value="pending" className="text-blue-500">EN COURS</option>
@@ -589,81 +608,106 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        {items.length === 0 && (
-                            <div className="py-10 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 rounded-[2rem]">
-                                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Aucune ligne saisie</p>
-                            </div>
-                        )}
-                        {items.map((item, index) => (
-                            <div key={index} className={`relative flex flex-col gap-3 p-4 ${item.is_header ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900/30' : 'bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-700'} rounded-[1.5rem] border animate-in fade-in slide-in-from-left duration-300 stagger-${(index % 10) + 1} shadow-sm`}>
+                    <DragDropContext onDragEnd={handleDragEnd}>
+                        <Droppable droppableId="devis-items">
+                            {(provided) => (
+                                <div
+                                    className="space-y-2"
+                                    {...provided.droppableProps}
+                                    ref={provided.innerRef}
+                                >
+                                    {items.length === 0 && (
+                                        <div className="py-10 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 rounded-[2rem]">
+                                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Aucune ligne saisie</p>
+                                        </div>
+                                    )}
+                                    {items.map((item, index) => (
+                                        <Draggable key={item.id || `temp-${index}`} draggableId={item.id || `temp-${index}`} index={index}>
+                                            {(provided, snapshot) => (
+                                                <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    className={`relative flex flex-col gap-3 p-4 ${item.is_header ? 'bg-blue-50/50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-900/30' : 'bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-700'} rounded-[1.5rem] border ${snapshot.isDragging ? 'shadow-2xl ring-2 ring-blue-500 z-50 opacity-90' : 'shadow-sm'}`}
+                                                >
+                                                    {/* Top Row: Handle, Description & Delete */}
+                                                    <div className="flex items-start justify-between gap-3 w-full">
+                                                        <div
+                                                            {...provided.dragHandleProps}
+                                                            className="mt-1 cursor-grab active:cursor-grabbing text-slate-400 hover:text-blue-500 transition-colors p-1"
+                                                            title="Déplacer"
+                                                        >
+                                                            <GripVertical size={20} />
+                                                        </div>
+                                                        <textarea
+                                                            title="Désignation"
+                                                            placeholder={item.is_header ? "TITRE DE SECTION (EX: FILTRATION)" : "Désignation de la prestation"}
+                                                            value={item.designation}
+                                                            onChange={(e) => updateItem(index, 'designation', e.target.value)}
+                                                            rows={item.is_header ? 1 : 2}
+                                                            className={`flex-1 w-full bg-transparent border-none ${item.is_header ? 'font-black text-[15px] uppercase text-blue-900 dark:text-blue-100 mt-1' : 'font-medium text-[14px] text-slate-800 dark:text-white'} outline-none resize-y min-h-[40px] placeholder:text-slate-400 focus:ring-0`}
+                                                        />
+                                                        <button
+                                                            onClick={() => removeItem(index)}
+                                                            className="p-2.5 bg-white dark:bg-slate-800 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-slate-100 dark:border-slate-700 shadow-sm shrink-0 mt-1"
+                                                            title="Supprimer la ligne"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
 
-                                {/* Top Row: Description & Delete */}
-                                <div className="flex items-start justify-between gap-3 w-full">
-                                    <textarea
-                                        title="Désignation"
-                                        placeholder={item.is_header ? "TITRE DE SECTION (EX: FILTRATION)" : "Désignation de la prestation"}
-                                        value={item.designation}
-                                        onChange={(e) => updateItem(index, 'designation', e.target.value)}
-                                        rows={item.is_header ? 1 : 2}
-                                        className={`flex-1 w-full bg-transparent border-none ${item.is_header ? 'font-black text-[15px] uppercase text-blue-900 dark:text-blue-100 mt-1' : 'font-medium text-[14px] text-slate-800 dark:text-white'} outline-none resize-y min-h-[40px] placeholder:text-slate-400`}
-                                    />
-                                    <button
-                                        onClick={() => removeItem(index)}
-                                        className="p-2.5 bg-white dark:bg-slate-800 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-slate-100 dark:border-slate-700 shadow-sm shrink-0"
-                                        title="Supprimer la ligne"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
+                                                    {/* Bottom Row: Values & Total (Only for normal items) */}
+                                                    {!item.is_header && (
+                                                        <div className="flex flex-wrap items-center gap-3 p-1 w-full">
+                                                            <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                                                                <input
+                                                                    title="Quantité"
+                                                                    type="number"
+                                                                    placeholder="Qté"
+                                                                    value={item.quantity}
+                                                                    onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value))}
+                                                                    className="w-16 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-[13px] text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
+                                                                />
+                                                                <span className="text-slate-400 text-sm font-bold">×</span>
+                                                                <div className="flex items-center gap-1">
+                                                                    <input
+                                                                        title="Prix Unitaire"
+                                                                        type="number"
+                                                                        placeholder="PU"
+                                                                        value={item.unit_price}
+                                                                        onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value))}
+                                                                        className="w-24 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-[13px] text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
+                                                                    />
+                                                                    <span className="text-[10px] font-black text-slate-400">DT</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-1 ml-auto md:ml-2">
+                                                                    <input
+                                                                        title="Unité"
+                                                                        placeholder="Unité (ex: Forfait)"
+                                                                        value={item.unit || ''}
+                                                                        onChange={(e) => updateItem(index, 'unit', e.target.value)}
+                                                                        className="w-20 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-[11px] text-slate-500 uppercase tracking-widest outline-none focus:border-blue-500 transition-all"
+                                                                    />
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Row Total Highlight */}
+                                                            <div className="h-11 px-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 rounded-xl flex items-center justify-center gap-1 ml-auto shrink-0 shadow-sm">
+                                                                <span className="text-[13px] font-black text-blue-700 dark:text-blue-400">
+                                                                    {typeof item.quantity === 'number' && typeof item.unit_price === 'number' ? (item.quantity * item.unit_price).toFixed(2) : '0.00'}
+                                                                </span>
+                                                                <span className="text-[9px] font-black text-blue-400 uppercase">DT</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </Draggable>
+                                    ))}
+                                    {provided.placeholder}
                                 </div>
-
-                                {/* Bottom Row: Values & Total (Only for normal items) */}
-                                {!item.is_header && (
-                                    <div className="flex flex-wrap items-center gap-3 p-1 w-full">
-                                        <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                                            <input
-                                                title="Quantité"
-                                                type="number"
-                                                placeholder="Qté"
-                                                value={item.quantity}
-                                                onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value))}
-                                                className="w-16 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-[13px] text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
-                                            />
-                                            <span className="text-slate-400 text-sm font-bold">×</span>
-                                            <div className="flex items-center gap-1">
-                                                <input
-                                                    title="Prix Unitaire"
-                                                    type="number"
-                                                    placeholder="PU"
-                                                    value={item.unit_price}
-                                                    onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value))}
-                                                    className="w-24 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-[13px] text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
-                                                />
-                                                <span className="text-[10px] font-black text-slate-400">DT</span>
-                                            </div>
-                                            <div className="flex items-center gap-1 ml-auto md:ml-2">
-                                                <input
-                                                    title="Unité"
-                                                    placeholder="Unité (ex: Forfait)"
-                                                    value={item.unit || ''}
-                                                    onChange={(e) => updateItem(index, 'unit', e.target.value)}
-                                                    className="w-20 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-[11px] text-slate-500 uppercase tracking-widest outline-none focus:border-blue-500 transition-all"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Row Total Highlight */}
-                                        <div className="h-11 px-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 rounded-xl flex items-center justify-center gap-1 ml-auto shrink-0 shadow-sm">
-                                            <span className="text-[13px] font-black text-blue-700 dark:text-blue-400">
-                                                {typeof item.quantity === 'number' && typeof item.unit_price === 'number' ? (item.quantity * item.unit_price).toFixed(2) : '0.00'}
-                                            </span>
-                                            <span className="text-[9px] font-black text-blue-400 uppercase">DT</span>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                            )}
+                        </Droppable>
+                    </DragDropContext>
 
                     {/* FOOTER DETAILS: PAYMENT & NOTES */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

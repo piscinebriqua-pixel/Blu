@@ -33,6 +33,7 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
                     .from('devis_items')
                     .select('*')
                     .eq('devis_id', devis.id)
+                    .order('position', { ascending: true })
                     .order('id', { ascending: true });
 
                 if (error) throw error;
