@@ -456,8 +456,16 @@ const ClientDetail: React.FC = () => {
                 formattedPhone = '216' + formattedPhone;
             }
 
-            // Generate message with unpaid interventions
-            let message = `Bonjour ${client.first_name},\n\nVoici le point sur votre compte :\n`;
+            const remainingBalance = totalIntersAmount - totalPaymentsAmount;
+            let message = `Bonjour ${client.first_name},\n\n`;
+
+            if (remainingBalance > 0.5) {
+                message += `Voici le point sur votre compte. Votre solde restant à régler est de *${remainingBalance.toFixed(0)} DT*.\n\n`;
+            } else {
+                message += `Nous vous contactons pour vous informer que votre compte est actuellement à jour (Solde : 0 DT). Merci de votre confiance !\n`;
+                window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
+                return;
+            }
 
             const unpaidInters = interventions.filter(inter => {
                 const sTotal = inter.services?.reduce((acc: number, s: any) => acc + (s.price_at_time || 0), 0) || 0;
@@ -467,18 +475,19 @@ const ClientDetail: React.FC = () => {
             });
 
             if (unpaidInters.length > 0) {
-                message += `*Interventions en attente de règlement :*\n`;
+                message += `*Détails des interventions en attente :*\n`;
                 unpaidInters.forEach(inter => {
                     const sTotal = inter.services?.reduce((acc: number, s: any) => acc + (s.price_at_time || 0), 0) || 0;
                     const pTotal = inter.products?.reduce((acc: number, p: any) => acc + (p.total_price || 0), 0) || 0;
                     const totalBilled = sTotal + pTotal;
                     const remaining = totalBilled - (inter.paid_amount || 0);
                     const date = new Date(inter.visit_date).toLocaleDateString('fr-FR');
-                    message += `• ${date} (${inter.pool_name}) : *${remaining.toFixed(0)} DT*\n`;
+                    message += `• ${date} (${inter.pool_name}) : *${remaining.toFixed(0)} DT*`;
+                    if (inter.paid_amount > 0) {
+                        message += ` (sur ${totalBilled.toFixed(0)} DT)`;
+                    }
+                    message += '\n';
                 });
-                message += `\n*TOTAL RESTANT : ${(totalIntersAmount - totalPaymentsAmount).toFixed(0)} DT*`;
-            } else {
-                message += `Votre compte est à jour (Solde : 0 DT). Merci !`;
             }
 
             window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
