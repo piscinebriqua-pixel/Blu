@@ -482,9 +482,11 @@ const ClientDetail: React.FC = () => {
                     const totalBilled = sTotal + pTotal;
                     const remaining = totalBilled - (inter.paid_amount || 0);
                     const date = new Date(inter.visit_date).toLocaleDateString('fr-FR');
-                    message += `• ${date} (${inter.pool_name}) : *${remaining.toFixed(0)} DT*`;
-                    if (inter.paid_amount > 0) {
-                        message += ` (sur ${totalBilled.toFixed(0)} DT)`;
+                    const paidAmount = inter.paid_amount || 0;
+                    if (paidAmount > 0) {
+                        message += `• ${date} (${inter.pool_name}) :\n  Total: ${totalBilled.toFixed(0)} DT | Payé: ${paidAmount.toFixed(0)} DT | Reste: *${remaining.toFixed(0)} DT*`;
+                    } else {
+                        message += `• ${date} (${inter.pool_name}) : *${remaining.toFixed(0)} DT*`;
                     }
                     message += '\n';
                 });
