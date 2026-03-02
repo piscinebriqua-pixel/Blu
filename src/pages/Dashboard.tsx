@@ -91,8 +91,8 @@ const Dashboard: React.FC = () => {
                         const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
 
                         const [currentRes, lastRes] = await Promise.all([
-                            supabase.from('payments').select('amount').gte('payment_date', startOfMonth.toISOString()),
-                            supabase.from('payments').select('amount').gte('payment_date', startOfLastMonth.toISOString()).lte('payment_date', endOfLastMonth.toISOString())
+                            supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', startOfMonth.toISOString()),
+                            supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', startOfLastMonth.toISOString()).lte('payment_date', endOfLastMonth.toISOString())
                         ]);
 
                         monthlyRevenue = currentRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;

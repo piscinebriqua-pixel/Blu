@@ -163,6 +163,7 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
                         <option value="chèque">Chèque</option>
                         <option value="virement">Virement</option>
                         <option value="autre">Autre</option>
+                        <option value="remise">Remise / Perte (Admin)</option>
                     </select>
                 </div>
 

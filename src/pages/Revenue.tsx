@@ -77,6 +77,7 @@ const Revenue: React.FC = () => {
                     payment_date,
                     technician:technicians(full_name)
                 `)
+                .neq('method', 'remise')
                 .gte('payment_date', startDate.toISOString())
                 .order('payment_date', { ascending: false });
 
@@ -88,6 +89,7 @@ const Revenue: React.FC = () => {
             const { data: lastMonthData } = await supabase
                 .from('payments')
                 .select('amount')
+                .neq('method', 'remise')
                 .gte('payment_date', lastMonthStart.toISOString())
                 .lte('payment_date', lastMonthEnd.toISOString());
 
@@ -238,6 +240,12 @@ const Revenue: React.FC = () => {
             loading={loading}
         >
             <div className="flex flex-col gap-6">
+                <style>
+                    {`
+                        ${stats.byMethod.map((item, i) => `.bar-method-${i} { width: ${(item.amount / stats.total) * 100}%; }`).join('\n')}
+                        ${stats.byTech.map((item, i) => `.bar-tech-${i} { width: ${(item.amount / (stats.byTech[0]?.amount || 1)) * 100}%; }`).join('\n')}
+                    `}
+                </style>
 
                 {/* Time range selector */}
                 <div className="flex bg-white dark:bg-slate-800 p-1 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm self-start">
@@ -356,9 +364,8 @@ const Revenue: React.FC = () => {
                                     </div>
                                     <div className="w-full h-1.5 bg-slate-50 dark:bg-slate-900 rounded-full overflow-hidden">
                                         <div
-                                            className={`h-full rounded-full transition-all duration-1000 ${item.method === 'Espèces' ? 'bg-amber-500' : item.method === 'Carte' ? 'bg-blue-500' : 'bg-emerald-500'
+                                            className={`h-full rounded-full transition-all duration-1000 bar-method-${stats.byMethod.indexOf(item)} ${item.method === 'Espèces' ? 'bg-amber-500' : item.method === 'Carte' ? 'bg-blue-500' : 'bg-emerald-500'
                                                 }`}
-                                            style={{ width: `${(item.amount / stats.total) * 100}%` }}
                                         />
                                     </div>
                                 </div>
@@ -385,8 +392,7 @@ const Revenue: React.FC = () => {
                                         <div className="flex items-center gap-2">
                                             <div className="flex-1 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                                 <div
-                                                    className="h-full bg-primary rounded-full"
-                                                    style={{ width: `${(item.amount / (stats.byTech[0]?.amount || 1)) * 100}%` }}
+                                                    className={`h-full bg-primary rounded-full bar-tech-${stats.byTech.indexOf(item)}`}
                                                 />
                                             </div>
                                             <span className="text-[13px] font-bold text-slate-900 dark:text-white shrink-0">{item.amount.toLocaleString()} <span className="text-[9px] opacity-40">DT</span></span>

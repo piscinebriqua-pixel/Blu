@@ -559,6 +559,43 @@ const ClientDetail: React.FC = () => {
         );
     }
 
+    const handleSolder = () => {
+        if (!client) return;
+        if (window.confirm("Créer une remise (perte) du montant exact manquant pour solder ce compte à 0 DT ?")) {
+            const missingAmount = Math.abs(totalPaymentsAmount - totalIntersAmount);
+            const insertRemise = async () => {
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (!session?.user) return;
+
+                    const { data: profile } = await supabase.from('profiles').select('technician_id').eq('id', session.user.id).single();
+
+                    const { error } = await supabase.from('payments').insert([{
+                        client_id: client.id,
+                        technician_id: profile?.technician_id || null, // Best effort
+                        amount: missingAmount,
+                        method: 'remise',
+                        notes: 'Solde de compte automatique (Remise/Perte)'
+                    }]);
+
+                    if (error) throw error;
+
+                    const { error: balanceUpdateError } = await supabase
+                        .from('clients')
+                        .update({ balance: 0 })
+                        .eq('id', client.id);
+                    if (balanceUpdateError) throw balanceUpdateError;
+
+                    toast.success('Compte soldé avec succès');
+                    fetchClientData();
+                } catch (e: any) {
+                    toast.error('Erreur lors du solde: ' + e.message);
+                }
+            };
+            insertRemise();
+        }
+    };
+
     const toolbar = (
         <div className="flex items-center justify-between w-full gap-3">
             <div className="flex items-center gap-2">
@@ -569,14 +606,23 @@ const ClientDetail: React.FC = () => {
                     <Navigation size={18} />
                 </button>
             </div>
-            <button onClick={() => setIsEditClientModalOpen(true)} className="btn-icon !bg-blue-600 !text-white !border-none !w-10 !h-10 shadow-lg shadow-blue-500/20" title="Modifier Profil">
-                <Edit2 size={18} />
-            </button>
-            {isAdmin && (
-                <button onClick={() => setShowDeleteConfirm(true)} className="btn-icon !bg-red-500 !text-white !border-none !w-10 !h-10 shadow-lg shadow-red-500/20" title="Supprimer Client">
-                    <Trash2 size={18} />
+
+            <div className="flex items-center gap-2">
+                {isAdmin && (totalPaymentsAmount - totalIntersAmount) < -0.1 && (
+                    <button onClick={handleSolder} className="flex items-center justify-center gap-2 px-3 h-10 bg-rose-500 text-white rounded-xl shadow-lg shadow-rose-500/20 hover:bg-rose-600 transition-colors" title="Solder (Remise)">
+                        <Wallet size={16} className="animate-pulse" />
+                        <span className="text-[12px] font-black uppercase">Solder</span>
+                    </button>
+                )}
+                <button onClick={() => setIsEditClientModalOpen(true)} className="btn-icon !bg-blue-600 !text-white !border-none !w-10 !h-10 shadow-lg shadow-blue-500/20" title="Modifier Profil">
+                    <Edit2 size={18} />
                 </button>
-            )}
+                {isAdmin && (
+                    <button onClick={() => setShowDeleteConfirm(true)} className="btn-icon !bg-red-500 !text-white !border-none !w-10 !h-10 shadow-lg shadow-red-500/20" title="Supprimer Client">
+                        <Trash2 size={18} />
+                    </button>
+                )}
+            </div>
         </div>
     );
 
@@ -805,7 +851,7 @@ const ClientDetail: React.FC = () => {
                                 <Plus size={16} className="text-indigo-500 group-hover:scale-125 transition-transform" />
                                 <span className="text-[13px] font-black text-slate-600 dark:text-slate-300 uppercase">Info Bassin</span>
                             </button>
-                            <button onClick={() => setIsEditClientModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-slate-900 transition-all group">
+                            <button onClick={() => setIsEditClientModalOpen(true)} className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-3 rounded-xl hover:border-slate-900 transition-all group lg:col-span-2">
                                 <Edit2 size={16} className="text-slate-500 group-hover:scale-125 transition-transform" />
                                 <span className="text-[13px] font-black text-slate-600 dark:text-slate-300 uppercase">Editer Profil</span>
                             </button>
