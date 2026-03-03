@@ -137,6 +137,8 @@ const ClientDetail: React.FC = () => {
     const [selectedDevisForView, setSelectedDevisForView] = useState<any>(null);
     const [isAssignPartnerOpen, setIsAssignPartnerOpen] = useState(false);
     const [clientPartners, setClientPartners] = useState<any[]>([]);
+    const [isSolderModalOpen, setIsSolderModalOpen] = useState(false);
+    const [isSoldering, setIsSoldering] = useState(false);
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
         const sTotal = inter.services?.reduce((sAcc: number, s: any) => sAcc + (s.price_at_time || 0), 0) || 0;
@@ -561,38 +563,43 @@ const ClientDetail: React.FC = () => {
 
     const handleSolder = () => {
         if (!client) return;
-        if (window.confirm("Créer une remise (perte) du montant exact manquant pour solder ce compte à 0 DT ?")) {
-            const missingAmount = Math.abs(totalPaymentsAmount - totalIntersAmount);
-            const insertRemise = async () => {
-                try {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (!session?.user) return;
+        setIsSolderModalOpen(true);
+    };
 
-                    const { data: profile } = await supabase.from('profiles').select('technician_id').eq('id', session.user.id).single();
+    const confirmSolder = async () => {
+        if (!client) return;
+        setIsSoldering(true);
+        const missingAmount = Math.abs(totalPaymentsAmount - totalIntersAmount);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) return;
 
-                    const { error } = await supabase.from('payments').insert([{
-                        client_id: client.id,
-                        technician_id: profile?.technician_id || null, // Best effort
-                        amount: missingAmount,
-                        method: 'remise',
-                        notes: 'Solde de compte automatique (Remise/Perte)'
-                    }]);
+            const { data: profile } = await supabase.from('profiles').select('technician_id').eq('id', session.user.id).single();
 
-                    if (error) throw error;
+            const { error } = await supabase.from('payments').insert([{
+                client_id: client.id,
+                technician_id: profile?.technician_id || null, // Best effort
+                amount: missingAmount,
+                method: 'remise',
+                notes: 'Solde de compte automatique (Remise/Perte)',
+                payment_date: new Date().toISOString().split('T')[0]
+            }]);
 
-                    const { error: balanceUpdateError } = await supabase
-                        .from('clients')
-                        .update({ balance: 0 })
-                        .eq('id', client.id);
-                    if (balanceUpdateError) throw balanceUpdateError;
+            if (error) throw error;
 
-                    toast.success('Compte soldé avec succès');
-                    fetchClientData();
-                } catch (e: any) {
-                    toast.error('Erreur lors du solde: ' + e.message);
-                }
-            };
-            insertRemise();
+            const { error: balanceUpdateError } = await supabase
+                .from('clients')
+                .update({ balance: 0 })
+                .eq('id', client.id);
+            if (balanceUpdateError) throw balanceUpdateError;
+
+            toast.success('Compte soldé avec succès');
+            setIsSolderModalOpen(false);
+            fetchClientData();
+        } catch (e: any) {
+            toast.error('Erreur lors du solde: ' + e.message);
+        } finally {
+            setIsSoldering(false);
         }
     };
 
@@ -1466,6 +1473,17 @@ const ClientDetail: React.FC = () => {
                 onClose={() => setPartnerToUnassign(null)}
                 loading={isUnassigningPartner}
                 variant="danger"
+            />
+
+            <ConfirmModal
+                isOpen={isSolderModalOpen}
+                title="Solder le compte"
+                message="Créer une remise (perte) du montant exact manquant pour solder ce compte à 0 DT ?"
+                confirmLabel="SOLDER"
+                onConfirm={confirmSolder}
+                onClose={() => setIsSolderModalOpen(false)}
+                loading={isSoldering}
+                variant="primary"
             />
         </PageLayout>
     );
