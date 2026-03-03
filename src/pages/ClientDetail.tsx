@@ -137,6 +137,7 @@ const ClientDetail: React.FC = () => {
     const [selectedDevisForView, setSelectedDevisForView] = useState<any>(null);
     const [isAssignPartnerOpen, setIsAssignPartnerOpen] = useState(false);
     const [clientPartners, setClientPartners] = useState<any[]>([]);
+    const [isSolderModalOpen, setIsSolderModalOpen] = useState(false);
     const [isSoldering, setIsSoldering] = useState(false);
     const [interventionFilter, setInterventionFilter] = useState<'all' | 'paid' | 'unpaid'>('unpaid');
 
@@ -652,6 +653,32 @@ const ClientDetail: React.FC = () => {
             toolbar={toolbar}
             loading={loading}
         >
+            {/* 0. Financial Fintech Tile (Header) */}
+            <div
+                onClick={() => setActiveCategory('balance')}
+                className={`card-bento cursor-pointer relative overflow-hidden transition-all duration-500 min-h-[100px] mb-4 flex flex-row items-center justify-between px-6 py-4 ${(totalPaymentsAmount - totalIntersAmount) < 0 ? 'border-none shadow-2xl fintech-card-red-luxe' : 'border-none shadow-xl fintech-card-money-luxe'}`}
+            >
+                <div className="relative z-10 flex flex-col">
+                    <div className="flex items-center gap-2 mb-1">
+                        <Wallet size={16} className="text-white/60" />
+                        <p className="text-[11px] font-black uppercase tracking-[0.2em] text-white">État Financier</p>
+                    </div>
+                    <p className="text-[11px] font-black uppercase tracking-widest text-white/80">
+                        {(totalPaymentsAmount - totalIntersAmount) < 0 ? 'Crédit à recouvrer' : 'Compte positif'}
+                    </p>
+                </div>
+
+                <div className="relative z-10 text-right">
+                    <h3 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-white">
+                        {Math.abs(totalPaymentsAmount - totalIntersAmount).toFixed(0)}
+                        <span className="text-lg md:text-xl font-black ml-1 uppercase text-white/60">Dt</span>
+                    </h3>
+                </div>
+
+                {/* Decorative Grid Lines like a Fintech app */}
+                <div className="fintech-pattern" />
+            </div>
+
             <div className="bento-grid-2">
                 {/* LEFT COLUMN: CONTACT & LOCATION */}
                 <div className="flex flex-col gap-4">
@@ -801,29 +828,6 @@ const ClientDetail: React.FC = () => {
 
                 {/* RIGHT COLUMN: FINANCE & STATUS */}
                 <div className="flex flex-col gap-4">
-                    {/* 3. Financial Fintech Tile */}
-                    <div
-                        onClick={() => setActiveCategory('balance')}
-                        className={`card-bento cursor-pointer relative overflow-hidden transition-all duration-500 min-h-[180px] flex flex-col justify-center ${(totalPaymentsAmount - totalIntersAmount) < 0 ? 'border-none shadow-2xl fintech-card-red-luxe' : 'border-none shadow-xl fintech-card-money-luxe'}`}
-                    >
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-2">
-                                <p className="text-[13px] font-black uppercase tracking-[0.2em] text-white">État Financier</p>
-                                <Wallet size={24} className="text-white/40" />
-                            </div>
-                            <h3 className="text-6xl font-black tracking-tighter leading-none mb-2 text-white">
-                                {Math.abs(totalPaymentsAmount - totalIntersAmount).toFixed(0)}
-                                <span className="text-xl font-black ml-1 uppercase text-white/60">Dt</span>
-                            </h3>
-                            <p className="text-[12px] font-black uppercase tracking-widest text-white">
-                                {(totalPaymentsAmount - totalIntersAmount) < 0 ? 'Crédit à recouvrer' : 'Compte positif'}
-                            </p>
-                        </div>
-
-                        {/* Decorative Grid Lines like a Fintech app */}
-                        <div className="fintech-pattern" />
-                    </div>
-
                     {/* 4. Technical Summary Tile */}
                     <div className="grid grid-cols-2 gap-4">
                         <button
@@ -1106,8 +1110,8 @@ const ClientDetail: React.FC = () => {
                                         <button
                                             onClick={() => setInterventionFilter('all')}
                                             className={`flex-1 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${interventionFilter === 'all'
-                                                    ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
-                                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                                ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
+                                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                                 }`}
                                         >
                                             Toutes
@@ -1115,8 +1119,8 @@ const ClientDetail: React.FC = () => {
                                         <button
                                             onClick={() => setInterventionFilter('unpaid')}
                                             className={`flex-1 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${interventionFilter === 'unpaid'
-                                                    ? 'bg-white dark:bg-slate-700 text-rose-600 shadow-sm'
-                                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                                ? 'bg-white dark:bg-slate-700 text-rose-600 shadow-sm'
+                                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                                 }`}
                                         >
                                             À payer / Partiel
@@ -1124,8 +1128,8 @@ const ClientDetail: React.FC = () => {
                                         <button
                                             onClick={() => setInterventionFilter('paid')}
                                             className={`flex-1 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${interventionFilter === 'paid'
-                                                    ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm'
-                                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                                ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm'
+                                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                                                 }`}
                                         >
                                             Payées
