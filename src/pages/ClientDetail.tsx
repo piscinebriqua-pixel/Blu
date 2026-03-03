@@ -137,14 +137,25 @@ const ClientDetail: React.FC = () => {
     const [selectedDevisForView, setSelectedDevisForView] = useState<any>(null);
     const [isAssignPartnerOpen, setIsAssignPartnerOpen] = useState(false);
     const [clientPartners, setClientPartners] = useState<any[]>([]);
-    const [isSolderModalOpen, setIsSolderModalOpen] = useState(false);
     const [isSoldering, setIsSoldering] = useState(false);
+    const [interventionFilter, setInterventionFilter] = useState<'all' | 'paid' | 'unpaid'>('unpaid');
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
         const sTotal = inter.services?.reduce((sAcc: number, s: any) => sAcc + (s.price_at_time || 0), 0) || 0;
         const pTotal = inter.products?.reduce((pAcc: number, p: any) => pAcc + (p.total_price || 0), 0) || 0;
         return acc + sTotal + pTotal;
     }, 0);
+
+    const filteredInterventions = interventions.filter(inter => {
+        const sTotal = inter.services?.reduce((sAcc: number, s: any) => sAcc + (s.price_at_time || 0), 0) || 0;
+        const pTotal = inter.products?.reduce((pAcc: number, p: any) => pAcc + (p.total_price || 0), 0) || 0;
+        const totalBilledInter = sTotal + pTotal;
+        const remaining = totalBilledInter - (inter.paid_amount || 0);
+
+        if (interventionFilter === 'paid') return remaining <= 0.5;
+        if (interventionFilter === 'unpaid') return remaining > 0.5;
+        return true; // 'all'
+    });
 
     const totalPaymentsAmount = payments.reduce((acc, pay) => acc + pay.amount, 0);
 
@@ -1074,7 +1085,7 @@ const ClientDetail: React.FC = () => {
                             {activeCategory === 'interventions' && (
                                 <div className="space-y-6">
                                     {/* Summary Header in Modal */}
-                                    <div className="bg-indigo-50/50 dark:bg-indigo-900/10 p-6 rounded-3xl border border-indigo-100 dark:border-indigo-800/20 flex justify-between items-center">
+                                    <div className="bg-indigo-50/50 dark:bg-indigo-900/10 p-6 rounded-3xl border border-indigo-100 dark:border-indigo-800/20 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                                         <div className="flex items-center gap-4">
                                             <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center">
                                                 <HistoryIcon size={24} />
@@ -1086,13 +1097,44 @@ const ClientDetail: React.FC = () => {
                                         </div>
                                         <div className="text-right">
                                             <p className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Fréquence</p>
-                                            <h4 className="text-2xl font-black text-slate-800 dark:text-white">{interventions.length} <span className="text-xs opacity-60">Visites</span></h4>
+                                            <h4 className="text-2xl font-black text-slate-800 dark:text-white">{filteredInterventions.length} <span className="text-xs opacity-60">Visites</span></h4>
                                         </div>
                                     </div>
 
-                                    {interventions.length > 0 ? (
+                                    {/* FILTER BUTTONS */}
+                                    <div className="flex bg-slate-100/50 dark:bg-slate-800/30 p-1 rounded-xl overflow-x-auto whitespace-nowrap hide-scrollbar">
+                                        <button
+                                            onClick={() => setInterventionFilter('all')}
+                                            className={`flex-1 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${interventionFilter === 'all'
+                                                    ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
+                                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                                }`}
+                                        >
+                                            Toutes
+                                        </button>
+                                        <button
+                                            onClick={() => setInterventionFilter('unpaid')}
+                                            className={`flex-1 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${interventionFilter === 'unpaid'
+                                                    ? 'bg-white dark:bg-slate-700 text-rose-600 shadow-sm'
+                                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                                }`}
+                                        >
+                                            À payer / Partiel
+                                        </button>
+                                        <button
+                                            onClick={() => setInterventionFilter('paid')}
+                                            className={`flex-1 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${interventionFilter === 'paid'
+                                                    ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm'
+                                                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                                }`}
+                                        >
+                                            Payées
+                                        </button>
+                                    </div>
+
+                                    {filteredInterventions.length > 0 ? (
                                         <div className="relative before:absolute before:left-7 before:top-4 before:bottom-4 before:w-0.5 before:bg-slate-100 dark:before:bg-slate-800">
-                                            {interventions.map((inter) => (
+                                            {filteredInterventions.map((inter) => (
                                                 <div
                                                     key={inter.id}
                                                     onClick={() => setSelectedInterventionForView(inter)}

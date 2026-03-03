@@ -35,6 +35,7 @@ interface ClientIntervention {
     client_id: string;
     services: any[];
     products: any[];
+    paid_amount?: number;
 }
 
 const PartnerDetail: React.FC = () => {
@@ -52,6 +53,7 @@ const PartnerDetail: React.FC = () => {
     const [isNewInterventionOpen, setIsNewInterventionOpen] = useState(false);
     const [clientToUnassign, setClientToUnassign] = useState<any | null>(null);
     const [isUnassigningClient, setIsUnassigningClient] = useState(false);
+    const [interventionFilter, setInterventionFilter] = useState<'all' | 'paid' | 'unpaid'>('unpaid');
 
     const fetchPartnerData = async () => {
         try {
@@ -101,7 +103,8 @@ const PartnerDetail: React.FC = () => {
                             id, visit_date, status,
                             pool:pools(name, client_id),
                             services:intervention_services(price_at_time, service:services(name)),
-                            products:intervention_products(quantity, total_price, product:inventory_products(name, unit))
+                            products:intervention_products(quantity, total_price, product:inventory_products(name, unit)),
+                            payments:intervention_payments(amount_applied)
                         `)
                         .in('pool_id', poolIds)
                         .order('visit_date', { ascending: false });
@@ -111,11 +114,13 @@ const PartnerDetail: React.FC = () => {
                     if (interData) {
                         const mappedInters = interData.map((inter: any) => {
                             const client = allClients.find(c => c.id === inter.pool?.client_id);
+                            const paidAmount = inter.payments?.reduce((acc: number, p: any) => acc + (p.amount_applied || 0), 0) || 0;
                             return {
                                 ...inter,
                                 client_id: inter.pool?.client_id,
                                 pool_name: inter.pool?.name || 'Inconnu',
-                                client_name: client ? `${client.first_name} ${client.last_name}` : 'Client Inconnu'
+                                client_name: client ? `${client.first_name} ${client.last_name}` : 'Client Inconnu',
+                                paid_amount: paidAmount
                             };
                         });
                         setInterventions(mappedInters);
@@ -160,6 +165,17 @@ const PartnerDetail: React.FC = () => {
 
     const totalPaid = payments.reduce((acc, pay) => acc + (pay.amount || 0), 0);
     const balance = totalBilled - totalPaid;
+
+    const filteredInterventions = interventions.filter(inter => {
+        const sTotal = inter.services?.reduce((sAcc, s) => sAcc + (s.price_at_time || 0), 0) || 0;
+        const pTotal = inter.products?.reduce((pAcc, p) => pAcc + (p.total_price || 0), 0) || 0;
+        const totalBilledInter = sTotal + pTotal;
+        const remaining = totalBilledInter - (inter.paid_amount || 0);
+
+        if (interventionFilter === 'paid') return remaining <= 0.5;
+        if (interventionFilter === 'unpaid') return remaining > 0.5;
+        return true; // 'all'
+    });
 
     const handleShareWhatsApp = () => {
         if (!partner) return;
@@ -437,16 +453,50 @@ const PartnerDetail: React.FC = () => {
                             <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 text-orange-500 flex items-center justify-center">
                                 <FileText size={20} />
                             </div>
-                            <div>
+                            <div className="flex-1">
                                 <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">Historique de sous-traitance</h3>
-                                <p className="text-xs font-bold text-slate-500 uppercase">{interventions.length} interventions listées</p>
+                                <p className="text-xs font-bold text-slate-500 uppercase">{filteredInterventions.length} interventions listées</p>
                             </div>
                         </div>
 
+                        {/* FILTER BUTTONS */}
+                        <div className="flex bg-slate-100/50 dark:bg-slate-800/30 p-1 rounded-xl mb-4 overflow-x-auto whitespace-nowrap hide-scrollbar">
+                            <button
+                                onClick={() => setInterventionFilter('all')}
+                                className={`flex-1 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${interventionFilter === 'all'
+                                        ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                    }`}
+                            >
+                                Toutes
+                            </button>
+                            <button
+                                onClick={() => setInterventionFilter('unpaid')}
+                                className={`flex-1 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${interventionFilter === 'unpaid'
+                                        ? 'bg-white dark:bg-slate-700 text-rose-600 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                    }`}
+                            >
+                                À payer / Partiel
+                            </button>
+                            <button
+                                onClick={() => setInterventionFilter('paid')}
+                                className={`flex-1 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${interventionFilter === 'paid'
+                                        ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                    }`}
+                            >
+                                Payées
+                            </button>
+                        </div>
+
                         <div className="space-y-3">
-                            {interventions.length > 0 ? interventions.map(inter => {
+                            {filteredInterventions.length > 0 ? filteredInterventions.map(inter => {
                                 const sTotal = inter.services?.reduce((sAcc, s) => sAcc + (s.price_at_time || 0), 0) || 0;
                                 const pTotal = inter.products?.reduce((pAcc, p) => pAcc + (p.total_price || 0), 0) || 0;
+                                const totalBilledInter = sTotal + pTotal;
+                                const remaining = totalBilledInter - (inter.paid_amount || 0);
+
                                 return (
                                     <div key={inter.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 hover:border-orange-500/30 transition-all gap-4">
                                         <div>
@@ -454,8 +504,8 @@ const PartnerDetail: React.FC = () => {
                                                 <span className="text-[11px] font-black bg-white dark:bg-slate-700 px-2 py-0.5 rounded shadow-sm text-slate-600 dark:text-slate-300">
                                                     {new Date(inter.visit_date).toLocaleDateString('fr-FR')}
                                                 </span>
-                                                <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-lg ${inter.status === 'TERMINE' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}`}>
-                                                    {inter.status}
+                                                <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-lg ${remaining <= 0.5 ? 'bg-emerald-100 text-emerald-600' : (inter.paid_amount && inter.paid_amount > 0) ? 'bg-orange-100 text-orange-600' : 'bg-rose-100 text-rose-600'}`}>
+                                                    {remaining <= 0.5 ? 'Payé' : (inter.paid_amount && inter.paid_amount > 0) ? 'Partiel' : 'À payer'}
                                                 </span>
                                             </div>
                                             <p className="text-sm font-black text-slate-800 dark:text-white cursor-pointer hover:text-blue-500 transition-colors uppercase" onClick={() => navigate(`/client/${inter.client_id}`)}>
@@ -464,7 +514,10 @@ const PartnerDetail: React.FC = () => {
                                             <p className="text-xs font-bold text-slate-500 uppercase">{inter.pool_name}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-base font-black text-slate-900 dark:text-white">{(sTotal + pTotal).toFixed(0)} <span className="text-xs opacity-50">DT</span></p>
+                                            <p className="text-base font-black text-slate-900 dark:text-white">{totalBilledInter.toFixed(0)} <span className="text-xs opacity-50">DT</span></p>
+                                            {remaining > 0 && remaining < totalBilledInter && (
+                                                <p className="text-[10px] font-bold text-orange-500 uppercase mt-0.5">Reste {remaining.toFixed(0)} DT</p>
+                                            )}
                                         </div>
                                     </div>
                                 );
