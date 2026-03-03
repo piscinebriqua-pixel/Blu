@@ -479,7 +479,7 @@ const PartnerDetail: React.FC = () => {
                 </div>
 
                 {/* ROW 3: PAYMENT HISTORY */}
-                {partner.is_billing_partner && payments.length > 0 && (
+                {payments.length > 0 && (
                     <div className="card-bento p-6">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 flex items-center justify-center">
