@@ -421,7 +421,9 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       let tempId = "";
       if (interventionId) {
         const { error } = await supabase.from("interventions").update({
+          pool_id: snapshotPoolId || null,
           technician_id: snapshotFormData.technician_id,
+          ...(interventionType === "direct" && snapshotFormData.scheduled_date ? { visit_date: snapshotFormData.scheduled_date } : {}),
           ph_level: interventionType === "direct" && snapshotFormData.ph_level ? parseFloat(snapshotFormData.ph_level) : null,
           chlorine_level: interventionType === "direct" && snapshotFormData.chlorine_level ? parseFloat(snapshotFormData.chlorine_level) : null,
           water_temp: interventionType === "direct" && snapshotFormData.water_temp ? parseFloat(snapshotFormData.water_temp) : null,
@@ -448,6 +450,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         const { data, error } = await supabase.from("interventions").insert([{
           pool_id: snapshotPoolId || null,
           technician_id: snapshotFormData.technician_id,
+          ...(interventionType === "direct" && snapshotFormData.scheduled_date ? { visit_date: snapshotFormData.scheduled_date } : {}),
           ph_level: interventionType === "direct" && snapshotFormData.ph_level ? parseFloat(snapshotFormData.ph_level) : null,
           chlorine_level: interventionType === "direct" && snapshotFormData.chlorine_level ? parseFloat(snapshotFormData.chlorine_level) : null,
           water_temp: interventionType === "direct" && snapshotFormData.water_temp ? parseFloat(snapshotFormData.water_temp) : null,
