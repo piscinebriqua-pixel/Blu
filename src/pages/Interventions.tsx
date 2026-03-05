@@ -10,6 +10,7 @@ import {
   Clock,
   Plus,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 interface Intervention {
   id: string;
@@ -22,6 +23,7 @@ interface Intervention {
   notes: string;
   status: "pending" | "scheduled" | "in_progress" | "completed" | "cancelled";
   scheduled_date: string;
+  devis_id?: string | null;
   technician: { full_name: string };
   pool?: {
     name: string;
@@ -46,8 +48,8 @@ const Interventions: React.FC = () => {
   const [interventions, setInterventions] = useState<Intervention[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"planning" | "history">(
-    "planning",
+  const [activeTab, setActiveTab] = useState<"planifie" | "termine" | "annule">(
+    "planifie",
   );
   const [selectedIntervention, setSelectedIntervention] =
     useState<Intervention | null>(null);
@@ -61,6 +63,8 @@ const Interventions: React.FC = () => {
     balance: number;
   } | null>(null);
   const [selPoolId, setSelPoolId] = useState<string | null>(null);
+  const [selectedTech, setSelectedTech] = useState<string>("all");
+  const [selectedType, setSelectedType] = useState<"all" | "classique" | "chantier">("all");
 
   useEffect(() => {
     fetchInterventions();
@@ -99,6 +103,29 @@ const Interventions: React.FC = () => {
     setIsNewInterventionModalOpen(true);
   };
 
+  const handleDeleteIntervention = async (intervention: Intervention) => {
+    if (!window.confirm("Voulez-vous vraiment supprimer cet entretien ?")) return;
+
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('interventions')
+        .delete()
+        .eq('id', intervention.id);
+
+      if (error) throw error;
+
+      toast.success("Entretien supprimé");
+      setSelectedIntervention(null);
+      fetchInterventions();
+    } catch (error: any) {
+      console.error('Error deleting:', error);
+      toast.error("Erreur lors de la suppression");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const calculateTotal = (inter: Intervention) => {
     const sTotal =
       inter.services?.reduce((acc, s) => acc + (s.price_at_time || 0), 0) || 0;
@@ -107,23 +134,48 @@ const Interventions: React.FC = () => {
     return sTotal + pTotal;
   };
 
-  const filteredInterventions = interventions.filter((i) => {
-    const clientName =
-      `${i.pool?.client?.first_name} ${i.pool?.client?.last_name}`.toLowerCase();
-    const techName = i.technician?.full_name?.toLowerCase() || "";
+  const filteredInterventions = interventions
+    .filter((i) => {
+      const clientName =
+        `${i.pool?.client?.first_name} ${i.pool?.client?.last_name}`.toLowerCase();
+      const techName = i.technician?.full_name?.toLowerCase() || "";
 
-    const isCorrectTab =
-      activeTab === "planning"
-        ? ["pending", "scheduled", "in_progress"].includes(i.status)
-        : ["completed", "cancelled"].includes(i.status);
+      let isCorrectTab = false;
+      if (activeTab === "planifie") {
+        isCorrectTab = ["pending", "scheduled", "in_progress"].includes(i.status);
+      } else if (activeTab === "termine") {
+        isCorrectTab = i.status === "completed";
+      } else if (activeTab === "annule") {
+        isCorrectTab = i.status === "cancelled";
+      }
 
-    if (!isCorrectTab) return false;
+      if (!isCorrectTab) return false;
 
-    return (
-      clientName.includes(searchTerm.toLowerCase()) ||
-      techName.includes(searchTerm.toLowerCase())
-    );
-  });
+      // Filter by Search
+      const matchesSearch =
+        clientName.includes(searchTerm.toLowerCase()) ||
+        techName.includes(searchTerm.toLowerCase());
+      if (!matchesSearch) return false;
+
+      // Filter by Technician
+      if (selectedTech !== "all" && i.technician?.full_name !== selectedTech) {
+        return false;
+      }
+
+      // Filter by Type
+      if (selectedType === "classique" && i.devis_id) return false;
+      if (selectedType === "chantier" && !i.devis_id) return false;
+
+      return true;
+    })
+    .sort((a, b) => {
+      // Sort by date explicitly
+      const dateA = new Date(activeTab === 'planifie' ? (a.scheduled_date || a.created_at) : (a.visit_date || a.scheduled_date || a.created_at)).getTime();
+      const dateB = new Date(activeTab === 'planifie' ? (b.scheduled_date || b.created_at) : (b.visit_date || b.scheduled_date || b.created_at)).getTime();
+      return dateB - dateA;
+    });
+
+  const uniqueTechnicians = Array.from(new Set(interventions.map(i => i.technician?.full_name).filter(Boolean))) as string[];
 
 
   const toolbar = (
@@ -142,18 +194,51 @@ const Interventions: React.FC = () => {
         />
       </div>
 
-      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
-        <button
-          onClick={() => setActiveTab("planning")}
-          className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "planning" ? "bg-white dark:bg-slate-700 text-primary shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
+      <div className="flex gap-2">
+        <select
+          aria-label="Filtrer par type d'intervention"
+          title="Type d'intervention"
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value as any)}
+          className="flex-1 p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-primary/50 appearance-none cursor-pointer"
         >
-          Planification
+          <option value="all">Tous les types</option>
+          <option value="classique">Visite Classique</option>
+          <option value="chantier">Chantier / Devis</option>
+        </select>
+
+        <select
+          aria-label="Filtrer par technicien"
+          title="Technicien assigné"
+          value={selectedTech}
+          onChange={(e) => setSelectedTech(e.target.value)}
+          className="flex-1 p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-primary/50 appearance-none cursor-pointer"
+        >
+          <option value="all">Tous les techniciens</option>
+          {uniqueTechnicians.map(tech => (
+            <option key={tech} value={tech}>{tech}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/50 dark:border-slate-700/50 flex-wrap">
+        <button
+          onClick={() => setActiveTab("planifie")}
+          className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "planifie" ? "bg-white dark:bg-slate-700 text-primary shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
+        >
+          Planifié
         </button>
         <button
-          onClick={() => setActiveTab("history")}
-          className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "history" ? "bg-white dark:bg-slate-700 text-primary shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
+          onClick={() => setActiveTab("termine")}
+          className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "termine" ? "bg-white dark:bg-slate-700 text-primary shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
         >
-          Historique
+          Terminé
+        </button>
+        <button
+          onClick={() => setActiveTab("annule")}
+          className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "annule" ? "bg-white dark:bg-slate-700 text-primary shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
+        >
+          Annulé
         </button>
       </div>
     </div>
@@ -306,6 +391,7 @@ const Interventions: React.FC = () => {
             setEditingId(inter.id);
             setIsNewInterventionModalOpen(true);
           }}
+          onDelete={handleDeleteIntervention as any}
         />
       )}
     </PageLayout>

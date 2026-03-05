@@ -8,6 +8,7 @@ interface ModalLayoutProps {
     actions?: React.ReactNode;
     children: React.ReactNode;
     className?: string;
+    bodyClassName?: string;
     compact?: boolean;
 }
 
@@ -17,6 +18,7 @@ const ModalLayout: React.FC<ModalLayoutProps> = ({
     actions,
     children,
     className = "",
+    bodyClassName = "",
     compact = false
 }) => {
     return createPortal(
@@ -32,7 +34,7 @@ const ModalLayout: React.FC<ModalLayoutProps> = ({
                 </header>
 
                 {/* 2. Modal Body */}
-                <div className={`modal-body ${compact ? '!min-h-0' : ''}`}>
+                <div className={`modal-body ${compact ? '!min-h-0' : ''} ${bodyClassName}`}>
                     {children}
                 </div>
 

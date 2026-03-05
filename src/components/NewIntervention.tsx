@@ -117,7 +117,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
     is_final_devis_billing: false,
   });
 
-  const [interventionType] = useState<"direct" | "scheduled">(type);
+  const [interventionType, setInterventionType] = useState<"direct" | "scheduled">(type);
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [isTechModalOpen, setIsTechModalOpen] = useState(false);
 
@@ -233,6 +233,12 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           devis_id: data.devis_id || "",
           is_final_devis_billing: false,
         }));
+
+        if (data.status === 'scheduled' || data.status === 'pending') {
+          setInterventionType('scheduled');
+        } else {
+          setInterventionType('direct');
+        }
 
         const srvObj: Record<string, number> = {};
         data.services?.forEach((s: any) => {
@@ -576,7 +582,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       }
 
       if (!mountedRef.current) return;
-      toast.success(interventionId ? 'Rapport mis à jour' : 'Rapport enregistré');
+      toast.success(interventionType === 'scheduled' ? 'Intervention planifiée' : 'Rapport enregistré');
       onSuccess();
       onClose();
     } catch (error: any) {
@@ -612,7 +618,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           ) : (
             <>
               <Save size={18} />
-              ENREGISTRER LE RAPPORT
+              {interventionType === 'scheduled' ? "PLANIFIER" : "ENREGISTRER LE RAPPORT"}
             </>
           )}
         </button>
@@ -631,6 +637,42 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       actions={actions}
     >
       <div className="flex flex-col gap-8 pb-32">
+        {/* TYPE TOGGLE */}
+        {!interventionId && (
+          <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl mt-2 mx-1">
+            <button
+              onClick={() => setInterventionType("scheduled")}
+              className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${interventionType === "scheduled"
+                  ? "bg-white dark:bg-slate-700 text-blue-600 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                }`}
+            >
+              Planifier
+            </button>
+            <button
+              onClick={() => setInterventionType("direct")}
+              className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${interventionType === "direct"
+                  ? "bg-white dark:bg-slate-700 text-emerald-600 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                }`}
+            >
+              Rapport (Direct)
+            </button>
+          </div>
+        )}
+
+        {interventionId && interventionType === 'scheduled' && (
+          <div className="mx-1">
+            <button
+              onClick={() => setInterventionType("direct")}
+              className="w-full py-4 bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800/50 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center justify-center gap-2"
+            >
+              <CheckSquare size={18} />
+              Démarrer & Clôturer cette intervention
+            </button>
+          </div>
+        )}
+
         {/* SECTION 1: CONFIGURATION */}
         <div className="flex flex-col gap-4 p-1">
           {/* Date Selection */}

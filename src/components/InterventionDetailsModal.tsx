@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ModalLayout from './ModalLayout';
-import { Droplets, Edit2, MessageCircle, Trash2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { toast } from 'react-hot-toast';
+import { Droplets, Edit2, MessageCircle, Trash2, Loader2, X } from 'lucide-react';
 
 interface Intervention {
     id: string;
@@ -52,9 +54,36 @@ interface InterventionDetailsModalProps {
     onClose: () => void;
     onEdit?: (intervention: Intervention) => void;
     onDelete?: (intervention: Intervention) => void;
+    onStatusChange?: () => void;
 }
 
-const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ intervention, onClose, onEdit, onDelete }) => {
+const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ intervention, onClose, onEdit, onDelete, onStatusChange }) => {
+    const [currentStatus, setCurrentStatus] = useState(intervention.status);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+    const handleStatusChange = async (newStatus: string) => {
+        setIsUpdatingStatus(true);
+        try {
+            const { error } = await supabase
+                .from('interventions')
+                .update({ status: newStatus })
+                .eq('id', intervention.id);
+
+            if (error) throw error;
+            setCurrentStatus(newStatus);
+            toast.success('Statut mis à jour');
+            if (onStatusChange) {
+                onStatusChange();
+            }
+        } catch (error: any) {
+            console.error('Error updating status:', error);
+            toast.error(error.message || 'Erreur lors de la mise à jour du statut');
+            setCurrentStatus(intervention.status); // revert
+        } finally {
+            setIsUpdatingStatus(false);
+        }
+    };
+
     const handleWhatsAppShare = () => {
         if (!intervention.pool?.client?.phone) return;
 
@@ -127,107 +156,110 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
     };
 
     return (
-        <ModalLayout onClose={onClose} title="Détails Rapport">
-            <div className="flex flex-col gap-8 pb-4">
-                {/* Header Section */}
-                <div className="flex flex-col items-center gap-2">
-                    <div className="flex flex-col items-center">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/60 mb-1">Rapport d'intervention</span>
-                        <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight text-center">
-                            {intervention.pool?.client?.first_name} {intervention.pool?.client?.last_name}
-                        </h2>
-                    </div>
-
-                    <div className="flex items-center gap-2 bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-2xl border border-slate-100 dark:border-white/10 mt-2">
-                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Solde Client:</span>
-                        <span className={`text-[13px] font-black uppercase ${intervention.pool?.client?.balance && intervention.pool.client.balance < 0 ? 'text-red-500' : 'text-emerald-500'}`}>
-                            {(intervention.pool?.client?.balance || 0).toFixed(0)} DT
+        <ModalLayout onClose={onClose} title="Détails Rapport" bodyClassName="!p-4 sm:!p-5">
+            <div className="flex flex-col gap-4 pb-1">
+                {/* Header Section Compact */}
+                <div className="flex flex-col items-center">
+                    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-500/70 mb-0.5">Rapport d'intervention</span>
+                    <h2 className="text-xl leading-tight font-black text-slate-900 dark:text-white uppercase tracking-tight text-center break-words max-w-full">
+                        {intervention.pool?.client?.first_name} {intervention.pool?.client?.last_name}
+                    </h2>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-[12px] font-black uppercase px-2 py-0.5 rounded-md ${intervention.pool?.client?.balance && intervention.pool.client.balance < 0 ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                            Solde: {(intervention.pool?.client?.balance || 0).toFixed(0)} DT
                         </span>
-                    </div>
-
-                    <div className="flex items-center gap-3 text-3xl font-black text-slate-900 dark:text-white tracking-tighter mt-4">
-                        {intervention.services && ((intervention.services.reduce((acc, s) => acc + (s.price_at_time || 0), 0) + (intervention.products?.reduce((acc, p) => acc + (p.total_price || 0), 0) || 0)) || 0).toFixed(0)}
-                        <span className="text-xl font-bold text-primary dark:text-blue-400">DT</span>
+                        <div className="flex items-baseline gap-1 bg-primary/5 px-3 py-0.5 rounded-lg border border-primary/10">
+                            <span className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">
+                                {intervention.services && ((intervention.services.reduce((acc, s) => acc + (s.price_at_time || 0), 0) + (intervention.products?.reduce((acc, p) => acc + (p.total_price || 0), 0) || 0)) || 0).toFixed(0)}
+                            </span>
+                            <span className="text-sm font-bold text-primary">DT</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Quick Info Grid - More compact version */}
-                <div className="grid grid-cols-2 gap-2">
-                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Bassin</span>
-                        <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
+                {/* Quick Info Grid - Flat & Tight */}
+                <div className="grid grid-cols-2 gap-px bg-slate-100 dark:bg-white/10 rounded-xl overflow-hidden border border-slate-100 dark:border-white/5">
+                    <div className="p-3 bg-white dark:bg-slate-900 flex flex-col justify-center">
+                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1.5">Bassin</span>
+                        <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase truncate leading-none">
                             {intervention.pool_name || intervention.pool?.name || 'Piscine'}
                         </span>
                     </div>
-                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Date Rapport</span>
-                        <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase">
+                    <div className="p-3 bg-white dark:bg-slate-900 flex flex-col justify-center">
+                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1.5">Date Rapport</span>
+                        <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase leading-none">
                             {new Date(intervention.scheduled_date || intervention.visit_date || intervention.created_at).toLocaleDateString('fr-FR')}
                         </span>
                     </div>
-                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Référence</span>
-                        <span className="text-[13px] font-black text-slate-500/80 uppercase truncate">#{intervention.id.slice(0, 8)}</span>
+                    <div className="p-3 bg-white dark:bg-slate-900 flex flex-col justify-center">
+                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1.5">Référence</span>
+                        <span className="text-[13px] font-black text-slate-500/80 uppercase truncate leading-none">#{intervention.id.slice(0, 8)}</span>
                     </div>
-                    <div className="p-4 bg-slate-50 dark:bg-white/5 rounded-3xl border border-slate-100 dark:border-white/5 flex flex-col">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Statut</span>
-                        <span className={`text-[11px] font-black uppercase text-center rounded-full px-2 py-0.5 w-fit ${intervention.status === "completed" ? "bg-emerald-500/10 text-emerald-500" : "bg-blue-500/10 text-blue-500"}`}>
-                            {intervention.status === "completed" ? "Terminé" : intervention.status}
-                        </span>
+                    <div className="p-2 bg-white dark:bg-slate-900 flex flex-col justify-center relative">
+                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest leading-none mb-1 ml-1">Statut</span>
+                        <select
+                            title="Statut de l'intervention"
+                            value={currentStatus}
+                            onChange={(e) => handleStatusChange(e.target.value)}
+                            disabled={isUpdatingStatus}
+                            className={`w-full text-base font-black uppercase rounded-lg px-2 py-1 outline-none appearance-none cursor-pointer transition-all ${currentStatus === "completed"
+                                ? "bg-emerald-50 text-emerald-600"
+                                : currentStatus === "in_progress"
+                                    ? "bg-amber-50 text-amber-600"
+                                    : "bg-blue-50 text-blue-600"
+                                }`}
+                        >
+                            <option value="scheduled">Planifié</option>
+                            <option value="cancelled">Annulé</option>
+                            <option value="completed" disabled hidden>Terminé</option>
+                        </select>
+                        {isUpdatingStatus && (
+                            <Loader2 size={12} className="absolute right-3 top-1/2 animate-spin text-slate-400" />
+                        )}
                     </div>
                 </div>
 
                 {/* Technical Measures & Tasks Section */}
                 {(intervention.ph_level || intervention.chlorine_level || intervention.water_level_adjusted !== undefined || true) && (
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
-                            <h5 className="text-[11px] font-black text-blue-400 uppercase tracking-[0.3em]">Mesures & Contrôles</h5>
-                            <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
-                        </div>
+                    <div className="space-y-2">
+                        <h5 className="text-[11px] font-black text-blue-500 uppercase tracking-[0.2em] text-center border-b border-slate-100 dark:border-white/5 pb-1">Mesures & Contrôles</h5>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-2">
                             {intervention.ph_level !== undefined && intervention.ph_level !== null && (
-                                <div className="flex items-center gap-4 p-4 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-primary/30 transition-all">
-                                    <div className="w-10 h-10 rounded-2xl bg-cyan-50 dark:bg-cyan-900/20 flex items-center justify-center text-cyan-500">
-                                        <Droplets size={20} />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">pH</span>
-                                        <span className="text-xl font-black text-slate-800 dark:text-white">{intervention.ph_level}</span>
+                                <div className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-white/5 rounded-xl">
+                                    <Droplets size={16} className="text-cyan-500 shrink-0" />
+                                    <div className="flex flex-col leading-none">
+                                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">pH</span>
+                                        <span className="text-base font-black text-slate-800 dark:text-white leading-none">{intervention.ph_level}</span>
                                     </div>
                                 </div>
                             )}
 
                             {intervention.chlorine_level !== undefined && intervention.chlorine_level !== null && (
-                                <div className="flex items-center gap-4 p-4 bg-white dark:bg-white/5 rounded-3xl shadow-sm border border-slate-100 dark:border-white/5 group hover:border-blue-400/30 transition-all">
-                                    <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500">
-                                        <Droplets size={20} />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Chlore</span>
-                                        <span className="text-xl font-black text-slate-800 dark:text-white">{intervention.chlorine_level} ppm</span>
+                                <div className="flex items-center gap-2 p-2 bg-slate-50 dark:bg-white/5 rounded-xl">
+                                    <Droplets size={16} className="text-blue-500 shrink-0" />
+                                    <div className="flex flex-col leading-none">
+                                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">Chlore</span>
+                                        <span className="text-base font-black text-slate-800 dark:text-white leading-none">{intervention.chlorine_level}</span>
                                     </div>
                                 </div>
                             )}
 
                             {intervention.water_level_adjusted !== undefined && (
-                                <div className={`flex items-center gap-4 p-4 rounded-3xl shadow-sm border col-span-2 transition-all ${intervention.water_level_adjusted ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/30 text-blue-600 dark:text-blue-400' : 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/5 opacity-60'}`}>
-                                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${intervention.water_level_adjusted ? 'bg-blue-500 text-white' : 'bg-white dark:bg-slate-700 text-slate-400'}`}>
-                                        <Droplets size={20} />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-black uppercase tracking-widest mb-0.5">Niveau d'eau</span>
-                                        <span className="text-[13px] font-black uppercase tracking-tight">
-                                            {intervention.water_level_adjusted ? 'Ajusté durant l\'intervention' : 'Aucun ajustement nécessaire'}
+                                <div className={`flex items-center gap-2 p-2 rounded-xl col-span-2 ${intervention.water_level_adjusted ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-500'}`}>
+                                    <Droplets size={16} className="shrink-0" />
+                                    <div className="flex flex-col leading-none">
+                                        <span className="text-[11px] font-black uppercase tracking-widest mb-1">Niveau d'eau</span>
+                                        <span className="text-[12px] font-black uppercase tracking-tight leading-none">
+                                            {intervention.water_level_adjusted ? 'Ajusté' : 'Non ajusté'}
                                         </span>
                                     </div>
                                 </div>
                             )}
                         </div>
 
-                        {/* Maintenance Tasks Checklist - SHOW ALL */}
-                        <div className="grid grid-cols-2 gap-2 pt-2">
+                        {/* Flat Checklist */}
+                        <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 pt-1">
                             {[
                                 { key: 'task_balai', label: 'Balai' },
                                 { key: 'task_lavage', label: 'Lavage' },
@@ -235,28 +267,18 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                                 { key: 'task_test_chlore', label: 'Teste Chlore' },
                                 { key: 'task_test_ph', label: 'Teste PH' },
                                 { key: 'task_remplissage', label: 'Remplissage' },
-                                { key: 'task_panier_prefiltre', label: 'Panier Pré-filtre' },
+                                { key: 'task_panier_prefiltre', label: 'Pré-filtre' },
                                 { key: 'task_traitement', label: 'Traitement' },
-                                { key: 'task_verif_vanne', label: 'Vérification Vanne' },
+                                { key: 'task_verif_vanne', label: 'Vannes' },
                                 { key: 'task_temps_fonctionnement', label: 'Temps Fonct.' }
                             ].map(task => {
                                 const isDone = intervention[task.key as keyof Intervention];
                                 return (
-                                    <div
-                                        key={task.key}
-                                        className={`flex items-center justify-between px-3 py-2.5 rounded-2xl border transition-all duration-300 ${isDone
-                                            ? "bg-emerald-50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30 text-emerald-600 dark:text-emerald-400 shadow-sm"
-                                            : "bg-slate-50/50 dark:bg-white/5 border-slate-100/50 dark:border-white/5 text-slate-400 opacity-50"
-                                            }`}
-                                    >
-                                        <span className="text-[10px] font-black uppercase tracking-tight truncate mr-2">{task.label}</span>
-                                        <div className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 ${isDone ? "bg-emerald-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-400"}`}>
-                                            {isDone ? (
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                                            ) : (
-                                                <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
-                                            )}
+                                    <div key={task.key} className={`flex items-center py-1.5 px-2 rounded-md ${isDone ? 'bg-emerald-50/50 dark:bg-emerald-900/10' : ''}`}>
+                                        <div className={`w-4 h-4 rounded flex items-center justify-center shrink-0 mr-2 ${isDone ? "bg-emerald-500 text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-400"}`}>
+                                            {isDone && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
                                         </div>
+                                        <span className={`text-[11px] font-black uppercase tracking-tight truncate ${isDone ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500'}`}>{task.label}</span>
                                     </div>
                                 );
                             })}
@@ -266,28 +288,24 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
 
                 {/* Photos Section */}
                 {(intervention.photo_before_url || intervention.photo_after_url) && (
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3">
-                            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
-                            <h5 className="text-[13px] font-black text-primary dark:text-blue-400 uppercase tracking-[0.3em]">Reportage Visuel</h5>
-                            <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-2">
-                                <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest ml-1">Avant Intervention</span>
-                                <div className="aspect-video rounded-[1.5rem] overflow-hidden border-2 border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/5 shadow-inner group">
+                    <div className="space-y-2 mt-2">
+                        <h5 className="text-[11px] font-black text-primary uppercase tracking-[0.2em] text-center border-b border-slate-100 dark:border-white/5 pb-1">Reportage Visuel</h5>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[11px] font-black text-slate-500 uppercase text-center">Avant</span>
+                                <div className="aspect-square rounded-xl overflow-hidden bg-slate-50 dark:bg-white/5">
                                     {intervention.photo_before_url ? (
-                                        <img src={intervention.photo_before_url} alt="Avant" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                        <img src={intervention.photo_before_url} alt="Avant" className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center opacity-30 grayscale"><Droplets size={24} /></div>
                                     )}
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-2">
-                                <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest ml-1">Après Intervention</span>
-                                <div className="aspect-video rounded-[1.5rem] overflow-hidden border-2 border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-white/5 shadow-inner group">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[11px] font-black text-slate-500 uppercase text-center">Après</span>
+                                <div className="aspect-square rounded-xl overflow-hidden bg-slate-50 dark:bg-white/5">
                                     {intervention.photo_after_url ? (
-                                        <img src={intervention.photo_after_url} alt="Après" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                        <img src={intervention.photo_after_url} alt="Après" className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center opacity-30 grayscale"><Droplets size={24} /></div>
                                     )}
@@ -297,100 +315,64 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                     </div>
                 )}
 
-                {/* Billing / Details Section */}
-                <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-slate-200 dark:to-white/10" />
-                        <h5 className="text-[13px] font-black text-primary dark:text-blue-400 uppercase tracking-[0.3em]">Services & Consommables</h5>
-                        <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
-                    </div>
-
-                    <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-6 border border-slate-100 dark:border-white/5 space-y-4">
-                        {(!intervention.services || intervention.services.length === 0) && (!intervention.products || intervention.products.length === 0) ? (
-                            <p className="text-center text-[13px] font-bold text-slate-500 uppercase">Aucun service ou produit enregistré</p>
-                        ) : (
-                            <>
-                                <div className="space-y-3">
-                                    {intervention.services?.map((s, i) => (
-                                        <div key={i} className="flex justify-between items-center bg-white/50 dark:bg-white/5 p-3 rounded-2xl">
-                                            <div className="flex flex-col">
-                                                <span className="text-[13px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight">
-                                                    {s.service?.name || "Service Technique"}
-                                                </span>
-                                                <span className="text-[13px] font-bold text-slate-500 uppercase">Service Main d'œuvre</span>
-                                            </div>
-                                            <span className="text-base font-black text-slate-800 dark:text-white">{s.price_at_time} DT</span>
-                                        </div>
-                                    ))}
+                {/* Billing / Details Condensed */}
+                <div className="space-y-2 mt-2">
+                    <h5 className="text-[11px] font-black text-primary uppercase tracking-[0.2em] text-center border-b border-slate-100 dark:border-white/5 pb-1">Prestations & Produits</h5>
+                    {(!intervention.services || intervention.services.length === 0) && (!intervention.products || intervention.products.length === 0) ? (
+                        <p className="text-center text-[12px] font-bold text-slate-500 uppercase py-2">Aucune facturation associée</p>
+                    ) : (
+                        <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-2 space-y-1">
+                            {intervention.services?.map((s, i) => (
+                                <div key={i} className="flex justify-between items-center py-1.5 border-b border-slate-200/50 dark:border-white/5 last:border-0">
+                                    <span className="text-[12px] font-black text-slate-700 dark:text-slate-300 uppercase truncate pr-2">
+                                        {s.service?.name || "Service"}
+                                    </span>
+                                    <span className="text-[13px] font-black text-slate-900 dark:text-white whitespace-nowrap">{s.price_at_time} DT</span>
                                 </div>
-                                <div className="space-y-3">
-                                    {intervention.products?.map((p, i) => (
-                                        <div key={i} className="flex justify-between items-center bg-white/50 dark:bg-white/5 p-3 rounded-2xl">
-                                            <div className="flex flex-col">
-                                                <span className="text-[13px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight">
-                                                    {p.product?.name || "Produit Utilisé"}
-                                                </span>
-                                                <span className="text-[13px] font-bold text-slate-500 uppercase">
-                                                    Quantité: {p.quantity} {p.product?.unit || 'unités'}
-                                                </span>
-                                            </div>
-                                            <span className="text-base font-black text-slate-800 dark:text-white">{p.total_price} DT</span>
-                                        </div>
-                                    ))}
+                            ))}
+                            {intervention.products?.map((p, i) => (
+                                <div key={i} className="flex justify-between items-center py-1.5 border-b border-slate-200/50 dark:border-white/5 last:border-0">
+                                    <span className="text-[12px] font-black text-slate-700 dark:text-slate-300 uppercase truncate pr-2">
+                                        {p.quantity}x {p.product?.name || "Produit"}
+                                    </span>
+                                    <span className="text-[13px] font-black text-slate-900 dark:text-white whitespace-nowrap">{p.total_price} DT</span>
                                 </div>
-                            </>
-                        )}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Observations */}
                 {intervention.notes && (
-                    <div className="space-y-3">
-                        <h5 className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Observations Techniques</h5>
-                        <div className="bg-slate-50 dark:bg-white/5 rounded-2xl p-6 border border-slate-100 dark:border-white/5 relative">
-                            <div className="absolute top-0 left-6 w-8 h-1 bg-primary/20 rounded-full" />
-                            <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-500 italic font-medium">
-                                "{intervention.notes}"
-                            </p>
-                        </div>
+                    <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-3 border border-amber-100 dark:border-amber-900/20 mt-2">
+                        <span className="text-[11px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest block mb-1">Notes Techniques</span>
+                        <p className="text-[13px] leading-snug text-slate-700 dark:text-slate-200 font-medium">"{intervention.notes}"</p>
                     </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row gap-3 pt-4 sm:pt-6">
-                    <div className="flex flex-1 gap-2">
-                        {onEdit && (
-                            <button
-                                className="flex-1 btn-flow btn-primary !h-14 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-                                onClick={() => onEdit(intervention)}
-                            >
-                                <Edit2 size={18} strokeWidth={2.5} />
-                                <span className="font-black uppercase tracking-[0.2em] text-[11px]">Modifier</span>
-                            </button>
-                        )}
-                        {onDelete && (
-                            <button
-                                className="w-14 h-14 bg-red-500/10 text-red-500 rounded-[20px] flex items-center justify-center hover:bg-red-500 hover:text-white transition-all active:scale-95 shadow-sm"
-                                onClick={() => onDelete(intervention)}
-                                title="Supprimer l'intervention"
-                            >
-                                <Trash2 size={20} strokeWidth={2.5} />
-                            </button>
-                        )}
-                    </div>
-                    {intervention.pool?.client?.phone && (
-                        <button
-                            className="flex-1 btn-flow bg-emerald-500 hover:bg-emerald-600 !text-white !h-14 shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
-                            onClick={handleWhatsAppShare}
-                        >
-                            <MessageCircle size={18} strokeWidth={2.5} />
-                            <span className="font-black uppercase tracking-[0.2em] text-[11px]">WhatsApp</span>
+                <div className="flex gap-2 pt-3 mt-1 border-t border-slate-100 dark:border-white/5">
+                    {onEdit && (
+                        <button className="flex-1 btn-flow btn-primary !h-11 !rounded-xl !p-0" onClick={() => onEdit(intervention)} title="Modifier">
+                            <Edit2 size={16} strokeWidth={2.5} />
                         </button>
                     )}
-                    <button
-                        onClick={onClose}
-                        className="flex-1 px-8 !h-14 bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-500 rounded-[20px] font-black uppercase tracking-widest text-[13px] hover:bg-slate-200 dark:hover:bg-white/10 transition-all active:scale-95"
-                    >
-                        Fermer
+                    {currentStatus === "scheduled" && onEdit && (
+                        <button className="flex-[2] btn-flow bg-emerald-500 !text-white !h-11 !rounded-xl !p-0" onClick={() => onEdit(intervention)}>
+                            <span className="font-black uppercase tracking-[0.1em] text-[11px]">Terminer</span>
+                        </button>
+                    )}
+                    {intervention.pool?.client?.phone && (
+                        <button className="w-11 h-11 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0" onClick={handleWhatsAppShare} title="WhatsApp">
+                            <MessageCircle size={16} strokeWidth={2.5} />
+                        </button>
+                    )}
+                    {onDelete && (
+                        <button className="w-11 h-11 bg-red-50 text-red-500 rounded-xl flex items-center justify-center shrink-0" onClick={() => onDelete(intervention)} title="Supprimer">
+                            <Trash2 size={16} strokeWidth={2.5} />
+                        </button>
+                    )}
+                    <button className="w-11 h-11 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-xl flex items-center justify-center shrink-0 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onClick={onClose} title="Fermer">
+                        <X size={16} strokeWidth={2.5} />
                     </button>
                 </div>
             </div>
