@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Search, Plus, Filter, MapPin, ChevronRight, LayoutList, Map as MapIcon } from 'lucide-react';
+import { Search, Plus, Filter, MapPin, ChevronRight, LayoutList, Map as MapIcon, Edit2, Trash2 } from 'lucide-react';
 import AddClientModal from '../components/AddClientModal';
+import EditClientModal from '../components/EditClientModal';
+import ConfirmModal from '../components/ConfirmModal';
 import GlobalMap from '../components/GlobalMap';
 import PageLayout from '../components/PageLayout';
+import { toast } from 'react-hot-toast';
 
 const ClientsList: React.FC = () => {
     const navigate = useNavigate();
@@ -16,6 +19,9 @@ const ClientsList: React.FC = () => {
     const [showFilters, setShowFilters] = useState(false);
     const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
     const [activeFilter, setActiveFilter] = useState('Tous');
+    const [clientToEdit, setClientToEdit] = useState<any | null>(null);
+    const [clientToDelete, setClientToDelete] = useState<any | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         fetchClients();
@@ -40,6 +46,49 @@ const ClientsList: React.FC = () => {
             console.error('Erreur:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeleteClient = async () => {
+        if (!clientToDelete) return;
+        setIsDeleting(true);
+        try {
+            // Check for payments history
+            const { count: paymentsCount, error: paymentsError } = await supabase
+                .from('payments')
+                .select('*', { count: 'exact', head: true })
+                .eq('client_id', clientToDelete.id);
+
+            if (paymentsError) throw paymentsError;
+
+            // Check for pools (which might have interventions)
+            const { count: poolsCount, error: poolsError } = await supabase
+                .from('pools')
+                .select('*', { count: 'exact', head: true })
+                .eq('client_id', clientToDelete.id);
+
+            if (poolsError) throw poolsError;
+
+            if ((paymentsCount && paymentsCount > 0) || (poolsCount && poolsCount > 0)) {
+                toast.error('Impossible de supprimer ce client : il possède un historique (piscines/interventions ou paiements).');
+                setIsDeleting(false);
+                setClientToDelete(null);
+                return;
+            }
+
+            const { error } = await supabase
+                .from('clients')
+                .delete()
+                .eq('id', clientToDelete.id);
+
+            if (error) throw error;
+            toast.success('Client supprimé avec succès');
+            setClientToDelete(null);
+            fetchClients();
+        } catch (error: any) {
+            toast.error('Erreur lors de la suppression du client: ' + error.message);
+        } finally {
+            setIsDeleting(false);
         }
     };
 
@@ -164,9 +213,25 @@ const ClientsList: React.FC = () => {
                                                 <div className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-[0.1em] border ${client.balance < 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'}`}>
                                                     {client.balance < 0 ? 'Dette' : 'À jour'}
                                                 </div>
-                                                <span className="text-sm font-black text-slate-700 dark:text-slate-200">
+                                                <span className="text-sm font-black text-slate-700 dark:text-slate-200 mr-2">
                                                     {Math.abs(client.balance || 0).toFixed(0)} <span className="text-[10px] opacity-50 uppercase">DT</span>
                                                 </span>
+                                                <div className="flex items-center gap-2 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                                                    <button
+                                                        onClick={() => setClientToEdit(client)}
+                                                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50 transition-colors"
+                                                        title="Modifier"
+                                                    >
+                                                        <Edit2 size={15} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setClientToDelete(client)}
+                                                        className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors"
+                                                        title="Supprimer"
+                                                    >
+                                                        <Trash2 size={15} />
+                                                    </button>
+                                                </div>
                                                 <ChevronRight size={16} className="text-slate-200 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                                             </div>
                                         </div>
@@ -206,6 +271,28 @@ const ClientsList: React.FC = () => {
                     onSuccess={fetchClients}
                 />
             )}
+
+            {clientToEdit && (
+                <EditClientModal
+                    client={clientToEdit}
+                    onClose={() => setClientToEdit(null)}
+                    onSuccess={() => {
+                        setClientToEdit(null);
+                        fetchClients();
+                    }}
+                />
+            )}
+
+            <ConfirmModal
+                isOpen={!!clientToDelete}
+                title="Supprimer le client"
+                message={`Êtes-vous sûr de vouloir supprimer ${clientToDelete?.first_name} ${clientToDelete?.last_name} ? Cette action est irréversible.`}
+                confirmLabel="Supprimer"
+                variant="danger"
+                onConfirm={handleDeleteClient}
+                onClose={() => setClientToDelete(null)}
+                loading={isDeleting}
+            />
         </>
     );
 };

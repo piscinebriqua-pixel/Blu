@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
     Calendar,
@@ -29,6 +29,7 @@ interface Technician {
 
 const TechnicianDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
     const [technician, setTechnician] = useState<Technician | null>(null);
     const [interventions, setInterventions] = useState<any[]>([]);
     const [payments, setPayments] = useState<any[]>([]);
@@ -117,10 +118,7 @@ const TechnicianDetail: React.FC = () => {
 
             if (error) throw error;
             toast.success('Technicien supprimé avec succès');
-            // We use window.location.href or navigate back to the list. 
-            // We need to import useNavigate but actually we could just use window.history.back() or similar.
-            // Let's rely on browser history or just window.location.href.
-            window.location.href = '/technicians';
+            navigate('/technicians', { replace: true });
         } catch (error: any) {
             toast.error(error.message || 'Erreur lors de la suppression. Le technicien est peut-être lié à des interventions.');
         } finally {

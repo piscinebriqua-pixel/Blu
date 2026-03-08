@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PageLayout from "../components/PageLayout";
 import NewIntervention from "../components/NewIntervention";
 import InterventionDetailsModal from "../components/InterventionDetailsModal";
+import ConfirmModal from "../components/ConfirmModal";
 import { supabase } from "../lib/supabase";
 import {
   Search,
@@ -9,6 +11,8 @@ import {
   FileText,
   Clock,
   Plus,
+  Calendar,
+  User
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
@@ -32,6 +36,7 @@ interface Intervention {
       first_name: string;
       last_name: string;
       balance: number;
+      phone?: string;
     };
   };
   services: { price_at_time: number; service: { name: string } }[];
@@ -45,6 +50,7 @@ interface Intervention {
 }
 
 const Interventions: React.FC = () => {
+  const navigate = useNavigate();
   const [interventions, setInterventions] = useState<Intervention[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,6 +59,8 @@ const Interventions: React.FC = () => {
   );
   const [selectedIntervention, setSelectedIntervention] =
     useState<Intervention | null>(null);
+  const [interventionToDelete, setInterventionToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editingId, setEditingId] = useState<string | undefined>(undefined);
   const [isNewInterventionModalOpen, setIsNewInterventionModalOpen] =
     useState(false);
@@ -91,47 +99,29 @@ const Interventions: React.FC = () => {
 
       if (error) throw error;
       setInterventions(data || []);
-    } catch (error) {
-      console.error("Erreur:", error);
+    } catch (error: any) {
+      console.error("Erreur Supabase:", error);
+      toast.error("Impossible de récupérer les entretiens");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleOpenAddModal = () => {
-    setEditingId(undefined);
-    setIsNewInterventionModalOpen(true);
-  };
-
-  const handleDeleteIntervention = async (intervention: Intervention) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer cet entretien ?")) return;
-
+  const handleDeleteIntervention = async () => {
+    if (!interventionToDelete) return;
     try {
-      setLoading(true);
-      const { error } = await supabase
-        .from('interventions')
-        .delete()
-        .eq('id', intervention.id);
-
+      setIsDeleting(true);
+      const { error } = await supabase.from('interventions').delete().eq('id', interventionToDelete);
       if (error) throw error;
-
       toast.success("Entretien supprimé");
-      setSelectedIntervention(null);
+      setInterventionToDelete(null);
       fetchInterventions();
     } catch (error: any) {
-      console.error('Error deleting:', error);
-      toast.error("Erreur lors de la suppression");
+      console.error(error);
+      toast.error("Erreur lors de la suppression: " + (error.message || ''));
     } finally {
-      setLoading(false);
+      setIsDeleting(false);
     }
-  };
-
-  const calculateTotal = (inter: Intervention) => {
-    const sTotal =
-      inter.services?.reduce((acc, s) => acc + (s.price_at_time || 0), 0) || 0;
-    const pTotal =
-      inter.products?.reduce((acc, p) => acc + (p.total_price || 0), 0) || 0;
-    return sTotal + pTotal;
   };
 
   const filteredInterventions = interventions
@@ -169,7 +159,6 @@ const Interventions: React.FC = () => {
       return true;
     })
     .sort((a, b) => {
-      // Sort by date explicitly
       const dateA = new Date(activeTab === 'planifie' ? (a.scheduled_date || a.created_at) : (a.visit_date || a.scheduled_date || a.created_at)).getTime();
       const dateB = new Date(activeTab === 'planifie' ? (b.scheduled_date || b.created_at) : (b.visit_date || b.scheduled_date || b.created_at)).getTime();
       return dateB - dateA;
@@ -177,69 +166,82 @@ const Interventions: React.FC = () => {
 
   const uniqueTechnicians = Array.from(new Set(interventions.map(i => i.technician?.full_name).filter(Boolean))) as string[];
 
-
   const toolbar = (
     <div className="flex flex-col gap-4">
-      <div className="relative">
-        <Search
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-          size={18}
-        />
-        <input
-          type="text"
-          placeholder="Rechercher un client ou un technicien..."
-          className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      {/* Search & View Switcher */}
+      <div className="flex gap-3">
+        <div className="relative flex-1 group">
+          <Search
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors"
+            size={18}
+          />
+          <input
+            type="text"
+            placeholder="Rechercher client, tech..."
+            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-white/5 text-sm font-bold shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <button
+          onClick={() => navigate('/planning')}
+          className="flex items-center justify-center w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl text-slate-500 border border-slate-100 dark:border-white/5 shadow-sm active:scale-90 transition-all"
+          title="Vue Calendrier"
+        >
+          <Calendar size={22} />
+        </button>
       </div>
 
+      {/* Filters Row */}
       <div className="flex gap-2">
-        <select
-          aria-label="Filtrer par type d'intervention"
-          title="Type d'intervention"
-          value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value as any)}
-          className="flex-1 p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-primary/50 appearance-none cursor-pointer"
-        >
-          <option value="all">Tous les types</option>
-          <option value="classique">Visite Classique</option>
-          <option value="chantier">Chantier / Devis</option>
-        </select>
+        <div className="relative flex-1">
+          <select
+            aria-label="Type"
+            value={selectedType}
+            onChange={(e) => setSelectedType(e.target.value as any)}
+            className="w-full p-3 pl-4 pr-10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md rounded-xl border border-white dark:border-white/5 text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 appearance-none outline-none focus:border-primary/50"
+          >
+            <option value="all">Tous Types</option>
+            <option value="classique">Visite</option>
+            <option value="chantier">Chantier</option>
+          </select>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+            <Clock size={14} />
+          </div>
+        </div>
 
-        <select
-          aria-label="Filtrer par technicien"
-          title="Technicien assigné"
-          value={selectedTech}
-          onChange={(e) => setSelectedTech(e.target.value)}
-          className="flex-1 p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-xs font-bold text-slate-600 dark:text-slate-300 outline-none focus:border-primary/50 appearance-none cursor-pointer"
-        >
-          <option value="all">Tous les techniciens</option>
-          {uniqueTechnicians.map(tech => (
-            <option key={tech} value={tech}>{tech}</option>
-          ))}
-        </select>
+        <div className="relative flex-1">
+          <select
+            aria-label="Technicien"
+            value={selectedTech}
+            onChange={(e) => setSelectedTech(e.target.value)}
+            className="w-full p-3 pl-4 pr-10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md rounded-xl border border-white dark:border-white/5 text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 appearance-none outline-none focus:border-primary/50"
+          >
+            <option value="all">Tous Techs</option>
+            {uniqueTechnicians.map(tech => (
+              <option key={tech} value={tech}>{tech}</option>
+            ))}
+          </select>
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
+            <User size={14} />
+          </div>
+        </div>
       </div>
 
-      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/50 dark:border-slate-700/50 flex-wrap">
-        <button
-          onClick={() => setActiveTab("planifie")}
-          className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "planifie" ? "bg-white dark:bg-slate-700 text-primary shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
-        >
-          Planifié
-        </button>
-        <button
-          onClick={() => setActiveTab("termine")}
-          className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "termine" ? "bg-white dark:bg-slate-700 text-primary shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
-        >
-          Terminé
-        </button>
-        <button
-          onClick={() => setActiveTab("annule")}
-          className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "annule" ? "bg-white dark:bg-slate-700 text-primary shadow-sm" : "text-slate-500 hover:text-slate-800 dark:hover:text-white"}`}
-        >
-          Annulé
-        </button>
+      {/* Tabs */}
+      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200/50 dark:border-white/5">
+        {(['planifie', 'termine', 'annule'] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === tab
+                ? "bg-white dark:bg-slate-700 text-primary shadow-lg ring-1 ring-black/5"
+                : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              }`}
+          >
+            {tab === 'planifie' ? 'À faire' : tab === 'termine' ? 'Terminé' : 'Annulé'}
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -247,151 +249,132 @@ const Interventions: React.FC = () => {
   return (
     <PageLayout
       title="ENTRETIENS"
-      subtitle={`${interventions.length} TOTAL`}
+      subtitle={`${filteredInterventions.length} TROUVÉS`}
+      toolbar={toolbar}
       loading={loading && interventions.length === 0}
       showBackButton={true}
-      toolbar={toolbar}
+      className="bg-slate-50 dark:bg-[#0f141e]"
     >
-
-
-      {/* List Section */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between px-2 mb-2">
-          <h3 className="text-premium-label">
-            Rapports d'interventions
-          </h3>
-          <div className="h-px flex-1 bg-slate-200/50 dark:bg-slate-800 mx-6" />
-        </div>
-
-        {filteredInterventions.map((inter) => (
-          <div
-            key={inter.id}
-            className="card-white !flex-col !items-stretch !p-3.5 mb-1 text-left hover:scale-[1.01] transition-all cursor-pointer relative"
-            onClick={() => setSelectedIntervention(inter)}
-          >
-            {/* Top Row: Icon + Title | Price */}
-            <div className="flex justify-between items-center mb-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-primary-glow flex items-center justify-center text-primary shrink-0 transition-transform">
-                  <FileText size={18} />
-                </div>
-                <h4 className="text-[14px] font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-none">
-                  {inter.pool?.client?.first_name}{" "}
-                  {inter.pool?.client?.last_name}
-                </h4>
+      <div className="flex flex-col gap-3 pb-32 px-4">
+        {filteredInterventions.length > 0 ? (
+          filteredInterventions.map((i) => (
+            <div
+              key={i.id}
+              onClick={() => setSelectedIntervention(i)}
+              className={`group p-4 rounded-[2.5rem] bg-white dark:bg-slate-800 border border-slate-100 dark:border-white/5 shadow-sm active:scale-[0.98] transition-all flex items-center gap-4 ${i.status === 'cancelled' ? 'opacity-60' : ''
+                }`}
+            >
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${i.status === 'completed'
+                  ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600'
+                  : i.status === 'cancelled'
+                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                    : 'bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white'
+                }`}>
+                {i.status === 'completed' ? <FileText size={24} /> : <Clock size={24} />}
               </div>
-              <span className="text-[15px] font-black text-primary bg-primary/5 px-2.5 py-1 rounded-lg shrink-0">
-                {(calculateTotal(inter) || 0).toFixed(0)} DT
-              </span>
-            </div>
 
-            {/* Middle Row: Tech | Date + Action */}
-            <div className="flex items-center justify-between px-0.5">
-              <div className="flex items-center gap-3 text-slate-500">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <div
-                    className={`w-2 h-2 rounded-full flex-shrink-0 ${inter.status === "completed" ? "bg-emerald-500" : "bg-blue-400"}`}
-                  />
-                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wide truncate">
-                    {inter.technician?.full_name || "Non assigné"}
-                  </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-start mb-0.5">
+                  <h3 className={`text-base font-black uppercase tracking-tight truncate ${i.status === 'cancelled' ? 'text-slate-400 line-through' : 'text-slate-900 dark:text-white'
+                    }`}>
+                    {i.pool?.client?.first_name} {i.pool?.client?.last_name}
+                  </h3>
+                  <div className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase ${i.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                      i.status === 'cancelled' ? 'bg-slate-100 text-slate-500' :
+                        'bg-primary/10 text-primary'
+                    }`}>
+                    {activeTab === 'termine'
+                      ? new Date(i.visit_date || i.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
+                      : new Date(i.scheduled_date || i.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
+                    }
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Clock size={13} className="text-slate-400" />
-                  <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
-                    {inter.status === "scheduled" || inter.status === "pending"
-                      ? inter.scheduled_date
-                        ? new Date(inter.scheduled_date).toLocaleDateString(
-                          "fr-FR",
-                          { day: "2-digit", month: "2-digit" },
-                        )
-                        : "À planifier"
-                      : new Date(inter.created_at).toLocaleDateString("fr-FR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                      })}
+
+                <div className="flex items-center gap-2">
+                  <span className={`text-[11px] font-bold uppercase tracking-widest ${i.status === 'cancelled' ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {i.pool?.name || 'Piscine'}
+                  </span>
+                  <div className="w-1 h-1 rounded-full bg-slate-200"></div>
+                  <span className={`text-[11px] font-black uppercase ${i.status === 'cancelled' ? 'text-slate-400' : 'text-slate-500'}`}>
+                    {i.technician?.full_name}
                   </span>
                 </div>
               </div>
 
-              {inter.status === "scheduled" ? (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelPoolId(inter.pool_id);
-                    setSelClient(inter.pool?.client || null);
-                    setEditingId(inter.id);
-                    setIsNewInterventionModalOpen(true);
-                  }}
-                  className="px-4 py-1.5 bg-primary text-white text-[10px] font-black uppercase rounded-lg hover:bg-primary-dark transition-all shadow-md active:scale-95"
-                >
-                  DÉMARRER
-                </button>
-              ) : (
-                <ChevronRight size={16} className="text-slate-300" />
-              )}
+              <ChevronRight size={20} className="text-slate-300 group-hover:text-primary transition-colors" />
             </div>
-          </div>
-        ))}
-
-        {filteredInterventions.length === 0 && (
-          <div className="py-24 flex flex-col items-center justify-center text-slate-500 gap-4 bg-white/30 dark:bg-slate-800/20 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm animate-in zoom-in-95 duration-500">
-            <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-2">
-              <FileText size={40} className="opacity-10" />
+          ))
+        ) : (
+          <div className="py-24 flex flex-col items-center justify-center opacity-40">
+            <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+              <Clock size={32} />
             </div>
-            <p className="text-premium-label">
-              Aucun rapport trouvé
-            </p>
+            <h3 className="text-sm font-black uppercase tracking-widest">Aucun résultat</h3>
           </div>
         )}
       </div>
 
-      {/* Selection Modal for adding */}
-
-      {/* Floating Action Button */}
       <button
-        onClick={handleOpenAddModal}
-        className="fab-adaptive w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-600/30 flex items-center justify-center hover:bg-blue-700 hover:scale-110 active:scale-95 transition-all"
-        aria-label="Nouvelle intervention"
+        onClick={() => setIsNewInterventionModalOpen(true)}
+        className="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-br from-primary to-primary-dark text-white rounded-[2rem] shadow-2xl shadow-primary/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 ring-4 ring-white dark:ring-slate-900 group"
+        title="Nouveau"
       >
-        <Plus size={28} />
+        <Plus size={32} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-500" />
       </button>
 
-      {/* Modals */}
+      {selectedIntervention && (
+        <InterventionDetailsModal
+          intervention={selectedIntervention}
+          onClose={() => setSelectedIntervention(null)}
+          onEdit={(i) => {
+            setEditingId(i.id);
+            setSelectedIntervention(null);
+          }}
+          onDelete={(inter) => {
+            setInterventionToDelete(inter.id);
+            setSelectedIntervention(null);
+          }}
+          onStatusChange={fetchInterventions}
+        />
+      )}
+
+      <ConfirmModal
+        isOpen={!!interventionToDelete}
+        title="Supprimer Intervention"
+        message="Voulez-vous vraiment supprimer cet entretien ? Cette action est irréversible."
+        confirmLabel="SUPPRIMER"
+        onConfirm={handleDeleteIntervention}
+        onClose={() => setInterventionToDelete(null)}
+        loading={isDeleting}
+        variant="danger"
+      />
+
       {isNewInterventionModalOpen && (
         <NewIntervention
           clientId={selClient?.id}
           poolId={selPoolId || undefined}
-          interventionId={editingId}
           onClose={() => {
             setIsNewInterventionModalOpen(false);
             setSelClient(null);
             setSelPoolId(null);
-            setEditingId(undefined);
           }}
           onSuccess={() => {
             setIsNewInterventionModalOpen(false);
             setSelClient(null);
             setSelPoolId(null);
-            setEditingId(undefined);
             fetchInterventions();
           }}
         />
       )}
 
-      {/* Details Modal */}
-      {selectedIntervention && (
-        <InterventionDetailsModal
-          intervention={selectedIntervention as any}
-          onClose={() => setSelectedIntervention(null)}
-          onEdit={(inter) => {
-            setSelectedIntervention(null);
-            setSelPoolId(inter.pool_id!);
-            setSelClient(inter.pool?.client as any);
-            setEditingId(inter.id);
-            setIsNewInterventionModalOpen(true);
+      {editingId && (
+        <NewIntervention
+          interventionId={editingId}
+          onClose={() => setEditingId(undefined)}
+          onSuccess={() => {
+            setEditingId(undefined);
+            fetchInterventions();
           }}
-          onDelete={handleDeleteIntervention as any}
         />
       )}
     </PageLayout>

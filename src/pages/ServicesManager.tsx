@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageLayout from '../components/PageLayout';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -12,7 +13,8 @@ import {
     Search as SearchIcon,
     Wallet,
     X,
-    Tag
+    Tag,
+    ClipboardList
 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
 
@@ -30,7 +32,8 @@ interface Product {
 }
 
 const ServicesManager: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'services' | 'products'>('services');
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState<'services' | 'products' | 'templates'>('services');
 
     // --- Services State ---
     const [services, setServices] = useState<Service[]>([]);
@@ -198,12 +201,18 @@ const ServicesManager: React.FC = () => {
                 </button>
                 <button
                     onClick={() => setActiveTab('products')}
-                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-base font-black uppercase tracking-widest transition-all ${activeTab === 'products'
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all ${activeTab === 'products'
                         ? 'bg-white dark:bg-slate-700 text-violet-600 shadow-sm'
                         : 'text-slate-500 hover:text-slate-600'
                         }`}
                 >
                     <Package size={14} /> Produits
+                </button>
+                <button
+                    onClick={() => navigate('/settings/templates')}
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all text-slate-500 hover:text-slate-600`}
+                >
+                    <ClipboardList size={14} /> Modèles
                 </button>
             </div>
 

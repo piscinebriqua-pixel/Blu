@@ -23,6 +23,7 @@ import AddPoolModal from "./AddPoolModal";
 import ClientSelectionModal from "./ClientSelectionModal";
 import { toast } from "react-hot-toast";
 import { recalculateVentilation } from "../lib/paymentService";
+import { handlePoolRecurrence } from "../lib/recurrenceService";
 
 interface Service {
   id: string;
@@ -578,6 +579,11 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
             .from('devis')
             .update({ status: 'closed', closed_at: new Date().toISOString() })
             .eq('id', snapshotFormData.devis_id);
+        }
+
+        // --- GESTION DE LA RÉCURRENCE ---
+        if (snapshotPoolId) {
+          await handlePoolRecurrence(snapshotPoolId, snapshotFormData.scheduled_date);
         }
       }
 

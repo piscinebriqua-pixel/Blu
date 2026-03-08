@@ -37,15 +37,47 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
         filter_type: pool.filter_type || 'sand',
         is_contracted: pool.is_contracted || false,
         maintenance_frequency: pool.maintenance_frequency || 'weekly',
-        preferred_day: pool.preferred_day?.toString() || '1'
+        preferred_day: pool.preferred_day?.toString() || '1',
+        template_id: '',
+        technician_id: ''
     });
+
+    const [templates, setTemplates] = useState<any[]>([]);
+    const [technicians, setTechnicians] = useState<any[]>([]);
+    const [ruleId, setRuleId] = useState<string | null>(null);
+
+    React.useEffect(() => {
+        const fetchRecurrenceData = async () => {
+            const [tRes, techRes, ruleRes] = await Promise.all([
+                supabase.from('intervention_templates').select('id, name').order('name'),
+                supabase.from('technicians').select('id, full_name').eq('active', true).order('full_name'),
+                supabase.from('recurrence_rules').select('*').eq('pool_id', pool.id).maybeSingle()
+            ]);
+
+            if (tRes.data) setTemplates(tRes.data);
+            if (techRes.data) setTechnicians(techRes.data);
+            if (ruleRes.data) {
+                setRuleId(ruleRes.data.id);
+                setFormData(prev => ({
+                    ...prev,
+                    is_contracted: ruleRes.data.active,
+                    maintenance_frequency: ruleRes.data.frequency,
+                    preferred_day: ruleRes.data.day_of_week?.toString() || prev.preferred_day,
+                    template_id: ruleRes.data.template_id || '',
+                    technician_id: ruleRes.data.technician_id || ''
+                }));
+            }
+        };
+        fetchRecurrenceData();
+    }, [pool.id]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            const { error } = await supabase
+            // 1. Update Pool
+            const { error: poolError } = await supabase
                 .from('pools')
                 .update({
                     name: formData.name,
@@ -53,15 +85,37 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                     lining_type: formData.lining_type,
                     treatment_method: formData.treatment_method,
                     filter_type: formData.filter_type,
+                    // Keeping these for backward compatibility if needed, though we use the rule table
                     is_contracted: formData.is_contracted,
                     maintenance_frequency: formData.maintenance_frequency,
                     preferred_day: parseInt(formData.preferred_day)
                 })
                 .eq('id', pool.id);
 
-            if (error) throw error;
+            if (poolError) throw poolError;
 
-            toast.success('Bassin mis à jour avec succès');
+            // 2. Update/Insert Recurrence Rule
+            if (formData.is_contracted) {
+                const rulePayload = {
+                    pool_id: pool.id,
+                    template_id: formData.template_id || null,
+                    technician_id: formData.technician_id || null,
+                    frequency: formData.maintenance_frequency,
+                    day_of_week: parseInt(formData.preferred_day),
+                    active: true
+                };
+
+                if (ruleId) {
+                    await supabase.from('recurrence_rules').update(rulePayload).eq('id', ruleId);
+                } else {
+                    await supabase.from('recurrence_rules').insert([rulePayload]);
+                }
+            } else if (ruleId) {
+                // Deactivate rule if unchecked
+                await supabase.from('recurrence_rules').update({ active: false }).eq('id', ruleId);
+            }
+
+            toast.success('Bassin et contrat mis à jour ✓');
             onSuccess();
             onClose();
         } catch (error: any) {
@@ -184,6 +238,30 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
 
                     {formData.is_contracted && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Modèle d'intervention</label>
+                                <select
+                                    className="search-input !h-12 text-base"
+                                    value={formData.template_id}
+                                    onChange={e => setFormData({ ...formData, template_id: e.target.value })}
+                                    title="Modèle"
+                                >
+                                    <option value="">(Aucun modèle)</option>
+                                    {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                </select>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Technicien attitré</label>
+                                <select
+                                    className="search-input !h-12 text-base"
+                                    value={formData.technician_id}
+                                    onChange={e => setFormData({ ...formData, technician_id: e.target.value })}
+                                    title="Technicien"
+                                >
+                                    <option value="">(Auto / Non assigné)</option>
+                                    {technicians.map(t => <option key={t.id} value={t.id}>{t.full_name}</option>)}
+                                </select>
+                            </div>
                             <div className="flex flex-col gap-2">
                                 <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Fréquence</label>
                                 <select

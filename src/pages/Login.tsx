@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
+import { Lock, Loader2, AlertCircle, User } from 'lucide-react';
 import BccpLogo from '../components/BccpLogo';
 
 const Login: React.FC = () => {
@@ -35,8 +35,14 @@ const Login: React.FC = () => {
         setError(null);
 
         try {
+            let finalLogin = email.trim().toLowerCase();
+            // Si c'est juste un identifiant (pas d'@), on ajoute le sous-domaine
+            if (finalLogin && !finalLogin.includes('@')) {
+                finalLogin = `${finalLogin}@blu.com`;
+            }
+
             const { error: signInError } = await supabase.auth.signInWithPassword({
-                email,
+                email: finalLogin,
                 password,
             });
 
@@ -106,15 +112,16 @@ const Login: React.FC = () => {
 
                         <form onSubmit={handleLogin} className="flex flex-col gap-5">
                             <div className="space-y-2">
-                                <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest ml-1">E-mail Professionnel</label>
+                                <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest ml-1">E-mail ou Identifiant</label>
                                 <div className="relative">
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                     <input
-                                        type="email"
+                                        type="text"
+                                        autoCapitalize="none"
                                         className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-2xl border-none font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-base"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="nom@entreprise.com"
+                                        placeholder="identifiant ou email"
                                     />
                                 </div>
                             </div>

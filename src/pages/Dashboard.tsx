@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
     Users,
-    Wrench,
     ChevronRight,
     Calendar,
     LogOut,
@@ -262,21 +261,16 @@ const Dashboard: React.FC = () => {
                         <Calendar size={22} />
                     </div>
                     <div className="content-wrapper">
-                        <span>Planning RDV</span>
-                        <p className="dark:text-white">{counts.scheduled} <span className="text-[10px] font-normal text-slate-500">prévus</span></p>
+                        <span>Planning & Entretiens</span>
+                        <p className="dark:text-white flex items-center gap-1.5 flex-wrap">
+                            <span>{counts.scheduled} <span className="text-[10px] font-normal text-slate-500">prévus</span></span>
+                            <span className="text-slate-300 dark:text-slate-600">•</span>
+                            <span>{counts.interventions} <span className="text-[10px] font-normal text-slate-500">total</span></span>
+                        </p>
                     </div>
                     <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
                 </div>
 
-                <div onClick={() => navigate('/interventions')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800/50 dark:border-slate-700/50">
-                    <div className="icon-wrapper bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
-                        <Wrench size={22} />
-                    </div>
-                    <div className="content-wrapper">
-                        <span>Interventions</span>
-                        <p className="dark:text-white">{counts.interventions} <span className="text-[10px] font-normal text-slate-500">total</span></p>
-                    </div>
-                </div>
 
                 <div onClick={() => navigate('/chantiers')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-800/20">
                     <div className="icon-wrapper bg-white dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 shadow-sm border border-blue-100/50">

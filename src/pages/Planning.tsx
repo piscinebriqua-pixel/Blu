@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import NewIntervention from '../components/NewIntervention';
 import InterventionDetailsModal from '../components/InterventionDetailsModal';
+import ConfirmModal from '../components/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import PageLayout from '../components/PageLayout';
 
@@ -46,6 +47,8 @@ const Planning: React.FC = () => {
     const [selectedIntervention, setSelectedIntervention] = useState<Intervention | null>(null);
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [editingInterventionId, setEditingInterventionId] = useState<string | null>(null);
+    const [interventionToDelete, setInterventionToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [selectedTech, setSelectedTech] = useState<string>('all');
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [technicians, setTechnicians] = useState<any[]>([]);
@@ -82,26 +85,26 @@ const Planning: React.FC = () => {
         setTechnicians(data || []);
     }, []);
 
-    const handleDeleteIntervention = async (intervention: any) => {
-        if (!window.confirm("Voulez-vous vraiment supprimer cet entretien ?")) return;
+    const handleDeleteIntervention = async () => {
+        if (!interventionToDelete) return;
 
         try {
-            setLoading(true);
+            setIsDeleting(true);
             const { error } = await supabase
                 .from('interventions')
                 .delete()
-                .eq('id', intervention.id);
+                .eq('id', interventionToDelete);
 
             if (error) throw error;
 
             toast.success("Entretien supprimé");
-            setSelectedIntervention(null);
+            setInterventionToDelete(null);
             fetchInterventions();
         } catch (error: any) {
             console.error('Error deleting:', error);
             toast.error("Erreur lors de la suppression");
         } finally {
-            setLoading(false);
+            setIsDeleting(false);
         }
     };
 
@@ -639,10 +642,24 @@ const Planning: React.FC = () => {
                         setEditingInterventionId(i.id);
                         setSelectedIntervention(null);
                     }}
-                    onDelete={handleDeleteIntervention}
+                    onDelete={(i) => {
+                        setInterventionToDelete(i.id);
+                        setSelectedIntervention(null);
+                    }}
                     onStatusChange={fetchInterventions}
                 />
             )}
+
+            <ConfirmModal
+                isOpen={!!interventionToDelete}
+                title="Supprimer Intervention"
+                message="Voulez-vous vraiment supprimer cet entretien ? Cette action est irréversible."
+                confirmLabel="SUPPRIMER"
+                onConfirm={handleDeleteIntervention}
+                onClose={() => setInterventionToDelete(null)}
+                loading={isDeleting}
+                variant="danger"
+            />
 
             {(isNewModalOpen || editingInterventionId) && (
                 <NewIntervention

@@ -419,6 +419,12 @@ const ClientDetail: React.FC = () => {
     const handleDeleteClient = async () => {
         if (!isAdmin || !client) return;
 
+        if (interventions.length > 0 || payments.length > 0 || pools.length > 0) {
+            toast.error('Impossible de supprimer ce client : il possède un historique (piscines, interventions ou paiements).');
+            setShowDeleteConfirm(false);
+            return;
+        }
+
         try {
             setIsDeletingClient(true);
 
@@ -432,7 +438,7 @@ const ClientDetail: React.FC = () => {
             if (error) throw error;
 
             toast.success('Client supprimé avec succès');
-            navigate('/clients');
+            navigate('/clients', { replace: true });
         } catch (error: any) {
             toast.error('Erreur lors de la suppression du client: ' + error.message);
         } finally {
@@ -563,7 +569,7 @@ const ClientDetail: React.FC = () => {
                     </p>
                     <Button
                         variant="primary"
-                        onClick={() => navigate('/clients')}
+                        onClick={() => navigate('/clients', { replace: true })}
                         className="mt-6"
                     >
                         RETOUR À LA LISTE

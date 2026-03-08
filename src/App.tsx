@@ -12,6 +12,7 @@ import ServicesManager from './pages/ServicesManager';
 import Interventions from './pages/Interventions';
 import PendingApproval from './pages/PendingApproval';
 import AdminUsers from './pages/AdminUsers';
+import InterventionTemplates from './pages/InterventionTemplates';
 import TechnicianPortal from './pages/TechnicianPortal';
 import Profile from './pages/Profile';
 import Payments from './pages/Payments';
@@ -245,6 +246,11 @@ function App() {
             <Route path="/settings/services" element={
               <ProtectedRoute>
                 <div className="app-container"><ServicesManager /></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/settings/templates" element={
+              <ProtectedRoute>
+                <div className="app-container"><InterventionTemplates /></div>
               </ProtectedRoute>
             } />
 
