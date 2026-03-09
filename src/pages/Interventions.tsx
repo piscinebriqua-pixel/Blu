@@ -19,7 +19,7 @@ import { toast } from "react-hot-toast";
 interface Intervention {
   id: string;
   pool_id: string;
-  visit_date: string;
+  completed_date: string | null;
   created_at: string;
   ph_level: number;
   chlorine_level: number;
@@ -97,7 +97,7 @@ const Interventions: React.FC = () => {
           `
                     *,
                     technician:technicians!technician_id(full_name),
-                    pool:pools(
+                    pool:pools!pool_id(
                         name,
                         client:clients(id, first_name, last_name, balance, phone)
                     ),
@@ -179,8 +179,8 @@ const Interventions: React.FC = () => {
       return true;
     })
     .sort((a, b) => {
-      const dateA = new Date(activeTab === 'planifie' ? (a.scheduled_date || a.created_at) : (a.visit_date || a.scheduled_date || a.created_at)).getTime();
-      const dateB = new Date(activeTab === 'planifie' ? (b.scheduled_date || b.created_at) : (b.visit_date || b.scheduled_date || b.created_at)).getTime();
+      const dateA = new Date(activeTab === 'planifie' ? (a.scheduled_date || a.created_at) : (a.completed_date || a.scheduled_date || a.created_at)).getTime();
+      const dateB = new Date(activeTab === 'planifie' ? (b.scheduled_date || b.created_at) : (b.completed_date || b.scheduled_date || b.created_at)).getTime();
       return dateB - dateA;
     });
 
@@ -304,7 +304,7 @@ const Interventions: React.FC = () => {
                         'bg-primary/10 text-primary'
                     }`}>
                     {activeTab === 'termine'
-                      ? new Date(i.visit_date || i.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
+                      ? new Date(i.completed_date || i.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
                       : new Date(i.scheduled_date || i.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
                     }
                   </div>

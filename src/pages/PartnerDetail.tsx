@@ -29,7 +29,7 @@ interface Partner {
 
 interface ClientIntervention {
     id: string;
-    visit_date: string;
+    scheduled_date: string;
     pool_name: string;
     status: string;
     client_name: string;
@@ -503,7 +503,7 @@ const PartnerDetail: React.FC = () => {
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
                                                 <span className="text-[11px] font-black bg-white dark:bg-slate-700 px-2 py-0.5 rounded shadow-sm text-slate-600 dark:text-slate-300">
-                                                    {new Date(inter.visit_date).toLocaleDateString('fr-FR')}
+                                                    {new Date(inter.scheduled_date).toLocaleDateString('fr-FR')}
                                                 </span>
                                                 <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-lg ${remaining <= 0.5 ? 'bg-emerald-100 text-emerald-600' : (inter.paid_amount && inter.paid_amount > 0) ? 'bg-orange-100 text-orange-600' : 'bg-rose-100 text-rose-600'}`}>
                                                     {remaining <= 0.5 ? 'Payé' : (inter.paid_amount && inter.paid_amount > 0) ? 'Partiel' : 'À payer'}

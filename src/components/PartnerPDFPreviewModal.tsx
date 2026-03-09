@@ -19,7 +19,7 @@ interface Partner {
 
 interface Intervention {
     id: string;
-    visit_date: string;
+    scheduled_date: string;
     status: string;
     client_name: string;
     pool_name: string;
@@ -124,7 +124,7 @@ const PartnerPDFPreviewModal: React.FC<PartnerPDFPreviewModalProps> = ({
                     const sTotal = inter.services?.reduce((sAcc, s) => sAcc + (s.price_at_time || 0), 0) || 0;
                     const pTotal = inter.products?.reduce((pAcc, p) => pAcc + (p.total_price || 0), 0) || 0;
                     return [
-                        new Date(inter.visit_date).toLocaleDateString('fr-FR'),
+                        new Date(inter.scheduled_date).toLocaleDateString('fr-FR'),
                         `${inter.client_name}\n(${inter.pool_name})`,
                         inter.status === 'completed' ? 'Terminé' : inter.status,
                         `${(sTotal + pTotal).toFixed(0)} DT`
@@ -249,7 +249,7 @@ const PartnerPDFPreviewModal: React.FC<PartnerPDFPreviewModalProps> = ({
                                             (i.products?.reduce((acc, p) => acc + (p.total_price || 0), 0) || 0);
                                         return (
                                             <tr key={i.id} className="border-b border-slate-50 dark:border-slate-700/50">
-                                                <td className="p-2">{new Date(i.visit_date).toLocaleDateString('fr-FR')}</td>
+                                                <td className="p-2">{new Date(i.scheduled_date).toLocaleDateString('fr-FR')}</td>
                                                 <td className="p-2">{i.client_name}</td>
                                                 <td className="p-2 text-right font-bold">{iTotal} DT</td>
                                             </tr>

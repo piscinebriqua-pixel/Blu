@@ -8,7 +8,7 @@ import { formatBalance } from '../lib/formatters';
 
 interface Intervention {
     id: string;
-    visit_date?: string;
+    completed_date?: string | null;
     scheduled_date?: string;
     created_at: string;
     notes: string;
@@ -297,7 +297,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                         <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-full">
                             <Calendar size={12} className="text-blue-500" />
                             <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tight">
-                                {new Date(intervention.scheduled_date || intervention.visit_date || intervention.created_at).toLocaleDateString('fr-FR')}
+                                {new Date(intervention.completed_date || intervention.scheduled_date || intervention.created_at).toLocaleDateString('fr-FR')}
                             </span>
                         </div>
                     </div>

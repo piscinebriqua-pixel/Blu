@@ -49,7 +49,8 @@ interface Pool {
 
 interface Intervention {
     id: string;
-    visit_date: string;
+    completed_date: string | null;
+    scheduled_date: string;
     created_at: string;
     notes: string;
     ph_level: number;
@@ -307,7 +308,8 @@ const ClientDetail: React.FC = () => {
                 .from('interventions')
                 .select(`
                     id, 
-                    visit_date, 
+                    completed_date,
+                    scheduled_date,
                     created_at,
                     notes, 
                     ph_level, 
@@ -504,7 +506,7 @@ const ClientDetail: React.FC = () => {
                     const pTotal = inter.products?.reduce((acc: number, p: any) => acc + (p.total_price || 0), 0) || 0;
                     const totalBilled = sTotal + pTotal;
                     const remaining = totalBilled - (inter.paid_amount || 0);
-                    const date = new Date(inter.visit_date).toLocaleDateString('fr-FR');
+                    const date = new Date(inter.completed_date || inter.scheduled_date || inter.created_at).toLocaleDateString('fr-FR');
                     const paidAmount = inter.paid_amount || 0;
                     if (paidAmount > 0) {
                         message += `• ${date} (${inter.pool_name}) :\n  Total: ${totalBilled.toFixed(0)} DT | Payé: ${paidAmount.toFixed(0)} DT | Reste: *${remaining.toFixed(0)} DT*`;
