@@ -101,14 +101,14 @@ const PartnerDetail: React.FC = () => {
                     const { data: interData, error: interError } = await supabase
                         .from('interventions')
                         .select(`
-                            id, visit_date, status,
+                            id, scheduled_date, status,
                             pool:pools(name, client_id),
                             services:intervention_services(price_at_time, service:services(name)),
                             products:intervention_products(quantity, total_price, product:inventory_products(name, unit)),
                             payments:intervention_payments(amount_applied)
                         `)
                         .in('pool_id', poolIds)
-                        .order('visit_date', { ascending: false });
+                        .order('scheduled_date', { ascending: false });
 
                     if (interError) throw interError;
 

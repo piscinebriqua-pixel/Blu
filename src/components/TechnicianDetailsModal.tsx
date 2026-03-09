@@ -43,9 +43,9 @@ const TechnicianDetailsModal: React.FC<TechnicianDetailsModalProps> = ({ technic
             // For now, let's try to fetch if column exists, or handle gracefully.
             const { data: interData } = await supabase
                 .from('interventions')
-                .select('id, visit_date, created_at, status, pool:pools(name, client:clients(city))')
+                .select('id, scheduled_date, created_at, status, pool:pools(name, client:clients(city))')
                 .eq('technician_id', technicianId) // Assuming this column exists
-                .order('created_at', { ascending: false })
+                .order('scheduled_date', { ascending: false })
                 .limit(5);
 
             setInterventions(interData || []);

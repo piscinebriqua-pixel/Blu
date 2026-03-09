@@ -102,7 +102,7 @@ const Revenue: React.FC = () => {
                     products:intervention_products(total_price)
                 `)
                 .eq('status', 'completed')
-                .gte('visit_date', startDate.toISOString());
+                .gte('scheduled_date', startDate.toISOString());
 
             // 4. Fetch ALL clients with debt (balance < 0) - GLOBAL (no dates)
             const { data: debtClients, error: cErr } = await supabase

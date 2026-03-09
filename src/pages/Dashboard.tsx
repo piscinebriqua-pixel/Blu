@@ -226,89 +226,92 @@ const Dashboard: React.FC = () => {
         <PageLayout title="" leftContent={leftContent} rightContent={rightContent}>
             <div className="dashboard-grid">
                 {profile?.role === 'admin' && (
-                    <div onClick={() => navigate('/revenue')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-blue-50/30 border-blue-100/50 dark:bg-blue-900/10 dark:border-blue-800/20 shadow-blue-500/10">
+                    <div onClick={() => navigate('/revenue')} className="action-item cursor-pointer group bg-blue-50/30 border-blue-100/50 dark:bg-blue-900/10 dark:border-blue-800/20 shadow-blue-500/10">
                         <div className="icon-wrapper bg-white dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 shadow-sm dark:shadow-none">
-                            <Wallet size={22} />
+                            <Wallet size={24} />
                         </div>
                         <div className="content-wrapper">
-                            <span className="text-blue-600/60 dark:text-blue-400/60 uppercase !text-[10px] font-black">CA Mensuel</span>
-                            <p className="text-blue-900 dark:text-white">Analyse & Revenus</p>
+                            <span>CA Mensuel</span>
+                            <p className="text-blue-900 dark:text-white">Revenus</p>
                         </div>
                     </div>
                 )}
-                <div onClick={() => navigate('/clients')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800/50 dark:border-slate-700/50">
+                <div onClick={() => navigate('/clients')} className="action-item cursor-pointer group dark:bg-slate-800/50 dark:border-slate-700/50">
                     <div className="icon-wrapper bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                        <Users size={22} />
+                        <Users size={24} />
                     </div>
                     <div className="content-wrapper">
                         <span>Fiches Clients</span>
-                        <p className="dark:text-white">{counts.clients} <span className="text-[10px] font-normal text-slate-500">clients</span></p>
+                        <p className="dark:text-white">{counts.clients} <span className="text-[10px] font-normal text-slate-500 lowercase tracking-normal">clients</span></p>
                     </div>
                 </div>
 
-                <div onClick={() => navigate('/payments')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-emerald-50/30 border-emerald-100/50 dark:bg-emerald-900/10 dark:border-emerald-800/20">
+                <div onClick={() => navigate('/payments')} className="action-item cursor-pointer group bg-emerald-50/30 border-emerald-100/50 dark:bg-emerald-900/10 dark:border-emerald-800/20">
                     <div className="icon-wrapper bg-white dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400">
-                        <Wallet size={22} />
+                        <Wallet size={24} />
                     </div>
                     <div className="content-wrapper">
                         <span>Paiements</span>
-                        <p className="text-emerald-600/60 dark:text-emerald-400/60 uppercase !text-[10px] font-black">Encaissements</p>
+                        <p className="text-emerald-600/60 dark:text-emerald-400/60">Encaissements</p>
                     </div>
                 </div>
 
-                <div onClick={() => navigate('/planning')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform relative overflow-hidden dark:bg-slate-800/50 dark:border-slate-700/50">
+                <div onClick={() => navigate('/planning')} className="action-item cursor-pointer group relative overflow-hidden dark:bg-slate-800/50 dark:border-slate-700/50">
                     <div className="icon-wrapper bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400">
-                        <Calendar size={22} />
+                        <Calendar size={24} />
                     </div>
                     <div className="content-wrapper">
-                        <span>Planning & Entretiens</span>
-                        <p className="dark:text-white flex items-center gap-1.5 flex-wrap">
-                            <span>{counts.scheduled} <span className="text-[10px] font-normal text-slate-500">prévus</span></span>
-                            <span className="text-slate-300 dark:text-slate-600">•</span>
-                            <span>{counts.interventions} <span className="text-[10px] font-normal text-slate-500">total</span></span>
-                        </p>
+                        <span>Planning</span>
+                        <div className="flex flex-col items-center mt-1">
+                            <p className="dark:text-white text-sm">
+                                {counts.scheduled} <span className="text-[10px] font-normal text-slate-500 lowercase tracking-normal">prévus</span>
+                            </p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                                {counts.interventions} total
+                            </p>
+                        </div>
                     </div>
-                    <div className="absolute top-2 right-2 w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
+                    <div className="absolute top-4 right-4 w-2 h-2 bg-orange-500 rounded-full animate-pulse shadow-lg shadow-orange-500/50"></div>
                 </div>
 
 
-                <div onClick={() => navigate('/chantiers')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-800/20">
+                <div onClick={() => navigate('/chantiers')} className="action-item cursor-pointer group bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-800/20">
                     <div className="icon-wrapper bg-white dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 shadow-sm border border-blue-100/50">
-                        <FileText size={22} />
+                        <FileText size={24} />
                     </div>
                     <div className="content-wrapper">
                         <span>Chantiers</span>
-                        <p className="text-blue-600 dark:text-blue-400">{counts.devis} <span className="text-[10px] font-normal text-slate-500">en cours</span></p>
+                        <p className="text-blue-600 dark:text-blue-400">{counts.devis} <span className="text-[10px] font-normal text-slate-500 lowercase tracking-normal">en cours</span></p>
                     </div>
                 </div>
 
-                <div onClick={() => navigate('/technician-portal')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-orange-50/30 border-orange-100/50 dark:bg-orange-900/10 dark:border-orange-800/20">
+                <div onClick={() => navigate('/technician-portal')} className="action-item cursor-pointer group bg-orange-50/30 border-orange-100/50 dark:bg-orange-900/10 dark:border-orange-800/20">
                     <div className="icon-wrapper bg-white dark:bg-orange-900/50 text-orange-600 dark:text-orange-400">
-                        <Activity size={22} />
+                        <Activity size={24} />
                     </div>
                     <div className="content-wrapper">
                         <span>Ma Tournée</span>
-                        <p className="text-orange-600/60 dark:text-orange-400/60 uppercase !text-[10px] font-black">Espace Tech</p>
+                        <p className="text-orange-600 dark:text-orange-400">Espace Tech</p>
                     </div>
                 </div>
 
-                <div onClick={() => navigate('/technicians')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform dark:bg-slate-800/50 dark:border-slate-700/50">
+                <div onClick={() => navigate('/technicians')} className="action-item cursor-pointer group dark:bg-slate-800/50 dark:border-slate-700/50">
                     <div className="icon-wrapper bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-                        <Users size={22} />
+                        <Users size={24} />
                     </div>
                     <div className="content-wrapper">
                         <span>Techniciens</span>
-                        <p className="dark:text-white">{counts.technicians} <span className="text-[10px] font-normal text-slate-500">membres</span></p>
+                        <p className="dark:text-white">{counts.technicians} <span className="text-[10px] font-normal text-slate-500 lowercase tracking-normal">membres</span></p>
                     </div>
                 </div>
 
-                <div onClick={() => navigate('/partners')} className="action-item cursor-pointer hover:scale-[1.02] transition-transform bg-slate-100/50 border-slate-200 dark:bg-slate-800/50 dark:border-slate-700/50 shadow-sm shadow-slate-500/5">
-                    <div className="icon-wrapper bg-white dark:bg-slate-900/50 text-slate-600 dark:text-slate-400">
-                        <Briefcase size={22} />
+                <div onClick={() => navigate('/partners')} className="action-item cursor-pointer group bg-slate-100/50 border-slate-200 dark:bg-slate-800/50 dark:border-slate-700/50">
+                    <div className="icon-wrapper bg-white dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 shadow-sm">
+                        <Briefcase size={24} />
                     </div>
                     <div className="content-wrapper">
                         <span>Partenaires</span>
-                        <p className="text-slate-600/60 dark:text-slate-400/60 uppercase !text-[10px] font-black">Réseau & Tiers-Payant</p>
+                        <p className="text-slate-600 dark:text-slate-400">Réseau</p>
                     </div>
                 </div>
             </div>

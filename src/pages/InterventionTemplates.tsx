@@ -5,7 +5,6 @@ import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import {
     Loader2,
-    Edit2,
     Trash2,
     Plus,
     Search as SearchIcon,
@@ -78,8 +77,13 @@ const InterventionTemplates: React.FC = () => {
         task_temps_fonctionnement: false,
     });
 
-    const [selectedServices, setSelectedServices] = useState<string[]>([]);
-    const [selectedProducts, setSelectedProducts] = useState<Record<string, number>>({});
+    const [selectedServices, setSelectedServices] = useState<Service[]>([]);
+    const [selectedProducts, setSelectedProducts] = useState<{ product: Product; quantity: number }[]>([]);
+
+    const [serviceSearch, setServiceSearch] = useState('');
+    const [productSearch, setProductSearch] = useState('');
+    const [isServiceDropdownOpen, setIsServiceDropdownOpen] = useState(false);
+    const [isProductDropdownOpen, setIsProductDropdownOpen] = useState(false);
 
     const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -126,10 +130,11 @@ const InterventionTemplates: React.FC = () => {
                 task_verif_vanne: template.task_verif_vanne,
                 task_temps_fonctionnement: template.task_temps_fonctionnement,
             });
-            setSelectedServices(template.services?.map(s => s.service_id) || []);
-            const prodMap: Record<string, number> = {};
-            template.products?.forEach(p => { prodMap[p.product_id] = p.quantity; });
-            setSelectedProducts(prodMap);
+            setSelectedServices(template.services?.map(ts => dbServices.find(s => s.id === ts.service_id)).filter(Boolean) as Service[] || []);
+            setSelectedProducts(template.products?.map(tp => {
+                const prod = dbProducts.find(p => p.id === tp.product_id);
+                return prod ? { product: prod, quantity: tp.quantity } : null;
+            }).filter(Boolean) as { product: Product; quantity: number }[] || []);
         } else {
             setForm({
                 name: '',
@@ -146,8 +151,10 @@ const InterventionTemplates: React.FC = () => {
                 task_temps_fonctionnement: false,
             });
             setSelectedServices([]);
-            setSelectedProducts({});
+            setSelectedProducts([]);
         }
+        setServiceSearch('');
+        setProductSearch('');
         setIsModalOpen(true);
     };
 
@@ -176,16 +183,16 @@ const InterventionTemplates: React.FC = () => {
             // Insert new relations
             if (selectedServices.length > 0) {
                 await supabase.from('template_services').insert(
-                    selectedServices.map(sId => ({ template_id: templateId, service_id: sId }))
+                    selectedServices.map(s => ({ template_id: templateId, service_id: s.id }))
                 );
             }
 
-            if (Object.keys(selectedProducts).length > 0) {
+            if (selectedProducts.length > 0) {
                 await supabase.from('template_products').insert(
-                    Object.entries(selectedProducts).map(([pId, qty]) => ({
+                    selectedProducts.map(sp => ({
                         template_id: templateId,
-                        product_id: pId,
-                        quantity: qty
+                        product_id: sp.product.id,
+                        quantity: sp.quantity
                     }))
                 );
             }
@@ -215,21 +222,34 @@ const InterventionTemplates: React.FC = () => {
         }
     };
 
-    const toggleService = (id: string) => {
-        setSelectedServices(prev => 
-            prev.includes(id) ? prev.filter(sId => sId !== id) : [...prev, id]
-        );
+    const addService = (service: Service) => {
+        if (!selectedServices.find(s => s.id === service.id)) {
+            setSelectedServices(prev => [...prev, service]);
+        }
+        setServiceSearch('');
+        setIsServiceDropdownOpen(false);
+    };
+
+    const removeService = (id: string) => {
+        setSelectedServices(prev => prev.filter(s => s.id !== id));
+    };
+
+    const addProduct = (product: Product) => {
+        if (!selectedProducts.find(sp => sp.product.id === product.id)) {
+            setSelectedProducts(prev => [...prev, { product, quantity: 1 }]);
+        }
+        setProductSearch('');
+        setIsProductDropdownOpen(false);
+    };
+
+    const removeProduct = (id: string) => {
+        setSelectedProducts(prev => prev.filter(sp => sp.product.id !== id));
     };
 
     const updateProductQty = (id: string, qty: number) => {
-        setSelectedProducts(prev => {
-            if (qty <= 0) {
-                const newProducts = { ...prev };
-                delete newProducts[id];
-                return newProducts;
-            }
-            return { ...prev, [id]: qty };
-        });
+        setSelectedProducts(prev => prev.map(sp => 
+            sp.product.id === id ? { ...sp, quantity: qty } : sp
+        ));
     };
 
     const filteredTemplates = templates.filter(t => 
@@ -286,39 +306,37 @@ const InterventionTemplates: React.FC = () => {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredTemplates.map(t => (
-                        <div key={t.id} className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-primary/50 transition-all group">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                                        <ClipboardList size={22} />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-tight">{t.name}</h3>
-                                        <p className="text-slate-500 text-xs truncate max-w-[200px]">{t.description || "Pas de description"}</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-1">
-                                    <button onClick={() => handleOpenModal(t)} className="p-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-slate-400 hover:text-primary transition-all">
-                                        <Edit2 size={16} />
-                                    </button>
-                                    <button onClick={() => setTemplateToDelete(t)} className="p-2 bg-slate-50 dark:bg-slate-700 rounded-xl text-slate-400 hover:text-red-500 transition-all">
-                                        <Trash2 size={16} />
-                                    </button>
+                        <div 
+                            key={t.id} 
+                            onClick={() => handleOpenModal(t)}
+                            className="bg-white dark:bg-slate-800 rounded-[2rem] p-4 shadow-sm border border-slate-100 dark:border-slate-700 hover:border-primary/50 hover:scale-[1.02] transition-all cursor-pointer group flex items-center gap-4"
+                        >
+                            <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shrink-0">
+                                <ClipboardList size={26} />
+                            </div>
+                            
+                            <div className="flex-1 min-width-0">
+                                <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-tight text-sm line-clamp-1">{t.name}</h3>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                        {t.services?.length || 0} Serv.
+                                    </span>
+                                    <div className="w-1 h-1 bg-slate-300 rounded-full" />
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                        {t.products?.length || 0} Prod.
+                                    </span>
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap gap-2 pt-2">
-                                <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${t.services?.length ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400 opacity-50'}`}>
-                                    {t.services?.length || 0} Services
-                                </span>
-                                <span className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${t.products?.length ? 'bg-violet-100 text-violet-600' : 'bg-slate-100 text-slate-400 opacity-50'}`}>
-                                    {t.products?.length || 0} Produits
-                                </span>
-                                <span className="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
-                                    Checkpoint OK
-                                </span>
+                            <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); setTemplateToDelete(t); }} 
+                                    className="p-2 text-slate-400 hover:text-red-500 transition-all rounded-xl hover:bg-red-50"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
                             </div>
                         </div>
                     ))}
@@ -411,20 +429,56 @@ const InterventionTemplates: React.FC = () => {
                                         <h3 className="text-[11px] font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
                                             <div className="w-1 h-3 bg-blue-600 rounded-full" /> Services inclus
                                         </h3>
-                                        <div className="grid grid-cols-1 gap-2 max-h-[250px] overflow-y-auto pr-2 no-scrollbar">
-                                            {dbServices.map(s => (
-                                                <button
-                                                    key={s.id}
-                                                    type="button"
-                                                    onClick={() => toggleService(s.id)}
-                                                    className={`w-full p-4 rounded-2xl border flex items-center justify-between transition-all ${selectedServices.includes(s.id) ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-700 text-slate-400'}`}
-                                                >
+                                        
+                                        {/* Search Box */}
+                                        <div className="relative">
+                                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                            <input
+                                                type="text"
+                                                placeholder="Ajouter un service..."
+                                                value={serviceSearch}
+                                                onChange={e => {
+                                                    setServiceSearch(e.target.value);
+                                                    setIsServiceDropdownOpen(true);
+                                                }}
+                                                onFocus={() => setIsServiceDropdownOpen(true)}
+                                                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-400 text-sm"
+                                            />
+                                            {isServiceDropdownOpen && serviceSearch && (
+                                                <div className="absolute z-[60] w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[200px] overflow-y-auto no-scrollbar">
+                                                    {dbServices
+                                                        .filter(s => s.name.toLowerCase().includes(serviceSearch.toLowerCase()) && !selectedServices.find(ss => ss.id === s.id))
+                                                        .map(s => (
+                                                            <button
+                                                                key={s.id}
+                                                                type="button"
+                                                                onClick={() => addService(s)}
+                                                                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                                                            >
+                                                                <span className="text-xs font-black uppercase tracking-tight">{s.name}</span>
+                                                                <span className="text-[10px] font-bold text-slate-400">{s.price} DT</span>
+                                                            </button>
+                                                        ))}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Added Services List */}
+                                        <div className="flex flex-col gap-2">
+                                            {selectedServices.map(s => (
+                                                <div key={s.id} className="flex justify-between items-center p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-900/10">
                                                     <div className="flex items-center gap-3">
-                                                        <Wrench size={16} />
+                                                        <Wrench size={16} className="text-blue-600" />
                                                         <span className="text-xs font-black uppercase tracking-tight">{s.name}</span>
                                                     </div>
-                                                    <span className="text-[10px] font-bold">{s.price} DT</span>
-                                                </button>
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => removeService(s.id)}
+                                                        className="p-1.5 text-slate-400 hover:text-red-500 bg-white dark:bg-slate-800 rounded-lg shadow-sm"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>
@@ -434,30 +488,73 @@ const InterventionTemplates: React.FC = () => {
                                         <h3 className="text-[11px] font-black text-violet-600 uppercase tracking-[0.2em] flex items-center gap-2">
                                             <div className="w-1 h-3 bg-violet-600 rounded-full" /> Produits utilisés
                                         </h3>
-                                        <div className="grid grid-cols-1 gap-3 max-h-[350px] overflow-y-auto pr-2 no-scrollbar">
-                                            {dbProducts.map(p => {
-                                                const currentQty = selectedProducts[p.id] || 0;
-                                                return (
-                                                    <div key={p.id} className={`p-4 rounded-2xl border transition-all ${currentQty > 0 ? 'bg-violet-50 border-violet-200' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-700'}`}>
-                                                        <div className="flex items-center justify-between mb-3">
-                                                            <div className="flex items-center gap-2">
-                                                                <Package size={16} className={currentQty > 0 ? 'text-violet-600' : 'text-slate-400'} />
-                                                                <span className={`text-xs font-black uppercase tracking-tight ${currentQty > 0 ? 'text-violet-900' : 'text-slate-400'}`}>{p.name}</span>
-                                                            </div>
-                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{p.unit}</span>
+
+                                        {/* Search Box */}
+                                        <div className="relative">
+                                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                            <input
+                                                type="text"
+                                                placeholder="Ajouter un produit..."
+                                                value={productSearch}
+                                                onChange={e => {
+                                                    setProductSearch(e.target.value);
+                                                    setIsProductDropdownOpen(true);
+                                                }}
+                                                onFocus={() => setIsProductDropdownOpen(true)}
+                                                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-violet-500/20 outline-none transition-all placeholder:text-slate-400 text-sm"
+                                            />
+                                            {isProductDropdownOpen && productSearch && (
+                                                <div className="absolute z-[60] w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[200px] overflow-y-auto no-scrollbar">
+                                                    {dbProducts
+                                                        .filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()) && !selectedProducts.find(sp => sp.product.id === p.id))
+                                                        .map(p => (
+                                                            <button
+                                                                key={p.id}
+                                                                type="button"
+                                                                onClick={() => addProduct(p)}
+                                                                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                                                            >
+                                                                <span className="text-xs font-black uppercase tracking-tight">{p.name}</span>
+                                                                <span className="text-[10px] font-bold text-slate-400">{p.unit}</span>
+                                                            </button>
+                                                        ))}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Added Products List */}
+                                        <div className="flex flex-col gap-3">
+                                            {selectedProducts.map(sp => (
+                                                <div key={sp.product.id} className="p-4 rounded-2xl border bg-violet-50/50 dark:bg-violet-900/10 border-violet-100/50 dark:border-violet-900/10">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <Package size={16} className="text-violet-600" />
+                                                            <span className="text-xs font-black uppercase tracking-tight text-violet-900 dark:text-violet-200">{sp.product.name}</span>
                                                         </div>
-                                                        <div className="flex items-center gap-4">
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => removeProduct(sp.product.id)}
+                                                            className="p-1.5 text-slate-400 hover:text-red-500 bg-white dark:bg-slate-800 rounded-lg shadow-sm"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </div>
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="relative flex-1">
                                                             <input
                                                                 type="number"
-                                                                placeholder="0"
-                                                                value={currentQty || ""}
-                                                                onChange={e => updateProductQty(p.id, parseFloat(e.target.value))}
-                                                                className="w-full bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-100 dark:border-slate-700 font-bold text-sm outline-none focus:ring-2 focus:ring-violet-500"
+                                                                placeholder="Qté"
+                                                                value={sp.quantity || ""}
+                                                                onChange={e => updateProductQty(sp.product.id, parseFloat(e.target.value))}
+                                                                className="w-full bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm outline-none focus:ring-2 focus:ring-violet-500/20"
                                                             />
+                                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-slate-400 pointer-events-none">
+                                                                {sp.product.unit}
+                                                            </span>
                                                         </div>
                                                     </div>
-                                                );
-                                            })}
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>

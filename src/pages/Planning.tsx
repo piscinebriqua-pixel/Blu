@@ -72,8 +72,8 @@ const Planning: React.FC = () => {
                 .from('interventions')
                 .select(`
                     *,
-                    technician:technicians(full_name),
-                    pool:pools(
+                    technician:technicians!technician_id(full_name),
+                    pool:pools!pool_id(
                         name,
                         client:clients(id, first_name, last_name, balance, phone)
                     ),
