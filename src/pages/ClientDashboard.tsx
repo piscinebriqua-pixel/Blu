@@ -141,12 +141,27 @@ const ClientDashboard: React.FC = () => {
             // 3. Fetch Payments
             const { data: payData } = await supabase
                 .from('payments')
-                .select('*, technician:technicians(full_name)')
+                .select('*, technician_id')
                 .eq('client_id', clientId)
                 .order('payment_date', { ascending: false })
-                .limit(10);
-            
-            setPayments(payData || []);
+                .limit(20);
+
+            // Fetch technicians separately to avoid inner join issues if some exist
+            if (payData && payData.length > 0) {
+                const techIds = [...new Set(payData.map(p => p.technician_id).filter(Boolean))];
+                if (techIds.length > 0) {
+                    const { data: techs } = await supabase.from('technicians').select('id, full_name').in('id', techIds);
+                    const paymentsWithTech = payData.map(p => ({
+                        ...p,
+                        technician: techs?.find(t => t.id === p.technician_id)
+                    }));
+                    setPayments(paymentsWithTech);
+                } else {
+                    setPayments(payData);
+                }
+            } else {
+                setPayments([]);
+            }
 
         } catch (error) {
             console.error('Error fetching dashboard data:', error);

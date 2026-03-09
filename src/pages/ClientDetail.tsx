@@ -33,7 +33,8 @@ import ConfirmModal from '../components/ConfirmModal';
 import AddDevisModal from '../components/AddDevisModal';
 import DevisDetailsModal from '../components/DevisDetailsModal';
 import AssignPartnerModal from '../components/AssignPartnerModal';
-import { User } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import { User, QrCode } from 'lucide-react';
 import { formatBalance } from '../lib/formatters';
 
 interface Pool {
@@ -143,6 +144,7 @@ const ClientDetail: React.FC = () => {
     const [clientPartners, setClientPartners] = useState<any[]>([]);
     const [isSolderModalOpen, setIsSolderModalOpen] = useState(false);
     const [isSoldering, setIsSoldering] = useState(false);
+    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const [interventionFilter, setInterventionFilter] = useState<'all' | 'paid' | 'unpaid'>('unpaid');
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
@@ -507,6 +509,20 @@ const ClientDetail: React.FC = () => {
     };
 
 
+    const sendLoginViaWhatsApp = () => {
+        if (client?.phone) {
+            let formattedPhone = client.phone.replace(/\s/g, '').replace('+', '');
+            if (formattedPhone.length === 8 && !formattedPhone.startsWith('216')) {
+                formattedPhone = '216' + formattedPhone;
+            }
+
+            const url = `${window.location.origin}/mon-espace/login?phone=${client.phone}`;
+            const message = `Bonjour ${client.first_name},\n\nVoici votre lien d'accès sécurisé à votre espace client BCCP : \n${url}\n\nUne fois sur la page, votre numéro sera déjà pré-rempli.`;
+
+            window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
+        }
+    };
+
     const handleUnassignPartner = async () => {
         if (!client || !partnerToUnassign) return;
 
@@ -614,21 +630,32 @@ const ClientDetail: React.FC = () => {
     const toolbar = (
         <div className="flex items-center justify-between w-full gap-3">
             <div className="flex items-center gap-2">
-                <button onClick={openWhatsApp} className="btn-icon !bg-[#25D366] !text-white !border-none !w-10 !h-10 shadow-lg shadow-green-500/20" title="WhatsApp">
+                <button 
+                    onClick={sendLoginViaWhatsApp} 
+                    className="btn-icon !bg-[#25D366] !text-white !border-none !w-10 !h-10 shadow-lg shadow-green-500/20" 
+                    title="Envoyer l'accès via WhatsApp"
+                >
                     <MessageCircle size={18} />
                 </button>
-                <button onClick={openGPS} className="btn-icon !bg-orange-500 !text-white !border-none !w-10 !h-10 shadow-lg shadow-orange-500/20" title="Navigation">
+                <button 
+                    onClick={() => setIsQrModalOpen(true)}
+                    className="btn-icon !bg-slate-900 !text-white !border-none !w-10 !h-10 shadow-lg shadow-slate-900/20" 
+                    title="Afficher le QR Code d'accès"
+                >
+                    <QrCode size={18} />
+                </button>
+                <button onClick={openGPS} className="btn-icon !bg-orange-500 !text-white !border-none !w-10 !h-10 shadow-lg shadow-orange-500/20" title="Navigation GPS">
                     <Navigation size={18} />
                 </button>
                 <button 
                     onClick={() => {
-                        const url = `${window.location.origin}/mon-espace/login`;
-                        const text = `Bonjour ${client?.first_name},\nVoici le lien pour accéder à votre espace client BCCP : ${url}\nConnectez-vous avec votre numéro : ${client?.phone}`;
+                        const url = `${window.location.origin}/mon-espace/login?phone=${client?.phone}`;
+                        const text = `Bonjour ${client?.first_name},\nVoici le lien pour accéder à votre espace client BCCP : ${url}`;
                         navigator.clipboard.writeText(text);
-                        toast.success('Lien et accès copiés !');
+                        toast.success('Lien copié dans le presse-papier !');
                     }}
                     className="btn-icon !bg-indigo-600 !text-white !border-none !w-10 !h-10 shadow-lg shadow-indigo-500/20" 
-                    title="Partager l'accès client"
+                    title="Copier le lien d'accès"
                 >
                     <ExternalLink size={18} />
                 </button>
@@ -676,11 +703,21 @@ const ClientDetail: React.FC = () => {
                     </p>
                 </div>
 
-                <div className="relative z-10 text-right">
+                <div className="relative z-10 text-right flex flex-col items-end gap-2">
                     <h3 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-white">
                         {client ? formatBalance(client.balance).amount : '0'}
                         <span className="text-lg md:text-xl font-black ml-1 uppercase text-white/60">{client ? formatBalance(client.balance).unit : 'DT'}</span>
                     </h3>
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            openWhatsApp();
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 backdrop-blur-sm"
+                    >
+                        <MessageCircle size={12} className="text-green-400" />
+                        Envoyer Point Solde
+                    </button>
                 </div>
 
                 {/* Decorative Grid Lines like a Fintech app */}
@@ -1556,6 +1593,32 @@ const ClientDetail: React.FC = () => {
                 onClose={() => setIsSolderModalOpen(false)}
                 loading={isSoldering}
                 variant="primary"
+            />
+
+            <ConfirmModal
+                isOpen={isQrModalOpen}
+                title="Accès Client (QR Code)"
+                message={
+                    <div className="flex flex-col items-center justify-center py-6 gap-6">
+                        <div className="p-6 bg-white rounded-3xl shadow-inner ring-1 ring-slate-100 flex items-center justify-center">
+                            <QRCodeSVG 
+                                value={`${window.location.origin}/mon-espace/login?phone=${client?.phone}`} 
+                                size={200}
+                                level="H"
+                                includeMargin={true}
+                            />
+                        </div>
+                        <div className="text-center space-y-2">
+                            <p className="text-[13px] font-black text-slate-800 uppercase tracking-tight">Accès pour {client?.first_name} {client?.last_name}</p>
+                            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-relaxed px-6">Montrez ce code au client pour qu'il puisse scanner et accéder à son espace instantanément.</p>
+                        </div>
+                    </div>
+                }
+                confirmLabel="FERMER"
+                onConfirm={() => setIsQrModalOpen(false)}
+                onClose={() => setIsQrModalOpen(false)}
+                variant="primary"
+                showIrreversibleWarning={false}
             />
         </PageLayout>
     );

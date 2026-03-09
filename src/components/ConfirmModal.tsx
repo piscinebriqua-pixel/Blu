@@ -6,12 +6,13 @@ import Button from './ui/Button';
 interface ConfirmModalProps {
     isOpen: boolean;
     title: string;
-    message: string;
+    message: React.ReactNode;
     onConfirm: () => void;
     onClose: () => void;
     loading?: boolean;
     confirmLabel?: string;
     variant?: 'danger' | 'primary';
+    showIrreversibleWarning?: boolean;
 }
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -22,7 +23,8 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     onClose,
     loading = false,
     confirmLabel = "CONFIRMER",
-    variant = 'danger'
+    variant = 'danger',
+    showIrreversibleWarning = true
 }) => {
     if (!isOpen) return null;
 
@@ -51,13 +53,15 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                 <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-1 shadow-sm ${variant === 'danger' ? 'bg-red-50 dark:bg-red-900/10 text-red-500' : 'bg-blue-50 dark:bg-blue-900/10 text-blue-500'}`}>
                     {variant === 'danger' ? <Trash2 size={24} strokeWidth={2.5} /> : <AlertCircle size={24} strokeWidth={2.5} />}
                 </div>
-                <div className="flex flex-col gap-1.5">
-                    <p className="text-[13px] font-bold text-slate-800 dark:text-white px-2 leading-relaxed">
+                <div className="flex flex-col gap-1.5 w-full">
+                    <div className="text-[13px] font-bold text-slate-800 dark:text-white px-2 leading-relaxed">
                         {message}
-                    </p>
-                    <p className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">
-                        Cette action est irréversible
-                    </p>
+                    </div>
+                    {showIrreversibleWarning && (
+                        <p className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">
+                            Cette action est irréversible
+                        </p>
+                    )}
                 </div>
             </div>
         </ModalLayout>
