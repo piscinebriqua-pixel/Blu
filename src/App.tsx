@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import { useEffect, useState, Component, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { supabase } from './lib/supabase';
@@ -19,6 +19,8 @@ import Payments from './pages/Payments';
 import Planning from './pages/Planning';
 import Revenue from './pages/Revenue';
 import Chantiers from './pages/Chantiers';
+import ClientLogin from './pages/ClientLogin';
+import ClientDashboard from './pages/ClientDashboard';
 import { Toaster } from 'react-hot-toast';
 import BccpLogo from './components/BccpLogo';
 import BottomNav from './components/BottomNav';
@@ -301,10 +303,13 @@ function App() {
               </ProtectedRoute>
             } />
 
+            <Route path="/mon-espace/login" element={<ClientLogin />} />
+            <Route path="/mon-espace" element={<ClientDashboard />} />
+
             {/* Catch-all redirect */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <BottomNav />
+          <NavVisibilityWrapper />
         </div>
 
         <Toaster
@@ -342,6 +347,14 @@ function App() {
     </ErrorBoundary>
   );
 }
+
+// Composant pour masquer le BottomNav sur l'espace client
+const NavVisibilityWrapper = () => {
+    const location = useLocation();
+    const isClientPortal = location.pathname.startsWith('/mon-espace');
+    if (isClientPortal) return null;
+    return <BottomNav />;
+};
 
 const ProfileNotFound = () => {
   return (

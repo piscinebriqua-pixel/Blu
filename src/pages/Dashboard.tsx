@@ -61,7 +61,7 @@ const Dashboard: React.FC = () => {
                 try {
                     const [clientsRes, techRes, intRes, schedRes] = await Promise.all([
                         supabase.from('clients').select('id', { count: 'exact', head: true }),
-                        supabase.from('technicians').select('id', { count: 'exact', head: true }),
+                        supabase.from('technicians').select('id', { count: 'exact', head: true }).eq('active', true),
                         supabase.from('interventions').select('id', { count: 'exact', head: true }),
                         supabase.from('interventions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled')
                     ]);

@@ -158,7 +158,7 @@ const TechnicianDetailsModal: React.FC<TechnicianDetailsModalProps> = ({ technic
                                                 {inter.pool?.name || 'Bassin Inconnu'}
                                             </p>
                                             <p className="text-base text-slate-500 font-medium mt-1">
-                                                {new Date(inter.created_at || inter.visit_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
+                                                {new Date(inter.created_at || inter.completed_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}
                                             </p>
                                         </div>
                                     </div>

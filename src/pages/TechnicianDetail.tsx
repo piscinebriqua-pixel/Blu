@@ -262,7 +262,7 @@ const TechnicianDetail: React.FC = () => {
                                                     {i.pool?.client?.first_name} {i.pool?.client?.last_name}
                                                 </h5>
                                                 <span className="text-[12px] font-bold text-slate-400">
-                                                    {new Date(i.visit_date || i.scheduled_date || i.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                                                    {new Date(i.completed_date || i.scheduled_date || i.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
                                                 </span>
                                             </div>
                                             <p className="text-xs font-bold text-slate-500 uppercase">

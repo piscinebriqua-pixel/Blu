@@ -16,7 +16,8 @@ import {
     Trash2,
     AlertCircle,
     FileText,
-    Copy
+    Copy,
+    ExternalLink
 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import NewIntervention from '../components/NewIntervention';
@@ -307,28 +308,12 @@ const ClientDetail: React.FC = () => {
             const { data: interData } = await supabase
                 .from('interventions')
                 .select(`
-                    id, 
-                    completed_date,
-                    scheduled_date,
-                    created_at,
-                    notes, 
-                    ph_level, 
-                    chlorine_level, 
-                    status, 
-                    photo_before_url,
-                    photo_after_url,
-                    water_level_adjusted,
-                    task_balai,
-                    task_lavage,
-                    task_rincage,
-                    task_test_chlore,
-                    task_test_ph,
-                    task_remplissage,
-                    task_panier_prefiltre,
-                    task_traitement,
-                    task_verif_vanne,
-                    task_temps_fonctionnement,
-                    pool:pools(name, client:clients(id, first_name, last_name, balance, phone)), 
+                    *,
+                    technician:technicians!technician_id(full_name),
+                    pool:pools!pool_id(
+                        name, 
+                        client:clients!client_id(id, first_name, last_name, balance, phone)
+                    ), 
                     services:intervention_services(
                         price_at_time,
                         service:services(name)
@@ -635,6 +620,18 @@ const ClientDetail: React.FC = () => {
                 <button onClick={openGPS} className="btn-icon !bg-orange-500 !text-white !border-none !w-10 !h-10 shadow-lg shadow-orange-500/20" title="Navigation">
                     <Navigation size={18} />
                 </button>
+                <button 
+                    onClick={() => {
+                        const url = `${window.location.origin}/mon-espace/login`;
+                        const text = `Bonjour ${client?.first_name},\nVoici le lien pour accéder à votre espace client BCCP : ${url}\nConnectez-vous avec votre numéro : ${client?.phone}`;
+                        navigator.clipboard.writeText(text);
+                        toast.success('Lien et accès copiés !');
+                    }}
+                    className="btn-icon !bg-indigo-600 !text-white !border-none !w-10 !h-10 shadow-lg shadow-indigo-500/20" 
+                    title="Partager l'accès client"
+                >
+                    <ExternalLink size={18} />
+                </button>
             </div>
 
             <div className="flex items-center gap-2">
@@ -745,6 +742,31 @@ const ClientDetail: React.FC = () => {
                         </div>
                     </div>
 
+                    {/* 4. Technical Summary Tile */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <button
+                            onClick={() => setActiveCategory('pools')}
+                            className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 hover:bg-white/80 transition-all p-5 flex flex-col items-center text-center justify-center group"
+                        >
+                            <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <Waves size={28} />
+                            </div>
+                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Bassins</span>
+                            <span className="text-3xl font-black text-slate-900 dark:text-white">{pools.length}</span>
+                        </button>
+
+                        <button
+                            onClick={() => setActiveCategory('interventions')}
+                            className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 hover:bg-white/80 transition-all p-5 flex flex-col items-center text-center justify-center group"
+                        >
+                            <div className="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <HistoryIcon size={28} />
+                            </div>
+                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Suivi</span>
+                            <span className="text-3xl font-black text-slate-900 dark:text-white">{interventions.length}</span>
+                        </button>
+                    </div>
+
 
                     {/* 2.5 Équipe du Chantier Tile */}
                     <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6">
@@ -839,31 +861,6 @@ const ClientDetail: React.FC = () => {
 
                 {/* RIGHT COLUMN: FINANCE & STATUS */}
                 <div className="flex flex-col gap-4">
-                    {/* 4. Technical Summary Tile */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <button
-                            onClick={() => setActiveCategory('pools')}
-                            className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 hover:bg-white/80 transition-all p-5 flex flex-col items-center text-center justify-center group"
-                        >
-                            <div className="w-14 h-14 rounded-2xl bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                <Waves size={28} />
-                            </div>
-                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Bassins</span>
-                            <span className="text-3xl font-black text-slate-900 dark:text-white">{pools.length}</span>
-                        </button>
-
-                        <button
-                            onClick={() => setActiveCategory('interventions')}
-                            className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 hover:bg-white/80 transition-all p-5 flex flex-col items-center text-center justify-center group"
-                        >
-                            <div className="w-14 h-14 rounded-2xl bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                <HistoryIcon size={28} />
-                            </div>
-                            <span className="text-[13px] font-black text-slate-500 uppercase tracking-widest">Suivi</span>
-                            <span className="text-3xl font-black text-slate-900 dark:text-white">{interventions.length}</span>
-                        </button>
-                    </div>
-
                     {/* 5. Quick Actions Tile */}
                     <div className="card-bento bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 flex-1 min-h-[140px]">
                         <h4 className="text-[13px] font-black text-slate-500 uppercase tracking-widest mb-4">Actions de Gestion</h4>

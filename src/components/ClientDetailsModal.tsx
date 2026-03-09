@@ -213,7 +213,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                                         </div>
                                         <div>
                                             <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">
-                                                {new Date(inter.created_at || inter.visit_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                                                {new Date(inter.created_at || inter.completed_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
                                             </p>
                                             <p className="text-base text-slate-500 dark:text-slate-500 uppercase tracking-wide font-bold">{inter.pool_name}</p>
                                         </div>

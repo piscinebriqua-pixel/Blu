@@ -158,7 +158,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
   const fetchInitialData = useCallback(async () => {
     const [sv, tc, pr, cl, session] = await Promise.all([
       supabase.from("services").select("*").order("name"),
-      supabase.from("technicians").select("id, full_name, email").order("full_name"),
+      supabase.from("technicians").select("id, full_name, email").eq('active', true).order("full_name"),
       supabase.from("inventory_products").select("*").order("name"),
       supabase.from("clients").select("id, first_name, last_name, city").order("last_name"),
       supabase.auth.getSession(),

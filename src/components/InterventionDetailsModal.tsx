@@ -183,54 +183,61 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
             title="Rapport d'Intervention" 
             bodyClassName="!p-0 bg-slate-50 dark:bg-[#0f141e]"
             actions={
-                <div className="flex w-full gap-3">
-                    {intervention.status?.toLowerCase() !== 'completed' && onStart && (
-                        <button
-                            className="flex-[2] h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[24px] font-black uppercase text-[12px] tracking-[0.2em] shadow-2xl shadow-emerald-500/30 transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-3"
-                            onClick={() => onStart(intervention)}
-                        >
-                            <Droplets size={18} strokeWidth={3} className="animate-pulse" />
-                            Démarrer
-                        </button>
+                <div className="flex flex-col w-full gap-3">
+                    {/* Actions Principales */}
+                    {( (intervention.status?.toLowerCase() !== 'completed' && onStart) || onEdit ) && (
+                        <div className="flex w-full gap-3">
+                            {intervention.status?.toLowerCase() !== 'completed' && onStart && (
+                                <button
+                                    className="flex-1 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[24px] font-black uppercase text-[12px] tracking-[0.2em] shadow-2xl shadow-emerald-500/30 transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-3"
+                                    onClick={() => onStart(intervention)}
+                                >
+                                    <Droplets size={18} strokeWidth={3} className="animate-pulse" />
+                                    Démarrer
+                                </button>
+                            )}
+
+                            {onEdit && (
+                                <button
+                                    className="flex-1 h-14 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[24px] font-black uppercase text-[12px] tracking-[0.2em] shadow-xl transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-3"
+                                    onClick={() => onEdit(intervention)}
+                                >
+                                    <Edit2 size={18} strokeWidth={3} />
+                                    Modifier
+                                </button>
+                            )}
+                        </div>
                     )}
 
-                    {onEdit && (
-                        <button
-                            className="flex-1 h-14 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[24px] font-black uppercase text-[12px] tracking-[0.2em] shadow-xl transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-3"
-                            onClick={() => onEdit(intervention)}
-                        >
-                            <Edit2 size={18} strokeWidth={3} />
-                            Modifier
-                        </button>
-                    )}
-
-                    <div className="flex gap-2">
+                    {/* Actions Secondaires */}
+                    <div className="flex gap-2 justify-center">
                         {intervention.pool?.client?.phone && (
                             <button
-                                className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-[24px] flex items-center justify-center transition-all hover:bg-emerald-100 active:scale-90 shadow-sm"
+                                className="flex-1 h-12 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 rounded-[24px] flex items-center justify-center transition-all hover:bg-emerald-100 active:scale-90 shadow-sm gap-2"
                                 onClick={handleWhatsAppShare}
                                 title="Partager via WhatsApp"
                             >
-                                <MessageCircle size={24} strokeWidth={2.5} />
+                                <MessageCircle size={20} strokeWidth={2.5} />
+                                <span className="text-[10px] font-black uppercase">WhatsApp</span>
                             </button>
                         )}
 
                         {onDelete && (
                             <button
-                                className="w-14 h-14 bg-rose-50 dark:bg-rose-900/20 text-rose-500 rounded-[24px] flex items-center justify-center transition-all hover:bg-rose-100 active:scale-90 shadow-sm"
+                                className="w-12 h-12 bg-rose-50 dark:bg-rose-900/20 text-rose-500 rounded-[24px] flex items-center justify-center transition-all hover:bg-rose-100 active:scale-90 shadow-sm shrink-0"
                                 onClick={() => onDelete(intervention)}
                                 title="Supprimer Rapport"
                             >
-                                <Trash2 size={24} strokeWidth={2.5} />
+                                <Trash2 size={20} strokeWidth={2.5} />
                             </button>
                         )}
 
                         <button
-                            className="w-14 h-14 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-[24px] flex items-center justify-center transition-all hover:bg-slate-200 active:scale-90"
+                            className="w-12 h-12 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded-[24px] flex items-center justify-center transition-all hover:bg-slate-200 active:scale-90 shrink-0"
                             onClick={onClose}
                             title="Fermer"
                         >
-                            <X size={24} strokeWidth={3} />
+                            <X size={20} strokeWidth={3} />
                         </button>
                     </div>
                 </div>

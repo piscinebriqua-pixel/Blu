@@ -13,7 +13,8 @@ export async function recalculateVentilation(clientId: string) {
             .from('interventions')
             .select(`
                 id,
-                visit_date,
+                completed_date,
+                scheduled_date,
                 created_at,
                 services:intervention_services(price_at_time),
                 products:intervention_products(total_price)

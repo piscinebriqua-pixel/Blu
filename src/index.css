@@ -538,6 +538,38 @@ a,
   }
 }
 
+@keyframes bounceSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-bounce-subtle {
+  animation: bounceSubtle 2s ease-in-out infinite;
+}
+
+.fintech-card-money-luxe {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  position: relative;
+}
+
+.fintech-card-red-luxe {
+  background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%);
+  position: relative;
+}
+
+.fintech-pattern {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  opacity: 0.05;
+  background-image: 
+    radial-gradient(circle at 2px 2px, white 1px, transparent 0);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
 /* --- STAGGER ANIMATION UTILS --- */
 .stagger-1 {
   animation-delay: 50ms;

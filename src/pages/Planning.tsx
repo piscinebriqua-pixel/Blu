@@ -23,7 +23,7 @@ import PageLayout from '../components/PageLayout';
 interface Intervention {
     id: string;
     pool_id: string;
-    visit_date: string;
+    completed_date: string;
     scheduled_date?: string;
     created_at: string;
     status: string;
@@ -103,7 +103,7 @@ const Planning: React.FC = () => {
     }, []);
 
     const fetchTechnicians = useCallback(async () => {
-        const { data } = await supabase.from('technicians').select('id, full_name');
+        const { data } = await supabase.from('technicians').select('id, full_name').eq('active', true).order('full_name');
         setTechnicians(data || []);
     }, []);
 

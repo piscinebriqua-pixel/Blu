@@ -42,7 +42,7 @@ const TechnicianPortal: React.FC = () => {
             // Using a simple .select() then [0] is more robust against 406 errors than .single()/.maybeSingle()
             const [profileRes, techRes] = await Promise.all([
                 supabase.from('profiles').select('role').eq('id', session.user.id),
-                supabase.from('technicians').select('id').eq('email', session.user.email)
+                supabase.from('technicians').select('id').eq('email', session.user.email).eq('active', true)
             ]);
 
             const profileData = profileRes.data?.[0];
