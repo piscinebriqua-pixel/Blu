@@ -135,7 +135,16 @@ const ClientDashboard: React.FC = () => {
                     .order('scheduled_date', { ascending: false })
                     .limit(10);
                 
-                setInterventions(interData || []);
+                const interventionsWithTotal = (interData || []).map(inter => {
+                    const sTotal = inter.services?.reduce((acc: number, s: any) => acc + (s.price_at_time || 0), 0) || 0;
+                    const pTotal = inter.products?.reduce((acc: number, p: any) => acc + (p.total_price || 0), 0) || 0;
+                    return {
+                        ...inter,
+                        total_amount: sTotal + pTotal
+                    };
+                });
+                
+                setInterventions(interventionsWithTotal);
             }
 
             // 3. Fetch Payments
@@ -387,6 +396,35 @@ const ClientDashboard: React.FC = () => {
                     className="max-w-lg"
                 >
                     <div className="p-4 space-y-6">
+                        {/* Summary Header - Date & Technician */}
+                        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border border-slate-100 dark:border-slate-800/50">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-blue-500">
+                                    <Clock size={20} />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1">Date</span>
+                                    <span className="text-[13px] font-black text-slate-900 dark:text-white uppercase leading-none">
+                                        {new Date(selectedIntervention.completed_date || selectedIntervention.scheduled_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-2" />
+
+                            <div className="flex items-center gap-3 flex-1 justify-end">
+                                <div className="flex flex-col text-right">
+                                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1">Expert</span>
+                                    <span className="text-[13px] font-black text-slate-900 dark:text-white uppercase leading-none truncate max-w-[120px]">
+                                        {selectedIntervention.technician?.full_name || 'Équipe Blu'}
+                                    </span>
+                                </div>
+                                <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-emerald-500">
+                                    <CheckCircle2 size={20} />
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Header Stats */}
                         <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
                             <div className="shrink-0 flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-2xl border border-blue-100 dark:border-blue-800/50">
@@ -529,77 +567,77 @@ const ClientDashboard: React.FC = () => {
                 <ModalLayout
                     title="Détail du Règlement"
                     onClose={() => setSelectedPayment(null)}
-                    className="max-w-lg"
+                    className="max-w-md !min-h-0"
+                    compact={true}
+                    bodyClassName="!p-0 !overflow-hidden"
                 >
-                    <div className="p-6 space-y-8">
-                        {/* Transaction Header */}
-                        <div className="flex flex-col items-center justify-center py-6">
-                            <div className="w-20 h-20 rounded-[2.5rem] bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 flex items-center justify-center shadow-2xl shadow-emerald-500/20 mb-4 animate-bounce-subtle">
-                                <TrendingUp size={40} />
+                    <div className="p-5 space-y-5 flex flex-col max-h-[85vh]">
+                        {/* Transaction Header - Compact */}
+                        <div className="flex flex-col items-center justify-center py-2">
+                            <div className="w-16 h-16 rounded-[2rem] bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 flex items-center justify-center shadow-xl shadow-emerald-500/10 mb-3 animate-bounce-subtle">
+                                <TrendingUp size={32} />
                             </div>
-                            <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">
-                                {selectedPayment.amount} <span className="text-xl opacity-40 ml-1">DT</span>
+                            <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">
+                                {selectedPayment.amount} <span className="text-lg opacity-40 ml-1">DT</span>
                             </h2>
-                            <p className="text-[13px] font-black text-emerald-500/80 uppercase tracking-[0.2em] mt-2">Transaction Validée</p>
+                            <p className="text-[11px] font-black text-emerald-500/80 uppercase tracking-[0.2em] mt-1">Transaction Validée</p>
                         </div>
 
-                        {/* Info Grid */}
-                        <div className="grid grid-cols-1 gap-3">
-                            <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-[2rem] border border-slate-100 dark:border-slate-800/50 group hover:border-emerald-500/30 transition-all">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-slate-400">
-                                        <Clock size={20} />
+                        {/* Info Grid - More compact */}
+                        <div className="grid grid-cols-1 gap-2">
+                            <div className="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-slate-400">
+                                        <Clock size={16} />
                                     </div>
                                     <div>
-                                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Date de réception</p>
-                                        <p className="text-base font-black text-slate-800 dark:text-white uppercase">
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Date de réception</p>
+                                        <p className="text-[13px] font-black text-slate-800 dark:text-white uppercase">
                                             {new Date(selectedPayment.payment_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                         </p>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-[2rem] border border-slate-100 dark:border-slate-800/50 group hover:border-emerald-500/30 transition-all">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-slate-400">
-                                        <CreditCard size={20} />
+                            <div className="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-slate-400">
+                                        <CreditCard size={16} />
                                     </div>
                                     <div>
-                                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Mode de règlement</p>
-                                        <p className="text-base font-black text-slate-800 dark:text-white uppercase">{selectedPayment.method || 'Non spécifié'}</p>
+                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Mode de règlement</p>
+                                        <p className="text-[13px] font-black text-slate-800 dark:text-white uppercase">{selectedPayment.method || 'Non spécifié'}</p>
                                     </div>
                                 </div>
                             </div>
 
                             {selectedPayment.technician && (
-                                <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-[2rem] border border-slate-100 dark:border-slate-800/50 group hover:border-emerald-500/30 transition-all">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 rounded-2xl bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-slate-400">
-                                            <Droplets size={20} />
+                                <div className="bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-slate-400">
+                                            <Droplets size={16} />
                                         </div>
                                         <div>
-                                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Encaissé par</p>
-                                            <p className="text-base font-black text-slate-800 dark:text-white uppercase">{selectedPayment.technician.full_name}</p>
+                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Encaissé par</p>
+                                            <p className="text-[13px] font-black text-slate-800 dark:text-white uppercase">{selectedPayment.technician.full_name}</p>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {selectedPayment.notes && (
-                                <div className="bg-blue-50/50 dark:bg-blue-900/10 p-6 rounded-[2rem] border border-blue-100 dark:border-blue-900/30">
-                                    <p className="text-[11px] font-black text-blue-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <Info size={14} /> Note de transaction
-                                    </p>
-                                    <p className="text-base font-medium text-slate-700 dark:text-slate-300">"{selectedPayment.notes}"</p>
+                                <div className="bg-blue-50/30 dark:bg-blue-900/10 p-4 rounded-2xl border border-blue-100/50 dark:border-blue-900/30">
+                                    <p className="text-[9px] font-black text-blue-500 uppercase tracking-widest mb-1 shadow-none">Note</p>
+                                    <p className="text-xs font-medium text-slate-700 dark:text-slate-300">"{selectedPayment.notes}"</p>
                                 </div>
                             )}
                         </div>
                         
                         <button 
                             onClick={() => setSelectedPayment(null)}
-                            className="w-full py-5 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-[2rem] text-sm font-black uppercase tracking-widest shadow-2xl transition-all active:scale-95"
+                            className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-2xl text-[12px] font-black uppercase tracking-widest transition-all active:scale-95 mt-2"
                         >
-                            Fermer le détail
+                            Fermer
                         </button>
                     </div>
                 </ModalLayout>
