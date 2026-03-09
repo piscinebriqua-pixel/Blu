@@ -11,11 +11,17 @@ import {
     Wallet,
     Settings,
     FileText,
-    Briefcase
+    Briefcase,
+    RefreshCcw,
+    QrCode,
+    X
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import ThemeToggle from '../components/ThemeToggle';
 import BccpLogo from '../components/BccpLogo';
 import PageLayout from '../components/PageLayout';
+import ModalLayout from '../components/ModalLayout';
+import { QRCodeSVG } from 'qrcode.react';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -23,12 +29,34 @@ const Dashboard: React.FC = () => {
     const [counts, setCounts] = useState({ clients: 0, technicians: 0, interventions: 0, scheduled: 0, revenue: 0, lastMonthRevenue: 0, devis: 0 });
     const [profile, setProfile] = useState<{ name: string, role: string } | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const [recentInterventions, setRecentInterventions] = useState<any[]>([]);
 
     const handleLogout = async () => {
         const { error } = await supabase.auth.signOut();
         if (error) console.error('Erreur déconnexion:', error.message);
         navigate('/login');
+    };
+
+    const handleUpdateApp = async () => {
+        try {
+            toast.loading("Vérification des mises à jour...", { id: 'app-update' });
+            if ('serviceWorker' in navigator) {
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    await registration.unregister();
+                }
+            }
+            setTimeout(() => {
+                toast.success("Mise à jour activée !", { id: 'app-update' });
+                const url = new URL(window.location.href);
+                url.searchParams.set('upd', Date.now().toString());
+                window.location.href = url.toString();
+            }, 1000);
+        } catch (error) {
+            console.error('Update failed:', error);
+            window.location.reload();
+        }
     };
 
     useEffect(() => {
@@ -170,6 +198,14 @@ const Dashboard: React.FC = () => {
                 </button>
             )}
 
+            <button
+                onClick={() => setIsQrModalOpen(true)}
+                className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white hover:bg-black transition-all shadow-lg border border-white/10"
+                title="Afficher le QR Code d'accès"
+            >
+                <QrCode size={22} />
+            </button>
+
             <div className="relative">
                 <button
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -204,6 +240,16 @@ const Dashboard: React.FC = () => {
                             >
                                 <Users size={16} className="text-blue-500" />
                                 Mon Profil
+                            </button>
+
+                            <div className="h-px bg-slate-100 dark:bg-slate-700 my-1 mx-2"></div>
+
+                            <button
+                                onClick={handleUpdateApp}
+                                className="w-full px-4 py-2.5 text-left text-[13px] font-black text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 flex items-center gap-3 transition-colors uppercase"
+                            >
+                                <RefreshCcw size={16} className="animate-[spin_10s_linear_infinite]" />
+                                Mettre à jour l'app
                             </button>
 
                             <div className="h-px bg-slate-100 dark:bg-slate-700 my-1 mx-2"></div>
@@ -314,6 +360,16 @@ const Dashboard: React.FC = () => {
                         <p className="text-slate-600 dark:text-slate-400">Réseau</p>
                     </div>
                 </div>
+
+                <div onClick={() => setIsQrModalOpen(true)} className="action-item cursor-pointer group bg-slate-900 border-slate-800 dark:bg-slate-900 dark:border-slate-800 shadow-2xl">
+                    <div className="icon-wrapper bg-white/10 text-white border border-white/10">
+                        <QrCode size={24} />
+                    </div>
+                    <div className="content-wrapper">
+                        <span className="text-white/60">Espace Client</span>
+                        <p className="text-white font-black uppercase tracking-widest">Code QR</p>
+                    </div>
+                </div>
             </div>
 
             <div className="mt-10">
@@ -367,6 +423,74 @@ const Dashboard: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {isQrModalOpen && (
+                <ModalLayout
+                    onClose={() => setIsQrModalOpen(false)}
+                    title=""
+                    hideHeader={true}
+                    className="!max-w-md !bg-slate-950 border-white/10 !rounded-[2.5rem] overflow-hidden"
+                    bodyClassName="!p-0"
+                >
+                    <div className="flex flex-col items-center justify-center p-10 bg-slate-950 text-center relative overflow-hidden min-h-[500px]">
+                        {/* Custom Close Button */}
+                        <button 
+                            onClick={() => setIsQrModalOpen(false)}
+                            className="absolute top-6 right-6 w-10 h-10 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white rounded-full flex items-center justify-center backdrop-blur-xl border border-white/5 z-[100] transition-all active:scale-90"
+                        >
+                            <X size={20} />
+                        </button>
+                        {/* Background Accents */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 blur-[60px] rounded-full pointer-events-none" />
+                        <div className="fintech-pattern opacity-[0.05] pointer-events-none" />
+
+                        {/* Premium QR Container */}
+                        <div className="relative z-10 p-8 bg-white/5 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 shadow-[0_0_50px_-10px_rgba(59,130,246,0.3)] mb-8">
+                            <div className="relative rounded-2xl overflow-hidden p-1 bg-white/5">
+                                <QRCodeSVG
+                                    value={`${window.location.origin}/mon-espace`}
+                                    size={180}
+                                    level="H"
+                                    includeMargin={false}
+                                    fgColor="#FFFFFF"
+                                    bgColor="transparent"
+                                />
+                                <div className="absolute top-0 left-0 w-full h-[2px] bg-blue-400 shadow-[0_0_20px_rgba(96,165,250,1)] animate-[bounce_4s_ease-in-out_infinite] opacity-40 pointer-events-none" />
+                            </div>
+                        </div>
+
+                        {/* Typography Section */}
+                        <div className="relative z-10 space-y-4">
+                            <h4 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">
+                                ACCÈS <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">CLIENT</span>
+                            </h4>
+                            
+                            <p className="text-[13px] font-medium text-slate-400 tracking-wider max-w-[260px] mx-auto opacity-70">
+                                Scannez pour accéder au portail BCCP
+                            </p>
+
+                            {/* Copy URL Section */}
+                            <div className="mt-6 flex items-center justify-center gap-2 p-1 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-md w-full">
+                                <div className="bg-white/5 rounded-xl py-2 px-4 flex-1 text-center overflow-hidden">
+                                    <code className="text-[10px] font-black text-blue-400/90 break-all select-all tracking-widest truncate block">
+                                        {window.location.origin.replace(/^https?:\/\//, '')}/mon-espace
+                                    </code>
+                                </div>
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigator.clipboard.writeText(`${window.location.origin}/mon-espace`);
+                                        toast.success("Lien copié");
+                                    }}
+                                    className="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all shadow-xl shadow-blue-900/40"
+                                >
+                                    <ChevronRight size={18} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </ModalLayout>
+            )}
         </PageLayout>
     );
 };
