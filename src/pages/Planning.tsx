@@ -80,7 +80,8 @@ const Planning: React.FC = () => {
                     services:intervention_services(price_at_time, service:services(name)),
                     products:intervention_products(quantity, total_price, product:inventory_products(name, unit))
                 `)
-                .in('status', ['scheduled', 'completed', 'in_progress', 'pending', 'cancelled']);
+                .in('status', ['scheduled', 'completed', 'in_progress', 'pending', 'cancelled'])
+                .order('scheduled_date', { ascending: false });
 
             if (profile?.role !== 'admin' && profile?.technician_id) {
                 query = query.eq('technician_id', profile.technician_id);
@@ -145,17 +146,20 @@ const Planning: React.FC = () => {
     useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth < 768) {
-                if (viewMode === 'month' || viewMode === 'week') setViewMode('agenda');
+                // Only default to agenda on small screens if no view was manually set or if it's too large
+                if (viewMode === 'month' || viewMode === 'week') {
+                    setViewMode('agenda');
+                }
             }
         };
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [viewMode]);
+    }, []); // Only run on mount to set a sane default for mobile
 
     const changeDate = (amount: number) => {
         const newDate = new Date(currentDate);
-        if (viewMode === 'month') newDate.setMonth(newDate.getMonth() + amount);
+        if (viewMode === 'month' || viewMode === 'agenda') newDate.setMonth(newDate.getMonth() + amount);
         else if (viewMode === 'week') newDate.setDate(newDate.getDate() + amount * 7);
         else newDate.setDate(newDate.getDate() + amount);
         setCurrentDate(newDate);
@@ -426,8 +430,13 @@ const Planning: React.FC = () => {
 
     const renderAgendaView = () => {
         const agendaInterventions = [...filteredInterventions]
-            .filter(i => i.scheduled_date)
-            .sort((a, b) => new Date(a.scheduled_date!).getTime() - new Date(b.scheduled_date!).getTime());
+            .filter(i => {
+                if (!i.scheduled_date) return false;
+                const date = new Date(i.scheduled_date);
+                return date.getMonth() === currentDate.getMonth() && 
+                       date.getFullYear() === currentDate.getFullYear();
+            })
+            .sort((a, b) => new Date(b.scheduled_date!).getTime() - new Date(a.scheduled_date!).getTime());
 
         // Hierarchical Grouping: Month -> Day -> Interventions
         const grouped: Record<string, Record<string, Intervention[]>> = {};
@@ -448,6 +457,9 @@ const Planning: React.FC = () => {
 
         return (
             <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-500 mt-2">
+                <div className="md:hidden mb-4">
+                    <WeekStrip />
+                </div>
                 <div className="flex flex-col gap-6">
                     {months.length > 0 ? (
                         months.map(month => (
@@ -548,11 +560,9 @@ const Planning: React.FC = () => {
                             {viewMode === 'month' ? 'Mensuel' : viewMode === 'week' ? 'Hebdomadaire' : 'Quotidien'}
                         </span>
                         <h3 className="text-[14px] font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none truncate">
-                            {viewMode === 'agenda'
-                                ? 'Tout l\'Agenda'
-                                : viewMode === 'day'
-                                    ? currentDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-                                    : currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+                            {viewMode === 'day'
+                                ? currentDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+                                : currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
                             }
                         </h3>
                     </div>
