@@ -8,6 +8,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import GlobalMap from '../components/GlobalMap';
 import PageLayout from '../components/PageLayout';
 import { toast } from 'react-hot-toast';
+import { formatBalance } from '../lib/formatters';
 
 const ClientsList: React.FC = () => {
     const navigate = useNavigate();
@@ -210,12 +211,12 @@ const ClientsList: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <div className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-[0.1em] border ${client.balance < 0 ? 'bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 border-red-100 dark:border-red-800' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-500 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800'}`}>
-                                                    {client.balance < 0 ? 'Dette' : 'À jour'}
-                                                </div>
-                                                <span className="text-sm font-black text-slate-700 dark:text-slate-200 mr-2">
-                                                    {Math.abs(client.balance || 0).toFixed(0)} <span className="text-[10px] opacity-50 uppercase">DT</span>
-                                                </span>
+                                            <div className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-[0.1em] border ${formatBalance(client.balance).bg} ${formatBalance(client.balance).text} ${formatBalance(client.balance).border}`}>
+                                                {formatBalance(client.balance).label}
+                                            </div>
+                                            <span className="text-sm font-black text-slate-700 dark:text-slate-200 mr-2">
+                                                {formatBalance(client.balance).amount} <span className="text-[10px] opacity-50 uppercase">{formatBalance(client.balance).unit}</span>
+                                            </span>
                                                 <div className="flex items-center gap-2 transition-opacity" onClick={(e) => e.stopPropagation()}>
                                                     <button
                                                         onClick={() => setClientToEdit(client)}

@@ -235,10 +235,10 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           is_final_devis_billing: false,
         }));
 
-        if (data.status === 'scheduled' || data.status === 'pending') {
-          setInterventionType('scheduled');
-        } else {
+        if (type === 'direct' || (data.status !== 'scheduled' && data.status !== 'pending')) {
           setInterventionType('direct');
+        } else {
+          setInterventionType('scheduled');
         }
 
         const srvObj: Record<string, number> = {};
@@ -714,8 +714,9 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
 
             <button
               type="button"
-              onClick={() => setIsTechModalOpen(true)}
-              className="w-full flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl border-2 border-slate-100 dark:border-slate-700 hover:border-blue-500/30 transition-all group text-left"
+              onClick={() => isAdmin && setIsTechModalOpen(true)}
+              disabled={!isAdmin}
+              className={`w-full flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-3xl border-2 border-slate-100 dark:border-slate-700 transition-all group text-left ${isAdmin ? "hover:border-blue-500/30" : "opacity-70 cursor-not-allowed"}`}
             >
               <div className="w-12 h-12 bg-white dark:bg-slate-700 rounded-2xl flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform">
                 <User size={24} strokeWidth={2.5} />
@@ -820,7 +821,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
               <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-slate-700" />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="flex flex-col gap-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">pH</label>
                 <input
@@ -1030,24 +1031,97 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                 <p className="text-[11px] font-black text-blue-500 uppercase tracking-widest">🔒 Sélectionnez les articles du devis ci-dessus</p>
               </div>
             ) : (
-              <div className="flex flex-wrap gap-2 mb-2 min-h-[40px] p-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+              <div className="flex flex-col gap-3">
                 {Object.entries(selectedServices).map(([sId, price]) => (
-                  <div key={sId} className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-full animate-in zoom-in duration-200">
-                    <span className="text-[13px] font-black text-blue-700 dark:text-blue-300 uppercase truncate max-w-[150px]">{dbServices.find(s => s.id === sId)?.name}</span>
-                    <span className="text-[11px] font-bold text-blue-500">{price} DT</span>
-                    <button onClick={() => { const next = { ...selectedServices }; delete next[sId]; setSelectedServices(next); }} className="text-blue-400 hover:text-red-500" title="Supprimer ce service"><X size={14} strokeWidth={3} /></button>
+                  <div key={sId} className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl animate-in fade-in slide-in-from-left-4 duration-300 shadow-sm hover:border-blue-500/30 transition-all group">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                        <Waves size={18} />
+                      </div>
+                      <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-tight">{dbServices.find(s => s.id === sId)?.name}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-2xl border border-slate-100 dark:border-slate-700 focus-within:border-blue-500 transition-colors">
+                        <input 
+                          type="number" 
+                          value={price} 
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            setSelectedServices({ ...selectedServices, [sId]: val });
+                          }}
+                          className="w-24 bg-transparent border-none focus:ring-0 text-[22px] font-black text-blue-600 dark:text-blue-400 text-right p-0"
+                          onFocus={(e) => e.target.select()}
+                        />
+                        <span className="text-[10px] font-black text-slate-400 uppercase ml-2 tracking-widest">DT</span>
+                      </div>
+                      
+                      <button 
+                        onClick={() => { const next = { ...selectedServices }; delete next[sId]; setSelectedServices(next); }} 
+                        className="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-2xl transition-all"
+                        title="Supprimer ce service"
+                      >
+                        <X size={18} strokeWidth={3} />
+                      </button>
+                    </div>
                   </div>
                 ))}
+                {Object.keys(selectedServices).length === 0 && (
+                  <div className="py-8 text-center border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-[2rem]">
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Aucun service sélectionné</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-2 min-h-[40px] p-2 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
+          <div className="flex flex-col gap-3">
             {Object.entries(usedProducts).map(([pId, item]) => (
-              <div key={pId} className="flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-800 rounded-full animate-in zoom-in duration-200">
-                <span className="text-[13px] font-black text-violet-700 dark:text-violet-300 uppercase truncate max-w-[150px]">{dbProducts.find(p => p.id === pId)?.name}</span>
-                <span className="text-[11px] font-bold text-violet-500">x{item.quantity} ({item.unitPrice} DT)</span>
-                <button onClick={() => { const next = { ...usedProducts }; delete next[pId]; setUsedProducts(next); }} className="text-violet-400 hover:text-red-500" title="Supprimer ce produit"><X size={14} strokeWidth={3} /></button>
+              <div key={pId} className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl animate-in fade-in slide-in-from-left-4 duration-300 shadow-sm hover:border-violet-500/30 transition-all group">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-violet-50 dark:bg-violet-900/20 flex items-center justify-center text-violet-500 group-hover:scale-110 transition-transform">
+                    <div className="font-black text-[10px]">{dbProducts.find(p => p.id === pId)?.unit}</div>
+                  </div>
+                  <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-tight">{dbProducts.find(p => p.id === pId)?.name}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-2xl border border-slate-100 dark:border-slate-700 focus-within:border-violet-500 transition-colors">
+                    <span className="text-[9px] font-black text-slate-400 uppercase mr-1.5 opacity-60">Qté</span>
+                    <input 
+                      type="number" 
+                      value={item.quantity} 
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value) || 0;
+                        setUsedProducts({ ...usedProducts, [pId]: { ...item, quantity: val } });
+                      }}
+                      className="w-12 bg-transparent border-none focus:ring-0 text-[16px] font-black text-violet-600 dark:text-violet-400 text-center p-0"
+                      onFocus={(e) => e.target.select()}
+                    />
+                  </div>
+
+                  <div className="flex items-center bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-2xl border border-slate-100 dark:border-slate-700 focus-within:border-violet-500 transition-colors">
+                    <input 
+                      type="number" 
+                      value={item.unitPrice} 
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value) || 0;
+                        setUsedProducts({ ...usedProducts, [pId]: { ...item, unitPrice: val } });
+                      }}
+                      className="w-24 bg-transparent border-none focus:ring-0 text-[22px] font-black text-violet-600 dark:text-violet-400 text-right p-0"
+                      onFocus={(e) => e.target.select()}
+                    />
+                    <span className="text-[9px] font-black text-slate-400 uppercase ml-1.5 opacity-60">DT</span>
+                  </div>
+
+                  <button 
+                    onClick={() => { const next = { ...usedProducts }; delete next[pId]; setUsedProducts(next); }} 
+                    className="w-10 h-10 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-2xl transition-all"
+                    title="Supprimer ce produit"
+                  >
+                    <X size={18} strokeWidth={3} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -1191,7 +1265,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                               type="number"
                               title="Montant encaissé"
                               placeholder="0"
-                              className="bg-transparent border-none outline-none font-black tracking-tighter text-violet-950 dark:text-white p-0 m-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none massive-amount-input w-[150px]"
+                              className="bg-transparent border-none outline-none font-black tracking-tighter text-violet-950 dark:text-white p-0 m-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none massive-amount-input w-[200px] text-5xl"
                               value={formData.payment_amount}
                               onChange={(e) => setFormData({ ...formData, payment_amount: e.target.value })}
                               onFocus={(e) => e.target.select()}

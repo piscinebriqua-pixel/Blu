@@ -14,6 +14,7 @@ import SpeedDial from '../components/SpeedDial';
 import PartnerPDFPreviewModal from '../components/PartnerPDFPreviewModal';
 import ConfirmModal from '../components/ConfirmModal';
 import { Edit2, Share2, FileDown, Trash2 } from 'lucide-react';
+import { formatBalance } from '../lib/formatters';
 
 interface Partner {
     id: string;
@@ -164,7 +165,7 @@ const PartnerDetail: React.FC = () => {
     if (!partner) return null;
 
     const totalPaid = payments.reduce((acc, pay) => acc + (pay.amount || 0), 0);
-    const balance = totalBilled - totalPaid;
+    const balance = totalPaid - totalBilled; // Standard: Paid - Billed
 
     const filteredInterventions = interventions.filter(inter => {
         const sTotal = inter.services?.reduce((sAcc, s) => sAcc + (s.price_at_time || 0), 0) || 0;
@@ -187,8 +188,8 @@ const PartnerDetail: React.FC = () => {
         if (partner.company) message += `🏢 *Société :* ${partner.company}\n`;
         message += `📅 *Date :* ${new Date().toLocaleDateString('fr-FR')}\n\n`;
 
-        message += `💰 *SOLDE : ${Math.abs(balance).toFixed(0)} DT*\n`;
-        message += `📝 _${balance > 0 ? "Somme restant due" : "Avance / Crédit disponible"}_\n\n`;
+        message += `💰 *SOLDE : ${formatBalance(balance).full}*\n`;
+        message += `📝 _État de compte : ${formatBalance(balance).label}_\n\n`;
 
         if (partner.is_billing_partner) {
             message += `📈 Total Facturé : ${totalBilled.toFixed(0)} DT\n`;
@@ -417,10 +418,10 @@ const PartnerDetail: React.FC = () => {
                                 </div>
                                 <div className="mb-auto">
                                     <p className="text-sm font-bold text-white/60 mb-1 uppercase tracking-tighter">
-                                        {balance > 0 ? "Solde restant" : "Crédit / Avance"}
+                                        {formatBalance(balance).label} sur compte
                                     </p>
-                                    <h4 className={`text-4xl font-black ${balance > 0 ? 'text-white' : 'text-emerald-300'}`}>
-                                        {Math.abs(balance).toFixed(0)} <span className="text-xl opacity-50">DT</span>
+                                    <h4 className={`text-4xl font-black ${formatBalance(balance).color === 'rose' ? 'text-white' : 'text-emerald-300'}`}>
+                                        {formatBalance(balance).amount} <span className="text-xl opacity-50">{formatBalance(balance).unit}</span>
                                     </h4>
                                     <p className="text-[10px] font-bold text-white/50 uppercase mt-2">
                                         {partner.is_billing_partner
@@ -624,6 +625,7 @@ const PartnerDetail: React.FC = () => {
 
             {isNewInterventionOpen && (
                 <NewIntervention
+                    type="scheduled"
                     onClose={() => setIsNewInterventionOpen(false)}
                     onSuccess={() => {
                         setIsNewInterventionOpen(false);

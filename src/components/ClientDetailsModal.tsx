@@ -218,11 +218,20 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                                             <p className="text-base text-slate-500 dark:text-slate-500 uppercase tracking-wide font-bold">{inter.pool_name}</p>
                                         </div>
                                     </div>
-                                    {inter.ph_level && (
-                                        <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-1 rounded-md text-[13px] font-bold border border-slate-200 dark:border-slate-600">
-                                            PH {inter.ph_level}
+                                    <div className="flex flex-col items-end gap-2">
+                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest border ${
+                                            inter.status === 'completed' 
+                                            ? 'bg-blue-600 text-white border-blue-600' 
+                                            : 'bg-white dark:bg-slate-700 text-blue-500 border-blue-100 dark:border-blue-800'
+                                        }`}>
+                                            {inter.status === 'completed' ? 'Réalisée' : 'Planifiée'}
                                         </span>
-                                    )}
+                                        {inter.ph_level && (
+                                            <span className="bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-md text-[11px] font-bold border border-slate-100 dark:border-slate-800">
+                                                PH {inter.ph_level}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             )) : (
                                 <div className="p-8 text-center text-slate-500 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
@@ -236,7 +245,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
             </div>
 
             {isInterventionModalOpen && selectedPoolId && (
-                <NewIntervention poolId={selectedPoolId} clientId={clientId} onClose={() => setIsInterventionModalOpen(false)} onSuccess={fetchClientData} />
+                <NewIntervention poolId={selectedPoolId} clientId={clientId} type="scheduled" onClose={() => setIsInterventionModalOpen(false)} onSuccess={fetchClientData} />
             )}
             {isPoolModalOpen && (
                 <AddPoolModal clientId={clientId} onClose={() => setIsPoolModalOpen(false)} onSuccess={fetchClientData} />

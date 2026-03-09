@@ -33,6 +33,7 @@ import AddDevisModal from '../components/AddDevisModal';
 import DevisDetailsModal from '../components/DevisDetailsModal';
 import AssignPartnerModal from '../components/AssignPartnerModal';
 import { User } from 'lucide-react';
+import { formatBalance } from '../lib/formatters';
 
 interface Pool {
     id: string;
@@ -128,6 +129,7 @@ const ClientDetail: React.FC = () => {
     const [isDevisModalOpen, setIsDevisModalOpen] = useState(false); // Added isDevisModalOpen state
     const [editingDevisId, setEditingDevisId] = useState<string | null>(null);
     const [editingInterventionId, setEditingInterventionId] = useState<string | null>(null);
+    const [startMode, setStartMode] = useState(false);
     const [interventionToDelete, setInterventionToDelete] = useState<string | null>(null);
     const [partnerToUnassign, setPartnerToUnassign] = useState<any | null>(null);
     const [isUnassigningPartner, setIsUnassigningPartner] = useState(false);
@@ -142,6 +144,7 @@ const ClientDetail: React.FC = () => {
     const [interventionFilter, setInterventionFilter] = useState<'all' | 'paid' | 'unpaid'>('unpaid');
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
+        if (inter.status !== 'completed') return acc;
         const sTotal = inter.services?.reduce((sAcc: number, s: any) => sAcc + (s.price_at_time || 0), 0) || 0;
         const pTotal = inter.products?.reduce((pAcc: number, p: any) => pAcc + (p.total_price || 0), 0) || 0;
         return acc + sTotal + pTotal;
@@ -476,11 +479,11 @@ const ClientDetail: React.FC = () => {
                 formattedPhone = '216' + formattedPhone;
             }
 
-            const remainingBalance = totalIntersAmount - totalPaymentsAmount;
+            const balance = totalPaymentsAmount - totalIntersAmount;
             let message = `Bonjour ${client.first_name},\n\n`;
 
-            if (remainingBalance > 0.5) {
-                message += `Voici le point sur votre compte. Votre solde restant à régler est de *${remainingBalance.toFixed(0)} DT*.\n\n`;
+            if (balance < -0.5) {
+                message += `Voici le point sur votre compte. Votre solde (Credit) est de *${Math.abs(balance).toFixed(0)} DT*.\n\n`;
             } else {
                 message += `Nous vous contactons pour vous informer que votre compte est actuellement à jour (Solde : 0 DT). Merci de votre confiance !\n`;
                 window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
@@ -670,14 +673,14 @@ const ClientDetail: React.FC = () => {
                         <p className="text-[11px] font-black uppercase tracking-[0.2em] text-white">État Financier</p>
                     </div>
                     <p className="text-[11px] font-black uppercase tracking-widest text-white/80">
-                        {(totalPaymentsAmount - totalIntersAmount) < 0 ? 'Crédit à recouvrer' : 'Compte positif'}
+                        {client ? formatBalance(client.balance).label : 'Solde'} sur compte
                     </p>
                 </div>
 
                 <div className="relative z-10 text-right">
                     <h3 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-white">
-                        {Math.abs(totalPaymentsAmount - totalIntersAmount).toFixed(0)}
-                        <span className="text-lg md:text-xl font-black ml-1 uppercase text-white/60">Dt</span>
+                        {client ? formatBalance(client.balance).amount : '0'}
+                        <span className="text-lg md:text-xl font-black ml-1 uppercase text-white/60">{client ? formatBalance(client.balance).unit : 'DT'}</span>
                     </h3>
                 </div>
 
@@ -1029,12 +1032,11 @@ const ClientDetail: React.FC = () => {
                                     <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-slate-800 to-slate-900 text-white shadow-xl shadow-slate-900/20 text-center">
                                         <p className="text-[13px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Solde Final</p>
                                         <h3 className="text-5xl font-black tracking-tighter">
-                                            {(totalPaymentsAmount - totalIntersAmount) < 0 ? (
-                                                <span className="text-rose-400">Credit {Math.abs(totalPaymentsAmount - totalIntersAmount).toFixed(0)}</span>
+                                            {client ? (
+                                                <span className={formatBalance(client.balance).text}>{formatBalance(client.balance).amount} <span className="text-lg opacity-40 ml-2">{formatBalance(client.balance).unit}</span> {formatBalance(client.balance).label}</span>
                                             ) : (
-                                                <span>{(totalPaymentsAmount - totalIntersAmount).toFixed(0)}</span>
+                                                <span className="text-slate-400">0 DT</span>
                                             )}
-                                            <span className="text-lg opacity-40 ml-2">DT</span>
                                         </h3>
                                     </div>
                                 </div>
@@ -1160,6 +1162,15 @@ const ClientDetail: React.FC = () => {
                                                                 <p className="text-base text-slate-500 font-bold uppercase mt-1">Bassin: {inter.pool_name}</p>
                                                             </div>
                                                             <div className="flex flex-col items-end gap-2">
+                                                                {/* Status Badge */}
+                                                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest border ${
+                                                                    inter.status === 'completed' 
+                                                                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
+                                                                    : 'bg-white dark:bg-slate-700 text-blue-500 border-blue-200 dark:border-blue-700'
+                                                                }`}>
+                                                                    {inter.status === 'completed' ? 'Réalisée' : 'Planifiée'}
+                                                                </span>
+
                                                                 <span className={`text-[11px] font-black px-3 py-1 rounded-lg uppercase tracking-widest ${(() => {
                                                                     const sTotal = inter.services?.reduce((acc: number, s: any) => acc + (s.price_at_time || 0), 0) || 0;
                                                                     const pTotal = inter.products?.reduce((acc: number, p: any) => acc + (p.total_price || 0), 0) || 0;
@@ -1357,13 +1368,16 @@ const ClientDetail: React.FC = () => {
                         poolId={selectedPoolId || undefined}
                         clientId={id!}
                         interventionId={editingInterventionId || undefined}
+                        type={startMode ? 'direct' : 'scheduled'}
                         onClose={() => {
                             setIsInterventionModalOpen(false);
                             setEditingInterventionId(null);
+                            setStartMode(false);
                         }}
                         onSuccess={() => {
                             setIsInterventionModalOpen(false);
                             setEditingInterventionId(null);
+                            setStartMode(false);
                             fetchClientData();
                         }}
                     />
@@ -1426,12 +1440,19 @@ const ClientDetail: React.FC = () => {
                         onClose={() => setSelectedInterventionForView(null)}
                         onEdit={(inter) => {
                             setEditingInterventionId(inter.id);
+                            setStartMode(false);
                             setSelectedInterventionForView(null);
                         }}
                         onDelete={(inter) => {
                             setInterventionToDelete(inter.id);
                             setSelectedInterventionForView(null);
                         }}
+                        onStart={(inter) => {
+                            setEditingInterventionId(inter.id);
+                            setStartMode(true);
+                            setSelectedInterventionForView(null);
+                        }}
+                        onStatusChange={fetchClientData}
                     />
                 )
             }

@@ -10,7 +10,9 @@ import {
     Clock,
     LayoutGrid,
     Filter,
-    RotateCcw
+    RotateCcw,
+    Edit2,
+    Trash2
 } from 'lucide-react';
 import NewIntervention from '../components/NewIntervention';
 import InterventionDetailsModal from '../components/InterventionDetailsModal';
@@ -52,11 +54,21 @@ const Planning: React.FC = () => {
     const [selectedTech, setSelectedTech] = useState<string>('all');
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [technicians, setTechnicians] = useState<any[]>([]);
+    const [startMode, setStartMode] = useState(false);
 
     const fetchInterventions = useCallback(async () => {
         try {
             setLoading(true);
-            const { data, error } = await supabase
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session?.user) return;
+
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role, technician_id')
+                .eq('id', session.user.id)
+                .single();
+
+            let query = supabase
                 .from('interventions')
                 .select(`
                     *,
@@ -70,6 +82,16 @@ const Planning: React.FC = () => {
                 `)
                 .in('status', ['scheduled', 'completed', 'in_progress', 'pending', 'cancelled']);
 
+            if (profile?.role !== 'admin' && profile?.technician_id) {
+                query = query.eq('technician_id', profile.technician_id);
+            } else if (profile?.role !== 'admin' && !profile?.technician_id) {
+                // If not admin and no tech_id, show nothing to be safe
+                setInterventions([]);
+                setLoading(false);
+                return;
+            }
+
+            const { data, error } = await query;
             if (error) throw error;
             setInterventions(data || []);
         } catch (error: any) {
@@ -200,7 +222,7 @@ const Planning: React.FC = () => {
     const WeekStrip = () => {
         const days = getDaysInWeek(currentDate);
         return (
-            <div className="flex justify-between items-center gap-1 bg-white dark:bg-slate-800 p-2 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm mb-6">
+            <div className="flex justify-between items-center gap-1 bg-white dark:bg-slate-800 p-2 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm mb-2">
                 {days.map((d, i) => {
                     const isSelected = formatDateKey(d) === formatDateKey(currentDate);
                     const isToday = formatDateKey(d) === formatDateKey(new Date());
@@ -235,20 +257,20 @@ const Planning: React.FC = () => {
     const InterventionCard = ({ i }: { i: Intervention }) => (
         <div
             onClick={() => setSelectedIntervention(i)}
-            className={`group p-4 rounded-[2.5rem] border shadow-sm transition-all cursor-pointer flex items-center gap-4 ${i.status === 'completed'
+            className={`group p-3 rounded-2xl border shadow-sm transition-all cursor-pointer flex items-center gap-3 ${i.status === 'completed'
                 ? 'bg-emerald-50/20 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800/30'
                 : i.status === 'cancelled'
                     ? 'bg-slate-50/50 dark:bg-slate-900/20 border-slate-100 dark:border-white/5 opacity-60'
                     : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-white/5 hover:shadow-xl hover:border-primary/30'
                 }`}
         >
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-all ${i.status === 'completed'
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${i.status === 'completed'
                 ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600'
                 : i.status === 'cancelled'
                     ? 'bg-slate-200 dark:bg-slate-800 text-slate-400'
                     : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white'
                 }`}>
-                <User size={20} />
+                <User size={18} />
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start mb-0.5">
@@ -258,29 +280,37 @@ const Planning: React.FC = () => {
                         }`}>
                         {i.pool?.client?.first_name} {i.pool?.client?.last_name}
                     </h3>
-                    <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg ${i.status === 'completed' ? 'bg-emerald-100/50 dark:bg-emerald-900/30' :
-                        i.status === 'cancelled' ? 'bg-slate-100 dark:bg-slate-800' :
-                            'bg-primary/10'
-                        }`}>
-                        <span className={`text-[12px] font-black uppercase ${i.status === 'completed' ? 'text-emerald-600' :
-                            i.status === 'cancelled' ? 'text-slate-400' :
-                                'text-primary'
-                            }`}>
-                            {i.scheduled_date && new Date(i.scheduled_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                        </span>
-                    </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className={`text-[12px] font-bold uppercase tracking-wider truncate ${i.status === 'cancelled' ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {i.pool?.name || 'Piscine'}
-                    </span>
-                    <div className="w-1 h-1 rounded-full bg-slate-200"></div>
                     <span className={`text-[12px] font-black uppercase truncate ${i.status === 'cancelled' ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {i.technician?.full_name}
+                        {i.technician?.full_name || '...'}
                     </span>
                 </div>
             </div>
-            <ChevronRight size={18} className="text-slate-300 group-hover:text-primary transition-all" />
+            <div className="flex items-center gap-2">
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingInterventionId(i.id);
+                        setStartMode(false);
+                    }}
+                    className="w-10 h-10 flex items-center justify-center bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl hover:bg-blue-600 hover:text-white transition-all active:scale-90"
+                    title="Modifier"
+                >
+                    <Edit2 size={16} />
+                </button>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setInterventionToDelete(i.id);
+                    }}
+                    className="w-10 h-10 flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-2xl hover:bg-rose-600 hover:text-white transition-all active:scale-90"
+                    title="Supprimer"
+                >
+                    <Trash2 size={16} />
+                </button>
+                <ChevronRight size={18} className="text-slate-300 group-hover:text-primary transition-all ml-1" />
+            </div>
         </div>
     );
 
@@ -395,38 +425,69 @@ const Planning: React.FC = () => {
     };
 
     const renderAgendaView = () => {
-        const agendaInterventions = filteredInterventions
+        const agendaInterventions = [...filteredInterventions]
             .filter(i => i.scheduled_date)
             .sort((a, b) => new Date(a.scheduled_date!).getTime() - new Date(b.scheduled_date!).getTime());
 
-        const groupedByDate: Record<string, Intervention[]> = {};
+        // Hierarchical Grouping: Month -> Day -> Interventions
+        const grouped: Record<string, Record<string, Intervention[]>> = {};
+
         agendaInterventions.forEach(i => {
-            const dateStr = formatDateKey(new Date(i.scheduled_date!));
-            if (!groupedByDate[dateStr]) groupedByDate[dateStr] = [];
-            groupedByDate[dateStr].push(i);
+            const date = new Date(i.scheduled_date!);
+            // Use local date parts to avoid UTC shift issues in headers
+            const monthKey = date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+            const dayKey = date.toISOString().split('T')[0];
+
+            if (!grouped[monthKey]) grouped[monthKey] = {};
+            if (!grouped[monthKey][dayKey]) grouped[monthKey][dayKey] = [];
+            grouped[monthKey][dayKey].push(i);
         });
 
-        const sortedDates = Object.keys(groupedByDate);
+        const months = Object.keys(grouped);
+        const todayKey = new Date().toISOString().split('T')[0];
 
         return (
-            <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-500 mt-4">
-                <div className="flex flex-col gap-8">
-                    {sortedDates.length > 0 ? (
-                        sortedDates.map(dateStr => (
-                            <div key={dateStr} className="flex flex-col gap-4">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
-                                    <div className="px-4 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-full">
-                                        <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                                            {new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
-                                        </span>
-                                    </div>
-                                    <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+            <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-500 mt-2">
+                <div className="flex flex-col gap-6">
+                    {months.length > 0 ? (
+                        months.map(month => (
+                            <div key={month} className="flex flex-col gap-2">
+                                {/* Month Header */}
+                                <div className="sticky top-0 z-20 py-2 px-4 bg-slate-50/80 dark:bg-[#0f141e]/80 backdrop-blur-md">
+                                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tighter flex items-center gap-3">
+                                        <span className="bg-primary w-1.5 h-6 rounded-full shadow-lg shadow-primary/20" />
+                                        {month}
+                                    </h2>
                                 </div>
-                                <div className="grid grid-cols-1 gap-3">
-                                    {groupedByDate[dateStr].map(i => (
-                                        <InterventionCard key={i.id} i={i} />
-                                    ))}
+
+                                <div className="flex flex-col gap-4">
+                                    {Object.keys(grouped[month]).map(dayKey => {
+                                        const dateObj = new Date(dayKey);
+                                        const isToday = dayKey === todayKey;
+
+                                        return (
+                                            <div key={dayKey} className="flex flex-col gap-4 pl-3 border-l-2 border-slate-100 dark:border-white/5 ml-1">
+                                                {/* Day Separator */}
+                                                <div className="flex items-center gap-3 -ml-[17px]">
+                                                    <div className={`w-3 h-3 rounded-full border-2 border-white dark:border-[#0f141e] shadow-sm z-10 ${isToday ? 'bg-primary scale-125 ring-4 ring-primary/20' : 'bg-slate-300 dark:bg-slate-700'}`} />
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-[11px] font-black uppercase tracking-widest ${isToday ? 'text-primary' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                            {dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
+                                                        </span>
+                                                        {isToday && (
+                                                            <span className="px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-black rounded-full tracking-widest">AUJOURD'HUI</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 gap-3">
+                                                    {grouped[month][dayKey].map(i => (
+                                                        <InterventionCard key={i.id} i={i} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         ))
@@ -463,8 +524,8 @@ const Planning: React.FC = () => {
     };
 
     const toolbar = (
-        <div className="flex flex-col gap-4 w-full">
-            <div className="flex items-center justify-between gap-3 md:gap-6 w-full">
+        <div className="flex flex-col gap-2 w-full">
+            <div className="flex items-center justify-between gap-2 md:gap-4 w-full">
                 {/* Prominent Left-aligned Selector with Today/Back button */}
                 <div className="flex items-center gap-3 bg-white/70 dark:bg-slate-800/70 p-2 rounded-[24px] border border-white/40 dark:border-white/10 backdrop-blur-md shadow-lg ring-1 ring-slate-200/20">
                     <div className="flex items-center gap-1">
@@ -604,7 +665,7 @@ const Planning: React.FC = () => {
             loading={loading && interventions.length === 0}
             className="bg-slate-50 dark:bg-[#0f141e]"
         >
-            <div className="pb-32 px-4 min-h-[60vh]">
+            <div className="pb-32 px-1 md:px-4 min-h-[60vh]">
                 {interventions.length === 0 && !loading ? (
                     <div className="py-24 flex flex-col items-center justify-center animate-in fade-in duration-1000">
                         <div className="w-24 h-24 bg-primary/5 rounded-full flex items-center justify-center mb-8">
@@ -640,6 +701,12 @@ const Planning: React.FC = () => {
                     onClose={() => setSelectedIntervention(null)}
                     onEdit={(i) => {
                         setEditingInterventionId(i.id);
+                        setStartMode(false);
+                        setSelectedIntervention(null);
+                    }}
+                    onStart={(i) => {
+                        setEditingInterventionId(i.id);
+                        setStartMode(true);
                         setSelectedIntervention(null);
                     }}
                     onDelete={(i) => {
@@ -665,10 +732,12 @@ const Planning: React.FC = () => {
                 <NewIntervention
                     interventionId={editingInterventionId || undefined}
                     scheduledDate={selectedDate || undefined}
+                    type={startMode ? "direct" : "scheduled"}
                     onClose={() => {
                         setIsNewModalOpen(false);
                         setEditingInterventionId(null);
                         setSelectedDate(null);
+                        setStartMode(false);
                     }}
                     onSuccess={() => {
                         setIsNewModalOpen(false);

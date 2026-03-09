@@ -73,6 +73,7 @@ const Interventions: React.FC = () => {
   const [selPoolId, setSelPoolId] = useState<string | null>(null);
   const [selectedTech, setSelectedTech] = useState<string>("all");
   const [selectedType, setSelectedType] = useState<"all" | "classique" | "chantier">("all");
+  const [startMode, setStartMode] = useState(false);
 
   useEffect(() => {
     fetchInterventions();
@@ -81,7 +82,16 @@ const Interventions: React.FC = () => {
   const fetchInterventions = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, technician_id')
+        .eq('id', session.user.id)
+        .single();
+
+      let query = supabase
         .from("interventions")
         .select(
           `
@@ -94,7 +104,17 @@ const Interventions: React.FC = () => {
                     services:intervention_services(price_at_time, service:services(name)),
                     products:intervention_products(quantity, total_price, product:inventory_products(name, unit))
                 `,
-        )
+        );
+
+      if (profile?.role !== 'admin' && profile?.technician_id) {
+        query = query.eq('technician_id', profile.technician_id);
+      } else if (profile?.role !== 'admin' && !profile?.technician_id) {
+        setInterventions([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await query
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -328,6 +348,12 @@ const Interventions: React.FC = () => {
           onClose={() => setSelectedIntervention(null)}
           onEdit={(i) => {
             setEditingId(i.id);
+            setStartMode(false);
+            setSelectedIntervention(null);
+          }}
+          onStart={(i) => {
+            setEditingId(i.id);
+            setStartMode(true);
             setSelectedIntervention(null);
           }}
           onDelete={(inter) => {
@@ -353,6 +379,7 @@ const Interventions: React.FC = () => {
         <NewIntervention
           clientId={selClient?.id}
           poolId={selPoolId || undefined}
+          type="scheduled"
           onClose={() => {
             setIsNewInterventionModalOpen(false);
             setSelClient(null);
@@ -370,9 +397,14 @@ const Interventions: React.FC = () => {
       {editingId && (
         <NewIntervention
           interventionId={editingId}
-          onClose={() => setEditingId(undefined)}
+          type={startMode ? 'direct' : 'scheduled'}
+          onClose={() => {
+            setEditingId(undefined);
+            setStartMode(false);
+          }}
           onSuccess={() => {
             setEditingId(undefined);
+            setStartMode(false);
             fetchInterventions();
           }}
         />

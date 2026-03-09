@@ -245,6 +245,7 @@ const Partners: React.FC = () => {
 
             {isNewInterventionOpen && (
                 <NewIntervention
+                    type="scheduled"
                     onClose={() => setIsNewInterventionOpen(false)}
                     onSuccess={() => {
                         setIsNewInterventionOpen(false);
