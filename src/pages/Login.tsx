@@ -64,12 +64,16 @@ const Login: React.FC = () => {
             <div className="z-10 w-full max-w-sm px-6 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
 
                 {/* Header / Logo */}
-                <div className="flex flex-col items-center text-center -mb-4">
+                <div className="flex items-center gap-5 justify-center -mb-4">
                     <BccpLogo
-                        width={100}
+                        width={80}
                         fillColor="white"
                         className="drop-shadow-2xl"
                     />
+                    <div className="flex flex-col text-left">
+                        <h1 className="text-4xl font-black text-white tracking-widest leading-none">BCCP</h1>
+                        <p className="text-[10px] font-black text-blue-100/60 uppercase tracking-[0.4em] mt-1.5 whitespace-nowrap">Clean and Clean Pool</p>
+                    </div>
                 </div>
 
                 {/* Login Card */}

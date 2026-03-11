@@ -14,6 +14,7 @@ import {
 import PageLayout from '../components/PageLayout';
 import NewIntervention from '../components/NewIntervention';
 import ModalLayout from '../components/ModalLayout';
+import Combobox from '../components/ui/Combobox';
 
 const TechnicianPortal: React.FC = () => {
     const [interventions, setInterventions] = useState<any[]>([]);
@@ -283,24 +284,20 @@ const TechnicianPortal: React.FC = () => {
                 >
                     <div className="flex flex-col gap-5">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest ml-1">Choisir un Client</label>
-                            <div className="relative">
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                                <select
-                                    className="search-input !pl-12 cursor-pointer !h-14"
-                                    onChange={(e) => {
-                                        const c = clients.find(cl => cl.id === e.target.value);
-                                        if (c) handleSelectClient(c);
-                                    }}
-                                    value={selClient?.id || ''}
-                                    title="Sélectionner un client"
-                                >
-                                    <option value="">Sélectionner un client...</option>
-                                    {clients.map(c => (
-                                        <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            <Combobox
+                                label="Choisir un Client"
+                                icon={User}
+                                placeholder="Rechercher un client..."
+                                options={clients.map(c => ({
+                                    label: `${c.first_name} ${c.last_name}`,
+                                    value: c.id
+                                }))}
+                                value={selClient?.id || ''}
+                                onChange={(val) => {
+                                    const c = clients.find(cl => cl.id === val);
+                                    if (c) handleSelectClient(c);
+                                }}
+                            />
                         </div>
 
                         {selClient && (

@@ -9,16 +9,17 @@ import {
     List,
     Clock,
     LayoutGrid,
-    Filter,
     RotateCcw,
     Edit2,
-    Trash2
+    Trash2,
+    Layers
 } from 'lucide-react';
 import NewIntervention from '../components/NewIntervention';
 import InterventionDetailsModal from '../components/InterventionDetailsModal';
 import ConfirmModal from '../components/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import PageLayout from '../components/PageLayout';
+import Combobox from '../components/ui/Combobox';
 
 interface Intervention {
     id: string;
@@ -41,7 +42,7 @@ interface Intervention {
 }
 
 const Planning: React.FC = () => {
-    const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'agenda'>('month');
+    const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'agenda' | 'all'>('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [interventions, setInterventions] = useState<Intervention[]>([]);
     const [loading, setLoading] = useState(true);
@@ -432,6 +433,7 @@ const Planning: React.FC = () => {
         const agendaInterventions = [...filteredInterventions]
             .filter(i => {
                 if (!i.scheduled_date) return false;
+                if (viewMode === 'all') return true;
                 const date = new Date(i.scheduled_date);
                 return date.getMonth() === currentDate.getMonth() && 
                        date.getFullYear() === currentDate.getFullYear();
@@ -513,7 +515,6 @@ const Planning: React.FC = () => {
             </div>
         );
     };
-
     const renderDayView = () => {
         const dayInterventions = getInterventionsForDate(currentDate);
         return (
@@ -536,100 +537,119 @@ const Planning: React.FC = () => {
     };
 
     const toolbar = (
-        <div className="flex flex-col gap-2 w-full">
-            <div className="flex items-center justify-between gap-2 md:gap-4 w-full">
-                {/* Prominent Left-aligned Selector with Today/Back button */}
-                <div className="flex items-center gap-3 bg-white/70 dark:bg-slate-800/70 p-2 rounded-[24px] border border-white/40 dark:border-white/10 backdrop-blur-md shadow-lg ring-1 ring-slate-200/20">
+        <div className="flex flex-col gap-3 w-full">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 w-full">
+                {/* LINE 1 (Mobile) / Left (Desktop): Date Selector */}
+                <div className="flex items-center gap-3 bg-white/70 dark:bg-slate-800/70 p-2 rounded-[24px] border border-white/40 dark:border-white/10 backdrop-blur-md shadow-lg ring-1 ring-slate-200/20 w-full md:w-auto">
                     <div className="flex items-center gap-1">
-                        <button title="Précédent" onClick={() => changeDate(-1)} className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-700 rounded-2xl shadow-sm text-slate-500 hover:text-primary transition-all active:scale-90">
+                        <button 
+                            disabled={viewMode === 'all'}
+                            title="Précédent" 
+                            onClick={() => changeDate(-1)} 
+                            className={`w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-700 rounded-2xl shadow-sm text-slate-500 hover:text-primary transition-all active:scale-90 ${viewMode === 'all' ? 'opacity-30 cursor-not-allowed' : ''}`}
+                        >
                             <ChevronLeft size={20} strokeWidth={3} />
                         </button>
                         <button
                             title="Aujourd'hui / Retour"
-                            onClick={() => setCurrentDate(new Date())}
+                            onClick={() => {
+                                setCurrentDate(new Date());
+                                if (viewMode === 'all') setViewMode('agenda');
+                            }}
                             className="w-10 h-10 flex items-center justify-center bg-primary/10 text-primary rounded-2xl hover:bg-primary hover:text-white transition-all shadow-sm active:rotate-[-90deg]"
                         >
                             <RotateCcw size={18} strokeWidth={3} />
                         </button>
-                        <button title="Suivant" onClick={() => changeDate(1)} className="w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-700 rounded-2xl shadow-sm text-slate-500 hover:text-primary transition-all active:scale-90">
+                        <button 
+                            disabled={viewMode === 'all'}
+                            title="Suivant" 
+                            onClick={() => changeDate(1)} 
+                            className={`w-10 h-10 flex items-center justify-center bg-white dark:bg-slate-700 rounded-2xl shadow-sm text-slate-500 hover:text-primary transition-all active:scale-90 ${viewMode === 'all' ? 'opacity-30 cursor-not-allowed' : ''}`}
+                        >
                             <ChevronRight size={20} strokeWidth={3} />
                         </button>
                     </div>
-                    <div className="flex flex-col pr-4 min-w-[120px]">
+                    <div className="flex flex-col pr-4 flex-1">
                         <span className="text-[8px] font-black text-primary uppercase tracking-[0.25em] leading-none mb-1">
-                            {viewMode === 'month' ? 'Mensuel' : viewMode === 'week' ? 'Hebdomadaire' : 'Quotidien'}
+                            {viewMode === 'month' ? 'Mensuel' : viewMode === 'week' ? 'Hebdomadaire' : viewMode === 'all' ? 'Global' : 'Quotidien'}
                         </span>
                         <h3 className="text-[14px] font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none truncate">
-                            {viewMode === 'day'
-                                ? currentDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-                                : currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+                            {viewMode === 'all'
+                                ? 'Toutes les Dates'
+                                : viewMode === 'day'
+                                    ? currentDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+                                    : currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
                             }
                         </h3>
                     </div>
                 </div>
 
-                {/* Filters Dropdowns */}
-                <div className="hidden lg:flex items-center gap-2">
-                    <div className="relative">
-                        <select
-                            title="Filtrer par technicien"
-                            value={selectedTech}
-                            onChange={(e) => setSelectedTech(e.target.value)}
-                            className="appearance-none bg-white dark:bg-slate-800 border-none rounded-2xl py-2 px-4 pr-10 text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 shadow-sm focus:ring-2 focus:ring-primary/20"
+                {/* LINE 2 (Mobile) / Right (Desktop): View Switcher & Filters */}
+                <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
+                    {/* View Switcher Buttons */}
+                    <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-full border border-slate-200/50 dark:border-white/5 backdrop-blur-xl shadow-sm">
+                        <button
+                            title="Mensuel"
+                            onClick={() => setViewMode('month')}
+                            className={`p-2.5 rounded-full transition-all ${viewMode === 'month' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
                         >
-                            <option value="all">Tous les techniciens</option>
-                            {technicians.map(t => (
-                                <option key={t.id} value={t.id}>{t.full_name}</option>
-                            ))}
-                        </select>
-                        <Filter size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                    </div>
-                    <div className="relative">
-                        <select
-                            title="Filtrer par statut"
-                            value={selectedStatus}
-                            onChange={(e) => setSelectedStatus(e.target.value)}
-                            className="appearance-none bg-white dark:bg-slate-800 border-none rounded-2xl py-2 px-4 pr-10 text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 shadow-sm focus:ring-2 focus:ring-primary/20"
+                            <CalendarIcon size={18} />
+                        </button>
+                        <button
+                            title="Hebdo"
+                            onClick={() => setViewMode('week')}
+                            className={`p-2.5 rounded-full transition-all ${viewMode === 'week' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
                         >
-                            <option value="all">Tous les statuts</option>
-                            <option value="scheduled">Planifié</option>
-                            <option value="completed">Terminé</option>
-                            <option value="cancelled">Annulé</option>
-                        </select>
-                        <Filter size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            <LayoutGrid size={18} />
+                        </button>
+                        <button
+                            title="Jour"
+                            onClick={() => setViewMode('day')}
+                            className={`p-2.5 rounded-full transition-all ${viewMode === 'day' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                            <Clock size={18} />
+                        </button>
+                        <button
+                            title="Agenda"
+                            onClick={() => setViewMode('agenda')}
+                            className={`p-2.5 rounded-full transition-all ${viewMode === 'agenda' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                            <List size={18} />
+                        </button>
+                        <button
+                            title="Tout"
+                            onClick={() => setViewMode('all')}
+                            className={`p-2.5 rounded-full transition-all ${viewMode === 'all' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                        >
+                            <Layers size={18} />
+                        </button>
                     </div>
-                </div>
 
-                {/* View Switcher Buttons - Right aligned */}
-                <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-full border border-slate-200/50 dark:border-white/5 backdrop-blur-xl shrink-0 shadow-sm">
-                    <button
-                        title="Vue Mensuelle"
-                        onClick={() => setViewMode('month')}
-                        className={`p-2.5 rounded-full transition-all ${viewMode === 'month' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        <CalendarIcon size={18} />
-                    </button>
-                    <button
-                        title="Vue Hebdomadaire"
-                        onClick={() => setViewMode('week')}
-                        className={`p-2.5 rounded-full transition-all ${viewMode === 'week' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        <LayoutGrid size={18} />
-                    </button>
-                    <button
-                        title="Vue Journalière"
-                        onClick={() => setViewMode('day')}
-                        className={`p-2.5 rounded-full transition-all ${viewMode === 'day' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        <Clock size={18} />
-                    </button>
-                    <button
-                        title="Vue Agenda"
-                        onClick={() => setViewMode('agenda')}
-                        className={`p-2.5 rounded-full transition-all ${viewMode === 'agenda' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
-                    >
-                        <List size={18} />
-                    </button>
+                    {/* Desktop Filters (Hidden on Mobile) */}
+                    <div className="hidden lg:flex items-center gap-2">
+                        <Combobox
+                            options={[
+                                { label: "Tous Techniciens", value: "all" },
+                                ...technicians.map(t => ({ label: t.full_name, value: t.id }))
+                            ]}
+                            value={selectedTech}
+                            onChange={setSelectedTech}
+                            className="!h-10 !py-0 !text-[11px]"
+                            containerClassName="min-w-[180px]"
+                        />
+                        <Combobox
+                            options={[
+                                { label: "Tous Statuts", value: "all" },
+                                { label: "Planifié", value: "scheduled" },
+                                { label: "Terminé", value: "completed" },
+                                { label: "Annulé", value: "cancelled" }
+                            ]}
+                            value={selectedStatus}
+                            onChange={setSelectedStatus}
+                            className="!h-10 !py-0 !text-[11px]"
+                            containerClassName="min-w-[150px]"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -690,6 +710,7 @@ const Planning: React.FC = () => {
                         {viewMode === 'week' && renderWeekView()}
                         {viewMode === 'day' && renderDayView()}
                         {viewMode === 'agenda' && renderAgendaView()}
+                        {viewMode === 'all' && renderAgendaView()}
                     </>
                 )}
             </div>

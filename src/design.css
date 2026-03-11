@@ -1,19 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-    /* --- PALETTE DEEPBLUE FLOW --- */
-    --bg-app: #F8FAFC;
-    --primary: #0077B6;
-    --primary-light: #90E0EF;
-    --accent-amber: #FFB703;
-    --status-green: #22C55E;
+    /* --- LIGHT MODE LUXE --- */
+    --bg-app: #F1F5F9;
+    --primary: #2563EB;
+    --primary-light: #DBEAFE;
+    --accent-amber: #F59E0B;
+    --status-green: #10B981;
 
-    --text-main: #1E293B;
+    --text-main: #0F172A;
     --text-dim: #64748B;
     --text-white: #FFFFFF;
 
-    --card-bg: #FFFFFF;
-    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --card-bg: rgba(255, 255, 255, 0.8);
+    --card-border: rgba(0, 0, 0, 0.05);
+    --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
 
     --radius-std: 16px;
     --radius-lg: 24px;
@@ -22,14 +23,14 @@
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-[data-theme='dark'] {
-    --bg-app: #0F172A;
-    --card-bg: #1E293B;
+[data-theme='dark'], .dark {
+    --bg-app: #020617;
+    --card-bg: rgba(30, 41, 59, 0.4);
+    --card-border: rgba(255, 255, 255, 0.08);
     --text-main: #F8FAFC;
     --text-dim: #94A3B8;
     --primary-light: #1E293B;
-    /* Adjust if needed */
-    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+    --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 * {
@@ -64,7 +65,7 @@ body {
 }
 
 .header-gradient {
-    background: linear-gradient(135deg, var(--primary), #023E8A);
+    background: linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%);
     padding: 0;
     color: white;
     border-bottom-left-radius: 0;
@@ -191,9 +192,11 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.card-premium:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.15);
+@media (hover: hover) {
+    .card-premium:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 25px 30px -5px rgba(0, 0, 0, 0.15);
+    }
 }
 
 .card-white {
@@ -358,8 +361,10 @@ body {
     }
 }
 
-.card-bento:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+@media (hover: hover) {
+    .card-bento:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
 }
 
 .fintech-card-dark {
@@ -367,13 +372,27 @@ body {
 }
 
 .fintech-card-money-luxe {
-    background: linear-gradient(135deg, #064e3b 0%, #059669 100%) !important;
+    background: linear-gradient(135deg, #064e3b 0%, #10b981 100%) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 40px -10px rgba(16, 185, 129, 0.3) !important;
 }
 
 .fintech-card-red-luxe {
-    background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%) !important;
+    background: linear-gradient(135deg, #7f1d1d 0%, #ef4444 100%) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 40px -10px rgba(239, 68, 68, 0.3) !important;
+}
+
+.fintech-card-blue-luxe {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 40px -10px rgba(59, 130, 246, 0.3) !important;
+}
+
+.fintech-card-dark-luxe {
+    background: linear-gradient(135deg, #020617 0%, #1e1b4b 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 40px -10px rgba(30, 27, 75, 0.5) !important;
 }
 
 .fintech-pattern {
@@ -383,6 +402,104 @@ body {
     pointer-events: none;
     background-image: radial-gradient(circle, #fff 1px, transparent 1px);
     background-size: 20px 20px;
+}
+
+/* --- BENTO GRID SYSTEM --- */
+.bento-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-auto-rows: minmax(160px, auto);
+    gap: 20px;
+    padding-bottom: 40px;
+}
+
+.bento-col-8 { grid-column: span 8; }
+.bento-col-4 { grid-column: span 4; }
+.bento-col-3 { grid-column: span 3; }
+.bento-col-6 { grid-column: span 6; }
+.bento-row-2 { grid-row: span 2; }
+
+@media (max-width: 1024px) {
+    .bento-dashboard-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: auto;
+    }
+    .bento-col-8, .bento-col-4, .bento-col-3, .bento-col-6 { grid-column: span 1; }
+    .bento-row-2 { grid-row: span 1; }
+}
+
+@media (max-width: 640px) {
+    .bento-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --- FINTECH CARDS --- */
+.bento-card-luxe {
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: 2rem;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--card-shadow);
+}
+
+.bento-card-luxe:hover {
+    transform: translateY(-5px);
+    border-color: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.4), 0 18px 36px -18px rgba(0, 0, 0, 0.4);
+}
+
+.avatar-stack {
+    display: flex;
+    align-items: center;
+}
+
+.avatar-stack-item {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-app);
+    margin-left: -10px;
+    background: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: 900;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-stack-item:first-child {
+    margin-left: 0;
+}
+
+.chart-placeholder {
+    width: 100%;
+    height: 100px;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+    position: relative;
+    overflow: hidden;
+}
+
+.chart-line-demo {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: dash 3s linear forwards;
+}
+
+@keyframes dash {
+    to {
+        stroke-dashoffset: 0;
+    }
 }
 
 /* --- LAYOUT UTILITIES --- */
@@ -448,7 +565,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 14px;
+    gap: 16px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(0, 0, 0, 0.03);
 }
@@ -458,16 +575,18 @@ body {
     border-color: rgba(255, 255, 255, 0.05);
 }
 
-.action-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    border-color: var(--primary);
+@media (hover: hover) {
+    .action-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary);
+    }
 }
 
 .action-item .icon-wrapper {
-    width: 64px;
-    height: 64px;
-    border-radius: 1.25rem;
+    width: 80px;
+    height: 80px;
+    border-radius: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -475,8 +594,10 @@ body {
     transition: all 0.3s ease;
 }
 
-.action-item:hover .icon-wrapper {
-    transform: scale(1.1) rotate(5deg);
+@media (hover: hover) {
+    .action-item:hover .icon-wrapper {
+        transform: scale(1.1) rotate(5deg);
+    }
 }
 
 .action-item .content-wrapper {
@@ -488,7 +609,7 @@ body {
 }
 
 .action-item span {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 900;
     color: var(--text-dim);
     text-transform: uppercase;
@@ -497,7 +618,7 @@ body {
 }
 
 .action-item p {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 900;
     color: var(--text-main);
     line-height: 1.2;

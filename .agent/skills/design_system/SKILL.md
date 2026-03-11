@@ -59,8 +59,18 @@ This application runs primarily on **smartphones**. Every component you create m
 - `text-xs` — Use only for small badges/pills.
 - `text-sm` — Standard for secondary info, but prefer `text-base` for primary content.
 
-### Inputs: Prevent iOS Auto-Zoom
-Always use `text-base` (16px) on `<input>`, `<select>`, and `<textarea>`. If font-size is below 16px, iOS Safari automatically zooms in on the field — this breaks the layout and UX.
+### Premium Form Element Sizes (Standard vs. Search/Action)
+
+For the best mobile experience and visibility, use these sizes for form elements:
+
+| Element | Font Size | Height | Usage |
+|---|---|---|---|
+| **Search/Select (Combobox)** | **18px (font-black)** | **72px (h-[72px])** | Searchable clients, technical selections |
+| **Dropdown Options** | **15px (font-black)** | **N/A** | Items inside a list/search result |
+| **Standard Input** | **16px (font-bold)** | **56px (h-14)** | Simple fields (notes, names) |
+| **Date Input** | **16px (font-black)** | **56px (h-14)** | Dates (use `.cursor-pointer`) |
+
+### Inputs: Prevent iOS Auto-Zoom & Maximize Visibility
 
 ```tsx
 // ✅ Correct
@@ -144,8 +154,15 @@ Use `.card-white` or `.flow-card` for standard card containers. They automatical
 - **Complete/Action Button**: `.btn-complete`
 
 ### Inputs
-- **Text/Search**: `.search-input`
+- **Text/Search**: `.search-input` (Standard). For premium searchable selections, use the `Combobox` component.
 - **Photo Upload**: `.photo-dropzone`
+
+### Combobox Standards
+When using the `Combobox` component for searchable selections:
+- **Font**: Always use `font-black text-[18px]` for the main input.
+- **Dropdown**: Always use `font-black text-[15px]` for selection options.
+- **Searchability**: Every dropdown with more than 5 items **MUST** be searchable.
+- **Accessibility**: Support `showPicker()` for date inputs via `onClick`.
 
 ### Typography
 - Font Family: 'Inter', sans-serif.

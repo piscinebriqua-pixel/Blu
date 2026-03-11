@@ -55,13 +55,16 @@ const ClientLogin: React.FC = () => {
 
             <div className="z-10 w-full max-w-sm px-6 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
                 
-                <div className="flex flex-col items-center text-center -mb-4">
+                <div className="flex items-center gap-4 justify-center -mb-4">
                     <BccpLogo 
-                        width={90} 
+                        width={80} 
                         fillColor="white" 
-                        className="drop-shadow-2xl mb-2" 
+                        className="drop-shadow-2xl" 
                     />
-                    <h1 className="text-white font-black text-xl tracking-tighter uppercase opacity-90">Espace Client</h1>
+                    <div className="flex flex-col text-left">
+                        <h1 className="text-3xl font-black text-white tracking-widest leading-none">BCCP</h1>
+                        <p className="text-[12px] font-black text-blue-100/90 uppercase tracking-widest leading-none mt-1 opacity-80">Espace Client</p>
+                    </div>
                 </div>
 
                 <div className="bg-white rounded-[32px] p-8 shadow-2xl shadow-blue-900/10 border border-white/50 backdrop-blur-sm">

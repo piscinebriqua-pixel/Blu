@@ -24,6 +24,7 @@ import ClientSelectionModal from "./ClientSelectionModal";
 import { toast } from "react-hot-toast";
 import { recalculateVentilation } from "../lib/paymentService";
 import { handlePoolRecurrence } from "../lib/recurrenceService";
+import Combobox from "./ui/Combobox";
 
 interface Service {
   id: string;
@@ -116,6 +117,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
     task_temps_fonctionnement: false,
     devis_id: "",
     is_final_devis_billing: false,
+    completed_date: "" 
   });
 
   const [interventionType, setInterventionType] = useState<"direct" | "scheduled">(type);
@@ -233,6 +235,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           task_temps_fonctionnement: data.task_temps_fonctionnement || false,
           devis_id: data.devis_id || "",
           is_final_devis_billing: false,
+          completed_date: data.completed_date ? data.completed_date.split('T')[0] : "",
         }));
 
         if (type === 'direct' || (data.status !== 'scheduled' && data.status !== 'pending')) {
@@ -450,6 +453,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           task_verif_vanne: snapshotFormData.task_verif_vanne,
           task_temps_fonctionnement: snapshotFormData.task_temps_fonctionnement,
           devis_id: snapshotFormData.devis_id || null,
+          completed_date: interventionType === "direct" ? (snapshotFormData.scheduled_date || new Date().toISOString()) : null,
         }).eq("id", interventionId);
         if (error) throw error;
       } else {
@@ -476,6 +480,7 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
           task_verif_vanne: snapshotFormData.task_verif_vanne,
           task_temps_fonctionnement: snapshotFormData.task_temps_fonctionnement,
           devis_id: snapshotFormData.devis_id || null,
+          completed_date: interventionType === "direct" ? (snapshotFormData.scheduled_date || new Date().toISOString()) : null,
         }]).select().single();
         if (error) throw error;
         tempId = data.id;
@@ -668,11 +673,14 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         {interventionId && interventionType === 'scheduled' && (
           <div className="mx-1">
             <button
-              onClick={() => setInterventionType("direct")}
+              onClick={() => {
+                setInterventionType("direct");
+                setFormData(prev => ({ ...prev, scheduled_date: new Date().toISOString().split('T')[0] }));
+              }}
               className="w-full py-4 bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800/50 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all flex items-center justify-center gap-2"
             >
               <CheckSquare size={18} />
-              Démarrer & Clôturer cette intervention
+              Valider & Clôturer cette intervention
             </button>
           </div>
         )}
@@ -681,13 +689,16 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
         <div className="flex flex-col gap-4 p-1">
           {/* Date Selection */}
           <div className="relative">
+            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1 mb-1 block">
+              {interventionType === 'direct' ? 'Date de réalisation' : 'Date de planification'}
+            </label>
             <input
               type="date"
               className="w-full p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-slate-100 dark:border-slate-700 font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
               value={formData.scheduled_date}
               onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
-              aria-label="Date de l'intervention"
-              title="Date de l'intervention"
+              aria-label={interventionType === 'direct' ? 'Date de réalisation' : 'Date de planification'}
+              title={interventionType === 'direct' ? 'Date de réalisation' : 'Date de planification'}
             />
           </div>
 
@@ -1237,18 +1248,14 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
                     {/* 2. Technician (Defaults to intervention technician) */}
                     {isAdmin && (
                       <div className="space-y-3">
-                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-1">Technicien Récepteur</label>
-                        <select
-                          title="Technicien Récepteur"
-                          className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl py-4 px-6 font-black text-[13px] uppercase tracking-widest text-slate-700 dark:text-white outline-none focus:border-blue-500 appearance-none cursor-pointer transition-all"
+                        <Combobox
+                          label="Technicien Récepteur"
+                          icon={User}
+                          placeholder="Sélectionner..."
+                          options={dbTechnicians.map(t => ({ label: t.full_name, value: t.id }))}
                           value={formData.payment_technician_id || formData.technician_id}
-                          onChange={(e) => setFormData({ ...formData, payment_technician_id: e.target.value })}
-                        >
-                          <option value="">Sélectionner</option>
-                          {dbTechnicians.map(t => (
-                            <option key={t.id} value={t.id}>{t.full_name}</option>
-                          ))}
-                        </select>
+                          onChange={(val) => setFormData({ ...formData, payment_technician_id: val })}
+                        />
                       </div>
                     )}
 

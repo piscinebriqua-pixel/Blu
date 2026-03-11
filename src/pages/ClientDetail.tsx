@@ -134,7 +134,6 @@ const ClientDetail: React.FC = () => {
     const [isDevisModalOpen, setIsDevisModalOpen] = useState(false); // Added isDevisModalOpen state
     const [editingDevisId, setEditingDevisId] = useState<string | null>(null);
     const [editingInterventionId, setEditingInterventionId] = useState<string | null>(null);
-    const [startMode, setStartMode] = useState(false);
     const [interventionToDelete, setInterventionToDelete] = useState<string | null>(null);
     const [partnerToUnassign, setPartnerToUnassign] = useState<any | null>(null);
     const [isUnassigningPartner, setIsUnassigningPartner] = useState(false);
@@ -147,7 +146,8 @@ const ClientDetail: React.FC = () => {
     const [isSolderModalOpen, setIsSolderModalOpen] = useState(false);
     const [isSoldering, setIsSoldering] = useState(false);
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-    const [interventionFilter, setInterventionFilter] = useState<'all' | 'paid' | 'unpaid'>('unpaid');
+    const [interventionFilter, setInterventionFilter] = useState<'all' | 'paid' | 'unpaid'>('all');
+    const [interventionTypeForModal, setInterventionTypeForModal] = useState<'direct' | 'scheduled'>('direct');
 
     const totalIntersAmount = interventions.reduce((acc, inter) => {
         if (inter.status !== 'completed') return acc;
@@ -690,127 +690,155 @@ const ClientDetail: React.FC = () => {
             toolbar={toolbar}
             loading={loading}
         >
-            {/* 0. Bento Dashboard Grid - 5 Tiles */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6">
+            {/* 0. Bento Dashboard Grid - 5 Tiles - PREMIUM REDESIGN */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 mb-6">
                 {/* 1. Financial Tile */}
                 <div
                     onClick={() => setActiveCategory('balance')}
-                    className={`card-bento cursor-pointer relative overflow-hidden transition-all duration-300 p-5 flex flex-col justify-between min-h-[140px] ${(totalPaymentsAmount - totalIntersAmount) < -0.1 ? 'border-none shadow-lg fintech-card-red-luxe' : 'border-none shadow-lg fintech-card-money-luxe'}`}
+                    className={`card-bento cursor-pointer relative overflow-hidden transition-all duration-300 p-5 flex flex-col justify-between min-h-[160px] ${(totalPaymentsAmount - totalIntersAmount) < -0.1 ? 'border-none shadow-lg fintech-card-red-luxe' : 'border-none shadow-lg fintech-card-money-luxe'}`}
                 >
                     <div className="relative z-10">
                         <div className="flex items-center gap-2 mb-2">
                             <Wallet size={16} className="text-white/60" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">Solde</p>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Solde Client</p>
                         </div>
-                        <h3 className="text-3xl font-black tracking-tighter leading-none text-white whitespace-nowrap">
+                        <h3 className="text-4xl font-black tracking-tighter leading-none text-white">
                             {client ? formatBalance(client.balance).amount : '0'}
-                            <span className="text-sm font-black ml-1 uppercase text-white/60">{client ? formatBalance(client.balance).unit : 'DT'}</span>
+                            <span className="text-lg font-black ml-1 uppercase text-white/40">{client ? formatBalance(client.balance).unit : 'DT'}</span>
                         </h3>
                     </div>
-                    <div className="relative z-10 mt-2">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-white/60 leading-tight">
-                            {client ? formatBalance(client.balance).label : 'Compte'}
+                    <div className="relative z-10">
+                        <p className="text-[11px] font-black uppercase tracking-widest text-white/60 mb-2">
+                            {client ? formatBalance(client.balance).label : 'Avance'}
                         </p>
                         <button 
                             onClick={(e) => {
                                 e.stopPropagation();
                                 openWhatsApp();
                             }}
-                            className="mt-2 flex items-center gap-1.5 px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[8px] font-black uppercase tracking-widest transition-all border border-white/10 backdrop-blur-sm w-full justify-center"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 backdrop-blur-sm w-full justify-center"
                         >
-                            <MessageCircle size={10} className="text-green-400" />
+                            <MessageCircle size={12} className="text-green-400" />
                             Envoyer Solde
                         </button>
                     </div>
                     <div className="fintech-pattern" />
                 </div>
 
-                {/* 2. Technical Tile */}
+                {/* 2. Entretiens Tile */}
                 <div
-                    onClick={() => setActiveCategory('pools')}
-                    className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-800 transition-all p-5 flex flex-col justify-between min-h-[140px] group cursor-pointer"
+                    onClick={() => setActiveCategory('interventions')}
+                    className="card-bento fintech-card-dark-luxe p-5 flex flex-col justify-between min-h-[160px] group cursor-pointer shadow-xl border-none transition-all"
                 >
-                    <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <Waves size={16} className="text-blue-500" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Parc Tech</p>
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-9 h-9 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
+                                <FileText size={18} />
+                            </div>
+                            <span className="bg-indigo-500/20 text-indigo-300 text-[10px] font-black px-2 py-0.5 rounded-md border border-indigo-500/20">
+                                #{interventions.length}
+                            </span>
                         </div>
-                        <h3 className="text-3xl font-black tracking-tighter leading-none text-slate-900 dark:text-white">
-                            {pools.length} <span className="text-sm font-black text-slate-400 dark:text-slate-600">BASSINS</span>
+                        <h3 className="text-2xl font-black tracking-tighter leading-tight text-white uppercase">
+                            Entretiens
                         </h3>
                     </div>
-                    <div>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                            <HistoryIcon size={12} className="text-indigo-400" />
-                            {interventions.length} PASSAGES
-                        </p>
+                    <div className="relative z-10">
+                        <div className="flex items-baseline gap-1 mb-1">
+                            <span className="text-2xl font-black text-indigo-400">{totalIntersAmount.toFixed(0)}</span>
+                            <span className="text-[10px] font-black text-white/40 uppercase">DT</span>
+                        </div>
+                        <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em]">Cumul des travaux</p>
                     </div>
+                    <div className="fintech-pattern" />
+                    {/* Floating Glow */}
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 blur-3xl rounded-full translate-x-12 -translate-y-12" />
                 </div>
 
                 {/* 3. Payments Tile */}
                 <div
                     onClick={() => setActiveCategory('payments')}
-                    className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-800 transition-all p-5 flex flex-col justify-between min-h-[140px] group cursor-pointer"
+                    className="card-bento glass-morphism border-slate-200/50 dark:border-slate-800 p-5 flex flex-col justify-between min-h-[160px] group cursor-pointer shadow-sm"
                 >
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <TrendingUp size={16} className="text-emerald-500" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Historique</p>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600">
+                                <TrendingUp size={16} />
+                            </div>
+                            <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 text-[10px] font-black px-2 py-0.5 rounded-md">
+                                {payments.length}
+                            </span>
                         </div>
-                        <h3 className="text-3xl font-black tracking-tighter leading-none text-slate-900 dark:text-white">
-                            {payments.length} <span className="text-sm font-black text-slate-400 dark:text-slate-600">RÈGLEM.</span>
+                        <h3 className="text-2xl font-black tracking-tighter leading-tight text-slate-900 dark:text-white uppercase">
+                            Paiements
                         </h3>
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                            <Wallet size={12} className="text-emerald-400" />
-                            TOTAL: {totalPaymentsAmount.toFixed(0)} DT
-                        </p>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-2xl font-black text-emerald-600">{totalPaymentsAmount.toFixed(0)}</span>
+                            <span className="text-[10px] font-black text-slate-400 uppercase">DT</span>
+                        </div>
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Volume Total</p>
                     </div>
                 </div>
 
                 {/* 4. Teams Tile */}
                 <div
                     onClick={() => {}}
-                    className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-800 transition-all p-5 flex flex-col justify-between min-h-[140px] group cursor-pointer"
+                    className="card-bento glass-morphism border-slate-200/50 dark:border-slate-800 p-5 flex flex-col justify-between min-h-[160px] group cursor-pointer shadow-sm"
                 >
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <Users size={16} className="text-purple-500" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Équipes</p>
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-600">
+                                <Users size={16} />
+                            </div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Staff</p>
                         </div>
-                        <h3 className="text-3xl font-black tracking-tighter leading-none text-slate-900 dark:text-white">
-                            {clientPartners.length} <span className="text-sm font-black text-slate-400 dark:text-slate-600">COLLAB.</span>
+                        <h3 className="text-2xl font-black tracking-tighter leading-none text-slate-900 dark:text-white uppercase">
+                            {clientPartners.length}
                         </h3>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Collaborateurs</p>
                     </div>
                     <div className="flex -space-x-2">
-                        {clientPartners.slice(0, 3).map((p, i) => (
-                            <div key={i} className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 border-2 border-white dark:border-slate-900 flex items-center justify-center text-[8px] font-black text-slate-500 uppercase">
-                                {p.first_name.charAt(0)}
+                        {clientPartners.length > 0 ? clientPartners.slice(0, 4).map((p, i) => (
+                            <div key={i} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 border-2 border-white dark:border-slate-800 flex items-center justify-center text-[10px] font-black text-slate-500 uppercase shadow-sm">
+                                {p.first_name.charAt(0)}{p.last_name.charAt(0)}
                             </div>
-                        ))}
+                        )) : (
+                            <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700" />
+                        )}
+                        {clientPartners.length > 4 && (
+                            <div className="w-8 h-8 rounded-full bg-slate-900 text-white border-2 border-white dark:border-slate-800 flex items-center justify-center text-[10px] font-black">
+                                +{clientPartners.length - 4}
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* 5. QR Code Access Tile */}
+                {/* 5. Technical Tile */}
                 <div
-                    onClick={() => setIsQrModalOpen(true)}
-                    className="card-bento bg-slate-900 hover:bg-black transition-all p-5 flex flex-col justify-between min-h-[140px] group cursor-pointer shadow-xl border-none"
+                    onClick={() => setActiveCategory('pools')}
+                    className="card-bento glass-morphism border-slate-200/50 dark:border-slate-800 p-5 flex flex-col justify-between min-h-[160px] group cursor-pointer shadow-sm"
                 >
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <QrCode size={16} className="text-white/60" />
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Connexion</p>
+                        <div className="flex items-center gap-2 mb-4">
+                            <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600">
+                                <Waves size={16} />
+                            </div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Actifs</p>
                         </div>
-                        <h3 className="text-2xl font-black tracking-tighter leading-none text-white whitespace-nowrap">
-                            ACCÈS QR
-                        </h3>
+                        <div className="flex items-baseline gap-1">
+                            <h3 className="text-3xl font-black tracking-tighter text-slate-900 dark:text-white uppercase">
+                                {pools.length}
+                            </h3>
+                            <span className="text-[10px] font-black text-slate-400 uppercase">Bassins</span>
+                        </div>
                     </div>
-                    <div className="relative">
-                        <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white border border-white/10 group-hover:scale-110 transition-transform">
-                            <QrCode size={20} />
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800/50">
+                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest">
+                            <span className="text-slate-400">Passages</span>
+                            <span className="text-blue-600 dark:text-blue-400">{interventions.length}</span>
                         </div>
-                        <p className="mt-2 text-[8px] font-black text-white/40 uppercase tracking-widest">Afficher le code</p>
                     </div>
                 </div>
             </div>
@@ -1095,16 +1123,30 @@ const ClientDetail: React.FC = () => {
                                     </Button>
                                 )}
                                 {activeCategory === 'interventions' && (
-                                    <Button
-                                        onClick={() => {
-                                            if (pools.length === 1) setSelectedPoolId(pools[0].id);
-                                            else setSelectedPoolId(null);
-                                            setIsInterventionModalOpen(true);
-                                        }}
-                                        className="btn-primary"
-                                    >
-                                        <Plus size={18} className="mr-2" /> NOUVELLE VISITE
-                                    </Button>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            onClick={() => {
+                                                if (pools.length === 1) setSelectedPoolId(pools[0].id);
+                                                else setSelectedPoolId(null);
+                                                setInterventionTypeForModal('direct');
+                                                setIsInterventionModalOpen(true);
+                                            }}
+                                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                        >
+                                            <Plus size={18} className="mr-2" /> PASSAGE DIRECT
+                                        </Button>
+                                        <Button
+                                            onClick={() => {
+                                                if (pools.length === 1) setSelectedPoolId(pools[0].id);
+                                                else setSelectedPoolId(null);
+                                                setInterventionTypeForModal('scheduled');
+                                                setIsInterventionModalOpen(true);
+                                            }}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                                        >
+                                            <Navigation size={18} className="mr-2" /> PLANIFIER
+                                        </Button>
+                                    </div>
                                 )}
                                 {(activeCategory === 'payments' || activeCategory === 'balance') && (
                                     <Button onClick={() => setIsPaymentModalOpen(true)} className="btn-primary">
@@ -1155,10 +1197,14 @@ const ClientDetail: React.FC = () => {
                                                 </div>
                                                 <div className="flex gap-2">
                                                     <button
-                                                        onClick={() => { setSelectedPoolId(pool.id); setIsInterventionModalOpen(true); }}
-                                                        className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[13px] font-black uppercase tracking-wider hover:bg-blue-600 transition-colors"
+                                                        onClick={() => { 
+                                                            setSelectedPoolId(pool.id); 
+                                                            setInterventionTypeForModal('direct');
+                                                            setIsInterventionModalOpen(true); 
+                                                        }}
+                                                        className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-[13px] font-black uppercase tracking-wider hover:bg-emerald-600 transition-colors"
                                                     >
-                                                        Nouveau Rapport
+                                                        Rapport Direct
                                                     </button>
                                                     <button
                                                         onClick={() => { setSelectedPool(pool); setIsEditPoolModalOpen(true); }}
@@ -1472,16 +1518,14 @@ const ClientDetail: React.FC = () => {
                         poolId={selectedPoolId || undefined}
                         clientId={id!}
                         interventionId={editingInterventionId || undefined}
-                        type={startMode ? 'direct' : 'scheduled'}
+                        type={interventionTypeForModal}
                         onClose={() => {
                             setIsInterventionModalOpen(false);
                             setEditingInterventionId(null);
-                            setStartMode(false);
                         }}
                         onSuccess={() => {
                             setIsInterventionModalOpen(false);
                             setEditingInterventionId(null);
-                            setStartMode(false);
                             fetchClientData();
                         }}
                     />
@@ -1544,7 +1588,7 @@ const ClientDetail: React.FC = () => {
                         onClose={() => setSelectedInterventionForView(null)}
                         onEdit={(inter) => {
                             setEditingInterventionId(inter.id);
-                            setStartMode(false);
+                            setInterventionTypeForModal(inter.status === 'completed' ? 'direct' : 'scheduled');
                             setSelectedInterventionForView(null);
                         }}
                         onDelete={(inter) => {
@@ -1553,7 +1597,7 @@ const ClientDetail: React.FC = () => {
                         }}
                         onStart={(inter) => {
                             setEditingInterventionId(inter.id);
-                            setStartMode(true);
+                            setInterventionTypeForModal('direct');
                             setSelectedInterventionForView(null);
                         }}
                         onStatusChange={fetchClientData}

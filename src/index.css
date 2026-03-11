@@ -48,6 +48,22 @@
   --card-border: 1px solid rgba(255, 255, 255, 0.05);
   --text-main: #F8FAFC;
   --text-dim: #94A3B8;
+  color-scheme: dark;
+}
+
+/* Fix for native selects and inputs in dark mode */
+[data-theme='dark'] select,
+[data-theme='dark'] select option,
+[data-theme='dark'] input,
+[data-theme='dark'] textarea {
+  background-color: var(--card-bg);
+  color: var(--text-main);
+}
+
+/* Ensure dropdowns have high contrast in dark mode */
+[data-theme='dark'] select option {
+  background-color: #1E293B; /* Match card-bg exactly */
+  color: #F8FAFC;
 }
 
 * {
@@ -371,9 +387,11 @@ a,
   background: var(--card-bg);
 }
 
-.card-white:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1);
+@media (hover: hover) {
+  .card-white:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1);
+  }
 }
 
 /* --- PREMIUM VIBRANT CARDS --- */
@@ -484,8 +502,14 @@ a,
 }
 
 [data-theme='dark'] .search-input {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--card-bg);
   border-color: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+}
+
+[data-theme='dark'] select {
+  background-color: var(--card-bg);
+  color: var(--text-main);
 }
 
 .btn-back-flow,

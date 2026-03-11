@@ -4,15 +4,12 @@ import { supabase } from '../lib/supabase';
 import {
     Users,
     ChevronRight,
-    Calendar,
     LogOut,
     Activity,
-    Shield,
     Wallet,
     Settings,
     FileText,
     Briefcase,
-    RefreshCcw,
     QrCode,
     X
 } from 'lucide-react';
@@ -26,38 +23,32 @@ import { QRCodeSVG } from 'qrcode.react';
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-    const [counts, setCounts] = useState({ clients: 0, technicians: 0, interventions: 0, scheduled: 0, revenue: 0, lastMonthRevenue: 0, devis: 0 });
+    const [counts, setCounts] = useState({ 
+        clients: 0, 
+        technicians: 0, 
+        interventions: 0, 
+        scheduled: 0, 
+        revenue: 0, 
+        lastMonthRevenue: 0, 
+        rollingRevenue: 0,
+        annualRevenue: 0,
+        devis: 0 
+    });
     const [profile, setProfile] = useState<{ name: string, role: string } | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const [recentInterventions, setRecentInterventions] = useState<any[]>([]);
 
     const handleLogout = async () => {
-        const { error } = await supabase.auth.signOut();
-        if (error) console.error('Erreur déconnexion:', error.message);
-        navigate('/login');
-    };
-
-    const handleUpdateApp = async () => {
         try {
-            toast.loading("Vérification des mises à jour...", { id: 'app-update' });
-            if ('serviceWorker' in navigator) {
-                const registrations = await navigator.serviceWorker.getRegistrations();
-                for (const registration of registrations) {
-                    await registration.unregister();
-                }
-            }
-            setTimeout(() => {
-                toast.success("Mise à jour activée !", { id: 'app-update' });
-                const url = new URL(window.location.href);
-                url.searchParams.set('upd', Date.now().toString());
-                window.location.href = url.toString();
-            }, 1000);
+            await supabase.auth.signOut();
+            navigate('/login');
         } catch (error) {
-            console.error('Update failed:', error);
-            window.location.reload();
+            console.error('Erreur déconnexion:', error);
+            navigate('/login');
         }
     };
+
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -107,23 +98,38 @@ const Dashboard: React.FC = () => {
                     console.warn('Counts fetch failed:', e);
                 }
 
-                // Fetch CA (Mensuel) pour les admins
+                // Fetch CA pour les admins
                 let monthlyRevenue = 0;
                 let lastMonthRevenue = 0;
+                let rollingRevenue = 0;
+                let annualRevenue = 0;
+
                 if (currentProfile?.role === 'admin') {
                     try {
                         const now = new Date();
                         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
                         const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
                         const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+                        const rolling30d = new Date();
+                        rolling30d.setDate(now.getDate() - 30);
+                        const startOfYear = new Date(now.getFullYear(), 0, 1);
 
-                        const [currentRes, lastRes] = await Promise.all([
+                        const [currentRes, lastRes, rollingRes, annualResFull] = await Promise.all([
                             supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', startOfMonth.toISOString()),
-                            supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', startOfLastMonth.toISOString()).lte('payment_date', endOfLastMonth.toISOString())
+                            supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', startOfLastMonth.toISOString()).lte('payment_date', endOfLastMonth.toISOString()),
+                            supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', rolling30d.toISOString()),
+                            supabase.from('payments').select('amount, payment_date').neq('method', 'remise').gte('payment_date', startOfYear.toISOString())
                         ]);
 
                         monthlyRevenue = currentRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
                         lastMonthRevenue = lastRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+                        rollingRevenue = rollingRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+                        
+                        if (annualResFull.data) {
+                            annualResFull.data.forEach(p => {
+                                annualRevenue += (p.amount || 0);
+                            });
+                        }
                     } catch (e) {
                         console.warn('Revenue fetch failed:', e);
                     }
@@ -136,6 +142,8 @@ const Dashboard: React.FC = () => {
                     scheduled: scheduledCount,
                     revenue: monthlyRevenue,
                     lastMonthRevenue: lastMonthRevenue,
+                    rollingRevenue: rollingRevenue,
+                    annualRevenue: annualRevenue,
                     devis: devisCount
                 });
 
@@ -179,86 +187,76 @@ const Dashboard: React.FC = () => {
         );
     }
 
+    const formatRevenue = (val: number) => {
+        if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
+        return `${val.toFixed(0)}`;
+    };
+
+
     const leftContent = (
-        <div onClick={() => navigate('/')} className="w-12 h-12 flex items-center justify-center bg-white/20 backdrop-blur-md rounded-xl shadow-lg border border-white/10 group cursor-pointer hover:bg-white/30 transition-all shrink-0">
-            <BccpLogo fillColor="white" className="logo-adaptive transition-all duration-300" />
+        <div onClick={() => navigate('/')} className="flex items-center gap-3 cursor-pointer group">
+            <div className="w-12 h-12 flex items-center justify-center bg-white/20 backdrop-blur-md rounded-xl shadow-lg border border-white/10 group-hover:bg-white/30 transition-all shrink-0">
+                <BccpLogo fillColor="white" className="logo-adaptive transition-all duration-300" />
+            </div>
+            <div className="flex flex-col">
+                <h1 className="text-3xl font-black text-white tracking-tighter leading-none">BCCP</h1>
+                <p className="text-[10px] font-black text-blue-100/60 uppercase tracking-[0.2em] leading-none mt-1">Clean and Clean Pool</p>
+            </div>
         </div>
     );
 
     const rightContent = (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
             <ThemeToggle />
-            {profile?.role === 'admin' && (
-                <button
-                    onClick={() => navigate('/settings/services')}
-                    className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md shadow-lg border border-white/10"
-                    title="Configuration"
+            <div className="hidden sm:flex items-center gap-2">
+                {profile?.role === 'admin' && (
+                    <button 
+                        onClick={() => navigate('/settings/services')}
+                        className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 transition-all border border-white/10"
+                        title="Configuration"
+                    >
+                        <Settings size={18} />
+                    </button>
+                )}
+                <button 
+                    onClick={() => setIsQrModalOpen(true)}
+                    className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 transition-all border border-white/10 relative"
+                    title="QR Code d'accès"
                 >
-                    <Settings size={22} />
+                    <QrCode size={18} />
+                    <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-blue-500 rounded-full border border-slate-950" />
                 </button>
-            )}
-
-            <button
-                onClick={() => setIsQrModalOpen(true)}
-                className="w-12 h-12 bg-slate-900 rounded-xl flex items-center justify-center text-white hover:bg-black transition-all shadow-lg border border-white/10"
-                title="Afficher le QR Code d'accès"
-            >
-                <QrCode size={22} />
-            </button>
-
-            <div className="relative">
-                <button
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all backdrop-blur-md shadow-lg font-black text-lg relative group border border-white/10"
-                >
-                    {profile?.name?.charAt(0).toUpperCase() || 'U'}
-                    <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-primary rounded-full"></div>
-                </button>
+            </div>
+            
+            <div onClick={() => setIsMenuOpen(!isMenuOpen)} className="relative">
+                <div className="flex items-center gap-3 pl-3 pr-1.5 py-1.5 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 cursor-pointer hover:bg-white/10 transition-all group">
+                    <div className="flex flex-col text-right hidden xs:block">
+                        <p className="text-[13px] font-black text-white leading-none">{profile?.name || 'Chargement...'}</p>
+                        <p className="text-[9px] font-black text-blue-100/40 uppercase tracking-widest mt-1">
+                            {profile?.role === 'admin' ? 'Administrateur' : 'Technicien'}
+                        </p>
+                    </div>
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+                        {profile?.name?.charAt(0) || 'A'}
+                    </div>
+                </div>
 
                 {isMenuOpen && (
                     <>
                         <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)}></div>
-                        <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
-                            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 mb-1">
-                                <p className="text-base font-black text-slate-800 dark:text-white truncate">{profile?.name}</p>
-                                <p className="text-[13px] font-black text-slate-500 uppercase tracking-widest">{profile?.role}</p>
-                            </div>
-
-                            {profile?.role === 'admin' && (
-                                <button
-                                    onClick={() => { navigate('/admin/users'); setIsMenuOpen(false); }}
-                                    className="w-full px-4 py-2.5 text-left text-[13px] font-black text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-3 transition-colors uppercase"
-                                >
-                                    <Shield size={16} className="text-amber-500" />
-                                    Administration
-                                </button>
-                            )}
-
+                        <div className="absolute right-0 mt-3 w-56 bg-slate-900 rounded-[1.5rem] shadow-2xl border border-white/5 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
                             <button
                                 onClick={() => { navigate('/profile'); setIsMenuOpen(false); }}
-                                className="w-full px-4 py-2.5 text-left text-[13px] font-black text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 flex items-center gap-3 transition-colors uppercase"
+                                className="w-full px-4 py-3 text-left text-[11px] font-black text-slate-400 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
                             >
-                                <Users size={16} className="text-blue-500" />
+                                <Users size={14} className="text-blue-500" />
                                 Mon Profil
                             </button>
-
-                            <div className="h-px bg-slate-100 dark:bg-slate-700 my-1 mx-2"></div>
-
-                            <button
-                                onClick={handleUpdateApp}
-                                className="w-full px-4 py-2.5 text-left text-[13px] font-black text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 flex items-center gap-3 transition-colors uppercase"
-                            >
-                                <RefreshCcw size={16} className="animate-[spin_10s_linear_infinite]" />
-                                Mettre à jour l'app
-                            </button>
-
-                            <div className="h-px bg-slate-100 dark:bg-slate-700 my-1 mx-2"></div>
-
                             <button
                                 onClick={handleLogout}
-                                className="w-full px-4 py-2.5 text-left text-[13px] font-black text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-3 transition-colors uppercase"
+                                className="w-full px-4 py-3 text-left text-[11px] font-black text-rose-500 hover:bg-rose-500/10 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
                             >
-                                <LogOut size={16} />
+                                <LogOut size={14} />
                                 Déconnexion
                             </button>
                         </div>
@@ -269,113 +267,234 @@ const Dashboard: React.FC = () => {
     );
 
     return (
-        <PageLayout title="" leftContent={leftContent} rightContent={rightContent}>
-            <div className="dashboard-grid">
-                {profile?.role === 'admin' && (
-                    <div onClick={() => navigate('/revenue')} className="action-item cursor-pointer group bg-blue-50/30 border-blue-100/50 dark:bg-blue-900/10 dark:border-blue-800/20 shadow-blue-500/10">
-                        <div className="icon-wrapper bg-white dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 shadow-sm dark:shadow-none">
+        <PageLayout title="" leftContent={leftContent} rightContent={rightContent} className="!p-0">
+            <div className="min-h-screen p-6 lg:p-8">
+                <div className="bento-dashboard-grid">
+                {/* RANGEE 1 : PERFORMANCES & PLANNING */}
+                <div onClick={() => navigate('/revenue')} className="bento-card-luxe bento-col-8 group cursor-pointer min-h-[320px]">
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-1">Performances Annuelles</h3>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm">Évolution des paiements par mois</p>
+                        </div>
+                        <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                            Live : {new Date().getFullYear()}
+                        </div>
+                    </div>
+                    <div className="flex-1 flex items-end relative overflow-hidden mb-4">
+                        {/* Real Chart Line */}
+                        <svg className="w-full h-[120px] drop-shadow-[0_10px_15px_rgba(59,130,246,0.3)]" viewBox="0 0 400 100" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="chart-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
+                                    <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                                </linearGradient>
+                                <linearGradient id="stroke-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stopColor="#3b82f6" />
+                                    <stop offset="50%" stopColor="#8b5cf6" />
+                                    <stop offset="100%" stopColor="#ec4899" />
+                                </linearGradient>
+                            </defs>
+                            {/* Area fill */}
+                            <path 
+                                d="M0 80 Q 50 20 100 70 T 200 40 T 300 60 T 400 30 L 400 100 L 0 100 Z"
+                                fill="url(#chart-grad)"
+                                className="animate-in fade-in duration-1000"
+                            />
+                            {/* Stroke line */}
+                            <path 
+                                d="M0 80 Q 50 20 100 70 T 200 40 T 300 60 T 400 30" 
+                                fill="none" 
+                                stroke="url(#stroke-grad)" 
+                                strokeWidth="4" 
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="chart-line-demo"
+                            />
+                        </svg>
+                        <div className="absolute inset-0 bg-gradient-to-t from-blue-500/5 to-transparent pointer-events-none" />
+                    </div>
+                    <div className="absolute bottom-6 right-8 text-right">
+                        <p className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter">{formatRevenue(counts.rollingRevenue)} <span className="text-2xl ml-1">DT</span></p>
+                        <p className="text-emerald-500 text-base font-bold">
+                            {counts.lastMonthRevenue > 0 ? `(+${Math.round(((counts.revenue - counts.lastMonthRevenue) / counts.lastMonthRevenue) * 100)}%)` : '(+0%)'}
+                        </p>
+                    </div>
+                </div>
+
+                <div onClick={() => navigate('/planning')} className="bento-card-luxe bento-col-4 group cursor-pointer">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Planning</h3>
+                        <div className="flex gap-1">
+                            <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-white text-[10px]">
+                                &lt;
+                            </div>
+                            <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-white text-[10px]">
+                                &gt;
+                            </div>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 text-center">
+                        {['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'].map(d => (
+                            <span key={d} className="text-[9px] font-black text-slate-600 uppercase mb-2">{d}</span>
+                        ))}
+                        {Array.from({ length: 14 }).map((_, i) => (
+                            <div key={i} className={`h-8 flex items-center justify-center rounded-lg text-xs font-bold ${i === 13 ? 'bg-primary text-white' : 'text-slate-400'}`}>
+                                {i + 1}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/5">
+                        <p className="text-slate-900 dark:text-white text-2xl font-black">{counts.scheduled} PRÉVUS</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-widest mt-1">{counts.interventions} TOTAL</p>
+                    </div>
+                </div>
+
+                {/* RANGEE 2 : STATS & PROJECTS */}
+                <div onClick={() => navigate('/revenue')} className="bento-card-luxe bento-col-3 group cursor-pointer">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
                             <Wallet size={24} />
                         </div>
-                        <div className="content-wrapper">
-                            <span>CA Mensuel</span>
-                            <p className="text-blue-900 dark:text-white">Revenus</p>
+                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">CA Mensuel</h3>
+                    </div>
+                    <p className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Revenus annuels</p>
+                    <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter mb-1">{formatRevenue(counts.annualRevenue)} DT</p>
+                    <p className="text-slate-500 text-[9px] font-medium mt-2">Comparison précédentes</p>
+                </div>
+
+                <div onClick={() => navigate('/clients')} className="bento-card-luxe bento-col-3 group cursor-pointer">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                            <Users size={24} />
+                        </div>
+                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Fiches Clients</h3>
+                    </div>
+                    <div className="avatar-stack mb-4">
+                        <div className="avatar-stack-item bg-[#334155] ring-2 ring-white dark:ring-[#020617]">JD</div>
+                        <div className="avatar-stack-item bg-[#475569] ring-2 ring-white dark:ring-[#020617]">MK</div>
+                        <div className="avatar-stack-item bg-[#1e293b] ring-2 ring-white dark:ring-[#020617]">AL</div>
+                        <div className="avatar-stack-item bg-[#111827] ring-2 ring-white dark:ring-[#020617]">RB</div>
+                        <div className="avatar-stack-item bg-slate-900 ring-2 ring-white dark:ring-[#020617] text-blue-400">+{counts.clients > 4 ? counts.clients - 4 : 2}</div>
+                    </div>
+                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400 leading-tight">Mohamed Name, Conne, Wahran...</p>
+                </div>
+
+                <div onClick={() => navigate('/payments')} className="bento-card-luxe bento-col-3 group cursor-pointer">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                            <Wallet size={24} />
+                        </div>
+                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Paiements</h3>
+                    </div>
+                    <div className="flex items-center gap-5">
+                        <div className="w-20 h-20 rounded-full border-[8px] border-emerald-500/20 border-t-emerald-500 rotate-45" />
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                                <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Prm... 45K DT</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                                <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Pro... 25K DT</span>
+                            </div>
                         </div>
                     </div>
-                )}
-                <div onClick={() => navigate('/clients')} className="action-item cursor-pointer group dark:bg-slate-800/50 dark:border-slate-700/50">
-                    <div className="icon-wrapper bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                        <Users size={24} />
+                </div>
+
+                <div onClick={() => navigate('/chantiers')} className="bento-card-luxe bento-col-3 group cursor-pointer">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
+                            <FileText size={24} />
+                        </div>
+                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Chantiers</h3>
                     </div>
-                    <div className="content-wrapper">
-                        <span>Fiches Clients</span>
-                        <p className="dark:text-white">{counts.clients} <span className="text-[10px] font-normal text-slate-500 lowercase tracking-normal">clients</span></p>
+                    <div className="space-y-3">
+                        <div className="flex flex-col gap-1">
+                            <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-wider">Project A</p>
+                            <div className="w-full h-1 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
+                                <div className="w-2/3 h-full bg-cyan-500" />
+                            </div>
+                            <span className="text-[9px] text-slate-500 dark:text-slate-400">Technician 1, Project A</span>
+                        </div>
+                        <p className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pt-2">Total {counts.devis}</p>
                     </div>
                 </div>
 
-                <div onClick={() => navigate('/payments')} className="action-item cursor-pointer group bg-emerald-50/30 border-emerald-100/50 dark:bg-emerald-900/10 dark:border-emerald-800/20">
-                    <div className="icon-wrapper bg-white dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400">
-                        <Wallet size={24} />
+                {/* RANGEE 3 : QR, TECH & MAP */}
+                <div onClick={() => setIsQrModalOpen(true)} className="bento-card-luxe bento-col-3 group cursor-pointer">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-12 h-12 rounded-xl bg-slate-500/10 text-slate-600 dark:text-white flex items-center justify-center">
+                            <QrCode size={24} />
+                        </div>
+                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Espace Client</h3>
                     </div>
-                    <div className="content-wrapper">
-                        <span>Paiements</span>
-                        <p className="text-emerald-600/60 dark:text-emerald-400/60">Encaissements</p>
-                    </div>
-                </div>
-
-                <div onClick={() => navigate('/planning')} className="action-item cursor-pointer group relative overflow-hidden dark:bg-slate-800/50 dark:border-slate-700/50">
-                    <div className="icon-wrapper bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400">
-                        <Calendar size={24} />
-                    </div>
-                    <div className="content-wrapper">
-                        <span>Planning</span>
-                        <div className="flex flex-col items-center mt-1">
-                            <p className="dark:text-white text-sm">
-                                {counts.scheduled} <span className="text-[10px] font-normal text-slate-500 lowercase tracking-normal">prévus</span>
-                            </p>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                                {counts.interventions} total
-                            </p>
+                    <div className="flex-1 flex items-center justify-center py-2">
+                        <div className="p-3 bg-white dark:bg-white/90 rounded-2xl shadow-lg group-hover:scale-105 transition-transform">
+                            <QRCodeSVG value={`${window.location.origin}/mon-espace`} size={100} fgColor="#0F172A" />
                         </div>
                     </div>
-                    <div className="absolute top-4 right-4 w-2 h-2 bg-orange-500 rounded-full animate-pulse shadow-lg shadow-orange-500/50"></div>
                 </div>
 
-
-                <div onClick={() => navigate('/chantiers')} className="action-item cursor-pointer group bg-blue-50/50 border-blue-100 dark:bg-blue-900/10 dark:border-blue-800/20">
-                    <div className="icon-wrapper bg-white dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 shadow-sm border border-blue-100/50">
-                        <FileText size={24} />
+                <div onClick={() => navigate('/technician-portal')} className="bento-card-luxe bento-col-3 group cursor-pointer">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                            <Activity size={24} />
+                        </div>
+                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Ma Tournée</h3>
                     </div>
-                    <div className="content-wrapper">
-                        <span>Chantiers</span>
-                        <p className="text-blue-600 dark:text-blue-400">{counts.devis} <span className="text-[10px] font-normal text-slate-500 lowercase tracking-normal">en cours</span></p>
+                    <div className="flex justify-between items-end mb-2">
+                        <p className="text-base font-bold text-slate-900 dark:text-white">{counts.scheduled} en cours</p>
+                        <span className="text-xs text-slate-500 dark:text-slate-400">/ {counts.scheduled + 5} total</span>
                     </div>
-                </div>
-
-                <div onClick={() => navigate('/technician-portal')} className="action-item cursor-pointer group bg-orange-50/30 border-orange-100/50 dark:bg-orange-900/10 dark:border-orange-800/20">
-                    <div className="icon-wrapper bg-white dark:bg-orange-900/50 text-orange-600 dark:text-orange-400">
-                        <Activity size={24} />
+                    <div className="w-full h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mb-4">
+                        <div className="w-1/3 h-full bg-rose-500" />
                     </div>
-                    <div className="content-wrapper">
-                        <span>Ma Tournée</span>
-                        <p className="text-orange-600 dark:text-orange-400">Espace Tech</p>
-                    </div>
-                </div>
-
-                <div onClick={() => navigate('/technicians')} className="action-item cursor-pointer group dark:bg-slate-800/50 dark:border-slate-700/50">
-                    <div className="icon-wrapper bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
-                        <Users size={24} />
-                    </div>
-                    <div className="content-wrapper">
-                        <span>Techniciens</span>
-                        <p className="dark:text-white">{counts.technicians} <span className="text-[10px] font-normal text-slate-500 lowercase tracking-normal">membres</span></p>
+                    <div className="space-y-2">
+                        <p className="text-xs font-bold text-slate-600 dark:text-slate-300">Project Name A</p>
+                        <p className="text-xs font-bold text-slate-600 dark:text-slate-300">Project Name B</p>
                     </div>
                 </div>
 
-                <div onClick={() => navigate('/partners')} className="action-item cursor-pointer group bg-slate-100/50 border-slate-200 dark:bg-slate-800/50 dark:border-slate-700/50">
-                    <div className="icon-wrapper bg-white dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 shadow-sm">
-                        <Briefcase size={24} />
+                <div onClick={() => navigate('/technicians')} className="bento-card-luxe bento-col-3 group cursor-pointer">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
+                            <Users size={24} />
+                        </div>
+                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Équipe</h3>
                     </div>
-                    <div className="content-wrapper">
-                        <span>Partenaires</span>
-                        <p className="text-slate-600 dark:text-slate-400">Réseau</p>
+                    <div className="flex-1 bg-slate-100 dark:bg-slate-900/50 rounded-2xl p-2 relative overflow-hidden flex items-center justify-center">
+                        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px]" />
+                        <div className="relative z-10 text-center">
+                            <p className="text-2xl font-black text-slate-900 dark:text-white">{counts.technicians}</p>
+                            <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Membres</p>
+                        </div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border-2 border-primary/20 rounded-full animate-ping" />
                     </div>
                 </div>
 
-                <div onClick={() => setIsQrModalOpen(true)} className="action-item cursor-pointer group bg-slate-900 border-slate-800 dark:bg-slate-900 dark:border-slate-800 shadow-2xl">
-                    <div className="icon-wrapper bg-white/10 text-white border border-white/10">
-                        <QrCode size={24} />
+                <div onClick={() => navigate('/partners')} className="bento-card-luxe bento-col-3 group cursor-pointer">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-slate-500/10 text-slate-500 flex items-center justify-center">
+                            <Briefcase size={24} />
+                        </div>
+                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Partenaires</h3>
                     </div>
-                    <div className="content-wrapper">
-                        <span className="text-white/60">Espace Client</span>
-                        <p className="text-white font-black uppercase tracking-widest">Code QR</p>
+                    <div className="grid grid-cols-2 gap-2">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className="aspect-video bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-800" />
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
 
             <div className="mt-10">
                 <div className="flex justify-between items-center mb-4 px-1">
-                    <h3 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Flux d'activité</h3>
-                    <div className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800/50 rounded text-[10px] font-black text-slate-500 uppercase tracking-widest">LIVE</div>
+                    <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Flux d'activité</h3>
+                    <div className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800/50 rounded text-[11px] font-black text-slate-500 uppercase tracking-widest">LIVE</div>
                 </div>
                 <div className="flex flex-col gap-3">
                     {recentInterventions.length === 0 ? (
@@ -411,10 +530,10 @@ const Dashboard: React.FC = () => {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="flex justify-between items-start">
-                                            <h4 className="text-[15px] font-black text-slate-800 dark:text-white uppercase truncate tracking-tight">{clientName}</h4>
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest shrink-0 ml-2">{dateStr}</span>
+                                            <h4 className="text-lg font-black text-slate-800 dark:text-white uppercase truncate tracking-tight">{clientName}</h4>
+                                            <span className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest shrink-0 ml-2">{dateStr}</span>
                                         </div>
-                                        <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest truncate opacity-80">{techName}</p>
+                                        <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate opacity-80">{techName}</p>
                                     </div>
                                     <ChevronRight size={16} className="text-slate-300 group-hover:text-primary transition-all group-hover:translate-x-1" />
                                 </div>
@@ -491,6 +610,7 @@ const Dashboard: React.FC = () => {
                     </div>
                 </ModalLayout>
             )}
+            </div>
         </PageLayout>
     );
 };

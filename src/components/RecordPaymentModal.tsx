@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Wallet, User, CheckCircle2, Calendar, CreditCard, ChevronDown } from 'lucide-react';
+import { Wallet, User, CheckCircle2, Calendar, CreditCard } from 'lucide-react';
 import ModalLayout from './ModalLayout';
+import Combobox from './ui/Combobox';
 import { toast } from 'react-hot-toast';
 import { recalculateVentilation } from '../lib/paymentService';
 
@@ -145,55 +146,41 @@ const RecordPaymentModal: React.FC<RecordPaymentModalProps> = ({ clientId, onClo
                                 type="date"
                                 required
                                 title="Date du paiement"
-                                className="search-input !pl-12 !h-14 text-base font-bold bg-slate-50/50 dark:bg-slate-900/50 border-transparent focus:bg-white dark:focus:bg-slate-800"
+                                className="search-input !pl-12 !h-14 text-base font-bold bg-slate-50/50 dark:bg-slate-900/50 border-transparent focus:bg-white dark:focus:bg-slate-800 cursor-pointer"
                                 value={formData.payment_date}
                                 onChange={e => setFormData({ ...formData, payment_date: e.target.value })}
+                                onClick={(e) => (e.target as any).showPicker?.()}
                             />
                         </div>
                     </div>
 
                     {/* MODE DE PAIEMENT */}
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[13px] font-black uppercase text-slate-500 ml-1 tracking-wider">Mode de Paiement</label>
-                        <div className="relative group">
-                            <CreditCard size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
-                            <select
-                                className="search-input !pl-12 pr-10 !h-14 text-base font-bold appearance-none bg-slate-50/50 dark:bg-slate-900/50 border-transparent focus:bg-white dark:focus:bg-slate-800"
-                                value={formData.method}
-                                onChange={e => setFormData({ ...formData, method: e.target.value })}
-                                title="Mode de paiement"
-                            >
-                                <option value="espèces">Espèces</option>
-                                <option value="chèque">Chèque</option>
-                                <option value="virement">Virement</option>
-                                <option value="autre">Autre</option>
-                                <option value="remise">Remise / Perte (Admin)</option>
-                            </select>
-                            <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                        </div>
-                    </div>
+                        <Combobox
+                            label="Mode de Paiement"
+                            icon={CreditCard}
+                            placeholder="Sélectionner..."
+                            options={[
+                                { label: "Espèces", value: "espèces" },
+                                { label: "Chèque", value: "chèque" },
+                                { label: "Virement", value: "virement" },
+                                { label: "Autre", value: "autre" },
+                                { label: "Remise / Perte (Admin)", value: "remise" }
+                            ]}
+                            value={formData.method}
+                            onChange={(val) => setFormData({ ...formData, method: val })}
+                            containerClassName="flex-1"
+                        />
                 </div>
 
                 {/* TECHNICIEN */}
-                <div className="flex flex-col gap-2">
-                    <label className="text-[13px] font-black uppercase text-slate-500 ml-1 tracking-wider">Technicien Responsable</label>
-                    <div className="relative group">
-                        <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
-                        <select
-                            required
-                            className="search-input !pl-12 pr-10 !h-14 text-base font-bold appearance-none bg-slate-50/50 dark:bg-slate-900/50 border-transparent focus:bg-white dark:focus:bg-slate-800"
-                            value={formData.technician_id}
-                            onChange={e => setFormData({ ...formData, technician_id: e.target.value })}
-                            title="Technicien responsable"
-                        >
-                            <option value="">Sélectionner un technicien</option>
-                            {technicians.map(t => (
-                                <option key={t.id} value={t.id}>{t.full_name}</option>
-                            ))}
-                        </select>
-                        <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                    </div>
-                </div>
+                <Combobox
+                    label="Technicien Responsable"
+                    icon={User}
+                    placeholder="Sélectionner un technicien..."
+                    options={technicians.map(t => ({ label: t.full_name, value: t.id }))}
+                    value={formData.technician_id}
+                    onChange={(val) => setFormData({ ...formData, technician_id: val })}
+                />
 
                 <div className="flex flex-col gap-2">
                     <label className="text-[13px] font-black uppercase text-slate-500 ml-1 tracking-wider">Notes</label>

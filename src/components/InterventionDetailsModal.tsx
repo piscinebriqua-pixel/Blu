@@ -340,10 +340,10 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                             onChange={(e) => handleStatusChange(e.target.value)}
                             disabled={isUpdatingStatus}
                             className={`w-full h-12 text-sm font-black uppercase rounded-2xl px-5 outline-none appearance-none cursor-pointer transition-all border-2 border-transparent ${currentStatus === "completed"
-                                ? "bg-emerald-50 text-emerald-600 ring-emerald-500/20"
+                                ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-emerald-500/20"
                                 : currentStatus === "in_progress"
-                                    ? "bg-amber-50 text-amber-600 ring-amber-500/20"
-                                    : "bg-blue-50 text-blue-600 ring-blue-500/20"
+                                    ? "bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-amber-500/20"
+                                    : "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-blue-500/20"
                                 } focus:ring-4`}
                         >
                             <option value="scheduled">Planifié</option>
