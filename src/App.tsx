@@ -21,6 +21,9 @@ import Revenue from './pages/Revenue';
 import Chantiers from './pages/Chantiers';
 import ClientLogin from './pages/ClientLogin';
 import ClientDashboard from './pages/ClientDashboard';
+import AdminFinance from './pages/AdminFinance';
+import Settings from './pages/Settings';
+import FinanceSettings from './pages/FinanceSettings';
 import { Toaster } from 'react-hot-toast';
 import BccpLogo from './components/BccpLogo';
 import BottomNav from './components/BottomNav';
@@ -255,6 +258,16 @@ function App() {
                 <div className="app-container"><InterventionTemplates /></div>
               </ProtectedRoute>
             } />
+            <Route path="/settings" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div className="app-container"><Settings /></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/settings/finance-types" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div className="app-container"><FinanceSettings /></div>
+              </ProtectedRoute>
+            } />
 
             <Route path="/partners" element={
               <ProtectedRoute>
@@ -279,6 +292,11 @@ function App() {
             <Route path="/revenue" element={
               <ProtectedRoute requireAdmin={true}>
                 <div className="app-container"><Revenue /></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/admin-finance" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div className="app-container"><AdminFinance /></div>
               </ProtectedRoute>
             } />
             <Route path="/technician-portal" element={

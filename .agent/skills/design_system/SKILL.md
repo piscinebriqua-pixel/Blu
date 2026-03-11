@@ -43,21 +43,21 @@ Used for floating headers, filter bars, and view switchers.
 
 This application runs primarily on **smartphones**. Every component you create must respect the following minimum sizes. These are non-negotiable — violating them breaks usability on mobile.
 
-### Minimum Font Sizes
+### Minimum Font Sizes (New Standard 2026)
 
 | Element | Tailwind Class | Minimum Size | Usage |
 |---|---|---|---|
-| Main Titles | `text-xl font-black` | **20px** | Page headers, large sections |
-| Card titles / names | `text-base font-black` | **16px** | Client names, pool names |
-| Descriptions / body text | `text-base` | **16px** | Standard info, notes |
-| Form labels / Categories | `text-[13px] font-bold` | **13px** | Input labels, group headers |
-| Data-dense labels | `text-[11px] font-black` | **11px** | Dashboard indicators, micro-metadata |
-| Status badges | `text-xs` | **12px** | Tags and pills |
+| Main Titles | `text-2xl font-black` | **24px** | Page headers, large sections |
+| Section Titles | `text-xl font-black` | **20px** | Card titles, group headers |
+| Standard content | `text-lg` | **18px** | Primary info, client notes |
+| Form labels / Categories | `text-[14px] font-black` | **15px** | Input labels, group headers |
+| Data-dense labels | `text-[12px] font-black` | **12px** | Dashboard indicators, micro-metadata |
+| Status badges | `text-sm font-black` | **14px** | Tags and pills |
 
-### ❌ Forbidden Classes (Except for Data Visualization)
-- `text-[8px]` to `text-[10px]` — **AVOID** unless strictly necessary for complex dashboard layouts (e.g., Mini-Calendar).
-- `text-xs` — Use only for small badges/pills.
-- `text-sm` — Standard for secondary info, but prefer `text-base` for primary content.
+### ❌ Forbidden Classes (Zero Tolerance)
+- `text-[8px]` to `text-[11px]` — **STRICTLY FORBIDDEN**. Content must be legible without squinting.
+- `text-xs` — Avoid for readable content; use `text-sm` minimum.
+- `text-slate-400` on white bg — Use `text-slate-500` minimum for contrast.
 
 ### Premium Form Element Sizes (Standard vs. Search/Action)
 

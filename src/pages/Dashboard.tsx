@@ -353,23 +353,23 @@ const Dashboard: React.FC = () => {
 
                 {/* RANGEE 2 : STATS & PROJECTS */}
                 <div onClick={() => navigate('/revenue')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
-                            <Wallet size={24} />
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
+                            <Wallet size={28} />
                         </div>
-                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">CA Mensuel</h3>
+                        <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">CA Mensuel</h3>
                     </div>
-                    <p className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Revenus annuels</p>
-                    <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter mb-1">{formatRevenue(counts.annualRevenue)} DT</p>
-                    <p className="text-slate-500 text-[9px] font-medium mt-2">Comparison précédentes</p>
+                    <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Revenus annuels</p>
+                    <p className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-1">{formatRevenue(counts.annualRevenue)} DT</p>
+                    <p className="text-slate-500 text-[10px] font-bold mt-2">Comparison précédentes</p>
                 </div>
 
                 <div onClick={() => navigate('/clients')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                            <Users size={24} />
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                            <Users size={28} />
                         </div>
-                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Fiches Clients</h3>
+                        <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Fiches Clients</h3>
                     </div>
                     <div className="avatar-stack mb-4">
                         <div className="avatar-stack-item bg-[#334155] ring-2 ring-white dark:ring-[#020617]">JD</div>
@@ -382,11 +382,11 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 <div onClick={() => navigate('/payments')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                            <Wallet size={24} />
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                            <Wallet size={28} />
                         </div>
-                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Paiements</h3>
+                        <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Paiements</h3>
                     </div>
                     <div className="flex items-center gap-5">
                         <div className="w-20 h-20 rounded-full border-[8px] border-emerald-500/20 border-t-emerald-500 rotate-45" />
@@ -404,11 +404,11 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 <div onClick={() => navigate('/chantiers')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
-                            <FileText size={24} />
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
+                            <FileText size={28} />
                         </div>
-                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Chantiers</h3>
+                        <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Chantiers</h3>
                     </div>
                     <div className="space-y-3">
                         <div className="flex flex-col gap-1">
@@ -424,11 +424,11 @@ const Dashboard: React.FC = () => {
 
                 {/* RANGEE 3 : QR, TECH & MAP */}
                 <div onClick={() => setIsQrModalOpen(true)} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 rounded-xl bg-slate-500/10 text-slate-600 dark:text-white flex items-center justify-center">
-                            <QrCode size={24} />
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-slate-500/10 text-slate-600 dark:text-white flex items-center justify-center">
+                            <QrCode size={28} />
                         </div>
-                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Espace Client</h3>
+                        <h3 className="text-lg font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Espace Client</h3>
                     </div>
                     <div className="flex-1 flex items-center justify-center py-2">
                         <div className="p-3 bg-white dark:bg-white/90 rounded-2xl shadow-lg group-hover:scale-105 transition-transform">
@@ -437,12 +437,47 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
-                <div onClick={() => navigate('/technician-portal')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
-                            <Activity size={24} />
+                {profile?.role === 'admin' && (
+                    <div onClick={() => navigate('/admin-finance')} className="bento-card-luxe bento-col-3 group cursor-pointer bg-slate-900 border-none">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-14 h-14 rounded-2xl bg-orange-500/20 text-orange-500 flex items-center justify-center ring-1 ring-orange-500/30">
+                                <Wallet size={28} />
+                            </div>
+                            <h3 className="text-lg font-black text-white uppercase tracking-widest leading-none">Gestion Caisse</h3>
                         </div>
-                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Ma Tournée</h3>
+                        <div className="flex flex-col gap-1">
+                            <p className="text-sm font-black text-slate-400 uppercase tracking-widest mb-1">Actions Requises</p>
+                            <div className="flex items-end gap-3">
+                                <p className="text-4xl font-black text-white tracking-tighter leading-none">FINANCES</p>
+                                <div className="mb-1 bg-orange-500 px-2 py-0.5 rounded text-[10px] font-black text-white animate-pulse">ADMIN</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {profile?.role === 'admin' && (
+                    <div onClick={() => navigate('/settings')} className="bento-card-luxe bento-col-3 group cursor-pointer bg-blue-900 border-none">
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-14 h-14 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center ring-1 ring-blue-500/30">
+                                <Settings size={28} />
+                            </div>
+                            <h3 className="text-lg font-black text-white uppercase tracking-widest leading-none">Configuration</h3>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <p className="text-sm font-black text-blue-300/60 uppercase tracking-widest mb-1">Système</p>
+                            <div className="flex items-end gap-3">
+                                <p className="text-4xl font-black text-white tracking-tighter leading-none">PARAMÈTRES</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div onClick={() => navigate('/technician-portal')} className="bento-card-luxe bento-col-3 group cursor-pointer">
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
+                            <Activity size={28} />
+                        </div>
+                        <h3 className="text-lg font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Ma Tournée</h3>
                     </div>
                     <div className="flex justify-between items-end mb-2">
                         <p className="text-base font-bold text-slate-900 dark:text-white">{counts.scheduled} en cours</p>
