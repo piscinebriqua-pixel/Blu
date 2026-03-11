@@ -402,6 +402,10 @@ const NewIntervention: React.FC<NewInterventionProps> = ({
       toast.error("Veuillez sélectionner un client");
       return;
     }
+    if (!selectedPoolId) {
+      toast.error("Veuillez sélectionner ou créer un bassin pour ce client");
+      return;
+    }
     if (!formData.technician_id) {
       toast.error("Veuillez sélectionner un technicien");
       return;
