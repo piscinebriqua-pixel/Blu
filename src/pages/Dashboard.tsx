@@ -274,8 +274,8 @@ const Dashboard: React.FC = () => {
                 <div onClick={() => navigate('/revenue')} className="bento-card-luxe bento-col-8 group cursor-pointer min-h-[320px]">
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-1">Performances Annuelles</h3>
-                            <p className="text-slate-500 dark:text-slate-400 text-sm">Évolution des paiements par mois</p>
+                            <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-[0.2em] mb-1">Performances Annuelles</h3>
+                            <p className="text-slate-600 dark:text-slate-400 text-sm">Évolution des paiements par mois</p>
                         </div>
                         <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
                             <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
@@ -325,7 +325,7 @@ const Dashboard: React.FC = () => {
 
                 <div onClick={() => navigate('/planning')} className="bento-card-luxe bento-col-4 group cursor-pointer">
                     <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Planning</h3>
+                        <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-[0.2em]">Planning</h3>
                         <div className="flex gap-1">
                             <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-white text-[10px]">
                                 &lt;
@@ -347,7 +347,7 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/5">
                         <p className="text-slate-900 dark:text-white text-2xl font-black">{counts.scheduled} PRÉVUS</p>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs font-black uppercase tracking-widest mt-1">{counts.interventions} TOTAL</p>
+                        <p className="text-slate-700 dark:text-slate-400 text-xs font-black uppercase tracking-widest mt-1">{counts.interventions} TOTAL</p>
                     </div>
                 </div>
 
@@ -357,11 +357,11 @@ const Dashboard: React.FC = () => {
                         <div className="w-14 h-14 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
                             <Wallet size={28} />
                         </div>
-                        <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">CA Mensuel</h3>
+                        <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">CA Mensuel</h3>
                     </div>
-                    <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Revenus annuels</p>
+                    <p className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest mb-1">Revenus annuels</p>
                     <p className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-1">{formatRevenue(counts.annualRevenue)} DT</p>
-                    <p className="text-slate-500 text-[10px] font-bold mt-2">Comparison précédentes</p>
+                    <p className="text-slate-700 dark:text-slate-400 text-[10px] font-bold mt-2">Comparison précédentes</p>
                 </div>
 
                 <div onClick={() => navigate('/clients')} className="bento-card-luxe bento-col-3 group cursor-pointer">
@@ -369,7 +369,7 @@ const Dashboard: React.FC = () => {
                         <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
                             <Users size={28} />
                         </div>
-                        <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Fiches Clients</h3>
+                        <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Fiches Clients</h3>
                     </div>
                     <div className="avatar-stack mb-4">
                         <div className="avatar-stack-item bg-[#334155] ring-2 ring-white dark:ring-[#020617]">JD</div>
@@ -378,7 +378,7 @@ const Dashboard: React.FC = () => {
                         <div className="avatar-stack-item bg-[#111827] ring-2 ring-white dark:ring-[#020617]">RB</div>
                         <div className="avatar-stack-item bg-slate-900 ring-2 ring-white dark:ring-[#020617] text-blue-400">+{counts.clients > 4 ? counts.clients - 4 : 2}</div>
                     </div>
-                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400 leading-tight">Mohamed Name, Conne, Wahran...</p>
+                    <p className="text-sm font-bold text-slate-700 dark:text-slate-400 leading-tight">Mohamed Name, Conne, Wahran...</p>
                 </div>
 
                 <div onClick={() => navigate('/payments')} className="bento-card-luxe bento-col-3 group cursor-pointer">
@@ -386,18 +386,18 @@ const Dashboard: React.FC = () => {
                         <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                             <Wallet size={28} />
                         </div>
-                        <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Paiements</h3>
+                        <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Paiements</h3>
                     </div>
                     <div className="flex items-center gap-5">
                         <div className="w-20 h-20 rounded-full border-[8px] border-emerald-500/20 border-t-emerald-500 rotate-45" />
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
                                 <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                                <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Prm... 45K DT</span>
+                                <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest leading-none">Prm... 45K DT</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                                <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Pro... 25K DT</span>
+                                <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest leading-none">Pro... 25K DT</span>
                             </div>
                         </div>
                     </div>
@@ -408,7 +408,7 @@ const Dashboard: React.FC = () => {
                         <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
                             <FileText size={28} />
                         </div>
-                        <h3 className="text-base font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Chantiers</h3>
+                        <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Chantiers</h3>
                     </div>
                     <div className="space-y-3">
                         <div className="flex flex-col gap-1">
@@ -428,7 +428,7 @@ const Dashboard: React.FC = () => {
                         <div className="w-14 h-14 rounded-2xl bg-slate-500/10 text-slate-600 dark:text-white flex items-center justify-center">
                             <QrCode size={28} />
                         </div>
-                        <h3 className="text-lg font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Espace Client</h3>
+                        <h3 className="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Espace Client</h3>
                     </div>
                     <div className="flex-1 flex items-center justify-center py-2">
                         <div className="p-3 bg-white dark:bg-white/90 rounded-2xl shadow-lg group-hover:scale-105 transition-transform">
@@ -438,7 +438,7 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 {profile?.role === 'admin' && (
-                    <div onClick={() => navigate('/admin-finance')} className="bento-card-luxe bento-col-3 group cursor-pointer bg-slate-900 border-none">
+                    <div onClick={() => navigate('/admin-finance')} className="bento-card-luxe bento-col-3 group cursor-pointer !bg-slate-900 border-none">
                         <div className="flex items-center gap-4 mb-6">
                             <div className="w-14 h-14 rounded-2xl bg-orange-500/20 text-orange-500 flex items-center justify-center ring-1 ring-orange-500/30">
                                 <Wallet size={28} />
@@ -456,7 +456,7 @@ const Dashboard: React.FC = () => {
                 )}
 
                 {profile?.role === 'admin' && (
-                    <div onClick={() => navigate('/settings')} className="bento-card-luxe bento-col-3 group cursor-pointer bg-blue-900 border-none">
+                    <div onClick={() => navigate('/settings')} className="bento-card-luxe bento-col-3 group cursor-pointer !bg-blue-900 border-none">
                         <div className="flex items-center gap-4 mb-6">
                             <div className="w-14 h-14 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center ring-1 ring-blue-500/30">
                                 <Settings size={28} />
@@ -477,7 +477,7 @@ const Dashboard: React.FC = () => {
                         <div className="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
                             <Activity size={28} />
                         </div>
-                        <h3 className="text-lg font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Ma Tournée</h3>
+                        <h3 className="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Ma Tournée</h3>
                     </div>
                     <div className="flex justify-between items-end mb-2">
                         <p className="text-base font-bold text-slate-900 dark:text-white">{counts.scheduled} en cours</p>
@@ -497,7 +497,7 @@ const Dashboard: React.FC = () => {
                         <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
                             <Users size={24} />
                         </div>
-                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Équipe</h3>
+                        <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Équipe</h3>
                     </div>
                     <div className="flex-1 bg-slate-100 dark:bg-slate-900/50 rounded-2xl p-2 relative overflow-hidden flex items-center justify-center">
                         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px]" />
@@ -514,7 +514,7 @@ const Dashboard: React.FC = () => {
                         <div className="w-12 h-12 rounded-xl bg-slate-500/10 text-slate-500 flex items-center justify-center">
                             <Briefcase size={24} />
                         </div>
-                        <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-none">Partenaires</h3>
+                        <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Partenaires</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                         {Array.from({ length: 4 }).map((_, i) => (

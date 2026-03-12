@@ -119,15 +119,20 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
                 const { data } = await supabase
                     .from('devis')
                     .select('number')
-                    .order('created_at', { ascending: false })
-                    .limit(1);
+                    .like('number', 'DEV-%');
 
                 if (data && data.length > 0) {
-                    const lastNumber = data[0].number;
-                    const match = lastNumber.match(/DEV-(\d+)/);
-                    if (match) {
-                        const nextId = parseInt(match[1]) + 1;
-                        setNumber(`DEV-${nextId.toString().padStart(3, '0')}`);
+                    let maxId = 0;
+                    data.forEach(d => {
+                        const match = d.number.match(/DEV-(\d+)/);
+                        if (match) {
+                            const val = parseInt(match[1], 10);
+                            if (val > maxId) maxId = val;
+                        }
+                    });
+                    
+                    if (maxId > 0) {
+                        setNumber(`DEV-${(maxId + 1).toString().padStart(3, '0')}`);
                     } else {
                         setNumber(`DEV-001`);
                     }

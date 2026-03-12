@@ -294,7 +294,7 @@ const Revenue: React.FC = () => {
                         </h3>
                         <div className="flex items-center gap-2 mt-2">
                             <Wrench size={14} className="text-blue-500" />
-                            <span className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase">Valeur Interventions</span>
+                            <span className="text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase">Valeur Interventions</span>
                         </div>
                     </div>
 
@@ -305,7 +305,7 @@ const Revenue: React.FC = () => {
                         </h3>
                         <div className="flex items-center gap-2 mt-2">
                             <TrendingUp size={14} className="text-emerald-500" />
-                            <span className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase">{stats.transactionCount} transactions</span>
+                            <span className="text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase">{stats.transactionCount} transactions</span>
                         </div>
                     </div>
 
@@ -322,7 +322,7 @@ const Revenue: React.FC = () => {
                         </h3>
                         <div className="flex items-center gap-2 mt-2">
                             <Calendar size={14} className="text-rose-400" />
-                            <span className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase">
+                            <span className="text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase">
                                 Total Dettes Clients
                             </span>
                         </div>
@@ -333,7 +333,7 @@ const Revenue: React.FC = () => {
                         <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tighter">
                             {stats.lastMonthTotal.toLocaleString()} <span className="text-sm opacity-40">DT</span>
                         </h3>
-                        <p className="text-[11px] font-black text-slate-400 dark:text-slate-500 mt-2 uppercase">Mois Précédent</p>
+                        <p className="text-[11px] font-black text-slate-600 dark:text-slate-400 mt-2 uppercase">Mois Précédent</p>
                     </div>
                 </div>
 
@@ -343,7 +343,7 @@ const Revenue: React.FC = () => {
                     {/* Payment Methods */}
                     <div className="card-white !p-4 md:!p-8 flex flex-col gap-4 md:gap-6 md:col-span-1">
                         <div className="flex items-center justify-between">
-                            <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <h4 className="text-[12px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                 <PieChart size={16} className="text-primary" /> Modes de Paiement
                             </h4>
                         </div>
@@ -377,7 +377,7 @@ const Revenue: React.FC = () => {
                     {/* Performance by Technician */}
                     <div className="card-white !p-4 md:!p-8 flex flex-col gap-4 md:gap-6 md:col-span-2">
                         <div className="flex items-center justify-between">
-                            <h4 className="text-[12px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <h4 className="text-[12px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                 <BarChart3 size={16} className="text-primary" /> CA par Technicien (Encaissements)
                             </h4>
                         </div>
