@@ -40,7 +40,7 @@ const AdminUsers: React.FC = () => {
     const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
     const [actionType, setActionType] = useState<'link_technician' | 'link_client' | 'create_technician' | 'create_client' | 'make_admin' | 'edit_profile' | 'reset_password' | 'create_user' | null>(null);
     const [selectedLinkId, setSelectedLinkId] = useState<string>('');
-    const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
+    const [activeTab, setActiveTab] = useState<'pending' | 'all'>('all');
     const [confirmAction, setConfirmAction] = useState<{ type: 'revoke' | 'delete', profileId: string } | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [devisCount, setDevisCount] = useState(0);

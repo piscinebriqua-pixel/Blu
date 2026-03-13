@@ -4,20 +4,20 @@ import { supabase } from '../lib/supabase';
 import {
     Users,
     ChevronRight,
-    LogOut,
     Activity,
     Wallet,
     Settings,
     FileText,
     Briefcase,
     QrCode,
-    X
+    X,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import ThemeToggle from '../components/ThemeToggle';
 import BccpLogo from '../components/BccpLogo';
 import PageLayout from '../components/PageLayout';
 import ModalLayout from '../components/ModalLayout';
+import UserMenu from '../components/UserMenu';
 import { QRCodeSVG } from 'qrcode.react';
 
 const Dashboard: React.FC = () => {
@@ -35,19 +35,9 @@ const Dashboard: React.FC = () => {
         devis: 0 
     });
     const [profile, setProfile] = useState<{ name: string, role: string } | null>(null);
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const [recentInterventions, setRecentInterventions] = useState<any[]>([]);
 
-    const handleLogout = async () => {
-        try {
-            await supabase.auth.signOut();
-            navigate('/login');
-        } catch (error) {
-            console.error('Erreur déconnexion:', error);
-            navigate('/login');
-        }
-    };
 
 
     useEffect(() => {
@@ -211,7 +201,7 @@ const Dashboard: React.FC = () => {
             <div className="hidden sm:flex items-center gap-2">
                 {profile?.role === 'admin' && (
                     <button 
-                        onClick={() => navigate('/settings/services')}
+                        onClick={() => navigate('/settings')}
                         className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 transition-all border border-white/10"
                         title="Configuration"
                     >
@@ -227,42 +217,7 @@ const Dashboard: React.FC = () => {
                     <div className="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-blue-500 rounded-full border border-slate-950" />
                 </button>
             </div>
-            
-            <div onClick={() => setIsMenuOpen(!isMenuOpen)} className="relative">
-                <div className="flex items-center gap-3 pl-3 pr-1.5 py-1.5 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 cursor-pointer hover:bg-white/10 transition-all group">
-                    <div className="flex flex-col text-right hidden xs:block">
-                        <p className="text-[13px] font-black text-white leading-none">{profile?.name || 'Chargement...'}</p>
-                        <p className="text-[9px] font-black text-blue-100/40 uppercase tracking-widest mt-1">
-                            {profile?.role === 'admin' ? 'Administrateur' : 'Technicien'}
-                        </p>
-                    </div>
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
-                        {profile?.name?.charAt(0) || 'A'}
-                    </div>
-                </div>
-
-                {isMenuOpen && (
-                    <>
-                        <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)}></div>
-                        <div className="absolute right-0 mt-3 w-56 bg-slate-900 rounded-[1.5rem] shadow-2xl border border-white/5 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
-                            <button
-                                onClick={() => { navigate('/profile'); setIsMenuOpen(false); }}
-                                className="w-full px-4 py-3 text-left text-[11px] font-black text-slate-400 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
-                            >
-                                <Users size={14} className="text-blue-500" />
-                                Mon Profil
-                            </button>
-                            <button
-                                onClick={handleLogout}
-                                className="w-full px-4 py-3 text-left text-[11px] font-black text-rose-500 hover:bg-rose-500/10 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
-                            >
-                                <LogOut size={14} />
-                                Déconnexion
-                            </button>
-                        </div>
-                    </>
-                )}
-            </div>
+            <UserMenu />
         </div>
     );
 
