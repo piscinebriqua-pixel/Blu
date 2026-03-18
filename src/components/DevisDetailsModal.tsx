@@ -89,7 +89,6 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
         const encodedMessage = encodeURIComponent(message);
         let phone = devis.client.phone.replace(/\s+/g, '').replace('+', '');
 
-        // Si c'est un numéro tunisien à 8 chiffres, ajouter l'indicatif 216
         let cleanPhone = phone.replace(/[\s\-\.]/g, '');
         if (cleanPhone && !cleanPhone.startsWith('216') && !cleanPhone.startsWith('+')) {
             cleanPhone = `216${cleanPhone}`;
@@ -127,6 +126,36 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
                         {devis.status === 'closed' ? 'Clôturé' : devis.status === 'cancelled' ? 'Annulé' : 'En cours'}
                     </div>
                 </div>
+
+                {/* Company & Header Content (NEW) */}
+                {(devis.header_content || devis.company_phone) && (
+                    <div className="flex flex-col gap-4 print:gap-2">
+                        {/* Company Info row for PDF */}
+                        {(devis.company_phone || devis.company_address) && (
+                            <div className="hidden print:flex flex-col border-b border-slate-100 pb-4 mb-2">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-0.5">
+                                        <div className="text-[12px] font-black uppercase text-slate-900 leading-none">Votre Prestataire</div>
+                                        <div className="text-[10px] font-bold text-slate-600">Tel: {devis.company_phone}</div>
+                                        <div className="text-[10px] font-bold text-slate-600">Email: {devis.company_email}</div>
+                                    </div>
+                                    <div className="text-right space-y-0.5">
+                                        <div className="text-[10px] font-bold text-slate-600">{devis.company_address}</div>
+                                        <div className="text-[10px] font-black uppercase text-slate-400">MF: {devis.company_tax_id}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {devis.header_content && (
+                            <div className="p-6 print:p-2 bg-blue-50/30 dark:bg-white/5 rounded-[2rem] print:rounded-none border border-blue-50 dark:border-white/5">
+                                <p className="text-sm print:text-[11px] font-bold text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed italic">
+                                    {devis.header_content}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Quick Info Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 print:grid-cols-4 gap-2 print:gap-1">
@@ -222,7 +251,6 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
                             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-slate-200 dark:to-white/10" />
                         </div>
 
-                        {/* Optimisé pour PDF : grid-cols-3 à l'impression si tout est rempli pour gagner de la hauteur */}
                         <div className="grid grid-cols-1 md:grid-cols-2 print:grid-cols-3 gap-4 print:gap-2">
                             {devis.pool_details && (
                                 <div className="bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg p-5 print:p-3 border border-slate-100 dark:border-white/5">
@@ -242,6 +270,30 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
                                     <p className="text-xs print:text-[10px] font-bold text-slate-600 dark:text-slate-300 whitespace-pre-line leading-relaxed italic">{devis.notes}</p>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Footer Content (NEW) */}
+                {devis.footer_content && (
+                    <div className="mt-8 print:mt-4 p-8 print:p-4 bg-slate-900 text-white rounded-[2.5rem] print:rounded-xl border border-slate-800 shadow-xl shadow-slate-900/10">
+                        <h6 className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4 print:mb-2">Mentions & Engagement</h6>
+                        <p className="text-xs print:text-[10px] font-bold text-slate-300 whitespace-pre-line leading-relaxed">
+                            {devis.footer_content}
+                        </p>
+                        
+                        {/* Signature Area for Print */}
+                        <div className="hidden print:grid grid-cols-2 gap-8 mt-12">
+                            <div className="border-t border-slate-700 pt-4 flex flex-col gap-1">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Signature Cachet Client</span>
+                                <div className="h-48"></div>
+                                <span className="text-[9px] font-bold">Lu et Approuvé le : ____/____/20____</span>
+                            </div>
+                            <div className="border-t border-slate-700 pt-4 flex flex-col gap-1 text-right">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Signature Entreprise</span>
+                                <div className="h-48"></div>
+                                <span className="text-[9px] font-bold italic underline">Bon pour accord</span>
+                            </div>
                         </div>
                     </div>
                 )}

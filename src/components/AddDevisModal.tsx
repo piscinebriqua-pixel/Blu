@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ModalLayout from './ModalLayout';
-import { Plus, Trash2, Loader2, Upload, FileSignature, UserPlus, GripVertical } from 'lucide-react';
+import { Plus, Trash2, Loader2, Upload, FileSignature, UserPlus, GripVertical, ClipboardCopy, Building2, ChevronDown } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import type { DropResult } from '@hello-pangea/dnd';
 import { supabase } from '../lib/supabase';
@@ -30,11 +30,12 @@ interface DevisItem {
 interface AddDevisModalProps {
     clientId?: string;
     devisId?: string;
+    isTemplateMode?: boolean;
     onClose: () => void;
     onSuccess: () => void;
 }
 
-const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClose, onSuccess }) => {
+const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemplateMode, onClose, onSuccess }) => {
     const [loading, setLoading] = useState(false);
     const [parsing, setParsing] = useState(false);
     const [title, setTitle] = useState('');
@@ -46,6 +47,21 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
     const [poolDetails, setPoolDetails] = useState('');
     const [paymentTerms, setPaymentTerms] = useState('');
     const [status, setStatus] = useState<'pending' | 'closed' | 'cancelled'>('pending');
+    
+    // New fields for Templates & Company Info
+    const [headerContent, setHeaderContent] = useState('');
+    const [footerContent, setFooterContent] = useState('');
+    const [companyInfo, setCompanyInfo] = useState({
+        phone: '',
+        email: '',
+        address: '',
+        tax_id: ''
+    });
+    const [isTemplate, setIsTemplate] = useState(isTemplateMode || false);
+    
+    const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
+    const [availableTemplates, setAvailableTemplates] = useState<any[]>([]);
+
     const [extractedClientName, setExtractedClientName] = useState<{ first: string, last: string } | null>(null);
     const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,8 +72,73 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
         }
         if (devisId) {
             fetchDevisToEdit(devisId);
+        } else {
+            // Fetch company info and default footer by default for new quotes or templates
+            fetchDefaultCompanyInfo();
+            if (!isTemplateMode) {
+                fetchTemplatesList();
+            }
         }
-    }, [clientId, devisId]);
+    }, [clientId, devisId, isTemplateMode]);
+
+    const fetchTemplatesList = async () => {
+        const { data } = await supabase.from('devis').select('id, title').eq('is_template', true);
+        if (data) setAvailableTemplates(data);
+    };
+
+    const fetchDefaultCompanyInfo = async () => {
+        const { data } = await supabase.from('settings').select('value').eq('key', 'company_info').maybeSingle();
+        if (data?.value) {
+            setCompanyInfo({
+                phone: data.value.phone || '',
+                email: data.value.email || '',
+                address: data.value.address || '',
+                tax_id: data.value.tax_id || ''
+            });
+            if (data.value.default_footer && !footerContent) {
+                setFooterContent(data.value.default_footer);
+            }
+        }
+    };
+
+    const applyTemplate = async (templateId: string) => {
+        try {
+            setLoading(true);
+            const { data: tpl, error: tplError } = await supabase.from('devis').select('*').eq('id', templateId).single();
+            if (tplError) throw tplError;
+
+            setHeaderContent(tpl.header_content || '');
+            setFooterContent(tpl.footer_content || '');
+            setPoolDetails(tpl.pool_details || '');
+            setPaymentTerms(tpl.payment_terms || '');
+            setNotes(tpl.notes || '');
+            
+            // If current company info is empty, use template's if exists
+            if (!companyInfo.phone && tpl.company_phone) {
+                setCompanyInfo({
+                    phone: tpl.company_phone,
+                    email: tpl.company_email,
+                    address: tpl.company_address,
+                    tax_id: tpl.company_tax_id
+                });
+            }
+
+            const { data: itemsData } = await supabase.from('devis_items').select('*').eq('devis_id', templateId).order('position');
+            if (itemsData) {
+                setItems(itemsData.map(it => ({
+                    ...it,
+                    id: crypto.randomUUID(), // New IDs for clone
+                    devis_id: undefined
+                })));
+            }
+            toast.success("Modèle appliqué avec succès");
+            setShowTemplatesDropdown(false);
+        } catch (err) {
+            toast.error("Erreur lors de l'application du modèle");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchDevisToEdit = async (id: string) => {
         setLoading(true);
@@ -77,6 +158,15 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
             setPaymentTerms(devisData.payment_terms || '');
             setNotes(devisData.notes || '');
             setStatus(devisData.status || 'pending');
+            setIsTemplate(devisData.is_template || false);
+            setHeaderContent(devisData.header_content || '');
+            setFooterContent(devisData.footer_content || '');
+            setCompanyInfo({
+                phone: devisData.company_phone || '',
+                email: devisData.company_email || '',
+                address: devisData.company_address || '',
+                tax_id: devisData.company_tax_id || ''
+            });
 
             const { data: itemsData, error: itemsError } = await supabase
                 .from('devis_items')
@@ -372,8 +462,8 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
     };
 
     const handleSubmit = async () => {
-        if (!title || !number || !selectedClientId || items.length === 0) {
-            toast.error('Veuillez remplir tous les champs (Client, Titre, Numéro et Items)');
+        if (!title || (!isTemplate && !number) || (!isTemplate && !selectedClientId) || items.length === 0) {
+            toast.error(isTemplate ? 'Veuillez remplir le titre et ajouter des items' : 'Veuillez remplir tous les champs (Client, Titre, Numéro et Items)');
             return;
         }
 
@@ -383,19 +473,28 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
 
             let devisDataId = devisId;
 
+            const baseData = {
+                client_id: isTemplate ? null : selectedClientId,
+                number: isTemplate ? 'TEMPLATE' : number,
+                title,
+                total_amount: total,
+                status: isTemplate ? 'closed' : status,
+                pool_details: poolDetails,
+                payment_terms: paymentTerms,
+                notes,
+                is_template: isTemplate,
+                header_content: headerContent,
+                footer_content: footerContent,
+                company_phone: companyInfo.phone,
+                company_email: companyInfo.email,
+                company_address: companyInfo.address,
+                company_tax_id: companyInfo.tax_id
+            };
+
             if (devisId) {
                 const { error: devisError } = await supabase
                     .from('devis')
-                    .update({
-                        client_id: selectedClientId,
-                        number,
-                        title,
-                        total_amount: total,
-                        status,
-                        pool_details: poolDetails,
-                        payment_terms: paymentTerms,
-                        notes
-                    })
+                    .update(baseData)
                     .eq('id', devisId);
 
                 if (devisError) throw devisError;
@@ -410,16 +509,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
             } else {
                 const { data: devis, error: devisError } = await supabase
                     .from('devis')
-                    .insert([{
-                        client_id: selectedClientId,
-                        number,
-                        title,
-                        total_amount: total,
-                        status,
-                        pool_details: poolDetails,
-                        payment_terms: paymentTerms,
-                        notes
-                    }])
+                    .insert([baseData])
                     .select()
                     .single();
 
@@ -456,69 +546,110 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
 
     return (
         <ModalLayout
-            title={devisId ? "MODIFIER LE DEVIS" : "NOUVEAU CHANTIER (DEVIS)"}
+            title={devisId ? (isTemplate ? "MODIFIER LE MODÈLE" : "MODIFIER LE DEVIS") : (isTemplate ? "NOUVEAU MODÈLE DE DEVIS" : "NOUVEAU CHANTIER (DEVIS)")}
             onClose={onClose}
             className="max-w-5xl"
             actions={
                 <div className="flex gap-4 w-full">
                     <Button variant="secondary" onClick={onClose} className="flex-1 btn-flow font-black tracking-widest text-[11px] h-14">ANNULER</Button>
                     <Button onClick={handleSubmit} loading={loading} className="flex-[2] btn-flow btn-primary font-black tracking-widest text-[11px] h-14">
-                        {devisId ? "METTRE À JOUR" : "ENREGISTRER LE DEVIS"}
+                        {devisId ? "METTRE À JOUR" : (isTemplate ? "ENREGISTRER LE MODÈLE" : "ENREGISTRER LE DEVIS")}
                     </Button>
                 </div>
             }
         >
             <div className="flex flex-col gap-6 pb-20">
-                {/* PDF IMPORT BOX MOVED TO TOP */}
-                <div
-                    onClick={() => fileInputRef.current?.click()}
-                    className="p-4 border-2 border-dashed border-blue-500/30 rounded-3xl bg-blue-50/20 dark:bg-blue-900/10 flex items-center justify-between gap-4 cursor-pointer hover:bg-blue-50/60 dark:hover:bg-blue-900/20 transition-all group shadow-sm shadow-blue-500/5 mb-2"
-                >
-                    <div className="flex items-center gap-5">
-                        <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm text-blue-500 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
-                            {parsing ? (
-                                <Loader2 className="animate-spin" size={26} />
-                            ) : (
-                                <Upload size={26} />
+                {!isTemplate && (
+                    <div className="flex flex-col md:flex-row gap-4 mb-2">
+                        {/* PDF IMPORT BOX */}
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex-1 p-4 border-2 border-dashed border-blue-500/30 rounded-3xl bg-blue-50/20 dark:bg-blue-900/10 flex items-center justify-between gap-4 cursor-pointer hover:bg-blue-50/60 dark:hover:bg-blue-900/20 transition-all group shadow-sm shadow-blue-500/5"
+                        >
+                            <div className="flex items-center gap-5">
+                                <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm text-blue-500 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                                    {parsing ? <Loader2 className="animate-spin" size={26} /> : <Upload size={26} />}
+                                </div>
+                                <div className="flex flex-col">
+                                    <h4 className="text-[14px] font-black text-blue-900 dark:text-white uppercase tracking-tight">Importer PDF</h4>
+                                    <p className="text-[10px] text-blue-500/80 font-black uppercase tracking-widest mt-0.5">Extraction IA</p>
+                                </div>
+                            </div>
+                            <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".pdf" className="hidden" title="Sélectionner PDF" />
+                        </div>
+
+                        {/* TEMPLATE IMPORT BOX */}
+                        <div className="flex-1 relative">
+                            <button
+                                onClick={() => setShowTemplatesDropdown(!showTemplatesDropdown)}
+                                className="w-full h-full p-4 border-2 border-dashed border-emerald-500/30 rounded-3xl bg-emerald-50/20 dark:bg-emerald-900/10 flex items-center justify-between gap-4 cursor-pointer hover:bg-emerald-50/60 dark:hover:bg-emerald-900/20 transition-all group shadow-sm shadow-emerald-500/5"
+                            >
+                                <div className="flex items-center gap-5 text-left">
+                                    <div className="p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-sm text-emerald-500 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                                        <ClipboardCopy size={26} />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <h4 className="text-[14px] font-black text-emerald-900 dark:text-white uppercase tracking-tight">Appliquer Modèle</h4>
+                                        <p className="text-[10px] text-emerald-500/80 font-black uppercase tracking-widest mt-0.5">{availableTemplates.length} modèles dispos</p>
+                                    </div>
+                                </div>
+                                <ChevronDown size={20} className={`text-emerald-500 transition-transform ${showTemplatesDropdown ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {showTemplatesDropdown && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[2rem] shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
+                                    {availableTemplates.length === 0 ? (
+                                        <div className="p-6 text-center text-[11px] font-black text-slate-400 uppercase tracking-widest">Aucun modèle créé</div>
+                                    ) : (
+                                        <div className="max-h-60 overflow-y-auto no-scrollbar">
+                                            {availableTemplates.map(tpl => (
+                                                <button
+                                                    key={tpl.id}
+                                                    onClick={() => applyTemplate(tpl.id)}
+                                                    className="w-full p-4 text-left hover:bg-emerald-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5 last:border-0 transition-colors flex items-center gap-3"
+                                                >
+                                                    <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 flex items-center justify-center shrink-0">
+                                                        <ClipboardCopy size={16} />
+                                                    </div>
+                                                    <span className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase truncate">{tpl.title}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                             )}
                         </div>
-                        <div className="flex flex-col">
-                            <h4 className="text-[15px] font-black text-blue-900 dark:text-white uppercase tracking-tight">Importer depuis PDF</h4>
-                            <p className="text-[11px] text-blue-500/80 font-black uppercase tracking-widest mt-0.5">Laissez l'IA extraire le devis Magiline</p>
-                        </div>
                     </div>
-                    <Button variant="secondary" size="sm" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 shadow-sm h-11 px-6 font-black text-[11px] uppercase tracking-widest text-slate-600 dark:text-slate-300 hover:text-blue-600 rounded-2xl">
-                        PARCOURIR
-                    </Button>
-                    <input
-                        title="Sélectionner un fichier PDF"
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileUpload}
-                        accept=".pdf"
-                        className="hidden"
-                    />
-                </div>
+                )}
 
                 {/* HEADER BLOCK (ENTÊTE DE CHANTIER) */}
                 <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-3 mb-1">
-                        <div className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-xl">
-                            <FileSignature size={20} />
+                    <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-3">
+                            <div className="text-blue-500 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-xl">
+                                <FileSignature size={20} />
+                            </div>
+                            <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-tighter">Entête du Devis</h3>
                         </div>
-                        <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-tighter">Entête du Chantier</h3>
+                        {isTemplateMode && (
+                            <div className="px-4 py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                                Mode Modèle
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1 md:col-span-1">
-                            <input
-                                title="Numéro du Devis"
-                                placeholder="Numéro de Devis (ex: DEV-001)"
-                                value={number}
-                                onChange={(e) => setNumber(e.target.value)}
-                                className="w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-black px-4 text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all placeholder:text-slate-400"
-                            />
-                        </div>
+                        {!isTemplate && (
+                            <div className="flex flex-col gap-1 md:col-span-1">
+                                <input
+                                    title="Numéro du Devis"
+                                    placeholder="Numéro de Devis (ex: DEV-001)"
+                                    value={number}
+                                    onChange={(e) => setNumber(e.target.value)}
+                                    className="w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-black px-4 text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all placeholder:text-slate-400"
+                                />
+                            </div>
+                        )}
 
                         {/* CLIENT SELECTION */}
                         {!clientId ? (
@@ -574,18 +705,75 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
                         </div>
                         <div className="flex flex-col gap-1 md:col-span-1">
                             <input
-                                title="Titre du Projet"
-                                placeholder="Titre du projet (Ex: Rénovation Piscine)"
+                                title="Titre"
+                                placeholder={isTemplate ? "Nom du modèle (ex: PACK FILTRATION)" : "Titre du projet (Ex: Rénovation Piscine)"}
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 className="w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-black px-4 text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all placeholder:text-slate-400"
                             />
                         </div>
 
+                        {/* COMPANY INFO BLOCK */}
+                        <div className="md:col-span-2 bg-slate-50 dark:bg-white/5 rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Building2 size={18} className="text-emerald-500" />
+                                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Coordonnées Société</span>
+                                </div>
+                                <button
+                                    onClick={fetchDefaultCompanyInfo}
+                                    className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest hover:underline"
+                                >
+                                    Importer mes infos par défaut
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <input
+                                    title="Tel Société"
+                                    placeholder="Tel: +216 -- --- ---"
+                                    value={companyInfo.phone}
+                                    onChange={(e) => setCompanyInfo({ ...companyInfo, phone: e.target.value })}
+                                    className="h-12 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 px-4 text-sm font-bold outline-none focus:border-emerald-500 transition-all"
+                                />
+                                <input
+                                    title="Email Société"
+                                    placeholder="Email: contact@xxxx.com"
+                                    value={companyInfo.email}
+                                    onChange={(e) => setCompanyInfo({ ...companyInfo, email: e.target.value })}
+                                    className="h-12 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 px-4 text-sm font-bold outline-none focus:border-emerald-500 transition-all"
+                                />
+                                <input
+                                    title="Matricule Fiscal"
+                                    placeholder="MF: 0000000/A/B/C/000"
+                                    value={companyInfo.tax_id}
+                                    onChange={(e) => setCompanyInfo({ ...companyInfo, tax_id: e.target.value })}
+                                    className="h-12 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 px-4 text-sm font-bold outline-none focus:border-emerald-500 transition-all"
+                                />
+                                <input
+                                    title="Adresse Société"
+                                    placeholder="Adresse complète..."
+                                    value={companyInfo.address}
+                                    onChange={(e) => setCompanyInfo({ ...companyInfo, address: e.target.value })}
+                                    className="h-12 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 px-4 text-sm font-bold outline-none focus:border-emerald-500 transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        {/* HEADER RICH TEXT (Simplified) */}
+                        <div className="flex flex-col gap-1 md:col-span-2">
+                            <textarea
+                                title="Introduction / Entête personnalisée"
+                                placeholder="Texte d'introduction du devis (expliquer le projet, salutations...)"
+                                value={headerContent}
+                                onChange={(e) => setHeaderContent(e.target.value)}
+                                className="w-full p-6 bg-blue-50/30 dark:bg-blue-900/10 rounded-[2rem] border border-blue-100/50 dark:border-blue-900/20 font-bold text-sm text-slate-800 dark:text-white outline-none focus:border-blue-500 h-24 resize-none transition-all placeholder:text-slate-400"
+                            />
+                        </div>
+
                         <div className="flex flex-col gap-1 md:col-span-2">
                             <textarea
                                 title="Caractéristiques de la Piscine"
-                                placeholder="Caractéristiques : 8x4m, Profondeur 1.2-1.8m, Volume 50m3..."
+                                placeholder="Caractéristiques techniques : Dimensions, Volume, Matériaux..."
                                 value={poolDetails}
                                 onChange={(e) => setPoolDetails(e.target.value)}
                                 className="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-800 dark:text-white outline-none focus:border-blue-500 h-20 resize-none transition-all placeholder:text-slate-400"
@@ -715,13 +903,22 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
 
                     {/* FOOTER DETAILS: PAYMENT & NOTES */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1 md:col-span-2">
+                            <textarea
+                                title="Pied de Page / Mentions Légales"
+                                value={footerContent}
+                                onChange={(e) => setFooterContent(e.target.value)}
+                                className="w-full p-6 bg-slate-900 text-white rounded-[2rem] border border-slate-800 font-bold text-[12px] outline-none focus:border-primary h-32 resize-none transition-all placeholder:text-slate-500"
+                                placeholder="Pied de page : Mentions légales, Validité de l'offre, Signature..."
+                            />
+                        </div>
                         <div className="flex flex-col gap-1">
                             <textarea
                                 title="Modalités de Paiement"
                                 value={paymentTerms}
                                 onChange={(e) => setPaymentTerms(e.target.value)}
                                 className="w-full p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 font-bold text-[12px] text-slate-800 dark:text-white outline-none focus:border-blue-500 h-24 resize-none transition-all placeholder:text-slate-400"
-                                placeholder="Modalités de Paiement (ex: 40% à la commande, 40% après béton...)"
+                                placeholder="Modalités de Paiement (ex: 40% à la commande...)"
                             />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -730,7 +927,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, onClos
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                                 className="w-full p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 font-bold text-[12px] text-slate-800 dark:text-white outline-none focus:border-blue-500 h-24 resize-none transition-all placeholder:text-slate-400"
-                                placeholder="Observations ou remarques supplémentaires..."
+                                placeholder="Observations supplémentaires..."
                             />
                         </div>
                     </div>

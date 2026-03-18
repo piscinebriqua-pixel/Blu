@@ -10,7 +10,10 @@ import {
     ArrowRight,
     Bell,
     Database,
-    Globe
+    Globe,
+    Building2,
+    FileSpreadsheet,
+    Truck
 } from 'lucide-react';
 
 const Settings: React.FC = () => {
@@ -51,6 +54,27 @@ const Settings: React.FC = () => {
             icon: <Wallet size={28} />,
             color: "bg-orange-500",
             path: "/admin-finance"
+        },
+        {
+            title: "Coordonnées Société",
+            description: "Numéro, Email, Adresse et Matricule Fiscal",
+            icon: <Building2 size={28} />,
+            color: "bg-emerald-500",
+            path: "/settings/company"
+        },
+        {
+            title: "Modèles de Devis",
+            description: "Gérer l'entête, le pied de page et prestations types",
+            icon: <FileSpreadsheet size={28} />,
+            color: "bg-amber-500",
+            path: "/settings/devis-templates"
+        },
+        {
+            title: "Flotte Véhicules",
+            description: "Gérer les véhicules et consulter les statistiques carburant",
+            icon: <Truck size={28} />,
+            color: "bg-teal-500",
+            path: "/settings/vehicles"
         }
     ];
 

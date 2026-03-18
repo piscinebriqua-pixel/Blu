@@ -24,6 +24,9 @@ import ClientDashboard from './pages/ClientDashboard';
 import AdminFinance from './pages/AdminFinance';
 import Settings from './pages/Settings';
 import FinanceSettings from './pages/FinanceSettings';
+import CompanySettings from './pages/CompanySettings';
+import DevisTemplates from './pages/DevisTemplates';
+import VehiclesSettings from './pages/VehiclesSettings';
 import { Toaster } from 'react-hot-toast';
 import BccpLogo from './components/BccpLogo';
 import BottomNav from './components/BottomNav';
@@ -266,6 +269,21 @@ function App() {
             <Route path="/settings/finance-types" element={
               <ProtectedRoute requireAdmin={true}>
                 <div className="app-container"><FinanceSettings /></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/settings/company" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div className="app-container"><CompanySettings /></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/settings/devis-templates" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div className="app-container"><DevisTemplates /></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/settings/vehicles" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div className="app-container"><VehiclesSettings /></div>
               </ProtectedRoute>
             } />
 
