@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Droplets, Waves, Calendar, AlertCircle, Trash2 } from 'lucide-react';
-import ModalLayout from './ModalLayout';
-import { toast } from 'react-hot-toast';
-import Input from './ui/Input';
 import Button from './ui/Button';
 import ConfirmModal from './ConfirmModal';
+import PhotoUpload from './ui/PhotoUpload';
+import { Droplets, Waves, Calendar, AlertCircle, Trash2, X, Star } from 'lucide-react';
 
 interface Pool {
     id: string;
@@ -41,6 +39,10 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
         template_id: '',
         technician_id: ''
     });
+    
+    const [existingPhotos, setExistingPhotos] = useState<any[]>([]);
+    const [newPhotos, setNewPhotos] = useState<string[]>([]);
+    const [photosToDelete, setPhotosToDelete] = useState<string[]>([]);
 
     const [templates, setTemplates] = useState<any[]>([]);
     const [technicians, setTechnicians] = useState<any[]>([]);
@@ -67,6 +69,14 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                     technician_id: ruleRes.data.technician_id || ''
                 }));
             }
+
+            // Récupérer les photos
+            const { data: photoData } = await supabase
+                .from('pool_photos')
+                .select('*')
+                .eq('pool_id', pool.id)
+                .order('created_at');
+            if (photoData) setExistingPhotos(photoData);
         };
         fetchRecurrenceData();
     }, [pool.id]);
@@ -115,13 +125,51 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                 await supabase.from('recurrence_rules').update({ active: false }).eq('id', ruleId);
             }
 
-            toast.success('Bassin et contrat mis à jour ✓');
+            // 3. Gérer les photos
+            // Supprimer les photos marquées
+            if (photosToDelete.length > 0) {
+                await supabase.from('pool_photos').delete().in('id', photosToDelete);
+            }
+
+            // Ajouter les nouvelles photos
+            if (newPhotos.length > 0) {
+                const photosToInsert = newPhotos.map(url => ({
+                    pool_id: pool.id,
+                    url: url,
+                    is_main: existingPhotos.length === 0 // Si aucune photo n'existe, la première est principale
+                }));
+                await supabase.from('pool_photos').insert(photosToInsert);
+            }
+
+            // Mettre à jour la photo principale si changée (simplement on garde l'état local pour l'instant)
+            // Pour faire propre, on pourrait faire un update is_main, mais on va rester simple pour le moment.
+            // Si l'utilisateur clique sur "Définir comme principale", on fera un update immédiat ou ici.
+            // On va faire l'update immédiat dans une fonction séparée pour plus de réactivité.
+
+            toast.success('Bassin et photos mis à jour ✓');
             onSuccess();
             onClose();
         } catch (error: any) {
             toast.error(error.message || 'Une erreur est survenue');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSetMainPhoto = async (photoId: string) => {
+        try {
+            // Reset all main for this pool
+            await supabase.from('pool_photos').update({ is_main: false }).eq('pool_id', pool.id);
+            // Set new main
+            await supabase.from('pool_photos').update({ is_main: true }).eq('id', photoId);
+            
+            setExistingPhotos(prev => prev.map(p => ({
+                ...p,
+                is_main: p.id === photoId
+            })));
+            toast.success('Photo principale mise à jour');
+        } catch (error: any) {
+            toast.error("Erreur lors de la mise à jour");
         }
     };
 
@@ -301,6 +349,71 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                     <p className="text-xs font-medium text-orange-700 dark:text-orange-300 leading-normal">
                         L'activation du contrat créera automatiquement la prochaine visite dès qu'une intervention est marquée comme terminée.
                     </p>
+                </div>
+
+                {/* Section Photos */}
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between px-2">
+                        <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Gestion des Photos</label>
+                        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                            {existingPhotos.length + newPhotos.length - photosToDelete.length} au total
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        {/* Photos existantes */}
+                        {existingPhotos.filter(p => !photosToDelete.includes(p.id)).map((photo) => (
+                            <div key={photo.id} className="relative aspect-video rounded-2xl overflow-hidden border-2 border-slate-100 dark:border-slate-800 group">
+                                <img src={photo.url} alt="Bassin" className="w-full h-full object-cover" />
+                                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleSetMainPhoto(photo.id)}
+                                        className={`p-1.5 rounded-lg shadow-lg flex items-center justify-center ${photo.is_main ? 'bg-amber-400 text-white' : 'bg-white text-slate-400 hover:text-amber-500'}`}
+                                        title="Photo de couverture"
+                                    >
+                                        <Star size={14} fill={photo.is_main ? 'currentColor' : 'none'} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPhotosToDelete([...photosToDelete, photo.id])}
+                                        className="p-1.5 bg-rose-500 text-white rounded-lg shadow-lg"
+                                        title="Supprimer"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                                {photo.is_main && (
+                                    <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black uppercase rounded-md shadow-lg">
+                                        Principale
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+
+                        {/* Nouvelles photos */}
+                        {newPhotos.map((url, index) => (
+                            <div key={`new-${index}`} className="relative aspect-video rounded-2xl overflow-hidden border-2 border-blue-100 dark:border-blue-900/20 group">
+                                <img src={url} alt="Nouveau" className="w-full h-full object-cover grayscale-[0.5]" />
+                                <button
+                                    type="button"
+                                    onClick={() => setNewPhotos(newPhotos.filter((_, i) => i !== index))}
+                                    className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                >
+                                    <X size={14} />
+                                </button>
+                                <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-blue-500 text-white text-[8px] font-black uppercase rounded-md shadow-lg">
+                                    Nouveau
+                                </span>
+                            </div>
+                        ))}
+                        
+                        <PhotoUpload 
+                            label="Ajouter une photo" 
+                            bucket="pools"
+                            onUploadComplete={(url) => setNewPhotos([...newPhotos, url])} 
+                        />
+                    </div>
                 </div>
             </form>
 

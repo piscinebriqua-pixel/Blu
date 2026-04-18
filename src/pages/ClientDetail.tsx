@@ -49,6 +49,7 @@ interface Pool {
     is_contracted: boolean;
     maintenance_frequency: string;
     preferred_day: number;
+    photos?: { url: string; is_main: boolean }[];
 }
 
 interface Intervention {
@@ -306,7 +307,10 @@ const ClientDetail: React.FC = () => {
                 }
             } catch (e) { /* ignore error if table does not exist */ }
 
-            const { data: poolData } = await supabase.from('pools').select('*').eq('client_id', id);
+            const { data: poolData } = await supabase
+                .from('pools')
+                .select('*, photos:pool_photos(url, is_main)')
+                .eq('client_id', id);
             setPools(poolData || []);
 
             const { data: interData } = await supabase
@@ -1192,8 +1196,14 @@ const ClientDetail: React.FC = () => {
                                     {pools.map((pool) => (
                                         <div key={pool.id} className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-5 border border-slate-100 dark:border-slate-700 group hover:border-blue-500/30 transition-all">
                                             <div className="flex justify-between items-center mb-4">
-                                                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                                                    <Waves size={20} />
+                                                <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center overflow-hidden border border-blue-500/20">
+                                                    {pool.photos?.find(p => p.is_main)?.url ? (
+                                                        <img src={pool.photos.find(p => p.is_main)?.url} alt={pool.name} className="w-full h-full object-cover" />
+                                                    ) : pool.photos?.[0]?.url ? (
+                                                        <img src={pool.photos[0].url} alt={pool.name} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Waves size={24} />
+                                                    )}
                                                 </div>
                                                 <div className="flex gap-2">
                                                     <button

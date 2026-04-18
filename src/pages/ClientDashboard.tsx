@@ -198,6 +198,16 @@ const ClientDashboard: React.FC = () => {
     if (!client) return null;
 
     const balanceInfo = formatBalance(client.balance);
+    const [pools, setPools] = useState<any[]>([]);
+
+    useEffect(() => {
+        const clientId = localStorage.getItem('blu_client_id');
+        if (clientId) {
+            supabase.from('pools').select('*, photos:pool_photos(url, is_main)').eq('client_id', clientId).then(({ data }) => {
+                if (data) setPools(data);
+            });
+        }
+    }, [client]);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#0f141e] flex flex-col pb-20">
@@ -257,6 +267,32 @@ const ClientDashboard: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Mes Piscines Visual */}
+            {pools.length > 0 && (
+                <div className="mt-8 px-6">
+                    <h3 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4">Mes Bassins</h3>
+                    <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
+                        {pools.map(pool => (
+                            <div key={pool.id} className="shrink-0 w-48 bg-white dark:bg-slate-800 rounded-[2rem] p-3 shadow-sm border border-slate-100 dark:border-white/5">
+                                <div className="aspect-video rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 mb-3">
+                                    {pool.photos?.[0]?.url ? (
+                                        <img src={pool.photos.find((p: any) => p.is_main)?.url || pool.photos[0].url} alt={pool.name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                            <Droplets size={32} />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="px-1">
+                                    <p className="text-xs font-black text-slate-800 dark:text-white uppercase truncate">{pool.name}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{pool.volume_m3} m³ • {pool.treatment_method}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Content Tabs */}
             <div className="mt-8 px-6 flex flex-col gap-6">

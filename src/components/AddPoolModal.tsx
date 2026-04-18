@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { Droplets, Waves } from 'lucide-react';
 import ModalLayout from './ModalLayout';
 import { toast } from 'react-hot-toast';
 import Input from './ui/Input';
 import Button from './ui/Button';
+import PhotoUpload from './ui/PhotoUpload';
+import { Plus, X } from 'lucide-react';
 
 interface AddPoolModalProps {
     clientId: string;
@@ -26,6 +27,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
         template_id: '',
         technician_id: ''
     });
+    const [photos, setPhotos] = useState<string[]>([]);
 
     const [templates, setTemplates] = useState<any[]>([]);
     const [technicians, setTechnicians] = useState<any[]>([]);
@@ -74,6 +76,17 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                     day_of_week: parseInt(formData.preferred_day),
                     active: true
                 }]);
+            }
+
+            // Insertion des photos
+            if (photos.length > 0 && poolData) {
+                const photosToInsert = photos.map((url, index) => ({
+                    pool_id: poolData.id,
+                    url: url,
+                    is_main: index === 0 // La première photo est la principale par défaut
+                }));
+                const { error: photoError } = await supabase.from('pool_photos').insert(photosToInsert);
+                if (photoError) throw photoError;
             }
 
             toast.success('Bassin ajouté avec succès ✓');
@@ -217,6 +230,44 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                             </div>
                         </div>
                     )}
+                </div>
+
+                {/* Section Photos */}
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between px-2">
+                        <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Photos du Bassin</label>
+                        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                            {photos.length} Photo(s)
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        {photos.map((url, index) => (
+                            <div key={index} className="relative aspect-video rounded-2xl overflow-hidden border-2 border-slate-100 dark:border-slate-800 group">
+                                <img src={url} alt={`Bassin ${index}`} className="w-full h-full object-cover" />
+                                <button
+                                    type="button"
+                                    onClick={() => setPhotos(photos.filter((_, i) => i !== index))}
+                                    className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                >
+                                    <X size={14} />
+                                </button>
+                                {index === 0 && (
+                                    <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black uppercase rounded-md shadow-lg">
+                                        Principale
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                        
+                        <div className="flex flex-col">
+                           <PhotoUpload 
+                                label="Ajouter une photo" 
+                                bucket="pools"
+                                onUploadComplete={(url) => setPhotos([...photos, url])} 
+                            />
+                        </div>
+                    </div>
                 </div>
             </form>
         </ModalLayout>

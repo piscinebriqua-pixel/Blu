@@ -32,6 +32,7 @@ import BccpLogo from './components/BccpLogo';
 import BottomNav from './components/BottomNav';
 import Partners from './pages/Partners';
 import PartnerDetail from './pages/PartnerDetail';
+import PoolCatalogue from './pages/PoolCatalogue';
 import './index.css';
 
 const ClientRedirect = () => {
@@ -330,6 +331,12 @@ function App() {
             <Route path="/chantiers" element={
               <ProtectedRoute>
                 <div className="app-container"><Chantiers /></div>
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/catalogue" element={
+              <ProtectedRoute>
+                <div className="app-container"><PoolCatalogue /></div>
               </ProtectedRoute>
             } />
 

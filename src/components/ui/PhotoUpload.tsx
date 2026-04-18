@@ -8,12 +8,14 @@ interface PhotoUploadProps {
   label: string;
   onUploadComplete: (url: string) => void;
   currentUrl?: string;
+  bucket?: string;
 }
 
 const PhotoUpload: React.FC<PhotoUploadProps> = ({
   label,
   onUploadComplete,
   currentUrl,
+  bucket = "interventions",
 }) => {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentUrl || null);
@@ -56,7 +58,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       const filePath = `reports/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("interventions")
+        .from(bucket)
         .upload(filePath, fileToUpload);
 
       if (uploadError) throw uploadError;
@@ -64,7 +66,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       // 3. Get Public URL
       const {
         data: { publicUrl },
-      } = supabase.storage.from("interventions").getPublicUrl(filePath);
+      } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
       setPreview(URL.createObjectURL(fileToUpload));
       onUploadComplete(publicUrl);
