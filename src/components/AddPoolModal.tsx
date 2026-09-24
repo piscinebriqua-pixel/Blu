@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 import Input from './ui/Input';
 import Button from './ui/Button';
 import PhotoUpload from './ui/PhotoUpload';
-import { Plus, X } from 'lucide-react';
+import { Waves, Droplets, X } from 'lucide-react';
 
 interface AddPoolModalProps {
     clientId: string;

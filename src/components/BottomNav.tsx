@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Users, Calendar, Waves, Briefcase, LogOut, Image as ImageIcon } from 'lucide-react';
+import { Home, Users, Calendar, Briefcase, LogOut, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const BottomNav: React.FC = () => {

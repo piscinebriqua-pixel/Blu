@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import Button from './ui/Button';
+import Input from './ui/Input';
+import ModalLayout from './ModalLayout';
+import { toast } from 'react-hot-toast';
 import ConfirmModal from './ConfirmModal';
 import PhotoUpload from './ui/PhotoUpload';
 import { Droplets, Waves, Calendar, AlertCircle, Trash2, X, Star } from 'lucide-react';
