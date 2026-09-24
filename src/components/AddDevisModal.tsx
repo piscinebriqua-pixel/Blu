@@ -203,7 +203,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
     // Auto-generate a successive quote number
     useEffect(() => {
         const generateSuccessiveNumber = async () => {
-            if (number || devisId) return;
+            if (number || devisId || isTemplate) return;
 
             try {
                 const { data } = await supabase
@@ -214,18 +214,14 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                 if (data && data.length > 0) {
                     let maxId = 0;
                     data.forEach(d => {
-                        const match = d.number.match(/DEV-(\d+)/);
+                        const match = d.number?.match(/DEV-(\d+)/i);
                         if (match) {
                             const val = parseInt(match[1], 10);
                             if (val > maxId) maxId = val;
                         }
                     });
                     
-                    if (maxId > 0) {
-                        setNumber(`DEV-${(maxId + 1).toString().padStart(3, '0')}`);
-                    } else {
-                        setNumber(`DEV-001`);
-                    }
+                    setNumber(`DEV-${(maxId + 1).toString().padStart(3, '0')}`);
                 } else {
                     setNumber(`DEV-001`);
                 }
@@ -237,7 +233,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
         };
 
         generateSuccessiveNumber();
-    }, [number]);
+    }, [number, devisId, isTemplate]);
 
     const addItem = () => {
         setItems([...items, { id: crypto.randomUUID(), designation: '', quantity: 1, unit_price: 0, unit: 'U', is_header: false }]);
@@ -473,9 +469,44 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
 
             let devisDataId = devisId;
 
+            let finalNumber = number;
+
+            if (isTemplate) {
+                // Generate a unique identifier for template to satisfy UNIQUE constraint on 'number'
+                const { count } = await supabase
+                    .from('devis')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('is_template', true);
+                finalNumber = `TPL-${((count || 0) + 1).toString().padStart(3, '0')}`;
+            } else if (!devisId) {
+                // Check if the assigned number already exists
+                const { data: existing } = await supabase
+                    .from('devis')
+                    .select('id')
+                    .eq('number', finalNumber)
+                    .maybeSingle();
+
+                if (existing) {
+                    // Collision detected! Calculate the next free number
+                    const { data: allDevis } = await supabase
+                        .from('devis')
+                        .select('number')
+                        .like('number', 'DEV-%');
+                    let maxId = 0;
+                    allDevis?.forEach(d => {
+                        const match = d.number?.match(/DEV-(\d+)/i);
+                        if (match) {
+                            const val = parseInt(match[1], 10);
+                            if (val > maxId) maxId = val;
+                        }
+                    });
+                    finalNumber = `DEV-${(maxId + 1).toString().padStart(3, '0')}`;
+                }
+            }
+
             const baseData = {
                 client_id: isTemplate ? null : selectedClientId,
-                number: isTemplate ? 'TEMPLATE' : number,
+                number: finalNumber,
                 title,
                 total_amount: total,
                 status: isTemplate ? 'closed' : status,

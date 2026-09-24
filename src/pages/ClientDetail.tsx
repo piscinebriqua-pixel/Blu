@@ -215,7 +215,17 @@ const ClientDetail: React.FC = () => {
             setLoading(true);
             const { data: items } = await supabase.from('devis_items').select('*').eq('devis_id', originalDevis.id);
 
-            const newDevisNumber = `${originalDevis.number}-COPY`;
+            const baseNumber = originalDevis.number.replace(/-COPY(-\d+)?$/, '');
+            const { data: existingCopies } = await supabase
+                .from('devis')
+                .select('number')
+                .like('number', `${baseNumber}-COPY%`);
+
+            let newDevisNumber = `${baseNumber}-COPY`;
+            if (existingCopies && existingCopies.length > 0) {
+                newDevisNumber = `${baseNumber}-COPY-${existingCopies.length + 1}`;
+            }
+
             const { data: newDevis, error: dError } = await supabase
                 .from('devis')
                 .insert([{
