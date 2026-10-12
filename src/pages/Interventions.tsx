@@ -219,14 +219,14 @@ const Interventions: React.FC = () => {
             aria-label="Type"
             value={selectedType}
             onChange={(e) => setSelectedType(e.target.value as any)}
-            className="w-full p-3 pl-4 pr-10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md rounded-xl border border-white dark:border-white/5 text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 appearance-none outline-none focus:border-primary/50"
+            className="w-full min-h-[44px] p-3 pl-4 pr-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-md rounded-xl border border-slate-200 dark:border-white/10 text-base font-bold text-slate-800 dark:text-white appearance-none outline-none focus:border-primary/50"
           >
             <option value="all">Tous Types</option>
             <option value="classique">Visite</option>
             <option value="chantier">Chantier</option>
           </select>
           <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-            <Clock size={14} />
+            <Clock size={16} />
           </div>
         </div>
 
@@ -235,7 +235,7 @@ const Interventions: React.FC = () => {
             aria-label="Technicien"
             value={selectedTech}
             onChange={(e) => setSelectedTech(e.target.value)}
-            className="w-full p-3 pl-4 pr-10 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md rounded-xl border border-white dark:border-white/5 text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 appearance-none outline-none focus:border-primary/50"
+            className="w-full min-h-[44px] p-3 pl-4 pr-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-md rounded-xl border border-slate-200 dark:border-white/10 text-base font-bold text-slate-800 dark:text-white appearance-none outline-none focus:border-primary/50"
           >
             <option value="all">Tous Techs</option>
             {uniqueTechnicians.map(tech => (
@@ -243,7 +243,7 @@ const Interventions: React.FC = () => {
             ))}
           </select>
           <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-            <User size={14} />
+            <User size={16} />
           </div>
         </div>
       </div>

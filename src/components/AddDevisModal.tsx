@@ -620,8 +620,8 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                         <ClipboardCopy size={26} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <h4 className="text-[14px] font-black text-emerald-900 dark:text-white uppercase tracking-tight">Appliquer Modèle</h4>
-                                        <p className="text-[10px] text-emerald-500/80 font-black uppercase tracking-widest mt-0.5">{availableTemplates.length} modèles dispos</p>
+                                        <h4 className="text-base font-black text-emerald-900 dark:text-white uppercase tracking-tight">Appliquer Modèle</h4>
+                                        <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider mt-0.5">{availableTemplates.length} modèles disponibles</p>
                                     </div>
                                 </div>
                                 <ChevronDown size={20} className={`text-emerald-500 transition-transform ${showTemplatesDropdown ? 'rotate-180' : ''}`} />
@@ -630,19 +630,19 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                             {showTemplatesDropdown && (
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[2rem] shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
                                     {availableTemplates.length === 0 ? (
-                                        <div className="p-6 text-center text-[11px] font-black text-slate-400 uppercase tracking-widest">Aucun modèle créé</div>
+                                        <div className="p-6 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Aucun modèle créé</div>
                                     ) : (
                                         <div className="max-h-60 overflow-y-auto no-scrollbar">
                                             {availableTemplates.map(tpl => (
                                                 <button
                                                     key={tpl.id}
                                                     onClick={() => applyTemplate(tpl.id)}
-                                                    className="w-full p-4 text-left hover:bg-emerald-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5 last:border-0 transition-colors flex items-center gap-3"
+                                                    className="w-full min-h-[44px] p-4 text-left hover:bg-emerald-50 dark:hover:bg-white/5 border-b border-slate-50 dark:border-white/5 last:border-0 transition-colors flex items-center gap-3"
                                                 >
                                                     <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 flex items-center justify-center shrink-0">
                                                         <ClipboardCopy size={16} />
                                                     </div>
-                                                    <span className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase truncate">{tpl.title}</span>
+                                                    <span className="text-base font-bold text-slate-800 dark:text-slate-100 truncate">{tpl.title}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -689,7 +689,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                     title="Sélectionner le Client"
                                     value={selectedClientId}
                                     onChange={(e) => setSelectedClientId(e.target.value)}
-                                    className="w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold px-4 text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
+                                    className="w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 text-base font-bold px-4 text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
                                 >
                                     <option value="">-- Client (Manuel) --</option>
                                     {clients.map(c => (
@@ -715,7 +715,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 )}
                             </div>
                         ) : (
-                            <div className="md:col-span-1 border border-slate-200 dark:border-slate-700 rounded-2xl h-14 bg-slate-100 dark:bg-slate-800/50 p-4 font-bold text-slate-400 flex items-center">
+                            <div className="md:col-span-1 border border-slate-200 dark:border-slate-700 rounded-2xl h-14 bg-slate-100 dark:bg-slate-800/50 p-4 font-bold text-slate-400 flex items-center text-base">
                                 Client Déjà Assigné
                             </div>
                         )}
@@ -725,7 +725,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 title="Statut du Devis"
                                 value={status}
                                 onChange={(e) => setStatus(e.target.value as any)}
-                                className={`w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-black px-4 outline-none focus:border-blue-500 transition-all ${status === 'closed' ? 'text-emerald-500' :
+                                className={`w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 text-base font-black px-4 outline-none focus:border-blue-500 transition-all ${status === 'closed' ? 'text-emerald-500' :
                                     status === 'cancelled' ? 'text-rose-500' : 'text-blue-500'
                                     }`}
                             >

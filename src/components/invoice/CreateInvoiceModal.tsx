@@ -139,7 +139,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                 <select
                   value={state.taxRate}
                   onChange={(e) => state.setTaxRate(parseFloat(e.target.value) || 0)}
-                  className="w-full min-h-[44px] px-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base font-semibold text-slate-900 dark:text-white"
+                  className="w-full min-h-[44px] px-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base font-bold text-slate-900 dark:text-white"
                 >
                   <option value="0">0% (Exonéré / Sans TVA)</option>
                   <option value="7">7%</option>

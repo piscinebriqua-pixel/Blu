@@ -41,7 +41,7 @@ export const WaterAnalysisSection: React.FC<WaterAnalysisSectionProps> = ({
           <div className="relative mb-4">
             <select
               title="Sélectionner un devis (Chantier)"
-              className="w-full pl-10 pr-10 py-3.5 bg-white dark:bg-slate-800 rounded-2xl border-2 border-slate-100 dark:border-slate-700 font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all appearance-none text-sm"
+              className="w-full min-h-[44px] pl-10 pr-10 py-3 bg-white dark:bg-slate-800 rounded-2xl border-2 border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all appearance-none text-base"
               value={formData.devis_id}
               onChange={(e) => setFormData({ ...formData, devis_id: e.target.value })}
             >

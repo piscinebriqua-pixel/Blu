@@ -257,7 +257,7 @@ export const AdminUserModals: React.FC<AdminUserModalsProps> = ({
             <div>
               <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Rôle initial</label>
               <select
-                className="mt-1 w-full h-12 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-bold text-base focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="mt-1 w-full h-14 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-bold text-base text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/20"
                 value={newUserForm.role}
                 onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value })}
               >

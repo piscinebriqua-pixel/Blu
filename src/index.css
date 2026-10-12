@@ -51,17 +51,40 @@
   color-scheme: dark;
 }
 
-/* Fix for native selects and inputs in dark mode */
+/* Fix & Universal High-Definition Typography for native selects and dropdowns */
+select {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 16px !important; /* Empêche l'auto-zoom forcé iOS Safari */
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+select option,
+select optgroup {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 600;
+  padding: 12px 14px;
+  background-color: #FFFFFF;
+  color: #0F172A;
+}
+
 [data-theme='dark'] select,
-[data-theme='dark'] select option,
+.dark select,
 [data-theme='dark'] input,
-[data-theme='dark'] textarea {
+.dark input,
+[data-theme='dark'] textarea,
+.dark textarea {
   background-color: var(--card-bg);
   color: var(--text-main);
 }
 
 /* Ensure dropdowns have high contrast in dark mode */
-[data-theme='dark'] select option {
+[data-theme='dark'] select option,
+.dark select option,
+[data-theme='dark'] select optgroup,
+.dark select optgroup {
   background-color: #1E293B; /* Match card-bg exactly */
   color: #F8FAFC;
 }

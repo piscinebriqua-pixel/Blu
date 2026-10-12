@@ -36,19 +36,19 @@ const Select: React.FC<SelectProps> = ({
                     className={`
                         w-full h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl 
                         ${Icon ? 'pl-12' : 'pl-4'} pr-10 
-                        font-semibold text-slate-800 dark:text-white appearance-none
+                        text-base font-bold text-slate-800 dark:text-white appearance-none
                         focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 
                         transition-all disabled:opacity-50 disabled:cursor-not-allowed
                         ${className}
                     `}
                     {...props}
                 >
-                    <option value="">{placeholder}</option>
+                    <option value="" className="text-base font-semibold">{placeholder}</option>
                     {options.map((option) => {
                         const optVal = typeof option === 'string' ? option : option.value;
                         const optLabel = typeof option === 'string' ? option : option.label;
                         return (
-                            <option key={optVal} value={optVal}>
+                            <option key={optVal} value={optVal} className="text-base font-bold py-2">
                                 {optLabel}
                             </option>
                         );

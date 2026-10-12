@@ -181,7 +181,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                             <div className="flex flex-col gap-2">
                                 <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Modèle d'intervention</label>
                                 <select
-                                    className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium"
+                                    className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.template_id}
                                     onChange={e => setFormData({ ...formData, template_id: e.target.value })}
                                 >
@@ -192,7 +192,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                             <div className="flex flex-col gap-2">
                                 <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Technicien attitré</label>
                                 <select
-                                    className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium"
+                                    className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.technician_id}
                                     onChange={e => setFormData({ ...formData, technician_id: e.target.value })}
                                 >
@@ -203,19 +203,20 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                             <div className="flex flex-col gap-2">
                                 <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Fréquence</label>
                                 <select
-                                    className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium"
+                                    className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.maintenance_frequency}
                                     onChange={e => setFormData({ ...formData, maintenance_frequency: e.target.value })}
                                 >
-                                    <option value="weekly">Hebdomadaire (7j)</option>
-                                    <option value="biweekly">Quinzomadaire (14j)</option>
-                                    <option value="monthly">Mensuelle (30j)</option>
+                                    <option value="weekly">Hebdomadaire (1 semaine)</option>
+                                    <option value="biweekly">Quinzaine (2 semaines)</option>
+                                    <option value="triweekly">Toutes les 3 semaines</option>
+                                    <option value="monthly">Mensuel (4 semaines)</option>
                                 </select>
                             </div>
                             <div className="flex flex-col gap-2">
                                 <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Jour préféré</label>
                                 <select
-                                    className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium"
+                                    className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.preferred_day}
                                     onChange={e => setFormData({ ...formData, preferred_day: e.target.value })}
                                 >

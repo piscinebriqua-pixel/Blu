@@ -442,10 +442,10 @@ const InterventionTemplates: React.FC = () => {
                                                     setIsServiceDropdownOpen(true);
                                                 }}
                                                 onFocus={() => setIsServiceDropdownOpen(true)}
-                                                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-400 text-sm"
+                                                className="w-full min-h-[44px] pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-400 text-base text-slate-800 dark:text-white"
                                             />
                                             {isServiceDropdownOpen && serviceSearch && (
-                                                <div className="absolute z-[60] w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[200px] overflow-y-auto no-scrollbar">
+                                                <div className="absolute z-[60] w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[220px] overflow-y-auto no-scrollbar">
                                                     {dbServices
                                                         .filter(s => s.name.toLowerCase().includes(serviceSearch.toLowerCase()) && !selectedServices.find(ss => ss.id === s.id))
                                                         .map(s => (
@@ -453,10 +453,10 @@ const InterventionTemplates: React.FC = () => {
                                                                 key={s.id}
                                                                 type="button"
                                                                 onClick={() => addService(s)}
-                                                                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                                                                className="w-full min-h-[44px] flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
                                                             >
-                                                                <span className="text-xs font-black uppercase tracking-tight">{s.name}</span>
-                                                                <span className="text-[10px] font-bold text-slate-400">{s.price} DT</span>
+                                                                <span className="text-base font-bold text-slate-800 dark:text-white">{s.name}</span>
+                                                                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{s.price} DT</span>
                                                             </button>
                                                         ))}
                                                 </div>
@@ -469,7 +469,7 @@ const InterventionTemplates: React.FC = () => {
                                                 <div key={s.id} className="flex justify-between items-center p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-900/10">
                                                     <div className="flex items-center gap-3">
                                                         <Wrench size={16} className="text-blue-600" />
-                                                        <span className="text-xs font-black uppercase tracking-tight">{s.name}</span>
+                                                        <span className="text-sm font-bold text-slate-800 dark:text-white">{s.name}</span>
                                                     </div>
                                                     <button 
                                                         type="button" 
@@ -485,7 +485,7 @@ const InterventionTemplates: React.FC = () => {
 
                                     {/* Produits */}
                                     <div className="space-y-4">
-                                        <h3 className="text-[11px] font-black text-violet-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <h3 className="text-xs font-black text-violet-600 uppercase tracking-widest flex items-center gap-2">
                                             <div className="w-1 h-3 bg-violet-600 rounded-full" /> Produits utilisés
                                         </h3>
 
@@ -501,10 +501,10 @@ const InterventionTemplates: React.FC = () => {
                                                     setIsProductDropdownOpen(true);
                                                 }}
                                                 onFocus={() => setIsProductDropdownOpen(true)}
-                                                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-violet-500/20 outline-none transition-all placeholder:text-slate-400 text-sm"
+                                                className="w-full min-h-[44px] pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-violet-500/20 outline-none transition-all placeholder:text-slate-400 text-base text-slate-800 dark:text-white"
                                             />
                                             {isProductDropdownOpen && productSearch && (
-                                                <div className="absolute z-[60] w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[200px] overflow-y-auto no-scrollbar">
+                                                <div className="absolute z-[60] w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[220px] overflow-y-auto no-scrollbar">
                                                     {dbProducts
                                                         .filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()) && !selectedProducts.find(sp => sp.product.id === p.id))
                                                         .map(p => (
@@ -512,10 +512,10 @@ const InterventionTemplates: React.FC = () => {
                                                                 key={p.id}
                                                                 type="button"
                                                                 onClick={() => addProduct(p)}
-                                                                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                                                                className="w-full min-h-[44px] flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
                                                             >
-                                                                <span className="text-xs font-black uppercase tracking-tight">{p.name}</span>
-                                                                <span className="text-[10px] font-bold text-slate-400">{p.unit}</span>
+                                                                <span className="text-base font-bold text-slate-800 dark:text-white">{p.name}</span>
+                                                                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{p.unit}</span>
                                                             </button>
                                                         ))}
                                                 </div>

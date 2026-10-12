@@ -81,7 +81,7 @@ const Planning: React.FC = () => {
                     services:intervention_services(price_at_time, service:services(name)),
                     products:intervention_products(quantity, total_price, product:inventory_products(name, unit))
                 `)
-                .in('status', ['scheduled', 'completed', 'in_progress', 'pending', 'cancelled'])
+                .in('status', ['scheduled', 'completed', 'in_progress', 'pending', 'unvisited', 'cancelled'])
                 .order('scheduled_date', { ascending: false });
 
             if (profile?.role !== 'admin' && profile?.technician_id) {
@@ -661,7 +661,7 @@ const Planning: React.FC = () => {
                         title="Filtrer par technicien (Mobile)"
                         value={selectedTech}
                         onChange={(e) => setSelectedTech(e.target.value)}
-                        className="w-full bg-white dark:bg-slate-800 border-none rounded-xl py-2 px-3 text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 shadow-sm"
+                        className="w-full min-h-[44px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-base font-bold text-slate-800 dark:text-white shadow-sm"
                     >
                         <option value="all">Tous Techniciens</option>
                         {technicians.map(t => (
@@ -674,11 +674,12 @@ const Planning: React.FC = () => {
                         title="Filtrer par statut (Mobile)"
                         value={selectedStatus}
                         onChange={(e) => setSelectedStatus(e.target.value)}
-                        className="w-full bg-white dark:bg-slate-800 border-none rounded-xl py-2 px-3 text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 shadow-sm"
+                        className="w-full min-h-[44px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-base font-bold text-slate-800 dark:text-white shadow-sm"
                     >
                         <option value="all">Tous Statuts</option>
                         <option value="scheduled">Planifié</option>
                         <option value="completed">Terminé</option>
+                        <option value="unvisited">Non Visité</option>
                         <option value="cancelled">Annulé</option>
                     </select>
                 </div>

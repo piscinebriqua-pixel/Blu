@@ -117,7 +117,7 @@ const AddPartnerModal: React.FC<AddPartnerModalProps> = ({ partner, onClose, onS
                                 name="role"
                                 value={formData.role}
                                 onChange={handleChange}
-                                className="w-full h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl pl-12 pr-10 font-semibold text-slate-800 dark:text-white outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer"
+                                className="w-full h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl pl-12 pr-10 text-base font-bold text-slate-800 dark:text-white outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all appearance-none cursor-pointer"
                             >
                                 {PARTNER_ROLES.map(r => (
                                     <option key={r.value} value={r.value}>{r.label}</option>

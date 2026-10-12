@@ -88,9 +88,9 @@ const Combobox: React.FC<ComboboxProps> = ({
                 <input
                     type="text"
                     className={`
-                        w-full h-[72px] bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl 
-                        ${Icon ? 'pl-16' : 'pl-8'} pr-16
-                        font-black text-[18px] uppercase tracking-widest text-slate-700 dark:text-white placeholder:text-slate-400
+                        w-full h-14 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl 
+                        ${Icon ? 'pl-14' : 'pl-5'} pr-14
+                        font-bold text-base text-slate-800 dark:text-white placeholder:text-slate-400
                         focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 
                         transition-all cursor-pointer ${className}
                     `}
@@ -108,13 +108,13 @@ const Combobox: React.FC<ComboboxProps> = ({
                     }}
                 />
 
-                <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-                    <ChevronDown size={24} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                    <ChevronDown size={22} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                 </div>
 
                 {isOpen && (
                     <div className="absolute z-[100] w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                        <div className="max-h-[350px] overflow-y-auto p-2.5 space-y-1.5">
+                        <div className="max-h-[350px] overflow-y-auto p-2 space-y-1">
                             {filteredOptions.length > 0 ? (
                                 filteredOptions.map((option) => (
                                     <button
@@ -122,20 +122,20 @@ const Combobox: React.FC<ComboboxProps> = ({
                                         type="button"
                                         onClick={() => handleSelect(option)}
                                         className={`
-                                            w-full flex items-center justify-between px-6 py-4.5 rounded-xl text-left font-black text-[15px] uppercase tracking-widest transition-all
+                                            w-full min-h-[44px] flex items-center justify-between px-4 py-3 rounded-xl text-left font-bold text-base transition-all
                                             ${value === option.value
                                                 ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                                                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'}
+                                                : 'text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/10'}
                                         `}
                                     >
-                                        <span className="truncate pr-4">{option.label}</span>
-                                        {value === option.value && <Check size={20} strokeWidth={3} />}
+                                        <span className="truncate pr-3">{option.label}</span>
+                                        {value === option.value && <Check size={18} strokeWidth={3} className="shrink-0" />}
                                     </button>
                                 ))
                             ) : (
                                 <div className="px-4 py-8 text-center">
-                                    <Search size={32} className="mx-auto text-slate-300 mb-2 opacity-20" />
-                                    <p className="text-xs font-black uppercase text-slate-400 tracking-widest">Aucun résultat</p>
+                                    <Search size={28} className="mx-auto text-slate-300 mb-2 opacity-30" />
+                                    <p className="text-sm font-bold text-slate-400">Aucun résultat trouvé</p>
                                 </div>
                             )}
                         </div>
