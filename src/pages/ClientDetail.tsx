@@ -35,6 +35,7 @@ import { ClientInterventionsList } from "../components/client/ClientIntervention
 import { ClientPaymentsList } from "../components/client/ClientPaymentsList";
 import { ClientDevisList } from "../components/client/ClientDevisList";
 import { ClientBalanceView } from "../components/client/ClientBalanceView";
+import { ClientInvoicesList } from "../components/client/ClientInvoicesList";
 
 const ClientDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -250,6 +251,16 @@ const ClientDetail: React.FC = () => {
         onSelectDevisForView={setSelectedDevisForView}
       />
 
+      {/* 1.5. Module de Facturation Client */}
+      {client && (
+        <div className="mt-8 mb-6 card-bento p-5 border border-slate-200/60 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-sm">
+          <ClientInvoicesList
+            clientId={client.id}
+            clientName={`${client.first_name} ${client.last_name}`}
+          />
+        </div>
+      )}
+
       {/* 2. Modale Catégorie Active */}
       {activeCategory && (
         <ModalLayout
@@ -264,6 +275,8 @@ const ClientDetail: React.FC = () => {
               ? "Chantiers & Devis"
               : activeCategory === "balance"
               ? "Détails du Solde"
+              : activeCategory === "invoices"
+              ? "Factures Client"
               : "Localisation GPS"
           }
           onClose={() => setActiveCategory(null)}
@@ -375,6 +388,12 @@ const ClientDetail: React.FC = () => {
               <div className="rounded-[2.5rem] overflow-hidden bg-slate-100 dark:bg-slate-800 h-[500px] border border-slate-200 dark:border-slate-700 p-1">
                 <MapPicker lat={client.gps_lat} lng={client.gps_lng} readonly={true} />
               </div>
+            )}
+            {activeCategory === "invoices" && client && (
+              <ClientInvoicesList
+                clientId={client.id}
+                clientName={`${client.first_name} ${client.last_name}`}
+              />
             )}
           </div>
         </ModalLayout>

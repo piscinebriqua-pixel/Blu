@@ -124,6 +124,12 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
                         }`}>
                         {devis.status === 'closed' ? 'Clôturé' : devis.status === 'cancelled' ? 'Annulé' : 'En cours'}
                     </div>
+
+                    {devis.invoice_id && (
+                        <div className="mt-2 px-3 py-1 rounded-xl uppercase tracking-widest text-[11px] font-black bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300">
+                            Facturé
+                        </div>
+                    )}
                 </div>
 
                 {/* Company & Header Content (NEW) */}

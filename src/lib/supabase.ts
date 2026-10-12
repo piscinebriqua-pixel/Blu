@@ -46,3 +46,38 @@ export type PaymentUpdate = Database['public']['Tables']['payments']['Update'];
 export type PartnerRow = Database['public']['Tables']['partners']['Row'];
 export type PartnerInsert = Database['public']['Tables']['partners']['Insert'];
 export type PartnerUpdate = Database['public']['Tables']['partners']['Update'];
+
+// --- Types Facturation ---
+export interface InvoiceRow {
+  id: string;
+  number: string;
+  client_id: string;
+  invoice_date: string;
+  due_date: string | null;
+  status: 'draft' | 'issued' | 'paid' | 'partially_paid' | 'cancelled';
+  type: 'interventions' | 'devis' | 'mixed' | 'manual';
+  subtotal_ht: number;
+  tax_rate: number;
+  tax_amount: number;
+  total_ttc: number;
+  paid_amount: number;
+  notes: string | null;
+  payment_terms: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InvoiceItemRow {
+  id: string;
+  invoice_id: string;
+  origin_type: 'intervention' | 'devis' | 'manual';
+  origin_id: string | null;
+  position: number;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  created_at: string;
+}
+

@@ -87,4 +87,4 @@ export interface ClientPartner {
   email?: string;
 }
 
-export type ActiveCategory = "pools" | "interventions" | "payments" | "balance" | "gps" | "devis" | null;
+export type ActiveCategory = "pools" | "interventions" | "payments" | "balance" | "gps" | "devis" | "invoices" | null;
