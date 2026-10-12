@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { LogOut, User, Users, Shield } from 'lucide-react';
+import { LogOut, User, Users, Shield, Receipt } from 'lucide-react';
 
 const UserMenu: React.FC = () => {
     const navigate = useNavigate();
@@ -72,10 +72,17 @@ const UserMenu: React.FC = () => {
                                     Gestion Utilisateurs
                                 </button>
                                 <button
-                                    onClick={() => { navigate('/settings'); setIsMenuOpen(false); }}
-                                    className="w-full px-4 py-3 text-left text-[11px] font-black text-slate-400 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
+                                    onClick={() => { navigate('/factures'); setIsMenuOpen(false); }}
+                                    className="w-full px-4 py-3 text-left text-xs font-black text-slate-300 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
                                 >
-                                    <Shield size={14} className="text-blue-500" />
+                                    <Receipt size={16} className="text-blue-400" />
+                                    Facturation
+                                </button>
+                                <button
+                                    onClick={() => { navigate('/settings'); setIsMenuOpen(false); }}
+                                    className="w-full px-4 py-3 text-left text-xs font-black text-slate-400 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
+                                >
+                                    <Shield size={16} className="text-blue-500" />
                                     Administration
                                 </button>
                             </>

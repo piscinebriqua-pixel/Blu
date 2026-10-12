@@ -5,6 +5,7 @@ import {
   type UnbilledDevis,
   type CreateInvoicePayload 
 } from '../../services/invoiceService';
+import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
 
 export interface InvoiceDraftItem {
@@ -16,10 +17,30 @@ export interface InvoiceDraftItem {
   totalPrice: number;
 }
 
-export function useCreateInvoiceState(clientId: string, clientName: string, onSuccess: () => void) {
+export interface ClientOption {
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone: string | null;
+}
+
+export function useCreateInvoiceState(
+  initialClientId?: string,
+  _initialClientName?: string,
+  onSuccess?: () => void
+) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
+  // Gestion du client
+  const [selectedClientId, setSelectedClientId] = useState<string>(initialClientId || '');
+  const [availableClients, setAvailableClients] = useState<ClientOption[]>([]);
+  const [clientSearchTerm, setClientSearchTerm] = useState('');
+
+  // Numérotation
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+
+  // Type et éléments
   const [invoiceType, setInvoiceType] = useState<'interventions' | 'devis' | 'manual'>('interventions');
   const [unbilledInterventions, setUnbilledInterventions] = useState<UnbilledIntervention[]>([]);
   const [unbilledDevis, setUnbilledDevis] = useState<UnbilledDevis[]>([]);
@@ -39,33 +60,75 @@ export function useCreateInvoiceState(clientId: string, clientName: string, onSu
   const [notes, setNotes] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('Paiement à réception');
 
-  // Lignes personnalisées manuelles supplémentaires
+  // Lignes manuelles d'ajustement
   const [customItems, setCustomItems] = useState<InvoiceDraftItem[]>([]);
 
-  // Chargement initial des éléments non facturés
+  // Chargement initial du prochain numéro de facture et des clients si besoin
   useEffect(() => {
-    loadUnbilledSources();
-  }, [clientId]);
+    initModal();
+  }, [initialClientId]);
 
-  const loadUnbilledSources = async () => {
+  const initModal = async () => {
     try {
       setLoading(true);
+      // Récupérer le prochain numéro suggéré
+      const nextNum = await invoiceService.getNextInvoiceNumber();
+      setInvoiceNumber(nextNum);
+
+      // Si pas de clientId initial, charger la liste des clients
+      if (!initialClientId) {
+        const { data: clientsData, error } = await supabase
+          .from('clients')
+          .select('id, first_name, last_name, phone')
+          .order('first_name');
+
+        if (!error && clientsData) {
+          setAvailableClients(clientsData);
+        }
+      } else {
+        await loadUnbilledSources(initialClientId);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Recharger dès que le client sélectionné change
+  const handleClientChange = async (clientId: string) => {
+    setSelectedClientId(clientId);
+    setSelectedInterventionIds([]);
+    setSelectedDevisId(null);
+    if (clientId) {
+      setLoading(true);
+      await loadUnbilledSources(clientId);
+      setLoading(false);
+    } else {
+      setUnbilledInterventions([]);
+      setUnbilledDevis([]);
+    }
+  };
+
+  const loadUnbilledSources = async (targetClientId: string) => {
+    try {
       const [interventions, devisList] = await Promise.all([
-        invoiceService.fetchUnbilledInterventions(clientId),
-        invoiceService.fetchUnbilledDevis(clientId),
+        invoiceService.fetchUnbilledInterventions(targetClientId),
+        invoiceService.fetchUnbilledDevis(targetClientId),
       ]);
       setUnbilledInterventions(interventions);
       setUnbilledDevis(devisList);
 
-      // Par défaut, si des interventions sont disponibles, on coche toutes les interventions non facturées
+      // Par défaut, si des interventions sont disponibles, on coche tout
       if (interventions.length > 0) {
+        setInvoiceType('interventions');
         setSelectedInterventionIds(interventions.map((i) => i.id));
       } else if (devisList.length > 0) {
         setInvoiceType('devis');
         setSelectedDevisId(devisList[0].id);
+      } else {
+        setInvoiceType('manual');
       }
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error('Erreur loadUnbilledSources:', err);
     }
   };
 
@@ -169,6 +232,12 @@ export function useCreateInvoiceState(clientId: string, clientName: string, onSu
 
   // Soumission
   const handleSubmit = async () => {
+    const finalClientId = initialClientId || selectedClientId;
+    if (!finalClientId) {
+      toast.error('Veuillez sélectionner un client pour cette facture');
+      return;
+    }
+
     if (invoiceItems.length === 0) {
       toast.error('La facture doit contenir au moins une prestation');
       return;
@@ -177,7 +246,8 @@ export function useCreateInvoiceState(clientId: string, clientName: string, onSu
     try {
       setSaving(true);
       const payload: CreateInvoicePayload = {
-        clientId,
+        clientId: finalClientId,
+        invoiceNumber: invoiceNumber.trim() || undefined,
         invoiceDate,
         dueDate,
         type: invoiceType,
@@ -191,7 +261,7 @@ export function useCreateInvoiceState(clientId: string, clientName: string, onSu
 
       const result = await invoiceService.createInvoice(payload);
       if (result) {
-        onSuccess();
+        onSuccess?.();
       }
     } finally {
       setSaving(false);
@@ -201,6 +271,13 @@ export function useCreateInvoiceState(clientId: string, clientName: string, onSu
   return {
     loading,
     saving,
+    selectedClientId,
+    handleClientChange,
+    availableClients,
+    clientSearchTerm,
+    setClientSearchTerm,
+    invoiceNumber,
+    setInvoiceNumber,
     invoiceType,
     setInvoiceType,
     unbilledInterventions,

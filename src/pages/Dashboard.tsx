@@ -11,6 +11,7 @@ import {
     Briefcase,
     QrCode,
     X,
+    Receipt,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import ThemeToggle from '../components/ThemeToggle';
@@ -200,13 +201,22 @@ const Dashboard: React.FC = () => {
             <ThemeToggle />
             <div className="hidden sm:flex items-center gap-2">
                 {profile?.role === 'admin' && (
-                    <button 
-                        onClick={() => navigate('/settings')}
-                        className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 transition-all border border-white/10"
-                        title="Configuration"
-                    >
-                        <Settings size={18} />
-                    </button>
+                    <>
+                        <button 
+                            onClick={() => navigate('/factures')}
+                            className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 hover:text-white transition-all border border-white/10"
+                            title="Facturation"
+                        >
+                            <Receipt size={18} />
+                        </button>
+                        <button 
+                            onClick={() => navigate('/settings')}
+                            className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 hover:text-white transition-all border border-white/10"
+                            title="Configuration"
+                        >
+                            <Settings size={18} />
+                        </button>
+                    </>
                 )}
                 <button 
                     onClick={() => setIsQrModalOpen(true)}

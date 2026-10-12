@@ -37,6 +37,7 @@ const VehiclesSettings = React.lazy(() => import('./pages/VehiclesSettings'));
 const Partners = React.lazy(() => import('./pages/Partners'));
 const PartnerDetail = React.lazy(() => import('./pages/PartnerDetail'));
 const PoolCatalogue = React.lazy(() => import('./pages/PoolCatalogue'));
+const Invoices = React.lazy(() => import('./pages/Invoices'));
 
 const ClientRedirect = () => {
   const { id } = useParams();
@@ -265,6 +266,14 @@ function AppContent() {
                 <div className="app-container"><Payments /></div>
               </ProtectedRoute>
             } />
+
+            <Route path="/factures" element={
+              <ProtectedRoute>
+                <div className="app-container"><Invoices /></div>
+              </ProtectedRoute>
+            } />
+
+            <Route path="/invoices" element={<Navigate to="/factures" replace />} />
 
             <Route path="/revenue" element={
               <ProtectedRoute requireAdmin={true}>

@@ -11,6 +11,7 @@ import {
   ExternalLink,
   QrCode,
   Plus,
+  Receipt,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import PageLayout from "../components/PageLayout";
@@ -27,6 +28,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import AddDevisModal from "../components/AddDevisModal";
 import DevisDetailsModal from "../components/DevisDetailsModal";
 import AssignPartnerModal from "../components/AssignPartnerModal";
+import CreateInvoiceModal from "../components/invoice/CreateInvoiceModal";
 
 import { useClientDetailState } from "../components/client/useClientDetailState";
 import { ClientBentoTiles } from "../components/client/ClientBentoTiles";
@@ -125,6 +127,8 @@ const ClientDetail: React.FC = () => {
     openGPS,
   } = state;
 
+  const [isCreateInvoiceOpen, setIsCreateInvoiceOpen] = React.useState(false);
+
   if (!client && !loading) {
     return (
       <PageLayout title="Client introuvable" showBackButton={true}>
@@ -187,6 +191,15 @@ const ClientDetail: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setIsCreateInvoiceOpen(true)}
+          className="min-h-[44px] px-3.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white flex items-center gap-1.5 shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+          title="Émettre une facture"
+        >
+          <Receipt size={18} />
+          <span className="text-xs font-black uppercase tracking-wider">Facturer</span>
+        </button>
         {isAdmin && totalPaymentsAmount - totalIntersAmount < -0.1 && (
           <button
             type="button"
@@ -243,6 +256,7 @@ const ClientDetail: React.FC = () => {
         onOpenInterventionModal={() => setIsInterventionModalOpen(true)}
         onOpenPaymentModal={() => setIsPaymentModalOpen(true)}
         onOpenDevisModal={() => setIsDevisModalOpen(true)}
+        onOpenInvoiceModal={() => setIsCreateInvoiceOpen(true)}
         onOpenPoolModal={() => setIsPoolModalOpen(true)}
         onOpenEditClientModal={() => setIsEditClientModalOpen(true)}
         onOpenAssignPartner={() => setIsAssignPartnerOpen(true)}
@@ -610,6 +624,17 @@ const ClientDetail: React.FC = () => {
         variant="primary"
         showIrreversibleWarning={false}
       />
+
+      {isCreateInvoiceOpen && client && (
+        <CreateInvoiceModal
+          clientId={client.id}
+          clientName={`${client.first_name} ${client.last_name}`}
+          onClose={() => setIsCreateInvoiceOpen(false)}
+          onSuccess={() => {
+            fetchClientData();
+          }}
+        />
+      )}
     </PageLayout>
   );
 };

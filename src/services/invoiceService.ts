@@ -32,8 +32,14 @@ export interface InvoiceWithItems extends InvoiceRow {
   };
 }
 
+export interface InvoiceSettings {
+  prefix: string;
+  next_number: number;
+}
+
 export interface CreateInvoicePayload {
   clientId: string;
+  invoiceNumber?: string;
   invoiceDate?: string;
   dueDate?: string;
   type: 'interventions' | 'devis' | 'manual';
@@ -151,6 +157,117 @@ export const invoiceService = {
   },
 
   /**
+   * Récupère la liste de TOUTES les factures émises dans l'application avec les infos client.
+   */
+  async fetchAllInvoices(): Promise<InvoiceWithItems[]> {
+    try {
+      const { data, error } = await supabase
+        .from('invoices')
+        .select(`
+          *,
+          client:clients(id, first_name, last_name, phone, address, city),
+          items:invoice_items(*)
+        `)
+        .order('invoice_date', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return (data as InvoiceWithItems[]) || [];
+    } catch (err: any) {
+      console.error('Erreur fetchAllInvoices:', err);
+      toast.error('Impossible de charger les factures');
+      return [];
+    }
+  },
+
+  /**
+   * Récupère les paramètres de numérotation des factures.
+   */
+  async getInvoiceSettings(): Promise<InvoiceSettings> {
+    const currentYear = new Date().getFullYear();
+    const defaultPrefix = `FAC-${currentYear}-`;
+    try {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'invoice_settings')
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data?.value) {
+        return {
+          prefix: data.value.prefix || defaultPrefix,
+          next_number: Number(data.value.next_number) || 1,
+        };
+      }
+      return { prefix: defaultPrefix, next_number: 1 };
+    } catch (e) {
+      console.warn('Lecture invoice_settings échouée, valeurs par défaut:', e);
+      return { prefix: defaultPrefix, next_number: 1 };
+    }
+  },
+
+  /**
+   * Met à jour les paramètres de numérotation des factures.
+   */
+  async updateInvoiceSettings(settings: InvoiceSettings): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from('settings')
+        .upsert(
+          {
+            key: 'invoice_settings',
+            value: settings,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'key' }
+        );
+
+      if (error) throw error;
+      toast.success('Compteur de facturation mis à jour');
+      return true;
+    } catch (err: any) {
+      console.error('Erreur updateInvoiceSettings:', err);
+      toast.error('Erreur lors de la sauvegarde du compteur');
+      return false;
+    }
+  },
+
+  /**
+   * Calcule le prochain numéro de facture suggéré.
+   */
+  async getNextInvoiceNumber(): Promise<string> {
+    try {
+      const settings = await this.getInvoiceSettings();
+      // On recherche les factures les plus récentes pour incrémenter correctement
+      const { data: latestInvoices } = await supabase
+        .from('invoices')
+        .select('number')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      let maxNum = settings.next_number;
+      if (latestInvoices && latestInvoices.length > 0) {
+        for (const inv of latestInvoices) {
+          if (inv.number && inv.number.startsWith(settings.prefix)) {
+            const numPart = inv.number.slice(settings.prefix.length);
+            const parsed = parseInt(numPart, 10);
+            if (!isNaN(parsed) && parsed >= maxNum) {
+              maxNum = parsed + 1;
+            }
+          }
+        }
+      }
+
+      const padded = String(maxNum).padStart(4, '0');
+      return `${settings.prefix}${padded}`;
+    } catch (e) {
+      const currentYear = new Date().getFullYear();
+      return `FAC-${currentYear}-0001`;
+    }
+  },
+
+  /**
    * Récupère la liste des factures d'un client donné.
    */
   async fetchInvoicesByClient(clientId: string): Promise<InvoiceWithItems[]> {
@@ -199,6 +316,11 @@ export const invoiceService = {
         notes: payload.notes || null,
         payment_terms: payload.paymentTerms || 'Paiement à réception',
       };
+
+      // Si un numéro personnalisé est fourni
+      if (payload.invoiceNumber && payload.invoiceNumber.trim()) {
+        invoiceInsertData.number = payload.invoiceNumber.trim();
+      }
 
       const { data: newInvoice, error: invoiceError } = await supabase
         .from('invoices')

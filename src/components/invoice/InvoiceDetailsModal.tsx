@@ -1,18 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ModalLayout from '../ModalLayout';
 import ConfirmModal from '../ConfirmModal';
 import { invoiceService, type InvoiceWithItems } from '../../services/invoiceService';
 import { 
-  Receipt, 
   Printer, 
   Share2, 
   Trash2, 
-  CheckCircle2, 
-  Clock, 
-  XCircle,
-  Building2,
-  Calendar,
-  CreditCard
+  CheckCircle2,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -85,8 +79,6 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
     <>
       <ModalLayout
         title={`Facture ${invoice.number}`}
-        subtitle={`Émise le ${new Date(invoice.invoice_date).toLocaleDateString('fr-FR')}`}
-        icon={<Receipt className="text-primary" size={24} />}
         onClose={onClose}
         className="max-w-2xl !min-h-0 print:m-0 print:p-0 print:max-w-none print:shadow-none"
       >
@@ -218,11 +210,11 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
         isOpen={showDeleteConfirm}
         title="Supprimer la Facture ?"
         message={`La facture ${invoice.number} sera définitivement effacée. Toutes les interventions et devis associés seront immédiatement libérés et pourront être refacturés.`}
-        confirmText="Supprimer et Déverrouiller"
-        cancelText="Conserver"
-        isDestructive={true}
+        confirmLabel="SUPPRIMER ET DÉVERROUILLER"
+        variant="danger"
+        loading={deleting}
         onConfirm={handleDelete}
-        onCancel={() => setShowDeleteConfirm(false)}
+        onClose={() => setShowDeleteConfirm(false)}
       />
     </>
   );

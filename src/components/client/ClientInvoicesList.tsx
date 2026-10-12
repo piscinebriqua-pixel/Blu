@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { invoiceService, type InvoiceWithItems } from '../../services/invoiceService';
 import CreateInvoiceModal from '../invoice/CreateInvoiceModal';
 import InvoiceDetailsModal from '../invoice/InvoiceDetailsModal';
-import { Receipt, Plus, FileText, ChevronRight, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { Receipt, Plus, FileText, ChevronRight } from 'lucide-react';
 
 interface ClientInvoicesListProps {
   clientId: string;

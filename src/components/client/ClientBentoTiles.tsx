@@ -17,6 +17,7 @@ import {
   MessageCircle,
   CheckCircle2,
   Package,
+  Receipt,
 } from "lucide-react";
 import { formatBalance } from "../../lib/formatters";
 import type { Client, Pool, Intervention, Devis, ActiveCategory } from "./types";
@@ -60,6 +61,7 @@ interface ClientBentoTilesProps {
   onOpenInterventionModal: () => void;
   onOpenPaymentModal: () => void;
   onOpenDevisModal: () => void;
+  onOpenInvoiceModal: () => void;
   onOpenPoolModal: () => void;
   onOpenEditClientModal: () => void;
   onOpenAssignPartner: () => void;
@@ -82,6 +84,7 @@ export const ClientBentoTiles: React.FC<ClientBentoTilesProps> = ({
   onOpenInterventionModal,
   onOpenPaymentModal,
   onOpenDevisModal,
+  onOpenInvoiceModal,
   onOpenPoolModal,
   onOpenEditClientModal,
   onOpenAssignPartner,
@@ -415,7 +418,15 @@ export const ClientBentoTiles: React.FC<ClientBentoTilesProps> = ({
                 className="min-h-[48px] flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-2xl hover:border-blue-500 transition-all group shadow-sm"
               >
                 <FileText size={16} className="text-blue-600 group-hover:scale-110 transition-transform" />
-                <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase">Nouveau Devis</span>
+                <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase">Devis</span>
+              </button>
+              <button
+                type="button"
+                onClick={onOpenInvoiceModal}
+                className="min-h-[48px] flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-900/60 p-3 rounded-2xl hover:border-indigo-500 transition-all group shadow-sm bg-gradient-to-br from-indigo-50/50 to-white dark:from-indigo-950/20 dark:to-slate-800"
+              >
+                <Receipt size={16} className="text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-black text-indigo-700 dark:text-indigo-300 uppercase">Facture</span>
               </button>
               <button
                 type="button"
@@ -428,7 +439,7 @@ export const ClientBentoTiles: React.FC<ClientBentoTilesProps> = ({
               <button
                 type="button"
                 onClick={onOpenEditClientModal}
-                className="min-h-[48px] flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-2xl hover:border-slate-900 transition-all group col-span-2 shadow-sm"
+                className="min-h-[48px] flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-2xl hover:border-slate-900 transition-all group shadow-sm"
               >
                 <Edit2 size={16} className="text-slate-600 group-hover:scale-110 transition-transform" />
                 <span className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase">Éditer Profil</span>
