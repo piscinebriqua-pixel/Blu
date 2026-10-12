@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import BccpLogo from './components/BccpLogo';
 import BottomNav from './components/BottomNav';
 import PageLoadingSkeleton from './components/PageLoadingSkeleton';
+import UpdateNotificationBanner from './components/UpdateNotificationBanner';
 import './index.css';
 
 // Lazy-loaded Pages (Code Splitting for fast mobile startup)
@@ -60,12 +61,8 @@ const ProtectedRoute = ({
 
   if (!session) return <Navigate to="/login" replace />;
 
-  if (profileNotFound) {
+  if (profileNotFound || !userProfile) {
     return <ProfileNotFound />;
-  }
-
-  if (!userProfile) {
-    return <PageLoadingSkeleton />;
   }
 
   if (!userProfile.is_approved || userProfile.role === 'pending') {
@@ -326,6 +323,7 @@ function AppContent() {
         </Suspense>
 
         <NavVisibilityWrapper />
+        <UpdateNotificationBanner />
       </div>
 
       <Toaster

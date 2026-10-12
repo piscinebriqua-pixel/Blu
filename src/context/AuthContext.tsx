@@ -126,9 +126,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     isFetchingRef.current = null;
-    // Si nous avions déjà un profil en cache, nous ne bloquons pas l'utilisateur
-    if (!getCachedProfile(userId)) {
+    const cached = getCachedProfile(userId);
+    if (cached) {
+      setUserProfile(cached);
       setLoading(false);
+    } else {
+      // Si aucun profil en cache et que les requêtes ont échoué
+      setLoading(false);
+      setProfileNotFound(true);
     }
   };
 

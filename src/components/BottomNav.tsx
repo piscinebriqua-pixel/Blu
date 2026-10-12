@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, Users, Calendar, Briefcase, LogOut, Image as ImageIcon } from 'lucide-react';
+import { Home, Users, Calendar, Briefcase, LogOut, Image as ImageIcon, Receipt } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ConfirmModal from './ConfirmModal';
 
@@ -25,6 +25,15 @@ const BottomNav: React.FC = () => {
                         <>
                             <Users size={22} strokeWidth={isActive ? 2.5 : 2} />
                             <span>Clients</span>
+                        </>
+                    )}
+                </NavLink>
+
+                <NavLink to="/factures" className={({ isActive }) => `nav-item-premium ${isActive ? 'active' : ''}`}>
+                    {({ isActive }) => (
+                        <>
+                            <Receipt size={22} strokeWidth={isActive ? 2.5 : 2} />
+                            <span>Factures</span>
                         </>
                     )}
                 </NavLink>
