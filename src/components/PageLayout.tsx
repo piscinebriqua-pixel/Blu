@@ -53,7 +53,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
                                     </h1>
                                 )}
                                 {subtitle && (
-                                    <p className="text-blue-100 text-[10px] font-black uppercase tracking-[0.2em] opacity-80 leading-none truncate">
+                                    <p className="text-white/90 text-xs font-black uppercase tracking-[0.15em] leading-none truncate mt-0.5">
                                         {subtitle}
                                     </p>
                                 )}

@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import ModalLayout from './ModalLayout';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
-import { Droplets, Edit2, MessageCircle, Trash2, Loader2, X, Calendar, ClipboardList, Package, Info, CheckCircle2, Wrench } from 'lucide-react';
+import { Droplets, Edit2, MessageCircle, Trash2, Loader2, X, Calendar, ClipboardList, Package, Info, CheckCircle2, Wrench, User } from 'lucide-react';
 import BccpLogo from './BccpLogo';
 import { formatBalance } from '../lib/formatters';
+import { openWhatsAppChat } from '../lib/phoneUtils';
 
 interface Intervention {
     id: string;
@@ -17,6 +18,10 @@ interface Intervention {
     status: string;
     pool_name?: string;
     pool_id?: string;
+    technician?: {
+        full_name: string;
+        phone?: string;
+    } | null;
     pool?: {
         name: string;
         client?: {
@@ -147,15 +152,12 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
 
         message += `Merci de votre confiance ! 🙏`;
 
-        const encodedMessage = encodeURIComponent(message);
-        let phone = intervention.pool.client.phone.replace(/\s+/g, '').replace('+', '');
-
-        // Si c'est un numéro tunisien à 8 chiffres, ajouter l'indicatif 216
-        let cleanPhone = phone.replace(/[\s\-\.]/g, '');
-        if (cleanPhone && !cleanPhone.startsWith('216') && !cleanPhone.startsWith('+')) {
-            cleanPhone = `216${cleanPhone}`;
+        if (!intervention.pool?.client?.phone) {
+            toast.error("Aucun numéro de téléphone renseigné pour ce client");
+            return;
         }
-        window.open(`https://wa.me/${cleanPhone}?text=${encodedMessage}`, '_blank');
+
+        openWhatsAppChat(intervention.pool.client.phone, message);
     };
 
     const totalAmount = (intervention.services?.reduce((acc, s) => acc + (s.price_at_time || 0), 0) || 0) +
@@ -297,6 +299,29 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
             {/* Content Body */}
             <div className="px-5 pt-8 pb-32 flex flex-col gap-6">
                 
+                {/* 0. Carte Intervenant & Bassin */}
+                <div className="card-white p-5 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                            <User size={22} />
+                        </div>
+                        <div>
+                            <span className="text-xs font-black text-slate-400 uppercase tracking-widest block">Technicien Référent</span>
+                            <h4 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                {intervention.technician?.full_name || 'Non assigné'}
+                            </h4>
+                        </div>
+                    </div>
+                    {intervention.pool?.name && (
+                        <div className="text-right">
+                            <span className="text-xs font-black text-slate-400 uppercase tracking-widest block">Bassin</span>
+                            <span className="text-sm font-black text-blue-600 dark:text-blue-400 uppercase">
+                                {intervention.pool.name}
+                            </span>
+                        </div>
+                    )}
+                </div>
+
                 {/* 1. Monitoring Technique */}
                 <div className="card-white p-6">
                     <div className="flex justify-between items-center mb-6">

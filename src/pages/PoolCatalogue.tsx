@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { supabase } from '../lib/supabase';
 import PageLayout from '../components/PageLayout';
 import { Waves, Search, Maximize2, User, MapPin, X } from 'lucide-react';
@@ -142,7 +143,7 @@ const PoolCatalogue: React.FC = () => {
             )}
 
             {/* Lightbox / Preview */}
-            {selectedPhoto && (
+            {selectedPhoto && typeof document !== 'undefined' && ReactDOM.createPortal(
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 animate-in fade-in duration-300 backdrop-blur-sm p-4 text-white">
                     <button 
                         onClick={() => setSelectedPhoto(null)}
@@ -181,13 +182,14 @@ const PoolCatalogue: React.FC = () => {
                             
                             <Link 
                                 to={`/clients/${selectedPhoto.client_id}`}
-                                className="px-8 py-4 bg-white text-slate-900 font-black rounded-2xl uppercase tracking-[0.2em] text-[11px] hover:bg-blue-500 hover:text-white transition-all transform active:scale-95"
+                                className="min-h-[44px] flex items-center px-8 py-3.5 bg-white text-slate-900 font-black rounded-2xl uppercase tracking-wider text-xs hover:bg-blue-500 hover:text-white transition-all transform active:scale-95 shadow-lg"
                             >
                                 VOIR DOSSIER
                             </Link>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </PageLayout>
     );

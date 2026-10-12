@@ -171,3 +171,50 @@ When using the `Combobox` component for searchable selections:
 ## Animations
 - **Slide Up**: `.animate-slide-up`
 - **Float**: `.float-animation`
+
+## Empty States & Compact Action Cards (Zero-Waste Mobile Layout)
+
+To avoid wasting critical vertical space on mobile devices, never render large empty cards with vertical spacing and a single icon. Use the **Compact CTA Pattern (Solution A)** instead:
+
+### Rules:
+1. **Empty State Height**: Never exceed `56px` for a secondary empty state card.
+2. **Interactive Target**: The entire banner must be a clickable button with `min-h-[52px]` and touch feedback (`active:scale-[0.99]`).
+3. **Visual Style**:
+   - `border-2 border-dashed border-slate-200/90 hover:border-blue-500/80 dark:border-slate-700`
+   - Background: `bg-white dark:bg-slate-800/60`
+   - Icon box: `w-10 h-10 rounded-xl bg-blue-50 text-blue-600`
+   - Action label: `text-xs font-black uppercase tracking-wider`
+   - Helper text: `text-xs font-semibold text-slate-500`
+   - Trailing plus pill: `w-8 h-8 rounded-lg bg-slate-100 text-slate-500`
+
+### Pattern Template:
+```tsx
+{items.length > 0 ? (
+  <div className="card-bento p-6">
+    {/* Full list content when data exists */}
+  </div>
+) : (
+  <button
+    type="button"
+    onClick={onOpenCreateOrAssignModal}
+    className="w-full min-h-[52px] p-3.5 rounded-2xl border-2 border-dashed border-slate-200/90 hover:border-blue-500/80 dark:border-slate-700 bg-white dark:bg-slate-800/60 flex items-center justify-between gap-3 text-left transition-all group shadow-sm active:scale-[0.99]"
+  >
+    <div className="flex items-center gap-3 min-w-0">
+      <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+        <UserPlus size={18} strokeWidth={2.5} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider group-hover:text-blue-600">
+          + Assigner un intervenant / tiers-payant
+        </p>
+        <p className="text-xs font-semibold text-slate-500 truncate">
+          Aucun intervenant associé au projet
+        </p>
+      </div>
+    </div>
+    <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700/60 text-slate-500 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center shrink-0 transition-all">
+      <Plus size={16} strokeWidth={2.5} />
+    </div>
+  </button>
+)}
+```

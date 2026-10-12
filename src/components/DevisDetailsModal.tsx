@@ -3,6 +3,7 @@ import ModalLayout from './ModalLayout';
 import { MessageCircle, Edit2, Trash2, Clock, CheckCircle2, XCircle, Loader2, Download } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
+import { openWhatsAppChat } from '../lib/phoneUtils';
 
 interface DevisItem {
     id: string;
@@ -86,14 +87,12 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({ devis, onClose, o
 
         message += `Merci de votre confiance ! 🙏`;
 
-        const encodedMessage = encodeURIComponent(message);
-        let phone = devis.client.phone.replace(/\s+/g, '').replace('+', '');
-
-        let cleanPhone = phone.replace(/[\s\-\.]/g, '');
-        if (cleanPhone && !cleanPhone.startsWith('216') && !cleanPhone.startsWith('+')) {
-            cleanPhone = `216${cleanPhone}`;
+        if (!devis.client?.phone) {
+            toast.error("Aucun numéro de téléphone renseigné pour ce client");
+            return;
         }
-        window.open(`https://wa.me/${cleanPhone}?text=${encodedMessage}`, '_blank');
+
+        openWhatsAppChat(devis.client.phone, message);
     };
 
     const handleGeneratePDF = () => {

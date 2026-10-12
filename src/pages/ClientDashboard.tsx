@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase, type PoolRow } from '../lib/supabase';
 import { 
     LogOut, 
     Clock, 
@@ -20,6 +20,15 @@ import {
 import { formatBalance } from '../lib/formatters';
 import { toast } from 'react-hot-toast';
 import ModalLayout from '../components/ModalLayout';
+
+interface PoolPhoto {
+    url: string;
+    is_main: boolean;
+}
+
+interface ClientPool extends PoolRow {
+    photos?: PoolPhoto[];
+}
 
 interface ClientData {
     id: string;
@@ -79,6 +88,7 @@ const ClientDashboard: React.FC = () => {
     const [client, setClient] = useState<ClientData | null>(null);
     const [interventions, setInterventions] = useState<Intervention[]>([]);
     const [payments, setPayments] = useState<Payment[]>([]);
+    const [pools, setPools] = useState<ClientPool[]>([]);
     const [activeTab, setActiveTab] = useState<'history' | 'payments'>('history');
     const [selectedIntervention, setSelectedIntervention] = useState<Intervention | null>(null);
     const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
@@ -106,13 +116,15 @@ const ClientDashboard: React.FC = () => {
             if (clientError) throw clientError;
             setClient(clientData);
 
-            // 2. Fetch Interventions (via pools)
+            // 2. Fetch Pools with photos & Interventions
             const { data: poolsData } = await supabase
                 .from('pools')
-                .select('id')
+                .select('*, photos:pool_photos(url, is_main)')
                 .eq('client_id', clientId);
             
-            const poolIds = poolsData?.map(p => p.id) || [];
+            const clientPools = (poolsData as unknown as ClientPool[]) || [];
+            setPools(clientPools);
+            const poolIds = clientPools.map(p => p.id);
 
             if (poolIds.length > 0) {
                 const { data: interData } = await supabase
@@ -198,16 +210,6 @@ const ClientDashboard: React.FC = () => {
     if (!client) return null;
 
     const balanceInfo = formatBalance(client.balance);
-    const [pools, setPools] = useState<any[]>([]);
-
-    useEffect(() => {
-        const clientId = localStorage.getItem('blu_client_id');
-        if (clientId) {
-            supabase.from('pools').select('*, photos:pool_photos(url, is_main)').eq('client_id', clientId).then(({ data }) => {
-                if (data) setPools(data);
-            });
-        }
-    }, [client]);
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-[#0f141e] flex flex-col pb-20">
@@ -277,7 +279,7 @@ const ClientDashboard: React.FC = () => {
                             <div key={pool.id} className="shrink-0 w-48 bg-white dark:bg-slate-800 rounded-[2rem] p-3 shadow-sm border border-slate-100 dark:border-white/5">
                                 <div className="aspect-video rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 mb-3">
                                     {pool.photos?.[0]?.url ? (
-                                        <img src={pool.photos.find((p: any) => p.is_main)?.url || pool.photos[0].url} alt={pool.name} className="w-full h-full object-cover" />
+                                        <img src={pool.photos.find(p => p.is_main)?.url || pool.photos[0].url} alt={pool.name} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-slate-300">
                                             <Droplets size={32} />
@@ -286,7 +288,9 @@ const ClientDashboard: React.FC = () => {
                                 </div>
                                 <div className="px-1">
                                     <p className="text-xs font-black text-slate-800 dark:text-white uppercase truncate">{pool.name}</p>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{pool.volume_m3} m³ • {pool.treatment_method}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                        {[pool.volume ? `${pool.volume} m³` : null, pool.pool_type].filter(Boolean).join(' • ')}
+                                    </p>
                                 </div>
                             </div>
                         ))}

@@ -17,8 +17,8 @@ const Input: React.FC<InputProps> = ({
     return (
         <div className={`flex flex-col gap-2 ${containerClassName}`}>
             {label && (
-                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
-                    {Icon && <Icon size={12} className="text-slate-500" />}
+                <label className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider ml-1 flex items-center gap-1.5">
+                    {Icon && <Icon size={14} className="text-slate-500" />}
                     {label}
                 </label>
             )}

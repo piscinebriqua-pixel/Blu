@@ -22,6 +22,7 @@ import NewIntervention from '../components/NewIntervention';
 import ModalLayout from '../components/ModalLayout';
 import Combobox from '../components/ui/Combobox';
 import { toast } from 'react-hot-toast';
+import { openWhatsAppChat } from '../lib/phoneUtils';
 
 const TechnicianPortal: React.FC = () => {
     const [interventions, setInterventions] = useState<any[]>([]);
@@ -147,11 +148,7 @@ const TechnicianPortal: React.FC = () => {
     };
 
     const openWhatsApp = (phone: string) => {
-        let formatted = phone.replace(/[\s\-\.]/g, '');
-        if (formatted && !formatted.startsWith('216') && !formatted.startsWith('+')) {
-            formatted = `216${formatted}`;
-        }
-        window.open(`https://wa.me/${formatted}`, '_blank');
+        openWhatsAppChat(phone);
     };
 
     const runNavigation = (address: string) => {

@@ -10,7 +10,6 @@ import {
     ArrowLeft,
     Sun
 } from 'lucide-react';
-import '../design.css';
 
 const MockupShowcase: React.FC = () => {
     const [view, setView] = useState<'dash' | 'detail'>('dash');

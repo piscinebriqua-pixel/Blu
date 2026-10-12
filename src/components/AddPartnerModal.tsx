@@ -5,6 +5,7 @@ import Input from './ui/Input';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { User, Briefcase, Phone, Mail, Building2, ChevronDown } from 'lucide-react';
+import { PhoneCountryBadge } from './PhoneCountryBadge';
 
 interface Partner {
     id?: string;
@@ -155,14 +156,17 @@ const AddPartnerModal: React.FC<AddPartnerModalProps> = ({ partner, onClose, onS
                         onChange={handleChange}
                     />
 
-                    <Input
-                        label="Téléphone"
-                        name="phone"
-                        icon={Phone}
-                        placeholder="ex: 29 123 456"
-                        value={formData.phone}
-                        onChange={handleChange}
-                    />
+                    <div>
+                        <Input
+                            label="Téléphone"
+                            name="phone"
+                            icon={Phone}
+                            placeholder="ex: 29 123 456 ou +33 6 12 34 56 78"
+                            value={formData.phone}
+                            onChange={handleChange}
+                        />
+                        <PhoneCountryBadge phone={formData.phone} className="mt-1.5" />
+                    </div>
 
                     <Input
                         label="Email"

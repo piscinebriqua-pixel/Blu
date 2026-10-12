@@ -15,6 +15,7 @@ import PartnerPDFPreviewModal from '../components/PartnerPDFPreviewModal';
 import ConfirmModal from '../components/ConfirmModal';
 import { Edit2, Share2, FileDown, Trash2 } from 'lucide-react';
 import { formatBalance } from '../lib/formatters';
+import { openWhatsAppChat } from '../lib/phoneUtils';
 
 interface Partner {
     id: string;
@@ -206,13 +207,12 @@ const PartnerDetail: React.FC = () => {
             if (assignedClients.length > 10) message += `... et ${assignedClients.length - 10} autres.\n`;
         }
 
-        const encodedMessage = encodeURIComponent(message);
-        let cleanPhone = partner.phone?.replace(/[\s\-\.]/g, '') || '';
-        if (cleanPhone && !cleanPhone.startsWith('216') && !cleanPhone.startsWith('+')) {
-            cleanPhone = `216${cleanPhone}`;
+        if (!partner.phone) {
+            toast.error("Aucun numéro de téléphone pour ce partenaire");
+            return;
         }
-        const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
-        window.open(whatsappUrl, '_blank');
+
+        openWhatsAppChat(partner.phone, message);
     };
 
     const handleUnassignClient = async () => {

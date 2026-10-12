@@ -1,165 +1,121 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
-import { useEffect, useState, Component, useRef } from 'react';
+import React, { Suspense, Component } from 'react';
 import type { ReactNode } from 'react';
-import { supabase } from './lib/supabase';
-import Login from './pages/Login';
-import ClientsList from './pages/Clients';
-import ClientDetail from './pages/ClientDetail';
-import Dashboard from './pages/Dashboard';
-import Technicians from './pages/Technicians';
-import TechnicianDetail from './pages/TechnicianDetail';
-import ServicesManager from './pages/ServicesManager';
-import Interventions from './pages/Interventions';
-import PendingApproval from './pages/PendingApproval';
-import AdminUsers from './pages/AdminUsers';
-import InterventionTemplates from './pages/InterventionTemplates';
-import TechnicianPortal from './pages/TechnicianPortal';
-import Profile from './pages/Profile';
-import Payments from './pages/Payments';
-import Planning from './pages/Planning';
-import Revenue from './pages/Revenue';
-import Chantiers from './pages/Chantiers';
-import ClientLogin from './pages/ClientLogin';
-import ClientDashboard from './pages/ClientDashboard';
-import AdminFinance from './pages/AdminFinance';
-import Settings from './pages/Settings';
-import FinanceSettings from './pages/FinanceSettings';
-import CompanySettings from './pages/CompanySettings';
-import DevisTemplates from './pages/DevisTemplates';
-import VehiclesSettings from './pages/VehiclesSettings';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import BccpLogo from './components/BccpLogo';
 import BottomNav from './components/BottomNav';
-import Partners from './pages/Partners';
-import PartnerDetail from './pages/PartnerDetail';
-import PoolCatalogue from './pages/PoolCatalogue';
+import PageLoadingSkeleton from './components/PageLoadingSkeleton';
 import './index.css';
+
+// Lazy-loaded Pages (Code Splitting for fast mobile startup)
+const Login = React.lazy(() => import('./pages/Login'));
+const ClientsList = React.lazy(() => import('./pages/Clients'));
+const ClientDetail = React.lazy(() => import('./pages/ClientDetail'));
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const Technicians = React.lazy(() => import('./pages/Technicians'));
+const TechnicianDetail = React.lazy(() => import('./pages/TechnicianDetail'));
+const ServicesManager = React.lazy(() => import('./pages/ServicesManager'));
+const Interventions = React.lazy(() => import('./pages/Interventions'));
+const PendingApproval = React.lazy(() => import('./pages/PendingApproval'));
+const AdminUsers = React.lazy(() => import('./pages/AdminUsers'));
+const InterventionTemplates = React.lazy(() => import('./pages/InterventionTemplates'));
+const TechnicianPortal = React.lazy(() => import('./pages/TechnicianPortal'));
+const Profile = React.lazy(() => import('./pages/Profile'));
+const Payments = React.lazy(() => import('./pages/Payments'));
+const Planning = React.lazy(() => import('./pages/Planning'));
+const Revenue = React.lazy(() => import('./pages/Revenue'));
+const Chantiers = React.lazy(() => import('./pages/Chantiers'));
+const ClientLogin = React.lazy(() => import('./pages/ClientLogin'));
+const ClientDashboard = React.lazy(() => import('./pages/ClientDashboard'));
+const AdminFinance = React.lazy(() => import('./pages/AdminFinance'));
+const Settings = React.lazy(() => import('./pages/Settings'));
+const FinanceSettings = React.lazy(() => import('./pages/FinanceSettings'));
+const CompanySettings = React.lazy(() => import('./pages/CompanySettings'));
+const DevisTemplates = React.lazy(() => import('./pages/DevisTemplates'));
+const VehiclesSettings = React.lazy(() => import('./pages/VehiclesSettings'));
+const Partners = React.lazy(() => import('./pages/Partners'));
+const PartnerDetail = React.lazy(() => import('./pages/PartnerDetail'));
+const PoolCatalogue = React.lazy(() => import('./pages/PoolCatalogue'));
 
 const ClientRedirect = () => {
   const { id } = useParams();
   return <Navigate to={`/client/${id}`} replace />;
 };
 
-function App() {
-  const [session, setSession] = useState<any>(null);
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const isFetchingRef = useRef<string | null>(null); // Track fetching to avoid parallel calls
+// Protected Route Component based on AuthContext
+const ProtectedRoute = ({
+  children,
+  requireAdmin = false
+}: {
+  children: React.ReactNode;
+  requireAdmin?: boolean;
+}) => {
+  const { session, userProfile } = useAuth();
 
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+  if (!session) return <Navigate to="/login" replace />;
 
-        // Handle specific Auth errors that block the app
-        if (error) {
-          if (error.message.includes('refresh_token') || error.message.includes('Invalid Refresh Token')) {
-            console.warn('Session expirée ou invalide. Déconnexion forcée...');
-            await supabase.auth.signOut();
-            setSession(null);
-            setLoading(false);
-            return;
-          }
-          throw error;
-        }
+  if (!userProfile) {
+    return <ProfileNotFound />;
+  }
 
-        setSession(session);
-        if (session?.user) {
-          fetchProfileWithRetry(session.user.id);
-        } else {
-          setLoading(false);
-        }
-      } catch (err: any) {
-        console.error('Auth initialization error:', err);
-        setLoading(false);
-      }
-    };
+  if (!userProfile.is_approved || userProfile.role === 'pending') {
+    return <Navigate to="/pending" replace />;
+  }
 
-    initAuth();
+  if (requireAdmin && userProfile.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth Event:', event);
-      setSession(session);
+  return <>{children}</>;
+};
 
-      if (session?.user) {
-        // Only fetch if not already fetching for this user
-        if (isFetchingRef.current !== session.user.id) {
-          fetchProfileWithRetry(session.user.id);
-        }
-      } else {
-        setUserProfile(null);
-        isFetchingRef.current = null;
-        setLoading(false);
-      }
-    });
+// Profile Not Found Screen with safe SignOut
+const ProfileNotFound = () => {
+  const { signOut } = useAuth();
 
-    return () => subscription.unsubscribe();
-  }, []);
+  return (
+    <div className="flex flex-col items-center justify-center h-screen bg-slate-50 dark:bg-slate-900 p-6 text-center">
+      <div className="w-20 h-20 bg-red-50 dark:bg-red-950/40 rounded-full flex items-center justify-center text-red-500 mb-6 shadow-sm border border-red-100 dark:border-red-900/20">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <line x1="17" y1="8" x2="22" y2="13" />
+          <line x1="22" y1="8" x2="17" y2="13" />
+        </svg>
+      </div>
+      <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Profil introuvable</h2>
+      <p className="text-slate-500 dark:text-slate-400 text-base max-w-xs leading-relaxed mb-8">
+        Votre compte est authentifié mais votre profil de base n'a pas pu être chargé. Veuillez contacter un administrateur.
+      </p>
+      <div className="flex flex-col gap-3 w-full max-w-xs">
+        <button
+          onClick={() => window.location.reload()}
+          className="w-full py-4 bg-primary text-white rounded-2xl font-black shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95 text-xs tracking-widest uppercase"
+        >
+          Réessayer
+        </button>
+        <button
+          onClick={() => signOut()}
+          className="w-full py-4 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-black border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all active:scale-95 text-xs tracking-widest uppercase"
+        >
+          Se déconnecter
+        </button>
+      </div>
+    </div>
+  );
+};
 
-  // The original fetchProfile function is replaced by the new retry logic.
-  // The user provided two versions, the second one (fetchProfileWithRetry) is explicitly
-  // marked as "Revised fetchProfile to handle async retries better" and uses a while loop,
-  // which is generally preferred over recursion for retries in JS to avoid stack depth issues.
-  // The instruction also mentions increasing timeout to 15s, which is incorporated below.
+// Bottom Navigation Visibility Logic
+const NavVisibilityWrapper = () => {
+  const location = useLocation();
+  const isClientPortal = location.pathname.startsWith('/mon-espace');
+  if (isClientPortal) return null;
+  return <BottomNav />;
+};
 
-  const fetchProfileWithRetry = async (userId: string) => {
-    if (isFetchingRef.current === userId) return;
-    isFetchingRef.current = userId;
-
-    setLoading(true);
-    let attempts = 5;
-    let delay = 1000;
-
-    console.log(`[Auth] Recherche du profil pour: ${userId}`);
-
-    while (attempts > 0) {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .maybeSingle();
-
-        if (error) throw error;
-
-        if (data) {
-          console.log('[Auth] Profil chargé.');
-          setUserProfile(data);
-          setLoading(false);
-          isFetchingRef.current = null;
-          return;
-        }
-
-        // Création immédiate si manquant dès la tentative 1 ou 2
-        if (attempts >= 4) {
-          console.log(`[Auth] Profil absent. Tentative de création de secours (Essai ${6 - attempts})...`);
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.user) {
-            await supabase.from('profiles').insert({
-              id: session.user.id,
-              email: session.user.email,
-              full_name: session.user.user_metadata?.full_name || session.user.email,
-              role: 'pending',
-              is_approved: false
-            });
-          }
-        }
-
-        console.log(`[Auth] Profil non trouvé (Essai ${6 - attempts}/5). Nouvel essai dans ${delay}ms...`);
-      } catch (e: any) {
-        console.error(`[Auth] Erreur SQL (Essai ${6 - attempts}/5):`, e.message);
-      }
-
-      attempts--;
-      if (attempts > 0) {
-        await new Promise(r => setTimeout(r, delay));
-        delay = 1500;
-      }
-    }
-
-    isFetchingRef.current = null;
-    setLoading(false);
-  };
+function AppContent() {
+  const { session, userProfile, loading, signOut } = useAuth();
 
   if (loading) {
     return (
@@ -167,59 +123,43 @@ function App() {
         <BccpLogo width={90} fillColor="white" className="animate-pulse mb-4" />
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <button
-          onClick={() => { supabase.auth.signOut(); window.location.href = '/login'; }}
-          className="text-slate-500 text-base hover:text-white underline"
+          onClick={async () => {
+            try {
+              localStorage.clear();
+              sessionStorage.clear();
+            } catch (e) {}
+            await signOut();
+            window.location.href = '/login';
+          }}
+          className="text-slate-400 text-sm hover:text-white underline mt-2"
         >
-          Chargement long ? Se déconnecter
+          Chargement long ? Réinitialiser et se déconnecter
         </button>
       </div>
     );
   }
 
-  // Protection & Role Logic
-  const ProtectedRoute = ({ children, requireAdmin = false }: { children: React.ReactNode, requireAdmin?: boolean }) => {
-    if (!session) return <Navigate to="/login" />;
-
-    // If profile is still missing after loading (e.g. trigger failed), we might allow them in or block?
-    // Let's block to be safe and ask to contact admin.
-    if (!userProfile) {
-      return <ProfileNotFound />;
-    }
-
-    if (!userProfile.is_approved || userProfile.role === 'pending') {
-      return <Navigate to="/pending" />;
-    }
-
-    if (requireAdmin && userProfile.role !== 'admin') {
-      return <Navigate to="/" />;
-    }
-
-    return children;
-  };
-
   return (
-    <ErrorBoundary>
-      <Router>
-        <div className="app-layout">
+    <Router>
+      <div className="app-layout">
+        <Suspense fallback={<PageLoadingSkeleton />}>
           <Routes>
-            <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
+            <Route path="/login" element={!session ? <Login /> : <Navigate to="/" replace />} />
 
             <Route path="/pending" element={
               session ? (
-                userProfile?.is_approved ? <Navigate to="/" /> : <PendingApproval />
-              ) : <Navigate to="/login" />
+                userProfile?.is_approved ? <Navigate to="/" replace /> : <PendingApproval />
+              ) : <Navigate to="/login" replace />
             } />
 
             {/* Admin Routes */}
             <Route path="/admin/users" element={
               <ProtectedRoute requireAdmin={true}>
-                <div className="app-container">
-                  <AdminUsers />
-                </div>
+                <div className="app-container"><AdminUsers /></div>
               </ProtectedRoute>
             } />
 
-            {/* Main Routes */}
+            {/* Main Operational Routes */}
             <Route path="/" element={
               <ProtectedRoute>
                 <div className="app-container"><Dashboard /></div>
@@ -257,31 +197,37 @@ function App() {
                 <div className="app-container"><ServicesManager /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/settings/templates" element={
               <ProtectedRoute>
                 <div className="app-container"><InterventionTemplates /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/settings" element={
               <ProtectedRoute requireAdmin={true}>
                 <div className="app-container"><Settings /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/settings/finance-types" element={
               <ProtectedRoute requireAdmin={true}>
                 <div className="app-container"><FinanceSettings /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/settings/company" element={
               <ProtectedRoute requireAdmin={true}>
                 <div className="app-container"><CompanySettings /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/settings/devis-templates" element={
               <ProtectedRoute requireAdmin={true}>
                 <div className="app-container"><DevisTemplates /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/settings/vehicles" element={
               <ProtectedRoute requireAdmin={true}>
                 <div className="app-container"><VehiclesSettings /></div>
@@ -293,47 +239,55 @@ function App() {
                 <div className="app-container"><Partners /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/partners/:id" element={
               <ProtectedRoute>
                 <div className="app-container"><PartnerDetail /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/interventions" element={
               <ProtectedRoute>
                 <div className="app-container"><Interventions /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/payments" element={
               <ProtectedRoute>
                 <div className="app-container"><Payments /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/revenue" element={
               <ProtectedRoute requireAdmin={true}>
                 <div className="app-container"><Revenue /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/admin-finance" element={
               <ProtectedRoute requireAdmin={true}>
                 <div className="app-container"><AdminFinance /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/technician-portal" element={
               <ProtectedRoute>
                 <div className="app-container"><TechnicianPortal /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/planning" element={
               <ProtectedRoute>
                 <div className="app-container"><Planning /></div>
               </ProtectedRoute>
             } />
+
             <Route path="/chantiers" element={
               <ProtectedRoute>
                 <div className="app-container"><Chantiers /></div>
               </ProtectedRoute>
             } />
-            
+
             <Route path="/catalogue" element={
               <ProtectedRoute>
                 <div className="app-container"><PoolCatalogue /></div>
@@ -352,86 +306,47 @@ function App() {
             {/* Catch-all redirect */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <NavVisibilityWrapper />
-        </div>
+        </Suspense>
 
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
+        <NavVisibilityWrapper />
+      </div>
+
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#ffffff',
+            color: '#1e293b',
+            padding: '16px 24px',
+            borderRadius: '20px',
+            fontSize: '14px',
+            fontWeight: '600',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            border: '1px solid rgba(0, 0, 0, 0.05)',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#ffffff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#ffffff',
+            },
             style: {
-              background: '#ffffff',
-              color: '#1e293b',
-              padding: '16px 24px',
-              borderRadius: '20px',
-              fontSize: '14px',
-              fontWeight: '600',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-              border: '1px solid rgba(0, 0, 0, 0.05)',
-            },
-            success: {
-              iconTheme: {
-                primary: '#10b981',
-                secondary: '#ffffff',
-              },
-            },
-            error: {
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: '#ffffff',
-              },
-              style: {
-                border: '1px solid rgba(239, 68, 68, 0.1)',
-              }
-            },
-          }}
-        />
-      </Router>
-    </ErrorBoundary>
+              border: '1px solid rgba(239, 68, 68, 0.1)',
+            }
+          },
+        }}
+      />
+    </Router>
   );
 }
 
-// Composant pour masquer le BottomNav sur l'espace client
-const NavVisibilityWrapper = () => {
-    const location = useLocation();
-    const isClientPortal = location.pathname.startsWith('/mon-espace');
-    if (isClientPortal) return null;
-    return <BottomNav />;
-};
-
-const ProfileNotFound = () => {
-  return (
-    <div className="flex flex-col items-center justify-center h-screen bg-slate-50 p-6 text-center">
-      <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center text-red-500 mb-6 shadow-sm border border-red-100">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="17" y1="8" x2="22" y2="13" /><line x1="22" y1="8" x2="17" y2="13" /></svg>
-      </div>
-      <h2 className="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tight">Profil introuvable</h2>
-      <p className="text-slate-500 text-base max-w-xs leading-relaxed mb-8">
-        Votre compte est bien authentifié mais votre profil de base n'a pas pu être chargé. Veuillez contacter un administrateur.
-      </p>
-      <div className="flex flex-col gap-3 w-full max-w-xs">
-        <button
-          onClick={() => window.location.reload()}
-          className="w-full py-4 bg-primary text-white rounded-2xl font-black shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all active:scale-95 text-xs tracking-widest uppercase"
-        >
-          Réessayer
-        </button>
-        <button
-          onClick={() => supabase.auth.signOut()}
-          className="w-full py-4 bg-white text-slate-500 rounded-2xl font-black border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 text-base tracking-widest uppercase"
-        >
-          Se déconnecter
-        </button>
-      </div>
-    </div>
-  );
-};
-
-export default App;
-
-// ============================================================
-// GLOBAL ERROR BOUNDARY — Prevents full white screen on crash
-// ============================================================
+// Global Error Boundary - Prevents white screen crashes
 interface ErrorBoundaryState {
   hasError: boolean;
   errorMessage: string;
@@ -454,27 +369,27 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
   render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center h-screen bg-slate-50 p-6 text-center">
-          <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center text-red-500 mb-6 shadow-sm border border-red-100">
+        <div className="flex flex-col items-center justify-center h-screen bg-slate-50 dark:bg-slate-900 p-6 text-center">
+          <div className="w-20 h-20 bg-red-50 dark:bg-red-950/40 rounded-full flex items-center justify-center text-red-500 mb-6 shadow-sm border border-red-100 dark:border-red-900/20">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
               <line x1="12" y1="8" x2="12" y2="12" />
               <line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
           </div>
-          <h2 className="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tight">Une erreur est survenue</h2>
-          <p className="text-slate-500 text-sm max-w-xs leading-relaxed mb-2">{this.state.errorMessage}</p>
+          <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Une erreur est survenue</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs leading-relaxed mb-2">{this.state.errorMessage}</p>
           <p className="text-slate-400 text-xs max-w-xs leading-relaxed mb-8">L'application a rencontré un problème inattendu.</p>
           <div className="flex flex-col gap-3 w-full max-w-xs">
             <button
               onClick={() => { this.setState({ hasError: false, errorMessage: '' }); window.location.href = '/'; }}
-              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-lg hover:bg-blue-700 transition-all active:scale-95 text-xs tracking-widest uppercase"
+              className="w-full py-4 bg-primary text-white rounded-2xl font-black shadow-lg hover:bg-primary-dark transition-all active:scale-95 text-xs tracking-widest uppercase"
             >
               Retourner à l'accueil
             </button>
             <button
               onClick={() => window.location.reload()}
-              className="w-full py-4 bg-white text-slate-500 rounded-2xl font-black border border-slate-200 hover:bg-slate-50 transition-all active:scale-95 text-xs tracking-widest uppercase"
+              className="w-full py-4 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-black border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all active:scale-95 text-xs tracking-widest uppercase"
             >
               Rafraîchir la page
             </button>
@@ -484,6 +399,16 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
     }
     return this.props.children;
   }
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ErrorBoundary>
+  );
 }
 
 export { ErrorBoundary };

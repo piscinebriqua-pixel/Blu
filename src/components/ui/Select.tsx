@@ -4,7 +4,8 @@ import type { LucideIcon } from 'lucide-react';
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
     label?: string;
     icon?: LucideIcon;
-    options: string[];
+    options: string[] | { label: string; value: string }[];
+    placeholder?: string;
     containerClassName?: string;
 }
 
@@ -12,6 +13,7 @@ const Select: React.FC<SelectProps> = ({
     label,
     icon: Icon,
     options,
+    placeholder = "Sélectionner...",
     containerClassName = '',
     className = '',
     ...props
@@ -19,8 +21,8 @@ const Select: React.FC<SelectProps> = ({
     return (
         <div className={`flex flex-col gap-2 ${containerClassName}`}>
             {label && (
-                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
-                    {Icon && <Icon size={12} className="text-slate-500" />}
+                <label className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider ml-1 flex items-center gap-1.5">
+                    {Icon && <Icon size={14} className="text-slate-500" />}
                     {label}
                 </label>
             )}
@@ -41,15 +43,19 @@ const Select: React.FC<SelectProps> = ({
                     `}
                     {...props}
                 >
-                    <option value="">Sélectionner une ville...</option>
-                    {options.map((option) => (
-                        <option key={option} value={option}>
-                            {option}
-                        </option>
-                    ))}
+                    <option value="">{placeholder}</option>
+                    {options.map((option) => {
+                        const optVal = typeof option === 'string' ? option : option.value;
+                        const optLabel = typeof option === 'string' ? option : option.label;
+                        return (
+                            <option key={optVal} value={optVal}>
+                                {optLabel}
+                            </option>
+                        );
+                    })}
                 </select>
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="14" height="14" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                 </div>

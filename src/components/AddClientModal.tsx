@@ -8,6 +8,7 @@ import Button from './ui/Button';
 import Combobox from './ui/Combobox';
 import MapPicker from './MapPicker';
 import { TUNISIAN_CITIES } from '../lib/constants';
+import { PhoneCountryBadge } from './PhoneCountryBadge';
 
 interface AddClientModalProps {
     onClose: () => void;
@@ -128,20 +129,26 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess, ini
                 </div>
 
                 <div className="flex flex-col gap-4">
-                    <Input
-                        label="Téléphone 1"
-                        icon={Phone}
-                        placeholder="20 123 456"
-                        value={formData.phone}
-                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    />
-                    <Input
-                        label="Téléphone 2 (Optionnel)"
-                        icon={Phone}
-                        placeholder="50 987 654"
-                        value={formData.phone2}
-                        onChange={e => setFormData({ ...formData, phone2: e.target.value })}
-                    />
+                    <div>
+                        <Input
+                            label="Téléphone 1"
+                            icon={Phone}
+                            placeholder="20 123 456 ou +33 6 12 34 56 78"
+                            value={formData.phone}
+                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                        />
+                        <PhoneCountryBadge phone={formData.phone} className="mt-1.5" />
+                    </div>
+                    <div>
+                        <Input
+                            label="Téléphone 2 (Optionnel)"
+                            icon={Phone}
+                            placeholder="50 987 654 ou +33 6 12 34 56 78"
+                            value={formData.phone2}
+                            onChange={e => setFormData({ ...formData, phone2: e.target.value })}
+                        />
+                        <PhoneCountryBadge phone={formData.phone2} className="mt-1.5" />
+                    </div>
                 </div>
 
                 <Input
