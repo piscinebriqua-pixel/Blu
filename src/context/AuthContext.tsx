@@ -19,16 +19,42 @@ interface AuthContextType {
   user: User | null;
   userProfile: UserProfile | null;
   loading: boolean;
+  profileNotFound: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const CACHE_KEY = 'blu_cached_profile';
+
+const getCachedProfile = (userId?: string): UserProfile | null => {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (userId && parsed?.id !== userId) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+const setCachedProfile = (profile: UserProfile | null) => {
+  try {
+    if (profile) {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(profile));
+    } else {
+      localStorage.removeItem(CACHE_KEY);
+    }
+  } catch {}
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(() => getCachedProfile());
+  const [profileNotFound, setProfileNotFound] = useState(false);
+  const [loading, setLoading] = useState(!getCachedProfile());
   const isFetchingRef = useRef<string | null>(null);
 
   // Safety Timeout: Prevent any infinite loading freeze under all circumstances
@@ -36,12 +62,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const timer = setTimeout(() => {
       setLoading((prevLoading) => {
         if (prevLoading) {
-          console.warn('[AuthContext] Timeout de sécurité (3.5s) atteint : déblocage forcé du chargement.');
+          console.warn('[AuthContext] Timeout de sécurité atteint : déblocage forcé du chargement.');
           return false;
         }
         return false;
       });
-    }, 3500);
+    }, 6000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -50,8 +76,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isFetchingRef.current === userId) return;
     isFetchingRef.current = userId;
 
-    let attempts = 2; // Maximum 2 tentatives rapides pour éviter de bloquer l'écran
-    const delay = 800;
+    let attempts = 2;
+    const delay = 600;
 
     while (attempts > 0) {
       try {
@@ -61,9 +87,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .eq('id', userId)
           .maybeSingle();
 
-        // 2.5s max par requête pour ne pas bloquer si Supabase lag
+        // Timeout généreux de 8s adapté aux connexions mobiles / cold-start Supabase
         const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout requête profil')), 2500)
+          setTimeout(() => reject(new Error('Timeout réseau profil')), 8000)
         );
 
         const { data, error } = (await Promise.race([queryPromise, timeoutPromise])) as any;
@@ -72,28 +98,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (data) {
           setUserProfile(data as UserProfile);
+          setCachedProfile(data as UserProfile);
+          setProfileNotFound(false);
           setLoading(false);
           isFetchingRef.current = null;
           return;
         }
 
-        // Si absent à la 1re tentative, tentative de création de secours
-        if (attempts === 2) {
-          const { data: sessionData } = await supabase.auth.getSession();
-          const currUser = sessionData?.session?.user;
-          if (currUser) {
-            try {
-              await supabase.from('profiles' as any).insert({
-                id: currUser.id,
-                email: currUser.email,
-                full_name: currUser.user_metadata?.full_name || currUser.email,
-                role: 'pending',
-                is_approved: false
-              });
-            } catch {
-              // Ignore fallback insert failure
-            }
-          }
+        // Si le serveur a répondu explicitement data === null (profil inexistant dans la base)
+        if (data === null) {
+          console.warn('[AuthContext] Aucun profil trouvé en base pour userId:', userId);
+          setProfileNotFound(true);
+          setUserProfile(null);
+          setCachedProfile(null);
+          setLoading(false);
+          isFetchingRef.current = null;
+          return;
         }
       } catch (err: any) {
         console.warn(`[AuthContext] Chargement profil tentative (${3 - attempts}/2):`, err.message);
@@ -106,7 +126,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     isFetchingRef.current = null;
-    setLoading(false);
+    // Si nous avions déjà un profil en cache, nous ne bloquons pas l'utilisateur
+    if (!getCachedProfile(userId)) {
+      setLoading(false);
+    }
   };
 
   const refreshProfile = async () => {
@@ -118,10 +141,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
-      // 1. Purge synchrone immédiate des tokens dans localStorage pour éliminer tout verrou bloquant
+      setCachedProfile(null);
+      setProfileNotFound(false);
+      setUserProfile(null);
+      setSession(null);
+      setLoading(false);
+
       if (typeof window !== 'undefined') {
         try {
-          const keysToRemove: string[] = [];
+          const keysToRemove: string[] = [CACHE_KEY];
           for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (key && (key.startsWith('sb-') || key.includes('supabase') || key.includes('auth'))) {
@@ -135,15 +163,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
 
-      // 2. Appel Supabase signOut avec timeout court
       await Promise.race([
         supabase.auth.signOut(),
         new Promise((r) => setTimeout(r, 1000))
       ]).catch(() => {});
-
-      setSession(null);
-      setUserProfile(null);
-      setLoading(false);
     } catch (err) {
       handleAppError(err, { fallbackMessage: 'Erreur lors de la déconnexion' });
       setSession(null);
@@ -157,7 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const sessionPromise = supabase.auth.getSession();
         const timeoutPromise = new Promise<{ data: { session: null }; error: null }>((resolve) =>
-          setTimeout(() => resolve({ data: { session: null }, error: null }), 2000)
+          setTimeout(() => resolve({ data: { session: null }, error: null }), 3000)
         );
 
         const { data, error } = (await Promise.race([sessionPromise, timeoutPromise])) as any;
@@ -175,6 +198,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(initialSession);
 
         if (initialSession?.user) {
+          const cached = getCachedProfile(initialSession.user.id);
+          if (cached) {
+            setUserProfile(cached);
+            setLoading(false);
+          }
           await fetchProfileWithRetry(initialSession.user.id);
         } else {
           setLoading(false);
@@ -191,11 +219,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(currentSession);
 
       if (currentSession?.user) {
+        const cached = getCachedProfile(currentSession.user.id);
+        if (cached) {
+          setUserProfile(cached);
+          setLoading(false);
+        }
         if (isFetchingRef.current !== currentSession.user.id) {
           await fetchProfileWithRetry(currentSession.user.id);
         }
       } else {
         setUserProfile(null);
+        setCachedProfile(null);
+        setProfileNotFound(false);
         isFetchingRef.current = null;
         setLoading(false);
       }
@@ -211,6 +246,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user: session?.user ?? null,
         userProfile,
         loading,
+        profileNotFound,
         signOut,
         refreshProfile
       }}

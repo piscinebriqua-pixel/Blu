@@ -51,12 +51,20 @@ const ProtectedRoute = ({
   children: React.ReactNode;
   requireAdmin?: boolean;
 }) => {
-  const { session, userProfile } = useAuth();
+  const { session, userProfile, profileNotFound, loading } = useAuth();
+
+  if (loading && !userProfile) {
+    return <PageLoadingSkeleton />;
+  }
 
   if (!session) return <Navigate to="/login" replace />;
 
-  if (!userProfile) {
+  if (profileNotFound) {
     return <ProfileNotFound />;
+  }
+
+  if (!userProfile) {
+    return <PageLoadingSkeleton />;
   }
 
   if (!userProfile.is_approved || userProfile.role === 'pending') {
@@ -117,7 +125,7 @@ const NavVisibilityWrapper = () => {
 function AppContent() {
   const { session, userProfile, loading, signOut } = useAuth();
 
-  if (loading) {
+  if (loading && !userProfile) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-[#0f141e] gap-6 px-10">
         <BccpLogo width={90} fillColor="white" className="animate-pulse mb-4" />
