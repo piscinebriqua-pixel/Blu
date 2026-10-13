@@ -185,16 +185,38 @@ class DevisService {
         console.warn('Avertissement lecture devis_items pour duplication:', itemsErr);
       }
 
-      // Calcul du nouveau numéro unique
+      // Calcul du nouveau numéro unique infaillible
       const baseNumber = (original.number || 'DEV').replace(/-COPY(-\d+)?$/, '');
       const { data: existingCopies } = await supabase
         .from('devis')
         .select('number')
         .like('number', `${baseNumber}-COPY%`);
 
-      let newDevisNumber = `${baseNumber}-COPY`;
-      if (existingCopies && existingCopies.length > 0) {
-        newDevisNumber = `${baseNumber}-COPY-${existingCopies.length + 1}`;
+      let maxCopy = 0;
+      let hasSimpleCopy = false;
+      existingCopies?.forEach((c) => {
+        if (c.number === `${baseNumber}-COPY`) {
+          hasSimpleCopy = true;
+        }
+        const match = c.number?.match(/-COPY-(\d+)$/);
+        if (match) {
+          const val = parseInt(match[1], 10);
+          if (val > maxCopy) maxCopy = val;
+        }
+      });
+
+      let newDevisNumber = !hasSimpleCopy ? `${baseNumber}-COPY` : `${baseNumber}-COPY-${Math.max(maxCopy + 1, 2)}`;
+      let copySuffix = Math.max(maxCopy + 1, 2);
+      let attempts = 0;
+      while (attempts < 10) {
+        const { data: exists } = await supabase
+          .from('devis')
+          .select('id')
+          .eq('number', newDevisNumber)
+          .maybeSingle();
+        if (!exists) break;
+        newDevisNumber = `${baseNumber}-COPY-${copySuffix++}`;
+        attempts++;
       }
 
       // Insertion du nouveau devis

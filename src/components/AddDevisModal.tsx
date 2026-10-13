@@ -471,37 +471,92 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
 
             let finalNumber = number;
 
-            if (isTemplate) {
-                // Generate a unique identifier for template to satisfy UNIQUE constraint on 'number'
-                const { count } = await supabase
-                    .from('devis')
-                    .select('*', { count: 'exact', head: true })
-                    .eq('is_template', true);
-                finalNumber = `TPL-${((count || 0) + 1).toString().padStart(3, '0')}`;
-            } else if (!devisId) {
-                // Check if the assigned number already exists
-                const { data: existing } = await supabase
-                    .from('devis')
-                    .select('id')
-                    .eq('number', finalNumber)
-                    .maybeSingle();
-
-                if (existing) {
-                    // Collision detected! Calculate the next free number
-                    const { data: allDevis } = await supabase
+            // En création seulement (si devisId est défini, on préserve impérativement le numéro existant)
+            if (!devisId) {
+                if (isTemplate) {
+                    // Trouver tous les numéros TPL existants pour déterminer le MAX réel
+                    const { data: allTpl } = await supabase
                         .from('devis')
                         .select('number')
-                        .like('number', 'DEV-%');
-                    let maxId = 0;
-                    allDevis?.forEach(d => {
-                        const match = d.number?.match(/DEV-(\d+)/i);
+                        .like('number', 'TPL-%');
+
+                    let maxTpl = 0;
+                    allTpl?.forEach((d) => {
+                        const match = d.number?.match(/TPL-(\d+)/i);
                         if (match) {
                             const val = parseInt(match[1], 10);
-                            if (val > maxId) maxId = val;
+                            if (val > maxTpl) maxTpl = val;
                         }
                     });
-                    finalNumber = `DEV-${(maxId + 1).toString().padStart(3, '0')}`;
+
+                    let candidateTpl = maxTpl + 1;
+                    finalNumber = `TPL-${candidateTpl.toString().padStart(3, '0')}`;
+
+                    // Boucle de sécurité anti-collision
+                    let attempts = 0;
+                    while (attempts < 10) {
+                        const { data: existingTpl } = await supabase
+                            .from('devis')
+                            .select('id')
+                            .eq('number', finalNumber)
+                            .maybeSingle();
+
+                        if (!existingTpl) break;
+                        candidateTpl++;
+                        finalNumber = `TPL-${candidateTpl.toString().padStart(3, '0')}`;
+                        attempts++;
+                    }
+                } else {
+                    // Devis client classique
+                    let candidate = finalNumber || 'DEV-001';
+
+                    // Vérifier si le numéro actuel est déjà pris
+                    const { data: existing } = await supabase
+                        .from('devis')
+                        .select('id')
+                        .eq('number', candidate)
+                        .maybeSingle();
+
+                    if (existing) {
+                        // Récupérer le MAX réel parmi les DEV-xxx
+                        const { data: allDevis } = await supabase
+                            .from('devis')
+                            .select('number')
+                            .like('number', 'DEV-%');
+
+                        let maxDevis = 0;
+                        allDevis?.forEach((d) => {
+                            const match = d.number?.match(/DEV-(\d+)/i);
+                            if (match) {
+                                const val = parseInt(match[1], 10);
+                                if (val > maxDevis) maxDevis = val;
+                            }
+                        });
+
+                        let nextVal = maxDevis + 1;
+                        finalNumber = `DEV-${nextVal.toString().padStart(3, '0')}`;
+
+                        // Boucle de sécurité anti-collision
+                        let attempts = 0;
+                        while (attempts < 10) {
+                            const { data: checkCollision } = await supabase
+                                .from('devis')
+                                .select('id')
+                                .eq('number', finalNumber)
+                                .maybeSingle();
+
+                            if (!checkCollision) break;
+                            nextVal++;
+                            finalNumber = `DEV-${nextVal.toString().padStart(3, '0')}`;
+                            attempts++;
+                        }
+                    } else {
+                        finalNumber = candidate;
+                    }
                 }
+            } else if (!finalNumber) {
+                // Fallback de sécurité si l'édition n'avait pas de numéro
+                finalNumber = isTemplate ? `TPL-${Date.now().toString().slice(-4)}` : `DEV-${Date.now().toString().slice(-4)}`;
             }
 
             const baseData = {
