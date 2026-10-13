@@ -33,7 +33,10 @@ const Dashboard: React.FC = () => {
         lastMonthRevenue: 0, 
         rollingRevenue: 0,
         annualRevenue: 0,
-        devis: 0 
+        devis: 0,
+        devisPendingAmount: 0,
+        invoicesCount: 0,
+        invoicesPendingAmount: 0
     });
     const [profile, setProfile] = useState<{ name: string, role: string } | null>(null);
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
@@ -67,6 +70,9 @@ const Dashboard: React.FC = () => {
                 let interventionCount = 0;
                 let scheduledCount = 0;
                 let devisCount = 0;
+                let devisPendingAmt = 0;
+                let invCount = 0;
+                let invPendingAmt = 0;
 
                 try {
                     const [clientsRes, techRes, intRes, schedRes] = await Promise.all([
@@ -80,10 +86,31 @@ const Dashboard: React.FC = () => {
                     interventionCount = intRes.count ?? 0;
                     scheduledCount = schedRes.count ?? 0;
 
-                    // Fetch devis separately to avoid affecting other stats if it fails
-                    const devisRes = await supabase.from('devis').select('id, status');
+                    // Fetch devis et factures séparément
+
+                    const [devisRes, invoicesRes] = await Promise.all([
+                        supabase
+                            .from('devis')
+                            .select('id, status, total_amount, is_template')
+                            .or('is_template.is.null,is_template.eq.false'),
+                        supabase
+                            .from('invoices')
+                            .select('id, status, total_ttc, paid_amount')
+                    ]);
+
                     if (devisRes.data) {
-                        devisCount = devisRes.data.filter(d => d.status === 'pending' || !d.status).length;
+                        const pendingDevis = devisRes.data.filter(d => d.status === 'pending' || !d.status);
+                        devisCount = pendingDevis.length;
+                        devisPendingAmt = pendingDevis.reduce((sum, d) => sum + (Number(d.total_amount) || 0), 0);
+                    }
+
+                    if (invoicesRes.data) {
+                        invCount = invoicesRes.data.length;
+                        const unpaidInvoices = invoicesRes.data.filter(i => i.status === 'issued' || i.status === 'partially_paid');
+                        invPendingAmt = unpaidInvoices.reduce((sum, i) => {
+                            const due = (Number(i.total_ttc) || 0) - (Number(i.paid_amount) || 0);
+                            return sum + Math.max(0, due);
+                        }, 0);
                     }
                 } catch (e) {
                     console.warn('Counts fetch failed:', e);
@@ -135,7 +162,10 @@ const Dashboard: React.FC = () => {
                     lastMonthRevenue: lastMonthRevenue,
                     rollingRevenue: rollingRevenue,
                     annualRevenue: annualRevenue,
-                    devis: devisCount
+                    devis: devisCount,
+                    devisPendingAmount: devisPendingAmt,
+                    invoicesCount: invCount,
+                    invoicesPendingAmount: invPendingAmt
                 });
 
                 // RESTORE: Fetch 3 dernières interventions
@@ -316,6 +346,67 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
+                {/* RANGEE COMMERCIALE & FACTURATION (DEVIS & FACTURES) */}
+                <div onClick={() => navigate('/devis')} className="bento-card-luxe bento-col-6 group cursor-pointer hover:border-amber-500/50 transition-all">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                <FileText size={28} />
+                            </div>
+                            <div>
+                                <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider leading-none">Devis Commerciaux</h3>
+                                <p className="text-xs font-semibold text-slate-500 mt-1">Offres & Propositions en cours</p>
+                            </div>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-white group-hover:bg-amber-500 group-hover:text-white transition-all">
+                            <ChevronRight size={18} />
+                        </div>
+                    </div>
+                    <div className="flex items-end justify-between pt-3 border-t border-slate-100 dark:border-white/5">
+                        <div>
+                            <span className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest block">
+                                {counts.devis} en négociation
+                            </span>
+                            <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
+                                {counts.devisPendingAmount.toFixed(0)} <span className="text-base text-slate-500 font-bold">DT</span>
+                            </p>
+                        </div>
+                        <span className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-200/50 dark:border-amber-900/40">
+                            Gérer les devis
+                        </span>
+                    </div>
+                </div>
+
+                <div onClick={() => navigate('/factures')} className="bento-card-luxe bento-col-6 group cursor-pointer hover:border-blue-500/50 transition-all">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                <Receipt size={28} />
+                            </div>
+                            <div>
+                                <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider leading-none">Facturation</h3>
+                                <p className="text-xs font-semibold text-slate-500 mt-1">Pièces comptables & Recouvrement</p>
+                            </div>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-white group-hover:bg-blue-600 group-hover:text-white transition-all">
+                            <ChevronRight size={18} />
+                        </div>
+                    </div>
+                    <div className="flex items-end justify-between pt-3 border-t border-slate-100 dark:border-white/5">
+                        <div>
+                            <span className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest block">
+                                {counts.invoicesCount} facture(s) émises
+                            </span>
+                            <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
+                                {counts.invoicesPendingAmount.toFixed(0)} <span className="text-base text-slate-500 font-bold">DT à recouvrer</span>
+                            </p>
+                        </div>
+                        <span className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 rounded-lg border border-blue-200/50 dark:border-blue-900/40">
+                            Voir les factures
+                        </span>
+                    </div>
+                </div>
+
                 {/* RANGEE 2 : STATS & PROJECTS */}
                 <div onClick={() => navigate('/revenue')} className="bento-card-luxe bento-col-3 group cursor-pointer">
                     <div className="flex items-center gap-4 mb-6">
@@ -377,13 +468,13 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div className="space-y-3">
                         <div className="flex flex-col gap-1">
-                            <p className="text-[10px] font-bold text-slate-900 dark:text-white uppercase tracking-wider">Project A</p>
+                            <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Travaux en cours</p>
                             <div className="w-full h-1 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                                 <div className="w-2/3 h-full bg-cyan-500" />
                             </div>
-                            <span className="text-[9px] text-slate-500 dark:text-slate-400">Technician 1, Project A</span>
+                            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Progression des chantiers</span>
                         </div>
-                        <p className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pt-2">Total {counts.devis}</p>
+                        <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pt-2">Suivi d'activité</p>
                     </div>
                 </div>
 
