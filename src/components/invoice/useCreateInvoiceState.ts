@@ -9,10 +9,12 @@ import { supabase } from '../../lib/supabase';
 import { toast } from 'react-hot-toast';
 
 export interface InvoiceDraftItem {
+  id?: string;
   originType: 'intervention' | 'devis' | 'manual';
   originId?: string;
   description: string;
   quantity: number;
+  unit?: string;
   unitPrice: number;
   totalPrice: number;
 }
@@ -27,7 +29,8 @@ export interface ClientOption {
 export function useCreateInvoiceState(
   initialClientId?: string,
   _initialClientName?: string,
-  onSuccess?: () => void
+  onSuccess?: () => void,
+  initialDevisId?: string
 ) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -40,14 +43,17 @@ export function useCreateInvoiceState(
   // Numérotation
   const [invoiceNumber, setInvoiceNumber] = useState('');
 
-  // Type et éléments
-  const [invoiceType, setInvoiceType] = useState<'interventions' | 'devis' | 'manual'>('interventions');
+  // Sources non facturées disponibles pour ce client
   const [unbilledInterventions, setUnbilledInterventions] = useState<UnbilledIntervention[]>([]);
   const [unbilledDevis, setUnbilledDevis] = useState<UnbilledDevis[]>([]);
+  const [loadingSources, setLoadingSources] = useState(false);
 
-  // Sélections utilisateur
-  const [selectedInterventionIds, setSelectedInterventionIds] = useState<string[]>([]);
-  const [selectedDevisId, setSelectedDevisId] = useState<string | null>(null);
+  // Table des articles de la facture (libre et sans limite)
+  const [items, setItems] = useState<InvoiceDraftItem[]>([]);
+
+  // IDs liés pour verrouillage anti-doublon
+  const [linkedDevisIds, setLinkedDevisIds] = useState<string[]>([]);
+  const [linkedInterventionIds, setLinkedInterventionIds] = useState<string[]>([]);
 
   // Configuration de la facture
   const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -60,135 +66,259 @@ export function useCreateInvoiceState(
   const [notes, setNotes] = useState('');
   const [paymentTerms, setPaymentTerms] = useState('Paiement à réception');
 
-  // Lignes manuelles d'ajustement
-  const [customItems, setCustomItems] = useState<InvoiceDraftItem[]>([]);
+  const [loadingClients, setLoadingClients] = useState(false);
 
-  // Chargement initial du prochain numéro de facture et des clients si besoin
+  // Initialisation au montage
   useEffect(() => {
-    initModal();
-  }, [initialClientId]);
+    init();
+  }, [initialClientId, initialDevisId]);
 
-  const initModal = async () => {
+  const init = async () => {
     try {
       setLoading(true);
-      // Récupérer le prochain numéro suggéré
-      const nextNum = await invoiceService.getNextInvoiceNumber();
-      setInvoiceNumber(nextNum);
 
-      // Si pas de clientId initial, charger la liste des clients
-      if (!initialClientId) {
-        const { data: clientsData, error } = await supabase
-          .from('clients')
-          .select('id, first_name, last_name, phone')
-          .order('first_name');
-
-        if (!error && clientsData) {
-          setAvailableClients(clientsData);
-        }
-      } else {
-        await loadUnbilledSources(initialClientId);
-      }
+      // Exécutions concurrentes indépendantes : aucune tâche ne bloque les autres
+      await Promise.allSettled([
+        (async () => {
+          try {
+            const nextNum = await invoiceService.getNextInvoiceNumber();
+            setInvoiceNumber(nextNum);
+          } catch (e) {
+            console.error('Erreur génération numéro facture:', e);
+            const yr = new Date().getFullYear();
+            setInvoiceNumber(`FAC-${yr}-0001`);
+          }
+        })(),
+        fetchClients(),
+        (async () => {
+          if (initialClientId) {
+            await loadUnbilledSources(initialClientId);
+          }
+        })(),
+        (async () => {
+          if (initialDevisId) {
+            await autoImportInitialDevis(initialDevisId);
+          }
+        })(),
+      ]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Recharger dès que le client sélectionné change
-  const handleClientChange = async (clientId: string) => {
-    setSelectedClientId(clientId);
-    setSelectedInterventionIds([]);
-    setSelectedDevisId(null);
-    if (clientId) {
-      setLoading(true);
-      await loadUnbilledSources(clientId);
-      setLoading(false);
-    } else {
-      setUnbilledInterventions([]);
-      setUnbilledDevis([]);
+  /**
+   * Chargement infaillible de la liste des clients
+   */
+  const fetchClients = async () => {
+    try {
+      setLoadingClients(true);
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id, first_name, last_name, phone')
+        .order('last_name', { ascending: true });
+
+      if (error) {
+        console.warn('Erreur chargement clients avec tri, tentative fallback:', error);
+        const fallback = await supabase
+          .from('clients')
+          .select('id, first_name, last_name, phone');
+        if (fallback.data) {
+          const sorted = [...fallback.data].sort((a, b) => 
+            (a.last_name || a.first_name || '').localeCompare(b.last_name || b.first_name || '')
+          );
+          setAvailableClients(sorted);
+          return;
+        }
+        toast.error('Impossible de charger la liste des clients');
+      } else if (data) {
+        setAvailableClients(data);
+      }
+    } catch (err) {
+      console.error('Exception chargement clients:', err);
+    } finally {
+      setLoadingClients(false);
     }
   };
 
+  /**
+   * Charge les interventions et devis disponibles pour le client sélectionné
+   */
   const loadUnbilledSources = async (targetClientId: string) => {
     try {
+      setLoadingSources(true);
       const [interventions, devisList] = await Promise.all([
         invoiceService.fetchUnbilledInterventions(targetClientId),
         invoiceService.fetchUnbilledDevis(targetClientId),
       ]);
       setUnbilledInterventions(interventions);
       setUnbilledDevis(devisList);
-
-      // Par défaut, si des interventions sont disponibles, on coche tout
-      if (interventions.length > 0) {
-        setInvoiceType('interventions');
-        setSelectedInterventionIds(interventions.map((i) => i.id));
-      } else if (devisList.length > 0) {
-        setInvoiceType('devis');
-        setSelectedDevisId(devisList[0].id);
-      } else {
-        setInvoiceType('manual');
-      }
     } catch (err) {
       console.error('Erreur loadUnbilledSources:', err);
+    } finally {
+      setLoadingSources(false);
     }
   };
 
-  // Bascule de sélection d'une intervention
-  const toggleIntervention = (id: string) => {
-    setSelectedInterventionIds((prev) =>
-      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-    );
+  /**
+   * Import automatique si ouvert depuis le bouton "Facturer" d'un devis
+   */
+  const autoImportInitialDevis = async (devisId: string) => {
+    try {
+      const devisItems = await invoiceService.fetchDevisItems(devisId);
+      if (devisItems && devisItems.length > 0) {
+        const lines: InvoiceDraftItem[] = devisItems.map((it: any) => ({
+          originType: 'devis',
+          originId: devisId,
+          description: it.designation,
+          quantity: Number(it.quantity) || 1,
+          unit: it.unit || 'u',
+          unitPrice: Number(it.unit_price) || 0,
+          totalPrice: (Number(it.quantity) || 1) * (Number(it.unit_price) || 0),
+        }));
+        setItems(lines);
+      }
+      setLinkedDevisIds((prev) => [...prev, devisId]);
+    } catch (err) {
+      console.error('Erreur autoImportInitialDevis:', err);
+    }
   };
 
-  // Sélectionner ou désélectionner tout
-  const toggleSelectAllInterventions = () => {
-    if (selectedInterventionIds.length === unbilledInterventions.length) {
-      setSelectedInterventionIds([]);
+  /**
+   * Changement du client dans le menu déroulant
+   */
+  const handleClientChange = async (clientId: string) => {
+    setSelectedClientId(clientId);
+    if (clientId) {
+      await loadUnbilledSources(clientId);
     } else {
-      setSelectedInterventionIds(unbilledInterventions.map((i) => i.id));
+      setUnbilledInterventions([]);
+      setUnbilledDevis([]);
     }
   };
 
-  // Construction automatique des lignes selon le mode choisi
-  const invoiceItems = useMemo<InvoiceDraftItem[]>(() => {
-    if (invoiceType === 'interventions') {
-      const selected = unbilledInterventions.filter((i) => selectedInterventionIds.includes(i.id));
-      const generated = selected.map((inter) => {
-        const dateStr = inter.completed_date
-          ? new Date(inter.completed_date).toLocaleDateString('fr-FR')
-          : new Date(inter.scheduled_date).toLocaleDateString('fr-FR');
-        return {
-          originType: 'intervention' as const,
-          originId: inter.id,
-          description: `Passage d'entretien (${inter.pool_name}) - ${dateStr} : ${inter.details}`,
-          quantity: 1,
-          unitPrice: inter.total_amount,
-          totalPrice: inter.total_amount,
-        };
-      });
-      return [...generated, ...customItems];
-    }
+  // --- GESTION DES ARTICLES LIBRES & SANS LIMITE ---
 
-    if (invoiceType === 'devis') {
-      const selected = unbilledDevis.find((d) => d.id === selectedDevisId);
-      if (!selected) return [...customItems];
-      const devisItem: InvoiceDraftItem = {
-        originType: 'devis',
-        originId: selected.id,
-        description: `Facturation selon Devis n° ${selected.number} : ${selected.title}`,
+  const addItem = (partial?: Partial<InvoiceDraftItem>) => {
+    setItems((prev) => [
+      ...prev,
+      {
+        originType: 'manual',
+        description: '',
         quantity: 1,
-        unitPrice: selected.total_amount,
-        totalPrice: selected.total_amount,
-      };
-      return [devisItem, ...customItems];
+        unit: 'u',
+        unitPrice: 0,
+        totalPrice: 0,
+        ...partial,
+      },
+    ]);
+  };
+
+  const updateItem = (index: number, field: keyof InvoiceDraftItem, value: any) => {
+    setItems((prev) => {
+      const clone = [...prev];
+      const target = { ...clone[index], [field]: value };
+      if (field === 'quantity' || field === 'unitPrice') {
+        const q = Number(target.quantity) || 0;
+        const p = Number(target.unitPrice) || 0;
+        target.totalPrice = q * p;
+      }
+      clone[index] = target;
+      return clone;
+    });
+  };
+
+  const removeItem = (index: number) => {
+    setItems((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  /**
+   * Importation de l'intégralité des articles d'un devis
+   */
+  const importDevis = async (devis: UnbilledDevis) => {
+    try {
+      const devisItems = await invoiceService.fetchDevisItems(devis.id);
+      if (devisItems && devisItems.length > 0) {
+        const lines: InvoiceDraftItem[] = devisItems.map((it: any) => ({
+          originType: 'devis',
+          originId: devis.id,
+          description: it.designation,
+          quantity: Number(it.quantity) || 1,
+          unit: it.unit || 'u',
+          unitPrice: Number(it.unit_price) || 0,
+          totalPrice: (Number(it.quantity) || 1) * (Number(it.unit_price) || 0),
+        }));
+        setItems((prev) => [...prev, ...lines]);
+      } else {
+        // Fallback si le devis n'a pas de lignes détaillées
+        setItems((prev) => [
+          ...prev,
+          {
+            originType: 'devis',
+            originId: devis.id,
+            description: `Devis n° ${devis.number} : ${devis.title}`,
+            quantity: 1,
+            unit: 'forfait',
+            unitPrice: Number(devis.total_amount) || 0,
+            totalPrice: Number(devis.total_amount) || 0,
+          },
+        ]);
+      }
+
+      setLinkedDevisIds((prev) => [...prev, devis.id]);
+      if (!selectedClientId && devis.client_id) {
+        setSelectedClientId(devis.client_id);
+      }
+      toast.success(`Articles du devis ${devis.number} importés`);
+    } catch (err) {
+      console.error('Erreur importDevis:', err);
+      toast.error('Impossible d’importer les articles de ce devis');
     }
+  };
 
-    return customItems;
-  }, [invoiceType, unbilledInterventions, selectedInterventionIds, unbilledDevis, selectedDevisId, customItems]);
+  /**
+   * Importation de passages d'entretien terminés
+   */
+  const importInterventions = (selectedList: UnbilledIntervention[]) => {
+    const lines: InvoiceDraftItem[] = selectedList.map((inter) => {
+      const dateStr = inter.completed_date
+        ? new Date(inter.completed_date).toLocaleDateString('fr-FR')
+        : new Date(inter.scheduled_date).toLocaleDateString('fr-FR');
+      return {
+        originType: 'intervention',
+        originId: inter.id,
+        description: `Passage d'entretien (${inter.pool_name}) - ${dateStr} : ${inter.details || 'Prestation régulière'}`,
+        quantity: 1,
+        unit: 'passage',
+        unitPrice: Number(inter.total_amount) || 0,
+        totalPrice: Number(inter.total_amount) || 0,
+      };
+    });
 
-  // Totaux calculés en direct
+    setItems((prev) => [...prev, ...lines]);
+    setLinkedInterventionIds((prev) => [...prev, ...selectedList.map((i) => i.id)]);
+    toast.success(`${selectedList.length} passage(s) importé(s)`);
+  };
+
+  /**
+   * Ajout direct d'une prestation ou d'un produit du catalogue
+   */
+  const addCatalogueItem = (name: string, price: number, unit?: string) => {
+    addItem({
+      description: name,
+      quantity: 1,
+      unit: unit || 'u',
+      unitPrice: price,
+      totalPrice: price,
+      originType: 'manual',
+    });
+    toast.success(`"${name}" ajouté à la facture`);
+  };
+
+  // --- TOTAUX CALCULÉS EN TEMPS RÉEL ---
+
   const subtotalHt = useMemo(() => {
-    return invoiceItems.reduce((acc, it) => acc + (Number(it.totalPrice) || 0), 0);
-  }, [invoiceItems]);
+    return items.reduce((acc, it) => acc + (Number(it.totalPrice) || 0), 0);
+  }, [items]);
 
   const taxAmount = useMemo(() => {
     return (subtotalHt * (taxRate || 0)) / 100;
@@ -198,39 +328,8 @@ export function useCreateInvoiceState(
     return subtotalHt + taxAmount;
   }, [subtotalHt, taxAmount]);
 
-  // Ajouter une ligne personnalisée
-  const addCustomItem = () => {
-    setCustomItems((prev) => [
-      ...prev,
-      {
-        originType: 'manual',
-        description: '',
-        quantity: 1,
-        unitPrice: 0,
-        totalPrice: 0,
-      },
-    ]);
-  };
+  // --- ENREGISTREMENT ---
 
-  // Mettre à jour une ligne personnalisée
-  const updateCustomItem = (index: number, field: keyof InvoiceDraftItem, value: any) => {
-    setCustomItems((prev) => {
-      const clone = [...prev];
-      const target = { ...clone[index], [field]: value };
-      if (field === 'quantity' || field === 'unitPrice') {
-        target.totalPrice = (Number(target.quantity) || 0) * (Number(target.unitPrice) || 0);
-      }
-      clone[index] = target;
-      return clone;
-    });
-  };
-
-  // Supprimer une ligne personnalisée
-  const removeCustomItem = (index: number) => {
-    setCustomItems((prev) => prev.filter((_, idx) => idx !== index));
-  };
-
-  // Soumission
   const handleSubmit = async () => {
     const finalClientId = initialClientId || selectedClientId;
     if (!finalClientId) {
@@ -238,25 +337,34 @@ export function useCreateInvoiceState(
       return;
     }
 
-    if (invoiceItems.length === 0) {
-      toast.error('La facture doit contenir au moins une prestation');
+    if (items.length === 0) {
+      toast.error('La facture doit contenir au moins un article ou une prestation');
       return;
     }
 
     try {
       setSaving(true);
+
+      // Déduction du type principal de la facture
+      const hasDevis = items.some((i) => i.originType === 'devis');
+      const hasInter = items.some((i) => i.originType === 'intervention');
+      let type: 'interventions' | 'devis' | 'mixed' | 'manual' = 'manual';
+      if (hasDevis && hasInter) type = 'mixed';
+      else if (hasDevis) type = 'devis';
+      else if (hasInter) type = 'interventions';
+
       const payload: CreateInvoicePayload = {
         clientId: finalClientId,
         invoiceNumber: invoiceNumber.trim() || undefined,
         invoiceDate,
         dueDate,
-        type: invoiceType,
-        items: invoiceItems,
+        type,
+        items,
         taxRate,
         notes: notes.trim() || undefined,
         paymentTerms,
-        linkedInterventionIds: invoiceType === 'interventions' ? selectedInterventionIds : undefined,
-        linkedDevisIds: invoiceType === 'devis' && selectedDevisId ? [selectedDevisId] : undefined,
+        linkedInterventionIds: linkedInterventionIds.length > 0 ? linkedInterventionIds : undefined,
+        linkedDevisIds: linkedDevisIds.length > 0 ? linkedDevisIds : undefined,
       };
 
       const result = await invoiceService.createInvoice(payload);
@@ -274,19 +382,16 @@ export function useCreateInvoiceState(
     selectedClientId,
     handleClientChange,
     availableClients,
+    loadingClients,
+    fetchClients,
     clientSearchTerm,
     setClientSearchTerm,
     invoiceNumber,
     setInvoiceNumber,
-    invoiceType,
-    setInvoiceType,
     unbilledInterventions,
     unbilledDevis,
-    selectedInterventionIds,
-    toggleIntervention,
-    toggleSelectAllInterventions,
-    selectedDevisId,
-    setSelectedDevisId,
+    loadingSources,
+    loadUnbilledSources,
     invoiceDate,
     setInvoiceDate,
     dueDate,
@@ -297,11 +402,13 @@ export function useCreateInvoiceState(
     setNotes,
     paymentTerms,
     setPaymentTerms,
-    invoiceItems,
-    customItems,
-    addCustomItem,
-    updateCustomItem,
-    removeCustomItem,
+    items,
+    addItem,
+    updateItem,
+    removeItem,
+    importDevis,
+    importInterventions,
+    addCatalogueItem,
     subtotalHt,
     taxAmount,
     totalTtc,

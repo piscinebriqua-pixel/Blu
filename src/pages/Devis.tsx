@@ -279,6 +279,7 @@ export const Devis: React.FC = () => {
               ? `${devisToInvoice.client.first_name} ${devisToInvoice.client.last_name}`
               : undefined
           }
+          initialDevisId={devisToInvoice.id}
           onClose={() => setDevisToInvoice(null)}
           onSuccess={() => {
             setDevisToInvoice(null);

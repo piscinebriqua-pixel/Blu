@@ -19,6 +19,13 @@ export interface UnbilledDevis {
   total_amount: number;
   status: string;
   created_at: string;
+  client_id?: string;
+  client?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    phone?: string | null;
+  } | null;
 }
 
 export interface InvoiceWithItems extends InvoiceRow {
@@ -42,7 +49,7 @@ export interface CreateInvoicePayload {
   invoiceNumber?: string;
   invoiceDate?: string;
   dueDate?: string;
-  type: 'interventions' | 'devis' | 'manual';
+  type: 'interventions' | 'devis' | 'mixed' | 'manual';
   items: Array<{
     originType: 'intervention' | 'devis' | 'manual';
     originId?: string;
@@ -128,31 +135,123 @@ export const invoiceService = {
   },
 
   /**
-   * Récupère les devis du client non encore facturés (invoice_id IS NULL).
+   * Récupère les devis non encore facturés (tolérant si invoice_id n'existe pas en base).
+   * Si clientId est fourni, filtre par client ; sinon récupère tous les devis disponibles avec infos client.
    */
-  async fetchUnbilledDevis(clientId: string): Promise<UnbilledDevis[]> {
+  async fetchUnbilledDevis(clientId?: string): Promise<UnbilledDevis[]> {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('devis')
-        .select('id, number, title, total_amount, status, created_at')
-        .eq('client_id', clientId)
-        .is('invoice_id', null)
+        .select(`
+          id,
+          number,
+          title,
+          total_amount,
+          status,
+          created_at,
+          client_id,
+          client:clients(id, first_name, last_name, phone)
+        `)
+        .neq('status', 'cancelled')
+        .or('is_template.is.null,is_template.eq.false')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (clientId) {
+        query = query.eq('client_id', clientId);
+      }
+
+      // Tentative avec filtre invoice_id is null
+      const { data, error } = await query.is('invoice_id', null);
+
+      if (error) {
+        // Fallback sans filtre invoice_id si la colonne n'existe pas encore en base
+        console.warn('Fallback fetchUnbilledDevis sans invoice_id:', error.message);
+        let fallbackQuery = supabase
+          .from('devis')
+          .select(`
+            id,
+            number,
+            title,
+            total_amount,
+            status,
+            created_at,
+            client_id,
+            client:clients(id, first_name, last_name, phone)
+          `)
+          .neq('status', 'cancelled')
+          .or('is_template.is.null,is_template.eq.false')
+          .order('created_at', { ascending: false });
+
+        if (clientId) {
+          fallbackQuery = fallbackQuery.eq('client_id', clientId);
+        }
+
+        const { data: fallbackData, error: fallbackErr } = await fallbackQuery;
+        if (fallbackErr) throw fallbackErr;
+
+        return (fallbackData || []).map((d: any) => ({
+          id: d.id,
+          number: d.number,
+          title: d.title,
+          total_amount: Number(d.total_amount) || 0,
+          status: d.status,
+          created_at: d.created_at,
+          client_id: d.client_id,
+          client: Array.isArray(d.client) ? d.client[0] || null : d.client,
+        }));
+      }
 
       return (data || []).map((d: any) => ({
         id: d.id,
         number: d.number,
         title: d.title,
-        total_amount: d.total_amount || 0,
+        total_amount: Number(d.total_amount) || 0,
         status: d.status,
         created_at: d.created_at,
+        client_id: d.client_id,
+        client: Array.isArray(d.client) ? d.client[0] || null : d.client,
       }));
     } catch (err: any) {
       console.error('Erreur fetchUnbilledDevis:', err);
-      toast.error('Impossible de charger les devis non facturés');
       return [];
+    }
+  },
+
+  /**
+   * Récupère les articles détaillés d'un devis pour les importer dans une facture.
+   */
+  async fetchDevisItems(devisId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('devis_items')
+        .select('*')
+        .eq('devis_id', devisId)
+        .order('position', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    } catch (err: any) {
+      console.error('Erreur fetchDevisItems:', err);
+      return [];
+    }
+  },
+
+  /**
+   * Récupère le catalogue des prestations et produits de l'entreprise.
+   */
+  async fetchCatalogue(): Promise<{ services: any[]; products: any[] }> {
+    try {
+      const [servicesRes, productsRes] = await Promise.all([
+        supabase.from('services').select('id, name, price').order('name'),
+        supabase.from('products').select('id, name, unit, price_per_unit').order('name'),
+      ]);
+      return {
+        services: servicesRes.data || [],
+        products: productsRes.data || [],
+      };
+    } catch (err: any) {
+      console.error('Erreur fetchCatalogue:', err);
+      return { services: [], products: [] };
     }
   },
 
