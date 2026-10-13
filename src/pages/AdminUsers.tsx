@@ -85,10 +85,10 @@ const AdminUsers: React.FC = () => {
   // Real-time counter metrics
   const counts = useMemo(() => {
     const total = profiles.length;
-    const pending = profiles.filter((p) => !p.is_approved).length;
+    const pending = profiles.filter((p) => !p.is_approved || p.role === 'pending').length;
     const technician = profiles.filter((p) => p.is_approved && p.role === 'technician').length;
-    const client = profiles.filter((p) => p.role === 'client' && p.is_approved).length;
-    const admin = profiles.filter((p) => p.role === 'admin' && p.is_approved).length;
+    const client = profiles.filter((p) => p.is_approved && p.role === 'client').length;
+    const admin = profiles.filter((p) => p.is_approved && p.role === 'admin').length;
     return { total, pending, technician, client, admin };
   }, [profiles]);
 
@@ -96,7 +96,7 @@ const AdminUsers: React.FC = () => {
   const filteredProfiles = useMemo(() => {
     return profiles.filter((p) => {
       // Role filter
-      if (activeFilter === 'pending' && p.is_approved) return false;
+      if (activeFilter === 'pending' && (p.is_approved && p.role !== 'pending')) return false;
       if (activeFilter === 'technician' && (!p.is_approved || p.role !== 'technician')) return false;
       if (activeFilter === 'client' && (!p.is_approved || p.role !== 'client')) return false;
       if (activeFilter === 'admin' && (!p.is_approved || p.role !== 'admin')) return false;
@@ -112,8 +112,9 @@ const AdminUsers: React.FC = () => {
     });
   }, [profiles, activeFilter, searchQuery]);
 
-  const handleUpdateProfile = async (role: string, linkId?: string) => {
-    if (!selectedProfile) return;
+  const handleUpdateProfile = async (role: string, linkId?: string, targetProfile?: Profile) => {
+    const prof = targetProfile || selectedProfile;
+    if (!prof) return;
     setIsProcessing(true);
     try {
       let finalLinkId = linkId;
@@ -122,22 +123,22 @@ const AdminUsers: React.FC = () => {
         if (role === 'technician') {
           const { data: techData, error: techErr } = await supabase
             .from('technicians')
-            .insert({ full_name: selectedProfile.full_name, email: selectedProfile.email, active: true })
+            .insert({ full_name: prof.full_name, email: prof.email, active: true })
             .select()
             .single();
           if (techErr) throw techErr;
           finalLinkId = techData.id;
         } else if (role === 'client') {
-          const nameParts = selectedProfile.full_name.split(' ');
-          const fName = nameParts[0];
+          const nameParts = (prof.full_name || '').split(' ');
+          const fName = nameParts[0] || 'Client';
           const lName = nameParts.slice(1).join(' ') || '';
           const { data: cliData, error: cliErr } = await supabase
             .from('clients')
             .insert({
               first_name: fName,
               last_name: lName,
-              full_name: selectedProfile.full_name,
-              email: selectedProfile.email,
+              full_name: prof.full_name,
+              email: prof.email,
             })
             .select()
             .single();
@@ -150,7 +151,7 @@ const AdminUsers: React.FC = () => {
       updateData.technician_id = role === 'technician' ? finalLinkId : null;
       updateData.client_id = role === 'client' ? finalLinkId : null;
 
-      const { error } = await supabase.from('profiles').update(updateData).eq('id', selectedProfile.id);
+      const { error } = await supabase.from('profiles').update(updateData).eq('id', prof.id);
       if (error) throw error;
 
       toast.success('Profil mis à jour !');
@@ -430,7 +431,7 @@ const AdminUsers: React.FC = () => {
                 }}
                 onMakeAdmin={(prof) => {
                   setSelectedProfile(prof);
-                  handleUpdateProfile('admin');
+                  handleUpdateProfile('admin', undefined, prof);
                 }}
                 onEditProfile={(prof) => {
                   setSelectedProfile(prof);

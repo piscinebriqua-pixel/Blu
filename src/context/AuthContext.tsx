@@ -76,8 +76,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (isFetchingRef.current === userId) return;
     isFetchingRef.current = userId;
 
-    let attempts = 2;
-    const delay = 600;
+    let attempts = 3;
+    const delay = 800;
 
     while (attempts > 0) {
       try {
@@ -105,18 +105,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
 
-        // Si le serveur a répondu explicitement data === null (profil inexistant dans la base)
-        if (data === null) {
-          console.warn('[AuthContext] Aucun profil trouvé en base pour userId:', userId);
-          setProfileNotFound(true);
-          setUserProfile(null);
-          setCachedProfile(null);
-          setLoading(false);
-          isFetchingRef.current = null;
-          return;
+        // Si data === null (ligne pas encore créée par le trigger OAuth ou profil absent)
+        // on n'abandonne pas immédiatement si d'autres tentatives restent !
+        if (attempts > 1) {
+          console.info(`[AuthContext] Profil en attente de synchronisation (${4 - attempts}/3), nouvelle tentative dans ${delay}ms...`);
         }
       } catch (err: any) {
-        console.warn(`[AuthContext] Chargement profil tentative (${3 - attempts}/2):`, err.message);
+        console.warn(`[AuthContext] Chargement profil tentative (${4 - attempts}/3):`, err.message);
       }
 
       attempts--;
@@ -131,9 +126,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUserProfile(cached);
       setLoading(false);
     } else {
-      // Si aucun profil en cache et que les requêtes ont échoué
-      setLoading(false);
+      // Si aucun profil en base après toutes les tentatives
+      console.warn('[AuthContext] Aucun profil trouvé en base après 3 tentatives pour userId:', userId);
       setProfileNotFound(true);
+      setUserProfile(null);
+      setCachedProfile(null);
+      setLoading(false);
     }
   };
 

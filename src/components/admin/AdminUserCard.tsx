@@ -37,7 +37,7 @@ export const AdminUserCard: React.FC<AdminUserCardProps> = ({
   onReject,
   onRevoke,
 }) => {
-  const isPending = !p.is_approved;
+  const isPending = !p.is_approved || p.role === 'pending';
 
   // Resolve linked entity
   const linkedTech = p.technician_id
