@@ -1,18 +1,10 @@
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import type { ProfileRow } from '../lib/supabase';
 import { handleAppError } from '../lib/errorHandler';
 
-export interface UserProfile {
-  id: string;
-  email: string | null;
-  full_name: string | null;
-  role: 'admin' | 'technicien' | 'client' | 'pending' | string;
-  is_approved: boolean;
-  technician_id?: string | null;
-  client_id?: string | null;
-  created_at?: string;
-}
+export type UserProfile = ProfileRow;
 
 interface AuthContextType {
   session: Session | null;
@@ -55,90 +47,176 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userProfile, setUserProfile] = useState<UserProfile | null>(() => getCachedProfile());
   const [profileNotFound, setProfileNotFound] = useState(false);
   const [loading, setLoading] = useState(!getCachedProfile());
-  const isFetchingRef = useRef<string | null>(null);
 
-  // Safety Timeout: Prevent any infinite loading freeze under all circumstances
+  // 1. Initialisation de la Session & Écouteur d'authentification
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading((prevLoading) => {
-        if (prevLoading) {
-          console.warn('[AuthContext] Timeout de sécurité atteint : déblocage forcé du chargement.');
-          return false;
-        }
-        return false;
-      });
-    }, 6000);
+    let isMounted = true;
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  const fetchProfileWithRetry = async (userId: string) => {
-    if (isFetchingRef.current === userId) return;
-    isFetchingRef.current = userId;
-
-    let attempts = 3;
-    const delay = 800;
-
-    while (attempts > 0) {
-      try {
-        const queryPromise = supabase
-          .from('profiles' as any)
-          .select('*')
-          .eq('id', userId)
-          .maybeSingle();
-
-        // Timeout généreux de 8s adapté aux connexions mobiles / cold-start Supabase
-        const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout réseau profil')), 8000)
-        );
-
-        const { data, error } = (await Promise.race([queryPromise, timeoutPromise])) as any;
-
-        if (error) throw error;
-
-        if (data) {
-          setUserProfile(data as UserProfile);
-          setCachedProfile(data as UserProfile);
-          setProfileNotFound(false);
-          setLoading(false);
-          isFetchingRef.current = null;
+    // Récupération de la session initiale sans timeout arbitraire agressif
+    supabase.auth.getSession().then(({ data: { session: initSession }, error }) => {
+      if (!isMounted) return;
+      if (error) {
+        console.warn('[AuthContext] Session invalide ou expirée:', error);
+        if (error.message?.includes('refresh_token') || error.message?.includes('Invalid Refresh Token')) {
+          signOut();
           return;
         }
-
-        // Si data === null (ligne pas encore créée par le trigger OAuth ou profil absent)
-        // on n'abandonne pas immédiatement si d'autres tentatives restent !
-        if (attempts > 1) {
-          console.info(`[AuthContext] Profil en attente de synchronisation (${4 - attempts}/3), nouvelle tentative dans ${delay}ms...`);
-        }
-      } catch (err: any) {
-        console.warn(`[AuthContext] Chargement profil tentative (${4 - attempts}/3):`, err.message);
       }
-
-      attempts--;
-      if (attempts > 0) {
-        await new Promise((r) => setTimeout(r, delay));
+      setSession(initSession);
+      if (!initSession) {
+        setLoading(false);
       }
+    }).catch((err) => {
+      if (!isMounted) return;
+      console.error('[AuthContext] Erreur getSession:', err);
+      setLoading(false);
+    });
+
+    // Écouteur Auth : STRICTEMENT SYNCHRONE
+    // IMPORTANT: Ne JAMAIS faire d'appels PostgREST (supabase.from) awaités dans ce callback !
+    // Cela provoque un deadlock fatal avec le verrou interne du client Supabase (auth token lock).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      if (!isMounted) return;
+      setSession(currentSession);
+      if (!currentSession) {
+        setUserProfile(null);
+        setCachedProfile(null);
+        setProfileNotFound(false);
+        setLoading(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // 2. Chargement du profil découplé du listener auth (évite tout deadlock)
+  useEffect(() => {
+    const user = session?.user;
+    if (!user) {
+      setUserProfile(null);
+      setProfileNotFound(false);
+      return;
     }
 
-    isFetchingRef.current = null;
+    let isMounted = true;
+    const userId = user.id;
+    const userEmail = user.email || '';
+
+    // Utilisation immédiate du cache s'il correspond à l'utilisateur
     const cached = getCachedProfile(userId);
     if (cached) {
       setUserProfile(cached);
       setLoading(false);
     } else {
-      // Si aucun profil en base après toutes les tentatives
-      console.warn('[AuthContext] Aucun profil trouvé en base après 3 tentatives pour userId:', userId);
-      setProfileNotFound(true);
-      setUserProfile(null);
-      setCachedProfile(null);
-      setLoading(false);
+      setLoading(true);
     }
-  };
+
+    const fetchProfile = async () => {
+      let attempts = 3;
+      const delay = 600;
+
+      while (attempts > 0 && isMounted) {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 6000);
+
+          // 1. Recherche directe par ID utilisateur
+          let { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .abortSignal(controller.signal)
+            .maybeSingle();
+
+          clearTimeout(timer);
+
+          if (error) throw error;
+
+          // 2. Fallback de résilience : si non trouvé par ID mais email présent
+          // (ex: compte créé par admin/mdp, puis connecté via Google OAuth avec ID différent)
+          if (!data && userEmail) {
+            const { data: byEmail, error: emailErr } = await supabase
+              .from('profiles')
+              .select('*')
+              .ilike('email', userEmail)
+              .maybeSingle();
+
+            if (!emailErr && byEmail) {
+              console.info('[AuthContext] Profil retrouvé par correspondance email:', userEmail);
+              data = byEmail;
+              // Synchroniser l'ID en base en tâche de fond pour les prochaines requêtes
+              supabase
+                .from('profiles')
+                .update({ id: userId })
+                .eq('id', byEmail.id)
+                .then(() => {}, () => {});
+            }
+          }
+
+          if (data && isMounted) {
+            const profile = data as UserProfile;
+            setUserProfile(profile);
+            setCachedProfile(profile);
+            setProfileNotFound(false);
+            setLoading(false);
+            return;
+          }
+
+          if (attempts > 1) {
+            console.info(`[AuthContext] Profil en cours de synchronisation (${4 - attempts}/3)...`);
+          }
+        } catch (err: any) {
+          console.warn(`[AuthContext] Tentative chargement profil (${4 - attempts}/3):`, err.message || err);
+        }
+
+        attempts--;
+        if (attempts > 0 && isMounted) {
+          await new Promise((r) => setTimeout(r, delay));
+        }
+      }
+
+      if (!isMounted) return;
+
+      const fallback = getCachedProfile(userId);
+      if (fallback) {
+        setUserProfile(fallback);
+        setProfileNotFound(false);
+      } else {
+        console.warn('[AuthContext] Aucun profil trouvé en base après 3 tentatives pour userId:', userId);
+        setProfileNotFound(true);
+        setUserProfile(null);
+        setCachedProfile(null);
+      }
+      setLoading(false);
+    };
+
+    fetchProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [session?.user?.id]);
 
   const refreshProfile = async () => {
-    if (session?.user?.id) {
-      isFetchingRef.current = null;
-      await fetchProfileWithRetry(session.user.id);
+    if (!session?.user?.id) return;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (!error && data) {
+        const profile = data as UserProfile;
+        setUserProfile(profile);
+        setCachedProfile(profile);
+        setProfileNotFound(false);
+      }
+    } catch (err) {
+      console.warn('[AuthContext] Erreur refreshProfile:', err);
     }
   };
 
@@ -178,68 +256,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Safety Timeout global : empêche tout blocage infini du loader principal (10s)
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise<{ data: { session: null }; error: null }>((resolve) =>
-          setTimeout(() => resolve({ data: { session: null }, error: null }), 3000)
-        );
-
-        const { data, error } = (await Promise.race([sessionPromise, timeoutPromise])) as any;
-
-        if (error) {
-          if (error.message?.includes('refresh_token') || error.message?.includes('Invalid Refresh Token')) {
-            console.warn('[AuthContext] Session expirée ou invalide. Purge...');
-            await signOut();
-            return;
-          }
-          throw error;
+    const timer = setTimeout(() => {
+      setLoading((prevLoading) => {
+        if (prevLoading) {
+          console.warn('[AuthContext] Timeout de sécurité atteint : déblocage forcé du loader.');
+          return false;
         }
+        return false;
+      });
+    }, 10000);
 
-        const initialSession = data?.session ?? null;
-        setSession(initialSession);
-
-        if (initialSession?.user) {
-          const cached = getCachedProfile(initialSession.user.id);
-          if (cached) {
-            setUserProfile(cached);
-            setLoading(false);
-          }
-          await fetchProfileWithRetry(initialSession.user.id);
-        } else {
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error('[AuthContext] Erreur initialisation auth:', err);
-        setLoading(false);
-      }
-    };
-
-    initAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
-      setSession(currentSession);
-
-      if (currentSession?.user) {
-        const cached = getCachedProfile(currentSession.user.id);
-        if (cached) {
-          setUserProfile(cached);
-          setLoading(false);
-        }
-        if (isFetchingRef.current !== currentSession.user.id) {
-          await fetchProfileWithRetry(currentSession.user.id);
-        }
-      } else {
-        setUserProfile(null);
-        setCachedProfile(null);
-        setProfileNotFound(false);
-        isFetchingRef.current = null;
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => clearTimeout(timer);
   }, []);
 
   return (

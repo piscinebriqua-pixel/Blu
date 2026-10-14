@@ -80,6 +80,12 @@ export const DevisCard: React.FC<DevisCardProps> = ({
                 <Clock size={13} /> En négociation
               </span>
             )}
+
+            {devis.invoice_id && (
+              <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-purple-600 bg-purple-50 dark:bg-purple-950/40 px-2 py-0.5 rounded-md">
+                <Receipt size={13} /> Facturé
+              </span>
+            )}
           </div>
 
           <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate mt-0.5">
@@ -148,15 +154,22 @@ export const DevisCard: React.FC<DevisCardProps> = ({
               <span className="hidden sm:inline">Signé</span>
             </button>
           ) : isClosed ? (
-            <button
-              type="button"
-              onClick={() => onConvertToInvoice(devis)}
-              className="min-h-[44px] px-3 rounded-xl bg-blue-600 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 hover:bg-blue-700 active:scale-95 transition-all shadow-sm"
-              title="Facturer ce devis"
-            >
-              <Receipt size={15} />
-              <span className="hidden sm:inline">Facturer</span>
-            </button>
+            devis.invoice_id ? (
+              <span className="min-h-[44px] px-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 font-black text-xs uppercase tracking-wider flex items-center gap-1.5">
+                <Receipt size={14} />
+                <span className="hidden sm:inline">Facturé</span>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onConvertToInvoice(devis)}
+                className="min-h-[44px] px-3 rounded-xl bg-blue-600 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1.5 hover:bg-blue-700 active:scale-95 transition-all shadow-sm"
+                title="Facturer ce devis"
+              >
+                <Receipt size={15} />
+                <span className="hidden sm:inline">Facturer</span>
+              </button>
+            )
           ) : (
             <button
               type="button"

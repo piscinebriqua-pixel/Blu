@@ -46,6 +46,7 @@ export function useCreateInvoiceState(
   // Sources non facturées disponibles pour ce client
   const [unbilledInterventions, setUnbilledInterventions] = useState<UnbilledIntervention[]>([]);
   const [unbilledDevis, setUnbilledDevis] = useState<UnbilledDevis[]>([]);
+  const [allUnbilledDevis, setAllUnbilledDevis] = useState<UnbilledDevis[]>([]);
   const [loadingSources, setLoadingSources] = useState(false);
 
   // Table des articles de la facture (libre et sans limite)
@@ -76,9 +77,10 @@ export function useCreateInvoiceState(
   const init = async () => {
     try {
       setLoading(true);
+      setLoadingSources(true);
 
       // Exécutions concurrentes indépendantes : aucune tâche ne bloque les autres
-      await Promise.allSettled([
+      const [, , devisRes, interRes] = await Promise.allSettled([
         (async () => {
           try {
             const nextNum = await invoiceService.getNextInvoiceNumber();
@@ -90,18 +92,29 @@ export function useCreateInvoiceState(
           }
         })(),
         fetchClients(),
-        (async () => {
-          if (initialClientId) {
-            await loadUnbilledSources(initialClientId);
-          }
-        })(),
-        (async () => {
-          if (initialDevisId) {
-            await autoImportInitialDevis(initialDevisId);
-          }
-        })(),
+        invoiceService.fetchUnbilledDevis(), // Charge TOUS les devis disponibles
+        initialClientId ? invoiceService.fetchUnbilledInterventions(initialClientId) : Promise.resolve([]),
       ]);
+
+      if (devisRes.status === 'fulfilled') {
+        const allDevis = devisRes.value || [];
+        setAllUnbilledDevis(allDevis);
+        if (initialClientId) {
+          setUnbilledDevis(allDevis.filter((d) => d.client_id === initialClientId));
+        } else {
+          setUnbilledDevis(allDevis);
+        }
+      }
+
+      if (interRes.status === 'fulfilled') {
+        setUnbilledInterventions((interRes.value as UnbilledIntervention[]) || []);
+      }
+
+      if (initialDevisId) {
+        await autoImportInitialDevis(initialDevisId);
+      }
     } finally {
+      setLoadingSources(false);
       setLoading(false);
     }
   };
@@ -143,15 +156,21 @@ export function useCreateInvoiceState(
   /**
    * Charge les interventions et devis disponibles pour le client sélectionné
    */
-  const loadUnbilledSources = async (targetClientId: string) => {
+  const loadUnbilledSources = async (targetClientId?: string) => {
     try {
       setLoadingSources(true);
       const [interventions, devisList] = await Promise.all([
-        invoiceService.fetchUnbilledInterventions(targetClientId),
-        invoiceService.fetchUnbilledDevis(targetClientId),
+        targetClientId ? invoiceService.fetchUnbilledInterventions(targetClientId) : Promise.resolve([]),
+        invoiceService.fetchUnbilledDevis(),
       ]);
-      setUnbilledInterventions(interventions);
-      setUnbilledDevis(devisList);
+      setAllUnbilledDevis(devisList);
+      if (targetClientId) {
+        setUnbilledInterventions(interventions);
+        setUnbilledDevis(devisList.filter((d) => d.client_id === targetClientId));
+      } else {
+        setUnbilledInterventions([]);
+        setUnbilledDevis(devisList);
+      }
     } catch (err) {
       console.error('Erreur loadUnbilledSources:', err);
     } finally {
@@ -166,18 +185,22 @@ export function useCreateInvoiceState(
     try {
       const devisItems = await invoiceService.fetchDevisItems(devisId);
       if (devisItems && devisItems.length > 0) {
-        const lines: InvoiceDraftItem[] = devisItems.map((it: any) => ({
-          originType: 'devis',
-          originId: devisId,
-          description: it.designation,
-          quantity: Number(it.quantity) || 1,
-          unit: it.unit || 'u',
-          unitPrice: Number(it.unit_price) || 0,
-          totalPrice: (Number(it.quantity) || 1) * (Number(it.unit_price) || 0),
-        }));
-        setItems(lines);
+        const lines: InvoiceDraftItem[] = devisItems
+          .filter((it: any) => !it.is_header)
+          .map((it: any) => ({
+            originType: 'devis',
+            originId: devisId,
+            description: it.designation,
+            quantity: Number(it.quantity) || 1,
+            unit: it.unit || 'u',
+            unitPrice: Number(it.unit_price) || 0,
+            totalPrice: (Number(it.quantity) || 1) * (Number(it.unit_price) || 0),
+          }));
+        if (lines.length > 0) {
+          setItems(lines);
+        }
       }
-      setLinkedDevisIds((prev) => [...prev, devisId]);
+      setLinkedDevisIds((prev) => (prev.includes(devisId) ? prev : [...prev, devisId]));
     } catch (err) {
       console.error('Erreur autoImportInitialDevis:', err);
     }
@@ -189,10 +212,23 @@ export function useCreateInvoiceState(
   const handleClientChange = async (clientId: string) => {
     setSelectedClientId(clientId);
     if (clientId) {
-      await loadUnbilledSources(clientId);
+      // Filtrage instantané des devis déjà en mémoire
+      const clientDevis = allUnbilledDevis.filter((d) => d.client_id === clientId);
+      setUnbilledDevis(clientDevis);
+
+      // Chargement en arrière-plan des interventions non facturées de ce client
+      try {
+        setLoadingSources(true);
+        const interventions = await invoiceService.fetchUnbilledInterventions(clientId);
+        setUnbilledInterventions(interventions);
+      } catch (err) {
+        console.error('Erreur chargement interventions client:', err);
+      } finally {
+        setLoadingSources(false);
+      }
     } else {
       setUnbilledInterventions([]);
-      setUnbilledDevis([]);
+      setUnbilledDevis(allUnbilledDevis);
     }
   };
 
@@ -237,8 +273,10 @@ export function useCreateInvoiceState(
   const importDevis = async (devis: UnbilledDevis) => {
     try {
       const devisItems = await invoiceService.fetchDevisItems(devis.id);
-      if (devisItems && devisItems.length > 0) {
-        const lines: InvoiceDraftItem[] = devisItems.map((it: any) => ({
+      const validItems = (devisItems || []).filter((it: any) => !it.is_header);
+
+      if (validItems.length > 0) {
+        const lines: InvoiceDraftItem[] = validItems.map((it: any) => ({
           originType: 'devis',
           originId: devis.id,
           description: it.designation,
@@ -249,7 +287,7 @@ export function useCreateInvoiceState(
         }));
         setItems((prev) => [...prev, ...lines]);
       } else {
-        // Fallback si le devis n'a pas de lignes détaillées
+        // Fallback si le devis n'a pas de lignes d'articles détaillées
         setItems((prev) => [
           ...prev,
           {
@@ -264,10 +302,19 @@ export function useCreateInvoiceState(
         ]);
       }
 
-      setLinkedDevisIds((prev) => [...prev, devis.id]);
-      if (!selectedClientId && devis.client_id) {
+      setLinkedDevisIds((prev) => (prev.includes(devis.id) ? prev : [...prev, devis.id]));
+
+      // Si le devis a un client_id et qu'il n'est pas encore le client sélectionné, l'associer
+      if (devis.client_id && selectedClientId !== devis.client_id) {
         setSelectedClientId(devis.client_id);
+        const clientDevis = allUnbilledDevis.filter((d) => d.client_id === devis.client_id);
+        setUnbilledDevis(clientDevis);
+
+        invoiceService.fetchUnbilledInterventions(devis.client_id).then((inters) => {
+          setUnbilledInterventions(inters);
+        });
       }
+
       toast.success(`Articles du devis ${devis.number} importés`);
     } catch (err) {
       console.error('Erreur importDevis:', err);
@@ -390,6 +437,7 @@ export function useCreateInvoiceState(
     setInvoiceNumber,
     unbilledInterventions,
     unbilledDevis,
+    allUnbilledDevis,
     loadingSources,
     loadUnbilledSources,
     invoiceDate,

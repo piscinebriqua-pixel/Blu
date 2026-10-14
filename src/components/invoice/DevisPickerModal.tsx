@@ -1,41 +1,112 @@
 import React, { useState } from 'react';
 import ModalLayout from '../ModalLayout';
 import type { UnbilledDevis } from '../../services/invoiceService';
-import { Search, FileSpreadsheet, Plus, CheckCircle2, Clock } from 'lucide-react';
+import { Search, FileSpreadsheet, Plus, CheckCircle2, Clock, Users, User, AlertCircle } from 'lucide-react';
 
 interface DevisPickerModalProps {
   availableDevis: UnbilledDevis[];
+  allDevis?: UnbilledDevis[];
+  selectedClientId?: string;
+  selectedClientName?: string;
   loading: boolean;
   onClose: () => void;
   onImportDevis: (devis: UnbilledDevis) => void;
 }
 
 export const DevisPickerModal: React.FC<DevisPickerModalProps> = ({
-  availableDevis,
+  availableDevis = [],
+  allDevis = [],
+  selectedClientId,
+  selectedClientName,
   loading,
   onClose,
   onImportDevis,
 }) => {
+  // Détermination de la source complète
+  const allDevisList = allDevis.length > 0 ? allDevis : availableDevis;
+  const hasClient = Boolean(selectedClientId);
+  const clientHasDevis = availableDevis.length > 0;
+
+  // Si le client n'a pas de devis, basculer d'emblée sur la vue globale
+  const [activeTab, setActiveTab] = useState<'client' | 'all'>(() => {
+    return hasClient && clientHasDevis ? 'client' : 'all';
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filtered = availableDevis.filter((d) => {
+  // Liste active selon l'onglet
+  const activeList = activeTab === 'client' && hasClient ? availableDevis : allDevisList;
+
+  // Filtrage par recherche
+  const filtered = activeList.filter((d) => {
     const q = searchTerm.toLowerCase().trim();
+    if (!q) return true;
     const clientName = `${d.client?.first_name || ''} ${d.client?.last_name || ''}`.toLowerCase();
+    const phone = (d.client?.phone || '').toLowerCase();
     const num = (d.number || '').toLowerCase();
     const title = (d.title || '').toLowerCase();
-    return !q || clientName.includes(q) || num.includes(q) || title.includes(q);
+    const amount = String(d.total_amount || '');
+    return clientName.includes(q) || phone.includes(q) || num.includes(q) || title.includes(q) || amount.includes(q);
   });
 
   return (
     <ModalLayout
       title="Importer un Devis dans la Facture"
       onClose={onClose}
-      className="max-w-xl"
+      className="max-w-2xl"
     >
       <div className="space-y-4">
-        <p className="text-xs font-semibold text-slate-500">
-          Sélectionnez un devis pour injecter l'intégralité de ses articles chiffrés directement dans votre facture.
-        </p>
+        {/* En-tête explicatif & onglets */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+          <p className="text-xs font-semibold text-slate-500">
+            Injecte l'intégralité des articles chiffrés d'un devis directement dans votre facture.
+          </p>
+
+          {/* Onglets de filtrage si un client est sélectionné */}
+          {hasClient && (
+            <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveTab('client')}
+                className={`min-h-[38px] px-3 rounded-lg text-xs font-black uppercase transition-all flex items-center gap-1.5 ${
+                  activeTab === 'client'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                <User size={14} />
+                Client actif ({availableDevis.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('all')}
+                className={`min-h-[38px] px-3 rounded-lg text-xs font-black uppercase transition-all flex items-center gap-1.5 ${
+                  activeTab === 'all'
+                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                <Users size={14} />
+                Tous les devis ({allDevisList.length})
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Message d'aide si le client sélectionné n'a pas de devis */}
+        {hasClient && !clientHasDevis && activeTab === 'all' && (
+          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/50 flex items-start gap-2 text-xs text-amber-800 dark:text-amber-200">
+            <AlertCircle size={16} className="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+            <div>
+              <p className="font-bold">
+                Aucun devis non facturé trouvé pour {selectedClientName || 'ce client'}.
+              </p>
+              <p className="text-amber-700 dark:text-amber-300 mt-0.5">
+                Affichage de tous les devis disponibles ({allDevisList.length}). Importer un devis mettra automatiquement à jour le client sur votre facture.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Barre de recherche */}
         <div className="relative">
@@ -44,33 +115,47 @@ export const DevisPickerModal: React.FC<DevisPickerModalProps> = ({
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Rechercher par numéro, titre ou client..."
-            className="w-full min-h-[44px] pl-10 pr-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base font-semibold"
+            placeholder="Rechercher par numéro (ex: DEV-011), client, libellé ou montant..."
+            className="w-full min-h-[44px] pl-10 pr-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base font-semibold text-slate-900 dark:text-white placeholder:text-slate-400"
           />
         </div>
 
         {/* Liste des devis */}
-        <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+        <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
           {loading ? (
-            <div className="py-8 text-center text-xs font-bold text-slate-400 uppercase">
+            <div className="py-12 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
               Recherche des devis en cours...
             </div>
           ) : filtered.length === 0 ? (
-            <div className="py-10 text-center bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-4">
-              <FileSpreadsheet size={32} className="mx-auto text-slate-400 mb-2" />
-              <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
-                Aucun devis disponible
+            <div className="py-12 text-center bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-4">
+              <FileSpreadsheet size={36} className="mx-auto text-slate-400 mb-2" />
+              <p className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase">
+                Aucun devis trouvé
               </p>
-              <p className="text-xs text-slate-400 mt-1">
-                Aucun devis non facturé trouvé pour ce client ou cette recherche.
+              <p className="text-xs text-slate-500 mt-1">
+                {searchTerm
+                  ? 'Aucun résultat ne correspond à votre filtre de recherche.'
+                  : 'Aucun devis non facturé disponible dans cette sélection.'}
               </p>
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="mt-3 min-h-[44px] px-4 rounded-xl bg-slate-200 dark:bg-slate-800 text-xs font-black uppercase text-slate-800 dark:text-slate-200"
+                >
+                  Effacer la recherche
+                </button>
+              )}
             </div>
           ) : (
             filtered.map((d) => {
               const clientFullName = d.client
-                ? `${d.client.first_name} ${d.client.last_name}`
-                : 'Client associé';
-              const dateStr = new Date(d.created_at).toLocaleDateString('fr-FR');
+                ? `${d.client.first_name || ''} ${d.client.last_name || ''}`.trim()
+                : 'Client non spécifié';
+              const phone = d.client?.phone;
+              const dateStr = d.created_at
+                ? new Date(d.created_at).toLocaleDateString('fr-FR')
+                : 'Date inconnue';
               const isClosed = d.status === 'closed';
 
               return (
@@ -78,9 +163,9 @@ export const DevisPickerModal: React.FC<DevisPickerModalProps> = ({
                   key={d.id}
                   className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between gap-3 hover:border-amber-500/50 transition-all shadow-sm group"
                 >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-black text-slate-900 dark:text-white uppercase">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
                         {d.number}
                       </span>
                       {isClosed ? (
@@ -92,18 +177,25 @@ export const DevisPickerModal: React.FC<DevisPickerModalProps> = ({
                           <Clock size={12} /> En cours
                         </span>
                       )}
+                      <span className="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                        {dateStr}
+                      </span>
                     </div>
-                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate mt-0.5">
-                      {d.title}
+
+                    <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate mt-1">
+                      {d.title || 'Devis sans titre'}
                     </p>
-                    <p className="text-xs font-semibold text-slate-500 mt-0.5">
-                      {clientFullName} • {dateStr}
+
+                    <p className="text-xs font-semibold text-slate-500 mt-0.5 flex items-center gap-1 truncate">
+                      <User size={13} className="text-slate-400 shrink-0" />
+                      <span className="text-slate-700 dark:text-slate-300 font-bold">{clientFullName}</span>
+                      {phone && <span className="text-slate-400">({phone})</span>}
                     </p>
                   </div>
 
                   <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
                     <span className="text-base font-black text-slate-900 dark:text-white">
-                      {Number(d.total_amount).toFixed(2)} DT
+                      {Number(d.total_amount || 0).toFixed(2)} DT
                     </span>
                     <button
                       type="button"
@@ -111,7 +203,7 @@ export const DevisPickerModal: React.FC<DevisPickerModalProps> = ({
                         onImportDevis(d);
                         onClose();
                       }}
-                      className="min-h-[44px] px-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase tracking-wider flex items-center gap-1 shadow-sm active:scale-95 transition-all"
+                      className="min-h-[44px] px-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm transition-all"
                     >
                       <Plus size={16} /> Importer
                     </button>
@@ -122,11 +214,15 @@ export const DevisPickerModal: React.FC<DevisPickerModalProps> = ({
           )}
         </div>
 
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+        {/* Pied de modale */}
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <span className="text-xs font-bold text-slate-400">
+            {filtered.length} devis affiché(s)
+          </span>
           <button
             type="button"
             onClick={onClose}
-            className="min-h-[44px] px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-black uppercase text-slate-700 dark:text-slate-300"
+            className="min-h-[44px] px-4 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-black uppercase text-slate-700 dark:text-slate-300 transition-colors"
           >
             Fermer
           </button>

@@ -257,6 +257,13 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
       {isDevisPickerOpen && (
         <DevisPickerModal
           availableDevis={state.unbilledDevis}
+          allDevis={state.allUnbilledDevis}
+          selectedClientId={state.selectedClientId}
+          selectedClientName={
+            currentClient
+              ? `${currentClient.first_name || ''} ${currentClient.last_name || ''}`.trim()
+              : clientName
+          }
           loading={state.loadingSources}
           onClose={() => setIsDevisPickerOpen(false)}
           onImportDevis={state.importDevis}

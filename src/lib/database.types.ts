@@ -408,21 +408,33 @@ export interface Database {
           id: string;
           created_at: string;
           role: string;
+          email: string | null;
           full_name: string | null;
+          is_approved: boolean;
+          technician_id: string | null;
+          client_id: string | null;
           avatar_url: string | null;
         };
         Insert: {
           id: string;
           created_at?: string;
           role?: string;
+          email?: string | null;
           full_name?: string | null;
+          is_approved?: boolean;
+          technician_id?: string | null;
+          client_id?: string | null;
           avatar_url?: string | null;
         };
         Update: {
           id?: string;
           created_at?: string;
           role?: string;
+          email?: string | null;
           full_name?: string | null;
+          is_approved?: boolean;
+          technician_id?: string | null;
+          client_id?: string | null;
           avatar_url?: string | null;
         };
       };

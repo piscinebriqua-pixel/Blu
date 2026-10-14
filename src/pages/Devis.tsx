@@ -256,6 +256,10 @@ export const Devis: React.FC = () => {
             setDevisToDelete(devis);
           }}
           onStatusChange={handleStatusChange}
+          onConvertToInvoice={(devisItem) => {
+            setSelectedDevisForView(null);
+            setDevisToInvoice(devisItem);
+          }}
         />
       )}
 

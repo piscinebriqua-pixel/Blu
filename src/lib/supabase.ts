@@ -47,6 +47,10 @@ export type PartnerRow = Database['public']['Tables']['partners']['Row'];
 export type PartnerInsert = Database['public']['Tables']['partners']['Insert'];
 export type PartnerUpdate = Database['public']['Tables']['partners']['Update'];
 
+export type ProfileRow = Database['public']['Tables']['profiles']['Row'];
+export type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
+export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
+
 // --- Types Facturation ---
 export interface InvoiceRow {
   id: string;
