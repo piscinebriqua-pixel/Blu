@@ -87,7 +87,6 @@ export const invoiceService = {
           scheduled_date,
           completed_date,
           status,
-          total_amount,
           pool_id,
           pool:pools(name),
           services:intervention_services(
@@ -114,7 +113,7 @@ export const invoiceService = {
 
         const calcServices = (inter.services || []).reduce((acc: number, s: any) => acc + (s.price_at_time || 0), 0);
         const calcProducts = (inter.products || []).reduce((acc: number, p: any) => acc + (p.total_price || 0), 0);
-        const calculatedTotal = (calcServices + calcProducts) > 0 ? (calcServices + calcProducts) : (inter.total_amount || 0);
+        const calculatedTotal = (calcServices + calcProducts) > 0 ? (calcServices + calcProducts) : 0;
 
         return {
           id: inter.id,
@@ -128,8 +127,7 @@ export const invoiceService = {
         };
       });
     } catch (err: any) {
-      console.error('Erreur fetchUnbilledInterventions:', err);
-      toast.error('Impossible de charger les passages non facturés');
+      console.warn('Erreur fetchUnbilledInterventions:', err?.message || err);
       return [];
     }
   },
