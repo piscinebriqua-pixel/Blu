@@ -43,3 +43,9 @@ export const formatBalance = (balance: number) => {
         border: "border-emerald-100 dark:border-emerald-800"
     };
 };
+
+export const formatRevenue = (val: number): string => {
+    if (!val || val === 0) return '0';
+    if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
+    return `${val.toFixed(0)}`;
+};

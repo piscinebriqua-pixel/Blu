@@ -500,14 +500,27 @@ body {
 }
 
 .chart-line-demo {
-    stroke-dasharray: 1000;
-    stroke-dashoffset: 1000;
-    animation: dash 3s linear forwards;
+    stroke-dasharray: 1200;
+    stroke-dashoffset: 1200;
+    animation: dash 2.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 @keyframes dash {
     to {
         stroke-dashoffset: 0;
+    }
+}
+
+.chart-area-fade {
+    animation: chartAreaFade 1.8s ease-out forwards;
+}
+
+@keyframes chartAreaFade {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
     }
 }
 

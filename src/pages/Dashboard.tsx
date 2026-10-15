@@ -1,228 +1,35 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import {
-    Users,
-    ChevronRight,
-    Activity,
-    Wallet,
-    Settings,
-    FileText,
-    Briefcase,
-    QrCode,
-    X,
-    Receipt,
-} from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { Settings, QrCode, Receipt } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import BccpLogo from '../components/BccpLogo';
 import PageLayout from '../components/PageLayout';
-import ModalLayout from '../components/ModalLayout';
 import UserMenu from '../components/UserMenu';
-import { QRCodeSVG } from 'qrcode.react';
+import { useDashboardStats } from '../hooks/useDashboardStats';
+import { AnnualPerformanceBentoCard } from '../components/dashboard/AnnualPerformanceBentoCard';
 import { PlanningBentoCard } from '../components/dashboard/PlanningBentoCard';
+import { CommercialBentoCards } from '../components/dashboard/CommercialBentoCards';
 import { ReclamationsBentoCard } from '../components/dashboard/ReclamationsBentoCard';
+import { OperationsBentoCards } from '../components/dashboard/OperationsBentoCards';
+import { DashboardActivityCard } from '../components/dashboard/DashboardActivityCard';
+import { DashboardQrModal } from '../components/dashboard/DashboardQrModal';
 import { AdminReclamationModal } from '../components/dashboard/AdminReclamationModal';
-import { getPendingReclamations, getPendingReclamationsCount } from '../services/reclamationService';
-import type { ReclamationRow } from '../lib/supabase';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [counts, setCounts] = useState({ 
-        clients: 0, 
-        technicians: 0, 
-        interventions: 0, 
-        scheduled: 0, 
-        revenue: 0, 
-        lastMonthRevenue: 0, 
-        rollingRevenue: 0,
-        annualRevenue: 0,
-        devis: 0,
-        devisPendingAmount: 0,
-        invoicesCount: 0,
-        invoicesPendingAmount: 0
-    });
-    const [profile, setProfile] = useState<{ name: string, role: string } | null>(null);
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
-    const [recentInterventions, setRecentInterventions] = useState<any[]>([]);
-    const [pendingReclamations, setPendingReclamations] = useState<ReclamationRow[]>([]);
-    const [pendingRecsCount, setPendingRecsCount] = useState<number>(0);
-    const [isReclamationsModalOpen, setIsReclamationsModalOpen] = useState(false);
 
-
-
-    const fetchStats = useCallback(async () => {
-        try {
-            let currentProfile = null;
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-                const { data: profileData } = await supabase
-                    .from('profiles')
-                    .select('full_name, role')
-                    .eq('id', session.user.id)
-                    .maybeSingle();
-                if (profileData) {
-                    currentProfile = profileData;
-                    setProfile({
-                        name: profileData.full_name || 'Utilisateur',
-                        role: profileData.role
-                    });
-                }
-            }
-
-            // Fetch each count independently
-            let clientCount = 0;
-            let techCount = 0;
-            let interventionCount = 0;
-            let scheduledCount = 0;
-            let devisCount = 0;
-            let devisPendingAmt = 0;
-            let invCount = 0;
-            let invPendingAmt = 0;
-
-            try {
-                const [clientsRes, techRes, intRes, schedRes] = await Promise.all([
-                    supabase.from('clients').select('id', { count: 'exact', head: true }),
-                    supabase.from('technicians').select('id', { count: 'exact', head: true }).eq('active', true),
-                    supabase.from('interventions').select('id', { count: 'exact', head: true }),
-                    supabase.from('interventions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled')
-                ]);
-                clientCount = clientsRes.count ?? 0;
-                techCount = techRes.count ?? 0;
-                interventionCount = intRes.count ?? 0;
-                scheduledCount = schedRes.count ?? 0;
-
-                // Fetch devis et factures séparément
-                const [devisRes, invoicesRes] = await Promise.all([
-                    supabase
-                        .from('devis')
-                        .select('id, status, total_amount, is_template')
-                        .or('is_template.is.null,is_template.eq.false'),
-                    supabase
-                        .from('invoices')
-                        .select('id, status, total_ttc, paid_amount')
-                ]);
-
-                if (devisRes.data) {
-                    const pendingDevis = devisRes.data.filter(d => d.status === 'pending' || !d.status);
-                    devisCount = pendingDevis.length;
-                    devisPendingAmt = pendingDevis.reduce((sum, d) => sum + (Number(d.total_amount) || 0), 0);
-                }
-
-                if (invoicesRes.data) {
-                    invCount = invoicesRes.data.length;
-                    const unpaidInvoices = invoicesRes.data.filter(i => i.status === 'issued' || i.status === 'partially_paid');
-                    invPendingAmt = unpaidInvoices.reduce((sum, i) => {
-                        const due = (Number(i.total_ttc) || 0) - (Number(i.paid_amount) || 0);
-                        return sum + Math.max(0, due);
-                    }, 0);
-                }
-            } catch (e) {
-                console.warn('Counts fetch failed:', e);
-            }
-
-            // Fetch CA pour les admins
-            let monthlyRevenue = 0;
-            let lastMonthRevenue = 0;
-            let rollingRevenue = 0;
-            let annualRevenue = 0;
-
-            if (currentProfile?.role === 'admin') {
-                try {
-                    const now = new Date();
-                    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-                    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-                    const rolling30d = new Date();
-                    rolling30d.setDate(now.getDate() - 30);
-                    const startOfYear = new Date(now.getFullYear(), 0, 1);
-
-                    // Optimisation SQL : 1 seule requête globale indexée au lieu de 4 scans concurrents
-                    const earliestDate = startOfLastMonth < startOfYear ? startOfLastMonth : startOfYear;
-                    const { data: paymentsData } = await supabase
-                        .from('payments')
-                        .select('amount, payment_date')
-                        .neq('method', 'remise')
-                        .gte('payment_date', earliestDate.toISOString());
-
-                    if (paymentsData) {
-                        const startOfMonthTime = startOfMonth.getTime();
-                        const startOfLastMonthTime = startOfLastMonth.getTime();
-                        const endOfLastMonthTime = endOfLastMonth.getTime();
-                        const rolling30dTime = rolling30d.getTime();
-                        const startOfYearTime = startOfYear.getTime();
-
-                        paymentsData.forEach(p => {
-                            const amt = Number(p.amount) || 0;
-                            const pTime = new Date(p.payment_date).getTime();
-
-                            if (pTime >= startOfMonthTime) monthlyRevenue += amt;
-                            if (pTime >= startOfLastMonthTime && pTime <= endOfLastMonthTime) lastMonthRevenue += amt;
-                            if (pTime >= rolling30dTime) rollingRevenue += amt;
-                            if (pTime >= startOfYearTime) annualRevenue += amt;
-                        });
-                    }
-                } catch (e) {
-                    console.warn('Revenue fetch failed:', e);
-                }
-            }
-
-            setCounts({
-                clients: clientCount,
-                technicians: techCount,
-                interventions: interventionCount,
-                scheduled: scheduledCount,
-                revenue: monthlyRevenue,
-                lastMonthRevenue: lastMonthRevenue,
-                rollingRevenue: rollingRevenue,
-                annualRevenue: annualRevenue,
-                devis: devisCount,
-                devisPendingAmount: devisPendingAmt,
-                invoicesCount: invCount,
-                invoicesPendingAmount: invPendingAmt
-            });
-
-            // RESTORE: Fetch 3 dernières interventions
-            try {
-                const { data: interventions } = await supabase
-                    .from('interventions')
-                    .select(`
-                        id,
-                        created_at,
-                        status,
-                        technician:technicians!technician_id(full_name),
-                        pool:pools!pool_id(client:clients(first_name,last_name))
-                    `)
-                    .order('created_at', { ascending: false })
-                    .limit(3);
-                if (interventions) setRecentInterventions(interventions);
-            } catch (e) {
-                console.warn('Recent interventions fetch failed:', e);
-            }
-
-            // Fetch Réclamations en cours
-            try {
-                const [recs, rCount] = await Promise.all([
-                    getPendingReclamations(2),
-                    getPendingReclamationsCount()
-                ]);
-                setPendingReclamations(recs);
-                setPendingRecsCount(rCount);
-            } catch (e) {
-                console.warn('Reclamations fetch failed:', e);
-            }
-
-        } catch (error) {
-            console.error('Erreur stats:', error);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
-    useEffect(() => {
-        fetchStats();
-    }, [fetchStats]);
+    const {
+        loading,
+        counts,
+        profile,
+        recentInterventions,
+        pendingReclamations,
+        pendingRecsCount,
+        isReclamationsModalOpen,
+        setIsReclamationsModalOpen,
+        fetchStats
+    } = useDashboardStats();
 
     if (loading) {
         return (
@@ -230,18 +37,12 @@ const Dashboard: React.FC = () => {
                 <div className="flex flex-col items-center gap-4">
                     <BccpLogo width={80} fillColor="white" className="animate-pulse" />
                     <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary animate-progress-loading"></div>
+                        <div className="h-full bg-primary animate-progress-loading" />
                     </div>
                 </div>
             </div>
         );
     }
-
-    const formatRevenue = (val: number) => {
-        if (val >= 1000) return `${(val / 1000).toFixed(1)}K`;
-        return `${val.toFixed(0)}`;
-    };
-
 
     const leftContent = (
         <div onClick={() => navigate('/')} className="flex items-center gap-3 cursor-pointer group">
@@ -250,7 +51,9 @@ const Dashboard: React.FC = () => {
             </div>
             <div className="flex flex-col">
                 <h1 className="text-3xl font-black text-white tracking-tighter leading-none">BCCP</h1>
-                <p className="text-[10px] font-black text-blue-100/60 uppercase tracking-[0.2em] leading-none mt-1">Clean and Clean Pool</p>
+                <p className="text-xs font-black text-blue-100/70 uppercase tracking-[0.2em] leading-none mt-1">
+                    Clean and Clean Pool
+                </p>
             </div>
         </div>
     );
@@ -263,14 +66,14 @@ const Dashboard: React.FC = () => {
                     <>
                         <button 
                             onClick={() => navigate('/factures')}
-                            className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 hover:text-white transition-all border border-white/10"
+                            className="min-h-[44px] min-w-[44px] bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 hover:text-white transition-all border border-white/10"
                             title="Facturation"
                         >
                             <Receipt size={18} />
                         </button>
                         <button 
                             onClick={() => navigate('/settings')}
-                            className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 hover:text-white transition-all border border-white/10"
+                            className="min-h-[44px] min-w-[44px] bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 hover:text-white transition-all border border-white/10"
                             title="Configuration"
                         >
                             <Settings size={18} />
@@ -279,7 +82,7 @@ const Dashboard: React.FC = () => {
                 )}
                 <button 
                     onClick={() => setIsQrModalOpen(true)}
-                    className="w-10 h-10 bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 transition-all border border-white/10 relative"
+                    className="min-h-[44px] min-w-[44px] bg-white/5 hover:bg-white/10 rounded-xl flex items-center justify-center text-white/70 transition-all border border-white/10 relative"
                     title="QR Code d'accès"
                 >
                     <QrCode size={18} />
@@ -294,429 +97,49 @@ const Dashboard: React.FC = () => {
         <PageLayout title="" leftContent={leftContent} rightContent={rightContent} className="!p-0">
             <div className="min-h-screen p-6 lg:p-8">
                 <div className="bento-dashboard-grid">
-                {/* RANGEE 1 : PERFORMANCES & PLANNING */}
-                <div onClick={() => navigate('/revenue')} className="bento-card-luxe bento-col-8 group cursor-pointer min-h-[320px]">
-                    <div className="flex justify-between items-center mb-6">
-                        <div>
-                            <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-[0.2em] mb-1">Performances Annuelles</h3>
-                            <p className="text-slate-600 dark:text-slate-400 text-sm">Évolution des paiements par mois</p>
-                        </div>
-                        <div className="px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                            Live : {new Date().getFullYear()}
-                        </div>
-                    </div>
-                    <div className="flex-1 flex items-end relative overflow-hidden mb-4">
-                        {/* Real Chart Line */}
-                        <svg className="w-full h-[120px] drop-shadow-[0_10px_15px_rgba(59,130,246,0.3)]" viewBox="0 0 400 100" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="chart-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
-                                    <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
-                                </linearGradient>
-                                <linearGradient id="stroke-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                    <stop offset="0%" stopColor="#3b82f6" />
-                                    <stop offset="50%" stopColor="#8b5cf6" />
-                                    <stop offset="100%" stopColor="#ec4899" />
-                                </linearGradient>
-                            </defs>
-                            {/* Area fill */}
-                            <path 
-                                d="M0 80 Q 50 20 100 70 T 200 40 T 300 60 T 400 30 L 400 100 L 0 100 Z"
-                                fill="url(#chart-grad)"
-                                className="animate-in fade-in duration-1000"
-                            />
-                            {/* Stroke line */}
-                            <path 
-                                d="M0 80 Q 50 20 100 70 T 200 40 T 300 60 T 400 30" 
-                                fill="none" 
-                                stroke="url(#stroke-grad)" 
-                                strokeWidth="4" 
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="chart-line-demo"
-                            />
-                        </svg>
-                        <div className="absolute inset-0 bg-gradient-to-t from-blue-500/5 to-transparent pointer-events-none" />
-                    </div>
-                    <div className="absolute bottom-6 right-8 text-right">
-                        <p className="text-5xl font-black text-slate-900 dark:text-white tracking-tighter">{formatRevenue(counts.rollingRevenue)} <span className="text-2xl ml-1">DT</span></p>
-                        <p className="text-emerald-500 text-base font-bold">
-                            {counts.lastMonthRevenue > 0 ? `(+${Math.round(((counts.revenue - counts.lastMonthRevenue) / counts.lastMonthRevenue) * 100)}%)` : '(+0%)'}
-                        </p>
-                    </div>
+                    {/* RANGÉE 1 : PERFORMANCES ANNUELLES & PLANNING (8 + 4 = 12 COLS) */}
+                    <AnnualPerformanceBentoCard
+                        annualRevenue={counts.annualRevenue}
+                        monthlyRevenue={counts.revenue}
+                        lastMonthRevenue={counts.lastMonthRevenue}
+                        rollingRevenue={counts.rollingRevenue}
+                        monthlyBreakdown={counts.monthlyBreakdown}
+                    />
+
+                    <PlanningBentoCard counts={counts} />
+
+                    {/* RANGÉE 2 : DEVIS COMMERCIAUX & FACTURATION (6 + 6 = 12 COLS) */}
+                    <CommercialBentoCards counts={counts} />
+
+                    {/* RANGÉE 3 : RÉCLAMATIONS CLIENTS (12 COLS) */}
+                    <ReclamationsBentoCard 
+                        pendingCount={pendingRecsCount}
+                        pendingReclamations={pendingReclamations}
+                        onOpenModal={() => setIsReclamationsModalOpen(true)}
+                    />
+
+                    {/* RANGÉES 4 & 5 & DÉBUT 6 : OPÉRATIONS & SERVICES (10 CARTES BENTO DE 3 COLS) */}
+                    <OperationsBentoCards
+                        counts={counts}
+                        profile={profile}
+                        onOpenQrModal={() => setIsQrModalOpen(true)}
+                    />
+
+                    {/* FIN RANGÉE 6 : FLUX D'ACTIVITÉ EN CARTE BENTO (6 COLS, FERME LES 12 COLS AVEC ÉQUIPE & PARTENAIRES) */}
+                    <DashboardActivityCard interventions={recentInterventions} />
                 </div>
 
-                <PlanningBentoCard counts={counts} />
-
-                {/* RANGEE COMMERCIALE & FACTURATION (DEVIS & FACTURES) */}
-                <div onClick={() => navigate('/devis')} className="bento-card-luxe bento-col-6 group cursor-pointer hover:border-amber-500/50 transition-all">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                                <FileText size={28} />
-                            </div>
-                            <div>
-                                <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider leading-none">Devis Commerciaux</h3>
-                                <p className="text-xs font-semibold text-slate-500 mt-1">Offres & Propositions en cours</p>
-                            </div>
-                        </div>
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-white group-hover:bg-amber-500 group-hover:text-white transition-all">
-                            <ChevronRight size={18} />
-                        </div>
-                    </div>
-                    <div className="flex items-end justify-between pt-3 border-t border-slate-100 dark:border-white/5">
-                        <div>
-                            <span className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest block">
-                                {counts.devis} en négociation
-                            </span>
-                            <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
-                                {counts.devisPendingAmount.toFixed(0)} <span className="text-base text-slate-500 font-bold">DT</span>
-                            </p>
-                        </div>
-                        <span className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 rounded-lg border border-amber-200/50 dark:border-amber-900/40">
-                            Gérer les devis
-                        </span>
-                    </div>
-                </div>
-
-                <div onClick={() => navigate('/factures')} className="bento-card-luxe bento-col-6 group cursor-pointer hover:border-blue-500/50 transition-all">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                                <Receipt size={28} />
-                            </div>
-                            <div>
-                                <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-wider leading-none">Facturation</h3>
-                                <p className="text-xs font-semibold text-slate-500 mt-1">Pièces comptables & Recouvrement</p>
-                            </div>
-                        </div>
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-white group-hover:bg-blue-600 group-hover:text-white transition-all">
-                            <ChevronRight size={18} />
-                        </div>
-                    </div>
-                    <div className="flex items-end justify-between pt-3 border-t border-slate-100 dark:border-white/5">
-                        <div>
-                            <span className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest block">
-                                {counts.invoicesCount} facture(s) émises
-                            </span>
-                            <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tight mt-1">
-                                {counts.invoicesPendingAmount.toFixed(0)} <span className="text-base text-slate-500 font-bold">DT à recouvrer</span>
-                            </p>
-                        </div>
-                        <span className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 rounded-lg border border-blue-200/50 dark:border-blue-900/40">
-                            Voir les factures
-                        </span>
-                    </div>
-                </div>
-
-                {/* RANGEE RECLAMATIONS & SAV */}
-                <ReclamationsBentoCard 
-                    pendingCount={pendingRecsCount}
-                    pendingReclamations={pendingReclamations}
-                    onOpenModal={() => setIsReclamationsModalOpen(true)}
+                {/* MODALES DÉDIÉES */}
+                <DashboardQrModal 
+                    isOpen={isQrModalOpen}
+                    onClose={() => setIsQrModalOpen(false)}
                 />
 
-                {/* RANGEE 2 : STATS & PROJECTS */}
-                <div onClick={() => navigate('/revenue')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3.5 mb-5">
-                        <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
-                            <Wallet size={24} />
-                        </div>
-                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">CA Mensuel</h3>
-                    </div>
-                    <div className="flex flex-col gap-1 min-w-0 mt-auto">
-                        <p className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest truncate">Revenus annuels</p>
-                        <p className="text-2xl 2xl:text-3xl font-black text-slate-900 dark:text-white tracking-tight truncate leading-none">{formatRevenue(counts.annualRevenue)} DT</p>
-                        <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mt-1 truncate">Comparaison précédente</p>
-                    </div>
-                </div>
-
-                <div onClick={() => navigate('/clients')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3.5 mb-5">
-                        <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
-                            <Users size={24} />
-                        </div>
-                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Fiches Clients</h3>
-                    </div>
-                    <div className="avatar-stack mb-3">
-                        <div className="avatar-stack-item bg-[#334155] ring-2 ring-white dark:ring-[#020617]">JD</div>
-                        <div className="avatar-stack-item bg-[#475569] ring-2 ring-white dark:ring-[#020617]">MK</div>
-                        <div className="avatar-stack-item bg-[#1e293b] ring-2 ring-white dark:ring-[#020617]">AL</div>
-                        <div className="avatar-stack-item bg-[#111827] ring-2 ring-white dark:ring-[#020617]">RB</div>
-                        <div className="avatar-stack-item bg-slate-900 ring-2 ring-white dark:ring-[#020617] text-blue-400">+{counts.clients > 4 ? counts.clients - 4 : 2}</div>
-                    </div>
-                    <p className="text-xs font-bold text-slate-600 dark:text-slate-400 leading-tight truncate">Mohamed Name, Conne, Wahran...</p>
-                </div>
-
-                <div onClick={() => navigate('/payments')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3.5 mb-5">
-                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
-                            <Wallet size={24} />
-                        </div>
-                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Paiements</h3>
-                    </div>
-                    <div className="flex items-center gap-4 min-w-0">
-                        <div className="w-16 h-16 rounded-full border-[6px] border-emerald-500/20 border-t-emerald-500 rotate-45 shrink-0" />
-                        <div className="space-y-1 min-w-0 flex-1">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
-                                <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider leading-none truncate">Prm... 45K DT</span>
-                            </div>
-                            <div className="flex items-center gap-2 min-w-0">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                                <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider leading-none truncate">Pro... 25K DT</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div onClick={() => navigate('/chantiers')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3.5 mb-5">
-                        <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center shrink-0">
-                            <FileText size={24} />
-                        </div>
-                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Chantiers</h3>
-                    </div>
-                    <div className="space-y-3">
-                        <div className="flex flex-col gap-1">
-                            <p className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">Travaux en cours</p>
-                            <div className="w-full h-1 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
-                                <div className="w-2/3 h-full bg-cyan-500" />
-                            </div>
-                            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Progression des chantiers</span>
-                        </div>
-                        <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pt-2">Suivi d'activité</p>
-                    </div>
-                </div>
-
-                {/* RANGEE 3 : QR, TECH & MAP */}
-                <div onClick={() => setIsQrModalOpen(true)} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3.5 mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-slate-500/10 text-slate-600 dark:text-white flex items-center justify-center shrink-0">
-                            <QrCode size={24} />
-                        </div>
-                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Espace Client</h3>
-                    </div>
-                    <div className="flex-1 flex items-center justify-center py-2">
-                        <div className="p-3 bg-white dark:bg-white/90 rounded-2xl shadow-lg group-hover:scale-105 transition-transform">
-                            <QRCodeSVG value={`${window.location.origin}/mon-espace`} size={90} fgColor="#0F172A" />
-                        </div>
-                    </div>
-                </div>
-
-                {profile?.role === 'admin' && (
-                    <div onClick={() => navigate('/admin-finance')} className="bento-card-luxe bento-col-3 group cursor-pointer !bg-slate-900 border-none">
-                        <div className="flex items-center justify-between gap-3 mb-5">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-orange-500 flex items-center justify-center ring-1 ring-orange-500/30 shrink-0">
-                                    <Wallet size={24} />
-                                </div>
-                                <h3 className="text-sm 2xl:text-base font-black text-white uppercase tracking-wider leading-tight truncate">Gestion Caisse</h3>
-                            </div>
-                            <span className="bg-orange-500/90 px-2 py-0.5 rounded text-xs font-black text-white shrink-0 tracking-wider">ADMIN</span>
-                        </div>
-                        <div className="flex flex-col gap-1 min-w-0 mt-auto">
-                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest truncate">Actions Requises</p>
-                            <p className="text-2xl 2xl:text-3xl font-black text-white tracking-tight truncate leading-none">FINANCES</p>
-                        </div>
-                    </div>
-                )}
-
-                {profile?.role === 'admin' && (
-                    <div onClick={() => navigate('/settings')} className="bento-card-luxe bento-col-3 group cursor-pointer !bg-blue-900 border-none">
-                        <div className="flex items-center gap-3.5 mb-5">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center ring-1 ring-blue-500/30 shrink-0">
-                                <Settings size={24} />
-                            </div>
-                            <h3 className="text-sm 2xl:text-base font-black text-white uppercase tracking-wider leading-tight truncate">Configuration</h3>
-                        </div>
-                        <div className="flex flex-col gap-1 min-w-0 mt-auto">
-                            <p className="text-xs font-black text-blue-300/70 uppercase tracking-widest truncate">Système</p>
-                            <p className="text-2xl 2xl:text-3xl font-black text-white tracking-tight truncate leading-none">PARAMÈTRES</p>
-                        </div>
-                    </div>
-                )}
-
-                <div onClick={() => navigate('/technician-portal')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3.5 mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
-                            <Activity size={24} />
-                        </div>
-                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Ma Tournée</h3>
-                    </div>
-                    <div className="flex justify-between items-end mb-2 min-w-0">
-                        <p className="text-sm font-black text-slate-900 dark:text-white truncate">{counts.scheduled} en cours</p>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">/ {counts.scheduled + 5} total</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mb-3">
-                        <div className="w-1/3 h-full bg-rose-500" />
-                    </div>
-                    <div className="space-y-1.5 min-w-0">
-                        <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">Project Name A</p>
-                        <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">Project Name B</p>
-                    </div>
-                </div>
-
-                <div onClick={() => navigate('/technicians')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
-                            <Users size={24} />
-                        </div>
-                        <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Équipe</h3>
-                    </div>
-                    <div className="flex-1 bg-slate-100 dark:bg-slate-900/50 rounded-2xl p-2 relative overflow-hidden flex items-center justify-center">
-                        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px]" />
-                        <div className="relative z-10 text-center">
-                            <p className="text-2xl font-black text-slate-900 dark:text-white">{counts.technicians}</p>
-                            <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Membres</p>
-                        </div>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border-2 border-primary/20 rounded-full animate-ping" />
-                    </div>
-                </div>
-
-                <div onClick={() => navigate('/partners')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-slate-500/10 text-slate-500 flex items-center justify-center shrink-0">
-                            <Briefcase size={24} />
-                        </div>
-                        <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Partenaires</h3>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        {Array.from({ length: 4 }).map((_, i) => (
-                            <div key={i} className="aspect-video bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/5 flex items-center justify-center">
-                                <div className="w-8 h-8 rounded-full bg-slate-300 dark:bg-slate-800" />
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            <div className="mt-10">
-                <div className="flex justify-between items-center mb-4 px-1">
-                    <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Flux d'activité</h3>
-                    <div className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800/50 rounded text-xs font-black text-slate-500 uppercase tracking-widest">LIVE</div>
-                </div>
-                <div className="flex flex-col gap-3">
-                    {recentInterventions.length === 0 ? (
-                        <div className="bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-8 rounded-[2rem] text-center">
-                            <p className="text-sm font-bold text-slate-400">Aucune activité récente</p>
-                        </div>
-                    ) : (
-                        recentInterventions.map((inter, idx) => {
-                            const clientName = inter.pool?.client
-                                ? `${inter.pool.client.first_name || ''} ${inter.pool.client.last_name || ''}`.trim()
-                                : 'Client inconnu';
-                            const techName = inter.technician?.full_name || 'Technicien inconnu';
-                            const dateStr = inter.created_at
-                                ? new Date(inter.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
-                                : '';
-                            const isCompleted = inter.status === 'completed';
-                            const isInProgress = inter.status === 'in_progress';
-                            const dotClass = isCompleted
-                                ? 'bg-emerald-500 shadow-lg shadow-emerald-500/20'
-                                : isInProgress
-                                    ? 'bg-blue-500 shadow-lg shadow-blue-500/20'
-                                    : 'bg-slate-400';
-
-                            return (
-                                <div
-                                    key={inter.id}
-                                    onClick={() => navigate('/interventions')}
-                                    className={`group bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-4 rounded-[2rem] shadow-sm hover:shadow-xl hover:border-primary/20 transition-all cursor-pointer flex items-center gap-4 animate-in fade-in slide-in-from-bottom-4 fill-mode-backwards stagger-${(idx % 10) + 1}`}
-                                >
-                                    <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center relative shrink-0">
-                                        <Activity size={20} className="text-slate-400 group-hover:text-primary transition-colors" />
-                                        <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-white dark:border-slate-800 ${dotClass}`}></div>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-start">
-                                            <h4 className="text-lg font-black text-slate-800 dark:text-white uppercase truncate tracking-tight">{clientName}</h4>
-                                            <span className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest shrink-0 ml-2">{dateStr}</span>
-                                        </div>
-                                        <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest truncate opacity-80">{techName}</p>
-                                    </div>
-                                    <ChevronRight size={16} className="text-slate-300 group-hover:text-primary transition-all group-hover:translate-x-1" />
-                                </div>
-                            );
-                        })
-                    )}
-                </div>
-            </div>
-
-            {isQrModalOpen && (
-                <ModalLayout
-                    onClose={() => setIsQrModalOpen(false)}
-                    title=""
-                    hideHeader={true}
-                    className="!max-w-md !bg-slate-950 border-white/10 !rounded-[2.5rem] overflow-hidden"
-                    bodyClassName="!p-0"
-                >
-                    <div className="flex flex-col items-center justify-center p-10 bg-slate-950 text-center relative overflow-hidden min-h-[500px]">
-                        {/* Custom Close Button */}
-                        <button 
-                            onClick={() => setIsQrModalOpen(false)}
-                            className="absolute top-6 right-6 w-10 h-10 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white rounded-full flex items-center justify-center backdrop-blur-xl border border-white/5 z-[100] transition-all active:scale-90"
-                        >
-                            <X size={20} />
-                        </button>
-                        {/* Background Accents */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/10 blur-[60px] rounded-full pointer-events-none" />
-                        <div className="fintech-pattern opacity-[0.05] pointer-events-none" />
-
-                        {/* Premium QR Container */}
-                        <div className="relative z-10 p-8 bg-white/5 backdrop-blur-2xl rounded-[2.5rem] border border-white/10 shadow-[0_0_50px_-10px_rgba(59,130,246,0.3)] mb-8">
-                            <div className="relative rounded-2xl overflow-hidden p-1 bg-white/5">
-                                <QRCodeSVG
-                                    value={`${window.location.origin}/mon-espace`}
-                                    size={180}
-                                    level="H"
-                                    includeMargin={false}
-                                    fgColor="#FFFFFF"
-                                    bgColor="transparent"
-                                />
-                                <div className="absolute top-0 left-0 w-full h-[2px] bg-blue-400 shadow-[0_0_20px_rgba(96,165,250,1)] animate-[bounce_4s_ease-in-out_infinite] opacity-40 pointer-events-none" />
-                            </div>
-                        </div>
-
-                        {/* Typography Section */}
-                        <div className="relative z-10 space-y-4">
-                            <h4 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">
-                                ACCÈS <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">CLIENT</span>
-                            </h4>
-                            
-                            <p className="text-[13px] font-medium text-slate-400 tracking-wider max-w-[260px] mx-auto opacity-70">
-                                Scannez pour accéder au portail BCCP
-                            </p>
-
-                            {/* Copy URL Section */}
-                            <div className="mt-6 flex items-center justify-center gap-2 p-1 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-md w-full">
-                                <div className="bg-white/5 rounded-xl py-2 px-4 flex-1 text-center overflow-hidden">
-                                    <code className="text-[10px] font-black text-blue-400/90 break-all select-all tracking-widest truncate block">
-                                        {window.location.origin.replace(/^https?:\/\//, '')}/mon-espace
-                                    </code>
-                                </div>
-                                <button 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigator.clipboard.writeText(`${window.location.origin}/mon-espace`);
-                                        toast.success("Lien copié");
-                                    }}
-                                    className="p-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-all shadow-xl shadow-blue-900/40"
-                                >
-                                    <ChevronRight size={18} />
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </ModalLayout>
-            )}
-
-            <AdminReclamationModal 
-                isOpen={isReclamationsModalOpen}
-                onClose={() => setIsReclamationsModalOpen(false)}
-                onUpdated={fetchStats}
-            />
+                <AdminReclamationModal 
+                    isOpen={isReclamationsModalOpen}
+                    onClose={() => setIsReclamationsModalOpen(false)}
+                    onUpdated={fetchStats}
+                />
             </div>
         </PageLayout>
     );
