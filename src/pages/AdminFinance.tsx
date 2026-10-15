@@ -113,20 +113,42 @@ const AdminFinance: React.FC = () => {
                 setItems(combined.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
             } else if (tab === 'technicians') {
                 const { data: techs } = await supabase.from('technicians').select('id, full_name').eq('active', true);
-                if (techs) {
-                    const summaries = await Promise.all(techs.map(async (t) => {
-                        const [payRes, expRes, advRes, remRes] = await Promise.all([
-                            supabase.from('payments').select('amount').eq('technician_id', t.id).gte('payment_date', startDate.toISOString()),
-                            supabase.from('expenses').select('amount').eq('technician_id', t.id).eq('status', 'validated').gte('expense_date', startDate.toISOString().split('T')[0]),
-                            supabase.from('advances').select('amount').eq('technician_id', t.id).eq('status', 'validated').gte('advance_date', startDate.toISOString().split('T')[0]),
-                            supabase.from('remittances').select('amount').eq('technician_id', t.id).eq('status', 'validated').gte('remittance_date', startDate.toISOString().split('T')[0])
-                        ]);
+                if (techs && techs.length > 0) {
+                    const techIds = techs.map(t => t.id);
+                    const startDateIso = startDate.toISOString();
+                    const startDateDateStr = startDateIso.split('T')[0];
 
-                        const receipts = payRes.data?.reduce((sum, p) => sum + Number(p.amount), 0) || 0;
-                        const expenses = expRes.data?.reduce((sum, e) => sum + Number(e.amount), 0) || 0;
-                        const advances = advRes.data?.reduce((sum, a) => sum + Number(a.amount), 0) || 0;
-                        const remittances = remRes.data?.reduce((sum, r) => sum + Number(r.amount), 0) || 0;
+                    // 4 requêtes uniques groupées pour tous les techniciens (éradication du N+1)
+                    const [payRes, expRes, advRes, remRes] = await Promise.all([
+                        supabase.from('payments').select('technician_id, amount').in('technician_id', techIds).gte('payment_date', startDateIso),
+                        supabase.from('expenses').select('technician_id, amount').in('technician_id', techIds).eq('status', 'validated').gte('expense_date', startDateDateStr),
+                        supabase.from('advances').select('technician_id, amount').in('technician_id', techIds).eq('status', 'validated').gte('advance_date', startDateDateStr),
+                        supabase.from('remittances').select('technician_id, amount').in('technician_id', techIds).eq('status', 'validated').gte('remittance_date', startDateDateStr)
+                    ]);
 
+                    const receiptsMap = new Map<string, number>();
+                    const expensesMap = new Map<string, number>();
+                    const advancesMap = new Map<string, number>();
+                    const remittancesMap = new Map<string, number>();
+
+                    (payRes.data || []).forEach(p => {
+                        if (p.technician_id) receiptsMap.set(p.technician_id, (receiptsMap.get(p.technician_id) || 0) + Number(p.amount));
+                    });
+                    (expRes.data || []).forEach(e => {
+                        if (e.technician_id) expensesMap.set(e.technician_id, (expensesMap.get(e.technician_id) || 0) + Number(e.amount));
+                    });
+                    (advRes.data || []).forEach(a => {
+                        if (a.technician_id) advancesMap.set(a.technician_id, (advancesMap.get(a.technician_id) || 0) + Number(a.amount));
+                    });
+                    (remRes.data || []).forEach(r => {
+                        if (r.technician_id) remittancesMap.set(r.technician_id, (remittancesMap.get(r.technician_id) || 0) + Number(r.amount));
+                    });
+
+                    const summaries = techs.map(t => {
+                        const receipts = receiptsMap.get(t.id) || 0;
+                        const expenses = expensesMap.get(t.id) || 0;
+                        const advances = advancesMap.get(t.id) || 0;
+                        const remittances = remittancesMap.get(t.id) || 0;
                         return {
                             ...t,
                             receipts,
@@ -135,7 +157,7 @@ const AdminFinance: React.FC = () => {
                             remittances,
                             balance: receipts - expenses - advances - remittances
                         };
-                    }));
+                    });
                     setTechSummaries(summaries);
                 }
 

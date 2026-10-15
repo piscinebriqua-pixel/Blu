@@ -64,26 +64,41 @@ const ClientDashboard: React.FC = () => {
         try {
             setLoading(true);
 
-            // 1. Fetch Client Info
-            const { data: clientData, error: clientError } = await supabase
-                .from('clients')
-                .select('*')
-                .eq('id', clientId)
-                .single();
+            // 1. Parallélisation massive : Client, Pools, Payments et Reclamations chargés en 1 seul aller-retour réseau
+            const [clientRes, poolsRes, payRes, recData] = await Promise.all([
+                supabase
+                    .from('clients')
+                    .select('id, first_name, last_name, balance, phone, city')
+                    .eq('id', clientId)
+                    .maybeSingle(),
+                supabase
+                    .from('pools')
+                    .select('*, photos:pool_photos(url, is_main)')
+                    .eq('client_id', clientId),
+                supabase
+                    .from('payments')
+                    .select('*, technician:technicians(id, full_name)')
+                    .eq('client_id', clientId)
+                    .order('payment_date', { ascending: false })
+                    .limit(20),
+                getClientReclamations(clientId)
+            ]);
 
-            if (clientError) throw clientError;
-            setClient(clientData);
+            if (clientRes.error) throw clientRes.error;
+            if (!clientRes.data) {
+                localStorage.removeItem('blu_client_id');
+                navigate('/mon-espace/login');
+                return;
+            }
 
-            // 2. Fetch Pools with photos & Interventions
-            const { data: poolsData } = await supabase
-                .from('pools')
-                .select('*, photos:pool_photos(url, is_main)')
-                .eq('client_id', clientId);
-            
-            const clientPools = (poolsData as unknown as ClientPool[]) || [];
+            setClient(clientRes.data);
+            const clientPools = (poolsRes.data as unknown as ClientPool[]) || [];
             setPools(clientPools);
-            const poolIds = clientPools.map(p => p.id);
+            setPayments((payRes.data as unknown as PortalPayment[]) || []);
+            setReclamations(recData || []);
 
+            // 2. Fetch Interventions pour les bassins du client (max 20 pour garder un temps de réponse instantané)
+            const poolIds = clientPools.map(p => p.id);
             if (poolIds.length > 0) {
                 const { data: interData, error: interError } = await supabase
                     .from('interventions')
@@ -118,35 +133,9 @@ const ClientDashboard: React.FC = () => {
                     });
                     setInterventions(interventionsWithTotal);
                 }
-            }
-
-            // 3. Fetch Payments
-            const { data: payData } = await supabase
-                .from('payments')
-                .select('*, technician_id')
-                .eq('client_id', clientId)
-                .order('payment_date', { ascending: false })
-                .limit(20);
-
-            if (payData && payData.length > 0) {
-                const techIds = [...new Set(payData.map(p => p.technician_id).filter(Boolean))];
-                if (techIds.length > 0) {
-                    const { data: techs } = await supabase.from('technicians').select('id, full_name').in('id', techIds);
-                    const paymentsWithTech = payData.map(p => ({
-                        ...p,
-                        technician: techs?.find(t => t.id === p.technician_id)
-                    }));
-                    setPayments(paymentsWithTech);
-                } else {
-                    setPayments(payData);
-                }
             } else {
-                setPayments([]);
+                setInterventions([]);
             }
-
-            // 4. Fetch Reclamations
-            const recData = await getClientReclamations(clientId);
-            setReclamations(recData);
 
         } catch (error) {
             console.error('Error fetching dashboard data:', error);

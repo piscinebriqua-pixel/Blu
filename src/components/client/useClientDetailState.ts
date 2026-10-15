@@ -88,53 +88,70 @@ export function useClientDetailState(id: string | undefined) {
   const fetchClientData = useCallback(async () => {
     if (!id) return;
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data: profiles } = await supabase.from("profiles").select("role").eq("id", session.user.id);
-        setIsAdmin(profiles?.[0]?.role === "admin");
-      }
+      // Étape 1 : Récupérer Client, Pools, Payments et Devis EN PARALLÈLE COMPLET (élimination du waterfall)
+      const [
+        sessionRes,
+        clientRes,
+        poolsRes,
+        payRes,
+        devisRes
+      ] = await Promise.all([
+        supabase.auth.getSession(),
+        supabase.from("clients").select("*").eq("id", id).maybeSingle(),
+        supabase.from("pools").select("*, photos:pool_photos(url, is_main)").eq("client_id", id),
+        supabase.from("payments").select("*, technician:technicians(full_name)").eq("client_id", id).order("payment_date", { ascending: false }),
+        supabase.from("devis").select("*").eq("client_id", id).order("created_at", { ascending: false })
+      ]);
 
-      const { data: clients, error: clientError } = await supabase.from("clients").select("*").eq("id", id);
-      if (clientError) throw clientError;
-
-      const clientData = clients?.[0];
+      if (clientRes.error) throw clientRes.error;
+      const clientData = clientRes.data;
       if (!clientData) {
         toast.error("Client introuvable");
         navigate("/clients");
         return;
       }
+
       setClient(clientData);
+      const poolData = poolsRes.data || [];
+      setPools(poolData);
+      setPayments(payRes.data || []);
+      setDevis(devisRes.data || []);
 
-      try {
-        const partnerIds = [
-          clientData.architect_id,
-          clientData.entrepreneur_id,
-          clientData.plumber_id,
-          clientData.electrician_id,
-          clientData.pool_builder_id,
-          clientData.site_manager_id,
-          clientData.billing_partner_id,
-        ].filter(Boolean);
-
-        if (partnerIds.length > 0) {
-          const { data: partnersData } = await supabase.from("partners").select("*").in("id", partnerIds);
-          if (partnersData) setClientPartners(partnersData);
-        } else {
-          setClientPartners([]);
-        }
-      } catch (e) {
-        // Table partners optionnelle
+      // Vérification du rôle admin
+      const user = sessionRes.data?.session?.user;
+      if (user) {
+        supabase.from("profiles").select("role").eq("id", user.id).maybeSingle().then(p => {
+          setIsAdmin(p.data?.role === "admin");
+        });
       }
 
-      const { data: poolData } = await supabase
-        .from("pools")
-        .select("*, photos:pool_photos(url, is_main)")
-        .eq("client_id", id);
-      setPools(poolData || []);
+      // Partenaires associés (asynchrone non bloquant)
+      const partnerIds = [
+        clientData.architect_id,
+        clientData.entrepreneur_id,
+        clientData.plumber_id,
+        clientData.electrician_id,
+        clientData.pool_builder_id,
+        clientData.site_manager_id,
+        clientData.billing_partner_id,
+      ].filter(Boolean);
 
-      const { data: interData } = await supabase
+      if (partnerIds.length > 0) {
+        supabase.from("partners").select("*").in("id", partnerIds).then(res => {
+          if (res.data) setClientPartners(res.data);
+        }).catch(() => {});
+      } else {
+        setClientPartners([]);
+      }
+
+      // Étape 2 : Interventions pour les bassins du client
+      const poolIds = poolData.map((p: any) => p.id);
+      if (poolIds.length === 0) {
+        setInterventions([]);
+        return;
+      }
+
+      const { data: interData, error: interError } = await supabase
         .from("interventions")
         .select(`
           *,
@@ -153,17 +170,24 @@ export function useClientDetailState(id: string | undefined) {
             product:inventory_products(name, unit)
           )
         `)
-        .in("pool_id", poolData?.map((p: any) => p.id) || [])
+        .in("pool_id", poolIds)
         .order("created_at", { ascending: false });
 
-      const { data: distributions } = await supabase
-        .from("intervention_payments")
-        .select("intervention_id, amount_applied")
-        .in("intervention_id", interData?.map((i: any) => i.id) || []);
+      if (interError) throw interError;
+
+      const interIds = (interData || []).map((i: any) => i.id);
+      let distributions: any[] = [];
+      if (interIds.length > 0) {
+        const distRes = await supabase
+          .from("intervention_payments")
+          .select("intervention_id, amount_applied")
+          .in("intervention_id", interIds);
+        distributions = distRes.data || [];
+      }
 
       const formattedInters =
         interData?.map((i: any) => {
-          const appliedPayments = distributions?.filter((d: any) => d.intervention_id === i.id) || [];
+          const appliedPayments = distributions.filter((d: any) => d.intervention_id === i.id);
           const totalPaid = appliedPayments.reduce((acc: number, d: any) => acc + Number(d.amount_applied), 0);
 
           return {
@@ -172,21 +196,8 @@ export function useClientDetailState(id: string | undefined) {
             paid_amount: totalPaid,
           };
         }) || [];
+
       setInterventions(formattedInters);
-
-      const { data: payData } = await supabase
-        .from("payments")
-        .select("*, technician:technicians(full_name)")
-        .eq("client_id", id)
-        .order("payment_date", { ascending: false });
-      setPayments(payData || []);
-
-      const { data: devisData } = await supabase
-        .from("devis")
-        .select("*")
-        .eq("client_id", id)
-        .order("created_at", { ascending: false });
-      setDevis(devisData || []);
     } catch (error) {
       console.error("Erreur:", error);
       navigate("/clients");

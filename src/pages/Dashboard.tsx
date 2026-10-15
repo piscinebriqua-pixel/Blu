@@ -138,20 +138,29 @@ const Dashboard: React.FC = () => {
                     rolling30d.setDate(now.getDate() - 30);
                     const startOfYear = new Date(now.getFullYear(), 0, 1);
 
-                    const [currentRes, lastRes, rollingRes, annualResFull] = await Promise.all([
-                        supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', startOfMonth.toISOString()),
-                        supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', startOfLastMonth.toISOString()).lte('payment_date', endOfLastMonth.toISOString()),
-                        supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', rolling30d.toISOString()),
-                        supabase.from('payments').select('amount, payment_date').neq('method', 'remise').gte('payment_date', startOfYear.toISOString())
-                    ]);
+                    // Optimisation SQL : 1 seule requête globale indexée au lieu de 4 scans concurrents
+                    const earliestDate = startOfLastMonth < startOfYear ? startOfLastMonth : startOfYear;
+                    const { data: paymentsData } = await supabase
+                        .from('payments')
+                        .select('amount, payment_date')
+                        .neq('method', 'remise')
+                        .gte('payment_date', earliestDate.toISOString());
 
-                    monthlyRevenue = currentRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-                    lastMonthRevenue = lastRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-                    rollingRevenue = rollingRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-                    
-                    if (annualResFull.data) {
-                        annualResFull.data.forEach(p => {
-                            annualRevenue += (p.amount || 0);
+                    if (paymentsData) {
+                        const startOfMonthTime = startOfMonth.getTime();
+                        const startOfLastMonthTime = startOfLastMonth.getTime();
+                        const endOfLastMonthTime = endOfLastMonth.getTime();
+                        const rolling30dTime = rolling30d.getTime();
+                        const startOfYearTime = startOfYear.getTime();
+
+                        paymentsData.forEach(p => {
+                            const amt = Number(p.amount) || 0;
+                            const pTime = new Date(p.payment_date).getTime();
+
+                            if (pTime >= startOfMonthTime) monthlyRevenue += amt;
+                            if (pTime >= startOfLastMonthTime && pTime <= endOfLastMonthTime) lastMonthRevenue += amt;
+                            if (pTime >= rolling30dTime) rollingRevenue += amt;
+                            if (pTime >= startOfYearTime) annualRevenue += amt;
                         });
                     }
                 } catch (e) {
