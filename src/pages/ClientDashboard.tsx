@@ -230,8 +230,8 @@ const ClientDashboard: React.FC = () => {
                         {pools.map(pool => {
                             const mainPhoto = pool.photos?.find(p => p.is_main)?.url || pool.photos?.[0]?.url;
                             const details = [
-                                pool.volume_m3 ? `${pool.volume_m3} m³` : null,
-                                pool.lining_type ? `Revêtement ${pool.lining_type}` : null
+                                pool.volume ? `${pool.volume} m³` : null,
+                                pool.pool_type ? `Type ${pool.pool_type}` : null
                             ].filter(Boolean).join(' • ');
 
                             return (

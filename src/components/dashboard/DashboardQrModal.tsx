@@ -16,11 +16,11 @@ export const DashboardQrModal: React.FC<DashboardQrModalProps> = ({ isOpen, onCl
     const cleanUrl = window.location.origin.replace(/^https?:\/\//, '') + '/mon-espace';
 
     return (
-        <ModalLayout isOpen={isOpen} onClose={onClose} size="sm">
+        <ModalLayout title="Accès Espace Client" onClose={onClose} hideHeader compact className="!max-w-md">
             <div className="relative p-6 text-center flex flex-col items-center">
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all"
+                    className="absolute top-4 right-4 w-11 h-11 rounded-xl bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 hover:text-slate-800 dark:hover:text-white transition-all"
                 >
                     <X size={20} />
                 </button>

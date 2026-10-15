@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { format, addWeeks, addDays, startOfDay, parseISO, isBefore } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Sparkles, Calendar, CheckCircle2, ShieldCheck, ChevronRight, Clock, AlertCircle } from 'lucide-react';
+import { Sparkles, Calendar, ShieldCheck, Clock } from 'lucide-react';
 import ModalLayout from '../ModalLayout';
 import type { BatchGenerationOptions } from '../../lib/recurrenceService';
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, ChevronRight, Users, User, ArrowUpRight, Sparkles } from 'lucide-react';
+import { Calendar, ChevronRight, Users, ArrowUpRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 interface PlanningBentoCardProps {

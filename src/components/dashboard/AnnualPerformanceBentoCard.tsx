@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, TrendingDown, ArrowUpRight, Calendar, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowUpRight, Calendar } from 'lucide-react';
 import { formatRevenue } from '../../lib/formatters';
 
 interface AnnualPerformanceBentoCardProps {
     annualRevenue: number;
     monthlyRevenue: number;
     lastMonthRevenue: number;
-    rollingRevenue: number;
+    rollingRevenue?: number;
     monthlyBreakdown: number[]; // 12 montants réels (Janvier à Décembre)
 }
 
@@ -21,7 +21,6 @@ export const AnnualPerformanceBentoCard: React.FC<AnnualPerformanceBentoCardProp
     annualRevenue,
     monthlyRevenue,
     lastMonthRevenue,
-    rollingRevenue,
     monthlyBreakdown
 }) => {
     const navigate = useNavigate();
@@ -38,7 +37,7 @@ export const AnnualPerformanceBentoCard: React.FC<AnnualPerformanceBentoCardProp
     }, [monthlyRevenue, lastMonthRevenue]);
 
     // Génération mathématique des points de la courbe réelle (viewBox 0 0 550 140)
-    const { pathD, areaD, points, maxVal } = useMemo(() => {
+    const { pathD, areaD, points } = useMemo(() => {
         const width = 550;
         const height = 130;
         const paddingX = 24;
@@ -78,7 +77,7 @@ export const AnnualPerformanceBentoCard: React.FC<AnnualPerformanceBentoCardProp
         const firstPt = pts[0];
         const areaPath = `${strokePath} L ${lastPt.x} ${height} L ${firstPt.x} ${height} Z`;
 
-        return { pathD: strokePath, areaD: areaPath, points: pts, maxVal: safeMax };
+        return { pathD: strokePath, areaD: areaPath, points: pts };
     }, [monthlyBreakdown]);
 
     const activePoint = points[hoveredMonthIndex] || points[currentMonthIndex];

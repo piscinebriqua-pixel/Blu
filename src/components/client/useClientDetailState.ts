@@ -137,9 +137,12 @@ export function useClientDetailState(id: string | undefined) {
       ].filter(Boolean);
 
       if (partnerIds.length > 0) {
-        supabase.from("partners").select("*").in("id", partnerIds).then(res => {
-          if (res.data) setClientPartners(res.data);
-        }).catch(() => {});
+        supabase.from("partners").select("*").in("id", partnerIds).then(
+          res => {
+            if (res.data) setClientPartners(res.data);
+          },
+          () => {}
+        );
       } else {
         setClientPartners([]);
       }

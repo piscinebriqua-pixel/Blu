@@ -6,8 +6,7 @@ import {
     Phone, 
     ChevronDown, 
     ChevronUp, 
-    RefreshCw,
-    Send
+    RefreshCw
 } from 'lucide-react';
 import ModalLayout from '../ModalLayout';
 import { 
