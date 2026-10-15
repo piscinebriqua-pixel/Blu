@@ -417,14 +417,22 @@ body {
 .bento-col-4 { grid-column: span 4; }
 .bento-col-3 { grid-column: span 3; }
 .bento-col-6 { grid-column: span 6; }
+.bento-col-12 { grid-column: span 12; }
 .bento-row-2 { grid-row: span 2; }
+
+@media (max-width: 1280px) and (min-width: 1025px) {
+    .bento-col-3 { grid-column: span 6; }
+    .bento-col-8 { grid-column: span 12; }
+    .bento-col-4 { grid-column: span 12; }
+}
 
 @media (max-width: 1024px) {
     .bento-dashboard-grid {
         grid-template-columns: repeat(2, 1fr);
         grid-auto-rows: auto;
     }
-    .bento-col-8, .bento-col-4, .bento-col-3, .bento-col-6 { grid-column: span 1; }
+    .bento-col-12, .bento-col-8, .bento-col-6 { grid-column: span 2; }
+    .bento-col-4, .bento-col-3 { grid-column: span 1; }
     .bento-row-2 { grid-row: span 1; }
 }
 
@@ -432,6 +440,7 @@ body {
     .bento-dashboard-grid {
         grid-template-columns: 1fr;
     }
+    .bento-col-12, .bento-col-8, .bento-col-6, .bento-col-4, .bento-col-3 { grid-column: span 1; }
 }
 
 /* --- FINTECH CARDS --- */

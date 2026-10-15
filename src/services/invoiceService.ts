@@ -36,6 +36,7 @@ export interface InvoiceWithItems extends InvoiceRow {
     phone: string | null;
     address: string | null;
     city: string | null;
+    matricule_fiscal?: string | null;
   };
 }
 
@@ -262,7 +263,7 @@ export const invoiceService = {
         .from('invoices')
         .select(`
           *,
-          client:clients(id, first_name, last_name, phone, address, city),
+          client:clients(*),
           items:invoice_items(*)
         `)
         .order('invoice_date', { ascending: false })
@@ -373,6 +374,7 @@ export const invoiceService = {
         .from('invoices')
         .select(`
           *,
+          client:clients(*),
           items:invoice_items(*)
         `)
         .eq('client_id', clientId)

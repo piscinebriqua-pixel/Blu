@@ -26,6 +26,7 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
         phone2: client.phone2 || '',
         email: client.email || '',
         address: client.address || '',
+        matricule_fiscal: client.matricule_fiscal || '',
         city: client.city || '',
         gps_lat: client.gps_lat?.toString() || '',
         gps_lng: client.gps_lng?.toString() || '',
@@ -38,26 +39,39 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
         setLoading(true);
 
         try {
+            const clientPayload: Record<string, any> = {
+                first_name: formData.first_name,
+                last_name: formData.last_name,
+                phone: formData.phone,
+                phone2: formData.phone2,
+                email: formData.email,
+                address: formData.address,
+                city: formData.city,
+                gps_lat: formData.gps_lat ? parseFloat(formData.gps_lat) : null,
+                gps_lng: formData.gps_lng ? parseFloat(formData.gps_lng) : null,
+                notes: formData.notes,
+                status: formData.status
+            };
+
+            if (formData.matricule_fiscal.trim()) {
+                clientPayload.matricule_fiscal = formData.matricule_fiscal.trim();
+            }
+
             const { error } = await supabase
                 .from('clients')
-                .update({
-                    first_name: formData.first_name,
-                    last_name: formData.last_name,
-                    phone: formData.phone,
-                    phone2: formData.phone2,
-                    email: formData.email,
-                    address: formData.address,
-                    city: formData.city,
-                    gps_lat: formData.gps_lat ? parseFloat(formData.gps_lat) : null,
-                    gps_lng: formData.gps_lng ? parseFloat(formData.gps_lng) : null,
-                    notes: formData.notes,
-                    status: formData.status
-                })
+                .update(clientPayload)
                 .eq('id', client.id);
 
-            if (error) throw error;
-
-            toast.success('Client mis à jour avec succès');
+            if (error && (error as any).code === 'PGRST204' && (error as any).message?.includes('matricule_fiscal')) {
+                delete clientPayload.matricule_fiscal;
+                const retry = await supabase.from('clients').update(clientPayload).eq('id', client.id);
+                if (retry.error) throw retry.error;
+                toast.success("Client mis à jour (exécutez setup_matricule_fiscal.sql pour stocker le MF)");
+            } else if (error) {
+                throw error;
+            } else {
+                toast.success('Client mis à jour avec succès');
+            }
             onSuccess();
             onClose();
         } catch (error: unknown) {
@@ -176,6 +190,13 @@ const EditClientModal: React.FC<EditClientModalProps> = ({ client, onClose, onSu
                         placeholder="Ex: Avenue Habib Bourguiba"
                         value={formData.address}
                         onChange={e => setFormData({ ...formData, address: e.target.value })}
+                    />
+                    <Input
+                        label="Matricule Fiscal (Norme Tunisienne - Optionnel)"
+                        icon={FileText}
+                        placeholder="Ex: 1234567/A/M/000"
+                        value={formData.matricule_fiscal}
+                        onChange={e => setFormData({ ...formData, matricule_fiscal: e.target.value.toUpperCase() })}
                     />
                 </div>
 

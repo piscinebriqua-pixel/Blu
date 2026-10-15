@@ -9,6 +9,7 @@ export interface DevisClient {
   email?: string | null;
   address?: string | null;
   city?: string | null;
+  matricule_fiscal?: string | null;
 }
 
 export interface DevisItem {
@@ -71,15 +72,7 @@ class DevisService {
           payment_terms,
           pool_details,
           pdf_url,
-          client:clients (
-            id,
-            first_name,
-            last_name,
-            phone,
-            email,
-            address,
-            city
-          )
+          client:clients (*)
         `)
         .or('is_template.is.null,is_template.eq.false')
         .order('created_at', { ascending: false });

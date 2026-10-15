@@ -236,7 +236,11 @@ const ClientDetail: React.FC = () => {
   return (
     <PageLayout
       title={client?.first_name || ""}
-      subtitle={client?.last_name || ""}
+      subtitle={
+        client?.matricule_fiscal
+          ? `${client.last_name || ""} • MF : ${client.matricule_fiscal}`
+          : client?.last_name || ""
+      }
       showBackButton={true}
       toolbar={toolbar}
       loading={loading}

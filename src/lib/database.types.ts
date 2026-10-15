@@ -23,6 +23,7 @@ export interface Database {
           balance: number;
           partner_id: string | null;
           notes: string | null;
+          matricule_fiscal: string | null;
         };
         Insert: {
           id?: string;
@@ -37,6 +38,7 @@ export interface Database {
           balance?: number;
           partner_id?: string | null;
           notes?: string | null;
+          matricule_fiscal?: string | null;
         };
         Update: {
           id?: string;
@@ -51,6 +53,7 @@ export interface Database {
           balance?: number;
           partner_id?: string | null;
           notes?: string | null;
+          matricule_fiscal?: string | null;
         };
       };
       pools: {

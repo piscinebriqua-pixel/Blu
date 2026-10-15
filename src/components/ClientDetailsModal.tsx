@@ -113,6 +113,11 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                             <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-1">
                                 {client.first_name} {client.last_name}
                             </h2>
+                            {client.matricule_fiscal && (
+                                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40 text-xs font-black mb-1">
+                                    <span>M.F. : {client.matricule_fiscal}</span>
+                                </div>
+                            )}
                             <div className="flex items-center text-slate-500 dark:text-slate-500 text-base gap-2">
                                 <MapPin size={14} />
                                 <span>{client.address}, {client.city}</span>

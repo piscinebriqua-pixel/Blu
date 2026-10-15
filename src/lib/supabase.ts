@@ -85,3 +85,32 @@ export interface InvoiceItemRow {
   created_at: string;
 }
 
+// --- Types Réclamations ---
+export interface ReclamationRow {
+  id: string;
+  client_id: string;
+  pool_id: string | null;
+  intervention_id: string | null;
+  subject: string;
+  category: 'eau' | 'materiel' | 'passage' | 'facturation' | 'autre';
+  description: string;
+  status: 'en_cours' | 'cloturee';
+  admin_response: string | null;
+  is_read_by_admin: boolean;
+  closed_at: string | null;
+  closed_by: string | null;
+  created_at: string;
+  updated_at: string;
+  client?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    phone: string;
+    city: string;
+  };
+  pool?: {
+    id: string;
+    name: string;
+  };
+}
+

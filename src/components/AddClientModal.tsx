@@ -28,6 +28,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess, ini
         email: '',
         city: '',
         address: '',
+        matricule_fiscal: '',
         gps_lat: '',
         gps_lng: '',
         notes: ''
@@ -38,25 +39,38 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess, ini
         setLoading(true);
 
         try {
+            const clientPayload: Record<string, any> = {
+                first_name: formData.first_name,
+                last_name: formData.last_name,
+                phone: formData.phone,
+                phone2: formData.phone2,
+                email: formData.email,
+                city: formData.city,
+                address: formData.address,
+                gps_lat: formData.gps_lat ? parseFloat(formData.gps_lat) : null,
+                gps_lng: formData.gps_lng ? parseFloat(formData.gps_lng) : null,
+                notes: formData.notes,
+                balance: 0
+            };
+
+            if (formData.matricule_fiscal.trim()) {
+                clientPayload.matricule_fiscal = formData.matricule_fiscal.trim();
+            }
+
             const { error: clientError } = await supabase
                 .from('clients')
-                .insert([{
-                    first_name: formData.first_name,
-                    last_name: formData.last_name,
-                    phone: formData.phone,
-                    phone2: formData.phone2,
-                    email: formData.email,
-                    city: formData.city,
-                    address: formData.address,
-                    gps_lat: formData.gps_lat ? parseFloat(formData.gps_lat) : null,
-                    gps_lng: formData.gps_lng ? parseFloat(formData.gps_lng) : null,
-                    notes: formData.notes,
-                    balance: 0
-                }]);
+                .insert([clientPayload]);
 
-            if (clientError) throw clientError;
-
-            toast.success('Client ajouté avec succès');
+            if (clientError && (clientError as any).code === 'PGRST204' && (clientError as any).message?.includes('matricule_fiscal')) {
+                delete clientPayload.matricule_fiscal;
+                const retry = await supabase.from('clients').insert([clientPayload]);
+                if (retry.error) throw retry.error;
+                toast.success("Client ajouté (exécutez setup_matricule_fiscal.sql pour enregistrer le MF)");
+            } else if (clientError) {
+                throw clientError;
+            } else {
+                toast.success('Client ajouté avec succès');
+            }
             onSuccess();
             onClose();
         } catch (error: unknown) {
@@ -174,6 +188,13 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess, ini
                         placeholder="Ex: Avenue Habib Bourguiba"
                         value={formData.address}
                         onChange={e => setFormData({ ...formData, address: e.target.value })}
+                    />
+                    <Input
+                        label="Matricule Fiscal (Norme Tunisienne - Optionnel)"
+                        icon={FileText}
+                        placeholder="Ex: 1234567/A/M/000"
+                        value={formData.matricule_fiscal}
+                        onChange={e => setFormData({ ...formData, matricule_fiscal: e.target.value.toUpperCase() })}
                     />
                 </div>
 

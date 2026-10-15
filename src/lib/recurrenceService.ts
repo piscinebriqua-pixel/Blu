@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { addWeeks, setDay, startOfDay, parseISO, format, isBefore } from 'date-fns';
+import { addWeeks, setDay, startOfDay, parseISO, format, isBefore, isAfter } from 'date-fns';
 
 export interface RecurrenceConfig {
   label: string;
@@ -350,3 +350,297 @@ export async function suspendTourRecurrence(
     .update({ is_contracted: false })
     .eq('id', poolId);
 }
+
+/**
+ * Calcule la date exacte du jour cible (0=Dimanche, 1=Lundi, ..., 6=Samedi)
+ * pour la semaine de base donnée (semaine commençant le lundi).
+ */
+export function getDayInWeek(baseDate: Date, targetDayOfWeek: number): Date {
+  const currentDay = baseDate.getDay();
+  const currentOffset = currentDay === 0 ? 6 : currentDay - 1;
+  const targetOffset = targetDayOfWeek === 0 ? 6 : targetDayOfWeek - 1;
+  const diffDays = targetOffset - currentOffset;
+  const result = new Date(baseDate);
+  result.setDate(result.getDate() + diffDays);
+  return startOfDay(result);
+}
+
+export interface BatchGenerationOptions {
+  weeksAhead?: number;
+  startDate?: Date | string;
+  endDate?: Date | string;
+}
+
+export interface BatchGenerationResult {
+  success: boolean;
+  createdCount: number;
+  alreadyExistingCount: number;
+  totalChecked: number;
+  error?: string;
+}
+
+/**
+ * Génère en lot les visites récurrentes pour tous les bassins sous contrat actif
+ * sur un horizon de N semaines ou jusqu'à une date de fin personnalisée.
+ * 
+ * GARANTIE STRICTE ANTI-DOUBLON (IDEMPOTENCE) :
+ * Vérifie l'existence préalable d'interventions par :
+ *  1. Date exacte planifiée (scheduled_date)
+ *  2. Tag d'ancrage nominal dans les notes ([Ancrage: YYYY-MM-DD])
+ * Si un administrateur clique plusieurs fois, aucun doublon n'est créé.
+ */
+export async function generateRecurringInterventionsBatch(
+  optionsOrWeeks: number | BatchGenerationOptions = 4
+): Promise<BatchGenerationResult> {
+  try {
+    const today = startOfDay(new Date());
+    let horizon: Date;
+    let weeksAhead: number;
+
+    if (typeof optionsOrWeeks === 'number') {
+      weeksAhead = optionsOrWeeks;
+      horizon = addWeeks(today, weeksAhead);
+    } else {
+      if (optionsOrWeeks.endDate) {
+        horizon = startOfDay(
+          typeof optionsOrWeeks.endDate === 'string'
+            ? parseISO(optionsOrWeeks.endDate)
+            : optionsOrWeeks.endDate
+        );
+        const diffMs = horizon.getTime() - today.getTime();
+        weeksAhead = Math.max(1, Math.ceil(diffMs / (7 * 24 * 3600 * 1000)));
+      } else {
+        weeksAhead = optionsOrWeeks.weeksAhead || 4;
+        horizon = addWeeks(today, weeksAhead);
+      }
+    }
+
+    // 1. Récupérer tous les bassins avec contrat actif
+    const { data: pools, error: poolsError } = await supabase
+      .from('pools')
+      .select('id, name, client_id, is_contracted, maintenance_frequency, preferred_day, last_maintenance_date')
+      .eq('is_contracted', true);
+
+    if (poolsError) throw poolsError;
+    if (!pools || pools.length === 0) {
+      return { success: true, createdCount: 0, alreadyExistingCount: 0, totalChecked: 0 };
+    }
+
+    const poolIds = pools.map((p) => p.id);
+
+    // 2. Récupérer les règles de récurrence actives existantes
+    const { data: rules } = await supabase
+      .from('recurrence_rules')
+      .select('*, template:intervention_templates(*)')
+      .in('pool_id', poolIds)
+      .eq('active', true);
+
+    const rulesByPoolId = new Map<string, any>();
+    if (rules) {
+      for (const r of rules) {
+        rulesByPoolId.set(r.pool_id, r);
+      }
+    }
+
+    // 3. Récupérer toutes les interventions existantes pour ces bassins
+    const { data: existingInters, error: intersError } = await supabase
+      .from('interventions')
+      .select('id, pool_id, scheduled_date, notes, status, technician_id')
+      .in('pool_id', poolIds);
+
+    if (intersError) throw intersError;
+
+    const intersByPoolId = new Map<string, any[]>();
+    for (const inter of existingInters || []) {
+      const list = intersByPoolId.get(inter.pool_id) || [];
+      list.push(inter);
+      intersByPoolId.set(inter.pool_id, list);
+    }
+
+    const interventionsToInsert: any[] = [];
+    const rulesToSync: any[] = [];
+    let alreadyExistingCount = 0;
+
+    for (const pool of pools) {
+      const rule = rulesByPoolId.get(pool.id);
+      const rawFreq = pool.maintenance_frequency === 'hebdomadaire'
+        ? 'weekly'
+        : (pool.maintenance_frequency || rule?.frequency || 'weekly');
+      const stepWeeks = rawFreq === 'biweekly' ? 2 : rawFreq === 'triweekly' ? 3 : rawFreq === 'monthly' ? 4 : 1;
+      const prefDay = pool.preferred_day !== null && pool.preferred_day !== undefined
+        ? pool.preferred_day
+        : (rule?.day_of_week ?? 1);
+
+      const poolInters = intersByPoolId.get(pool.id) || [];
+      const sortedInters = [...poolInters]
+        .filter((i) => i.scheduled_date)
+        .sort((a, b) => new Date(b.scheduled_date).getTime() - new Date(a.scheduled_date).getTime());
+
+      const lastInter = sortedInters[0];
+      const techId = rule?.technician_id || lastInter?.technician_id || null;
+
+      // Calcul des dates cibles candidates dans l'horizon [today, horizon]
+      const candidateDates: Date[] = [];
+      if (stepWeeks === 1) {
+        // Hebdomadaire : chaque semaine jusqu'à l'horizon
+        for (let w = 0; w <= weeksAhead + 1; w++) {
+          const weekBase = addWeeks(today, w);
+          const target = getDayInWeek(weekBase, prefDay);
+          if (!isBefore(target, today) && !isAfter(target, horizon)) {
+            candidateDates.push(target);
+          }
+        }
+      } else {
+        // Quinzaine / Mensuel / etc. : ancrage régulier
+        let anchor: Date;
+        if (lastInter && lastInter.scheduled_date) {
+          anchor = startOfDay(parseISO(lastInter.scheduled_date.split('T')[0]));
+          while (isBefore(anchor, today)) {
+            anchor = addWeeks(anchor, stepWeeks);
+          }
+        } else {
+          anchor = getDayInWeek(today, prefDay);
+          if (isBefore(anchor, today)) {
+            anchor = addWeeks(anchor, 1);
+          }
+        }
+
+        while (!isAfter(anchor, horizon)) {
+          if (!isBefore(anchor, today)) {
+            candidateDates.push(anchor);
+          }
+          anchor = addWeeks(anchor, stepWeeks);
+        }
+      }
+
+      let maxGeneratedDateStr: string | null = null;
+
+      // Filtrage anti-doublon strict pour chaque date cible
+      for (const targetDate of candidateDates) {
+        const dateStr = format(targetDate, 'yyyy-MM-dd');
+        const anchorTag = `[Ancrage: ${dateStr}]`;
+
+        // Vérifier si une intervention existe déjà pour ce bassin à cette date ou avec ce tag
+        const existsInDb = poolInters.some((i) => {
+          if (!i.scheduled_date) return false;
+          const iDate = i.scheduled_date.split('T')[0];
+          if (iDate === dateStr) return true;
+          if (i.notes && i.notes.includes(anchorTag)) return true;
+          return false;
+        });
+
+        // Vérifier aussi si on ne l'a pas déjà ajoutée dans le lot courant
+        const existsInCurrentBatch = interventionsToInsert.some(
+          (i) => i.pool_id === pool.id && i.scheduled_date === dateStr
+        );
+
+        if (existsInDb || existsInCurrentBatch) {
+          alreadyExistingCount++;
+        } else {
+          interventionsToInsert.push({
+            pool_id: pool.id,
+            technician_id: techId,
+            scheduled_date: dateStr,
+            status: 'scheduled',
+            notes: `${anchorTag} Visite d'entretien récurrente`,
+            task_balai: rule?.template?.task_balai ?? true,
+            task_lavage: rule?.template?.task_lavage ?? true,
+            task_rincage: rule?.template?.task_rincage ?? true,
+            task_test_chlore: rule?.template?.task_test_chlore ?? true,
+            task_test_ph: rule?.template?.task_test_ph ?? true,
+            task_remplissage: rule?.template?.task_remplissage ?? true,
+            task_panier_prefiltre: rule?.template?.task_panier_prefiltre ?? true,
+            task_traitement: rule?.template?.task_traitement ?? true,
+            task_verif_vanne: rule?.template?.task_verif_vanne ?? true,
+            task_temps_fonctionnement: rule?.template?.task_temps_fonctionnement ?? true,
+          });
+
+          if (!maxGeneratedDateStr || dateStr > maxGeneratedDateStr) {
+            maxGeneratedDateStr = dateStr;
+          }
+        }
+      }
+
+      rulesToSync.push({
+        id: rule?.id,
+        pool_id: pool.id,
+        technician_id: techId,
+        frequency: rawFreq,
+        day_of_week: prefDay,
+        last_generated_date: maxGeneratedDateStr || rule?.last_generated_date || null,
+      });
+    }
+
+    // 4. Insertion en base des nouvelles interventions (par blocs de 50)
+    if (interventionsToInsert.length > 0) {
+      for (let i = 0; i < interventionsToInsert.length; i += 50) {
+        const chunk = interventionsToInsert.slice(i, i + 50);
+        const { error: insertError } = await supabase.from('interventions').insert(chunk);
+        if (insertError) throw insertError;
+      }
+    }
+
+    // 5. Synchroniser recurrence_rules
+    for (const ruleItem of rulesToSync) {
+      if (ruleItem.id) {
+        await supabase
+          .from('recurrence_rules')
+          .update({
+            technician_id: ruleItem.technician_id,
+            frequency: ruleItem.frequency,
+            day_of_week: ruleItem.day_of_week,
+            active: true,
+            last_generated_date: ruleItem.last_generated_date,
+          })
+          .eq('id', ruleItem.id);
+      } else {
+        const { data: existing } = await supabase
+          .from('recurrence_rules')
+          .select('id')
+          .eq('pool_id', ruleItem.pool_id)
+          .maybeSingle();
+
+        if (existing) {
+          await supabase
+            .from('recurrence_rules')
+            .update({
+              technician_id: ruleItem.technician_id,
+              frequency: ruleItem.frequency,
+              day_of_week: ruleItem.day_of_week,
+              active: true,
+              last_generated_date: ruleItem.last_generated_date,
+            })
+            .eq('id', existing.id);
+        } else {
+          await supabase.from('recurrence_rules').insert([
+            {
+              pool_id: ruleItem.pool_id,
+              technician_id: ruleItem.technician_id,
+              frequency: ruleItem.frequency,
+              day_of_week: ruleItem.day_of_week,
+              active: true,
+              last_generated_date: ruleItem.last_generated_date,
+            },
+          ]);
+        }
+      }
+    }
+
+    return {
+      success: true,
+      createdCount: interventionsToInsert.length,
+      alreadyExistingCount,
+      totalChecked: interventionsToInsert.length + alreadyExistingCount,
+    };
+  } catch (error: any) {
+    console.error('Error in generateRecurringInterventionsBatch:', error);
+    return {
+      success: false,
+      createdCount: 0,
+      alreadyExistingCount: 0,
+      totalChecked: 0,
+      error: error.message || 'Erreur inconnue',
+    };
+  }
+}
+

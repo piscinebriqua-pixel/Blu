@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
@@ -20,6 +20,11 @@ import PageLayout from '../components/PageLayout';
 import ModalLayout from '../components/ModalLayout';
 import UserMenu from '../components/UserMenu';
 import { QRCodeSVG } from 'qrcode.react';
+import { PlanningBentoCard } from '../components/dashboard/PlanningBentoCard';
+import { ReclamationsBentoCard } from '../components/dashboard/ReclamationsBentoCard';
+import { AdminReclamationModal } from '../components/dashboard/AdminReclamationModal';
+import { getPendingReclamations, getPendingReclamationsCount } from '../services/reclamationService';
+import type { ReclamationRow } from '../lib/supabase';
 
 const Dashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -41,159 +46,174 @@ const Dashboard: React.FC = () => {
     const [profile, setProfile] = useState<{ name: string, role: string } | null>(null);
     const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const [recentInterventions, setRecentInterventions] = useState<any[]>([]);
+    const [pendingReclamations, setPendingReclamations] = useState<ReclamationRow[]>([]);
+    const [pendingRecsCount, setPendingRecsCount] = useState<number>(0);
+    const [isReclamationsModalOpen, setIsReclamationsModalOpen] = useState(false);
 
 
 
-    useEffect(() => {
-        const fetchStats = async () => {
+    const fetchStats = useCallback(async () => {
+        try {
+            let currentProfile = null;
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                const { data: profileData } = await supabase
+                    .from('profiles')
+                    .select('full_name, role')
+                    .eq('id', session.user.id)
+                    .maybeSingle();
+                if (profileData) {
+                    currentProfile = profileData;
+                    setProfile({
+                        name: profileData.full_name || 'Utilisateur',
+                        role: profileData.role
+                    });
+                }
+            }
+
+            // Fetch each count independently
+            let clientCount = 0;
+            let techCount = 0;
+            let interventionCount = 0;
+            let scheduledCount = 0;
+            let devisCount = 0;
+            let devisPendingAmt = 0;
+            let invCount = 0;
+            let invPendingAmt = 0;
+
             try {
-                let currentProfile = null;
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session?.user) {
-                    const { data: profileData } = await supabase
-                        .from('profiles')
-                        .select('full_name, role')
-                        .eq('id', session.user.id)
-                        .maybeSingle();
-                    if (profileData) {
-                        currentProfile = profileData;
-                        setProfile({
-                            name: profileData.full_name || 'Utilisateur',
-                            role: profileData.role
+                const [clientsRes, techRes, intRes, schedRes] = await Promise.all([
+                    supabase.from('clients').select('id', { count: 'exact', head: true }),
+                    supabase.from('technicians').select('id', { count: 'exact', head: true }).eq('active', true),
+                    supabase.from('interventions').select('id', { count: 'exact', head: true }),
+                    supabase.from('interventions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled')
+                ]);
+                clientCount = clientsRes.count ?? 0;
+                techCount = techRes.count ?? 0;
+                interventionCount = intRes.count ?? 0;
+                scheduledCount = schedRes.count ?? 0;
+
+                // Fetch devis et factures séparément
+                const [devisRes, invoicesRes] = await Promise.all([
+                    supabase
+                        .from('devis')
+                        .select('id, status, total_amount, is_template')
+                        .or('is_template.is.null,is_template.eq.false'),
+                    supabase
+                        .from('invoices')
+                        .select('id, status, total_ttc, paid_amount')
+                ]);
+
+                if (devisRes.data) {
+                    const pendingDevis = devisRes.data.filter(d => d.status === 'pending' || !d.status);
+                    devisCount = pendingDevis.length;
+                    devisPendingAmt = pendingDevis.reduce((sum, d) => sum + (Number(d.total_amount) || 0), 0);
+                }
+
+                if (invoicesRes.data) {
+                    invCount = invoicesRes.data.length;
+                    const unpaidInvoices = invoicesRes.data.filter(i => i.status === 'issued' || i.status === 'partially_paid');
+                    invPendingAmt = unpaidInvoices.reduce((sum, i) => {
+                        const due = (Number(i.total_ttc) || 0) - (Number(i.paid_amount) || 0);
+                        return sum + Math.max(0, due);
+                    }, 0);
+                }
+            } catch (e) {
+                console.warn('Counts fetch failed:', e);
+            }
+
+            // Fetch CA pour les admins
+            let monthlyRevenue = 0;
+            let lastMonthRevenue = 0;
+            let rollingRevenue = 0;
+            let annualRevenue = 0;
+
+            if (currentProfile?.role === 'admin') {
+                try {
+                    const now = new Date();
+                    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+                    const rolling30d = new Date();
+                    rolling30d.setDate(now.getDate() - 30);
+                    const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+                    const [currentRes, lastRes, rollingRes, annualResFull] = await Promise.all([
+                        supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', startOfMonth.toISOString()),
+                        supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', startOfLastMonth.toISOString()).lte('payment_date', endOfLastMonth.toISOString()),
+                        supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', rolling30d.toISOString()),
+                        supabase.from('payments').select('amount, payment_date').neq('method', 'remise').gte('payment_date', startOfYear.toISOString())
+                    ]);
+
+                    monthlyRevenue = currentRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+                    lastMonthRevenue = lastRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+                    rollingRevenue = rollingRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
+                    
+                    if (annualResFull.data) {
+                        annualResFull.data.forEach(p => {
+                            annualRevenue += (p.amount || 0);
                         });
                     }
-                }
-
-                // Fetch each count independently
-                let clientCount = 0;
-                let techCount = 0;
-                let interventionCount = 0;
-                let scheduledCount = 0;
-                let devisCount = 0;
-                let devisPendingAmt = 0;
-                let invCount = 0;
-                let invPendingAmt = 0;
-
-                try {
-                    const [clientsRes, techRes, intRes, schedRes] = await Promise.all([
-                        supabase.from('clients').select('id', { count: 'exact', head: true }),
-                        supabase.from('technicians').select('id', { count: 'exact', head: true }).eq('active', true),
-                        supabase.from('interventions').select('id', { count: 'exact', head: true }),
-                        supabase.from('interventions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled')
-                    ]);
-                    clientCount = clientsRes.count ?? 0;
-                    techCount = techRes.count ?? 0;
-                    interventionCount = intRes.count ?? 0;
-                    scheduledCount = schedRes.count ?? 0;
-
-                    // Fetch devis et factures séparément
-
-                    const [devisRes, invoicesRes] = await Promise.all([
-                        supabase
-                            .from('devis')
-                            .select('id, status, total_amount, is_template')
-                            .or('is_template.is.null,is_template.eq.false'),
-                        supabase
-                            .from('invoices')
-                            .select('id, status, total_ttc, paid_amount')
-                    ]);
-
-                    if (devisRes.data) {
-                        const pendingDevis = devisRes.data.filter(d => d.status === 'pending' || !d.status);
-                        devisCount = pendingDevis.length;
-                        devisPendingAmt = pendingDevis.reduce((sum, d) => sum + (Number(d.total_amount) || 0), 0);
-                    }
-
-                    if (invoicesRes.data) {
-                        invCount = invoicesRes.data.length;
-                        const unpaidInvoices = invoicesRes.data.filter(i => i.status === 'issued' || i.status === 'partially_paid');
-                        invPendingAmt = unpaidInvoices.reduce((sum, i) => {
-                            const due = (Number(i.total_ttc) || 0) - (Number(i.paid_amount) || 0);
-                            return sum + Math.max(0, due);
-                        }, 0);
-                    }
                 } catch (e) {
-                    console.warn('Counts fetch failed:', e);
+                    console.warn('Revenue fetch failed:', e);
                 }
-
-                // Fetch CA pour les admins
-                let monthlyRevenue = 0;
-                let lastMonthRevenue = 0;
-                let rollingRevenue = 0;
-                let annualRevenue = 0;
-
-                if (currentProfile?.role === 'admin') {
-                    try {
-                        const now = new Date();
-                        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-                        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-                        const rolling30d = new Date();
-                        rolling30d.setDate(now.getDate() - 30);
-                        const startOfYear = new Date(now.getFullYear(), 0, 1);
-
-                        const [currentRes, lastRes, rollingRes, annualResFull] = await Promise.all([
-                            supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', startOfMonth.toISOString()),
-                            supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', startOfLastMonth.toISOString()).lte('payment_date', endOfLastMonth.toISOString()),
-                            supabase.from('payments').select('amount').neq('method', 'remise').gte('payment_date', rolling30d.toISOString()),
-                            supabase.from('payments').select('amount, payment_date').neq('method', 'remise').gte('payment_date', startOfYear.toISOString())
-                        ]);
-
-                        monthlyRevenue = currentRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-                        lastMonthRevenue = lastRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-                        rollingRevenue = rollingRes.data?.reduce((sum, p) => sum + (p.amount || 0), 0) || 0;
-                        
-                        if (annualResFull.data) {
-                            annualResFull.data.forEach(p => {
-                                annualRevenue += (p.amount || 0);
-                            });
-                        }
-                    } catch (e) {
-                        console.warn('Revenue fetch failed:', e);
-                    }
-                }
-
-                setCounts({
-                    clients: clientCount,
-                    technicians: techCount,
-                    interventions: interventionCount,
-                    scheduled: scheduledCount,
-                    revenue: monthlyRevenue,
-                    lastMonthRevenue: lastMonthRevenue,
-                    rollingRevenue: rollingRevenue,
-                    annualRevenue: annualRevenue,
-                    devis: devisCount,
-                    devisPendingAmount: devisPendingAmt,
-                    invoicesCount: invCount,
-                    invoicesPendingAmount: invPendingAmt
-                });
-
-                // RESTORE: Fetch 3 dernières interventions
-                try {
-                    const { data: interventions } = await supabase
-                        .from('interventions')
-                        .select(`
-                            id,
-                            created_at,
-                            status,
-                            technician:technicians!technician_id(full_name),
-                            pool:pools!pool_id(client:clients(first_name,last_name))
-                        `)
-                        .order('created_at', { ascending: false })
-                        .limit(3);
-                    if (interventions) setRecentInterventions(interventions);
-                } catch (e) {
-                    console.warn('Recent interventions fetch failed:', e);
-                }
-
-            } catch (error) {
-                console.error('Erreur stats:', error);
-            } finally {
-                setLoading(false);
             }
-        };
-        fetchStats();
+
+            setCounts({
+                clients: clientCount,
+                technicians: techCount,
+                interventions: interventionCount,
+                scheduled: scheduledCount,
+                revenue: monthlyRevenue,
+                lastMonthRevenue: lastMonthRevenue,
+                rollingRevenue: rollingRevenue,
+                annualRevenue: annualRevenue,
+                devis: devisCount,
+                devisPendingAmount: devisPendingAmt,
+                invoicesCount: invCount,
+                invoicesPendingAmount: invPendingAmt
+            });
+
+            // RESTORE: Fetch 3 dernières interventions
+            try {
+                const { data: interventions } = await supabase
+                    .from('interventions')
+                    .select(`
+                        id,
+                        created_at,
+                        status,
+                        technician:technicians!technician_id(full_name),
+                        pool:pools!pool_id(client:clients(first_name,last_name))
+                    `)
+                    .order('created_at', { ascending: false })
+                    .limit(3);
+                if (interventions) setRecentInterventions(interventions);
+            } catch (e) {
+                console.warn('Recent interventions fetch failed:', e);
+            }
+
+            // Fetch Réclamations en cours
+            try {
+                const [recs, rCount] = await Promise.all([
+                    getPendingReclamations(2),
+                    getPendingReclamationsCount()
+                ]);
+                setPendingReclamations(recs);
+                setPendingRecsCount(rCount);
+            } catch (e) {
+                console.warn('Reclamations fetch failed:', e);
+            }
+
+        } catch (error) {
+            console.error('Erreur stats:', error);
+        } finally {
+            setLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        fetchStats();
+    }, [fetchStats]);
 
     if (loading) {
         return (
@@ -318,33 +338,7 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
-                <div onClick={() => navigate('/planning')} className="bento-card-luxe bento-col-4 group cursor-pointer">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-[0.2em]">Planning</h3>
-                        <div className="flex gap-1">
-                            <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-white text-[10px]">
-                                &lt;
-                            </div>
-                            <div className="w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-white text-[10px]">
-                                &gt;
-                            </div>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-7 gap-1 text-center">
-                        {['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'].map(d => (
-                            <span key={d} className="text-[9px] font-black text-slate-600 uppercase mb-2">{d}</span>
-                        ))}
-                        {Array.from({ length: 14 }).map((_, i) => (
-                            <div key={i} className={`h-8 flex items-center justify-center rounded-lg text-xs font-bold ${i === 13 ? 'bg-primary text-white' : 'text-slate-400'}`}>
-                                {i + 1}
-                            </div>
-                        ))}
-                    </div>
-                    <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/5">
-                        <p className="text-slate-900 dark:text-white text-2xl font-black">{counts.scheduled} PRÉVUS</p>
-                        <p className="text-slate-700 dark:text-slate-400 text-xs font-black uppercase tracking-widest mt-1">{counts.interventions} TOTAL</p>
-                    </div>
-                </div>
+                <PlanningBentoCard counts={counts} />
 
                 {/* RANGEE COMMERCIALE & FACTURATION (DEVIS & FACTURES) */}
                 <div onClick={() => navigate('/devis')} className="bento-card-luxe bento-col-6 group cursor-pointer hover:border-amber-500/50 transition-all">
@@ -407,64 +401,73 @@ const Dashboard: React.FC = () => {
                     </div>
                 </div>
 
+                {/* RANGEE RECLAMATIONS & SAV */}
+                <ReclamationsBentoCard 
+                    pendingCount={pendingRecsCount}
+                    pendingReclamations={pendingReclamations}
+                    onOpenModal={() => setIsReclamationsModalOpen(true)}
+                />
+
                 {/* RANGEE 2 : STATS & PROJECTS */}
                 <div onClick={() => navigate('/revenue')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-14 h-14 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
-                            <Wallet size={28} />
+                    <div className="flex items-center gap-3.5 mb-5">
+                        <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+                            <Wallet size={24} />
                         </div>
-                        <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">CA Mensuel</h3>
+                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">CA Mensuel</h3>
                     </div>
-                    <p className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest mb-1">Revenus annuels</p>
-                    <p className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter mb-1">{formatRevenue(counts.annualRevenue)} DT</p>
-                    <p className="text-slate-700 dark:text-slate-400 text-[10px] font-bold mt-2">Comparison précédentes</p>
+                    <div className="flex flex-col gap-1 min-w-0 mt-auto">
+                        <p className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest truncate">Revenus annuels</p>
+                        <p className="text-2xl 2xl:text-3xl font-black text-slate-900 dark:text-white tracking-tight truncate leading-none">{formatRevenue(counts.annualRevenue)} DT</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold mt-1 truncate">Comparaison précédente</p>
+                    </div>
                 </div>
 
                 <div onClick={() => navigate('/clients')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                            <Users size={28} />
+                    <div className="flex items-center gap-3.5 mb-5">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
+                            <Users size={24} />
                         </div>
-                        <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Fiches Clients</h3>
+                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Fiches Clients</h3>
                     </div>
-                    <div className="avatar-stack mb-4">
+                    <div className="avatar-stack mb-3">
                         <div className="avatar-stack-item bg-[#334155] ring-2 ring-white dark:ring-[#020617]">JD</div>
                         <div className="avatar-stack-item bg-[#475569] ring-2 ring-white dark:ring-[#020617]">MK</div>
                         <div className="avatar-stack-item bg-[#1e293b] ring-2 ring-white dark:ring-[#020617]">AL</div>
                         <div className="avatar-stack-item bg-[#111827] ring-2 ring-white dark:ring-[#020617]">RB</div>
                         <div className="avatar-stack-item bg-slate-900 ring-2 ring-white dark:ring-[#020617] text-blue-400">+{counts.clients > 4 ? counts.clients - 4 : 2}</div>
                     </div>
-                    <p className="text-sm font-bold text-slate-700 dark:text-slate-400 leading-tight">Mohamed Name, Conne, Wahran...</p>
+                    <p className="text-xs font-bold text-slate-600 dark:text-slate-400 leading-tight truncate">Mohamed Name, Conne, Wahran...</p>
                 </div>
 
                 <div onClick={() => navigate('/payments')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                            <Wallet size={28} />
+                    <div className="flex items-center gap-3.5 mb-5">
+                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                            <Wallet size={24} />
                         </div>
-                        <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Paiements</h3>
+                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Paiements</h3>
                     </div>
-                    <div className="flex items-center gap-5">
-                        <div className="w-20 h-20 rounded-full border-[8px] border-emerald-500/20 border-t-emerald-500 rotate-45" />
-                        <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                                <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                                <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest leading-none">Prm... 45K DT</span>
+                    <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-16 h-16 rounded-full border-[6px] border-emerald-500/20 border-t-emerald-500 rotate-45 shrink-0" />
+                        <div className="space-y-1 min-w-0 flex-1">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                                <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider leading-none truncate">Prm... 45K DT</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                                <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest leading-none">Pro... 25K DT</span>
+                            <div className="flex items-center gap-2 min-w-0">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                                <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider leading-none truncate">Pro... 25K DT</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div onClick={() => navigate('/chantiers')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-14 h-14 rounded-2xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
-                            <FileText size={28} />
+                    <div className="flex items-center gap-3.5 mb-5">
+                        <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center shrink-0">
+                            <FileText size={24} />
                         </div>
-                        <h3 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Chantiers</h3>
+                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Chantiers</h3>
                     </div>
                     <div className="space-y-3">
                         <div className="flex flex-col gap-1">
@@ -480,80 +483,78 @@ const Dashboard: React.FC = () => {
 
                 {/* RANGEE 3 : QR, TECH & MAP */}
                 <div onClick={() => setIsQrModalOpen(true)} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-14 h-14 rounded-2xl bg-slate-500/10 text-slate-600 dark:text-white flex items-center justify-center">
-                            <QrCode size={28} />
+                    <div className="flex items-center gap-3.5 mb-4">
+                        <div className="w-12 h-12 rounded-2xl bg-slate-500/10 text-slate-600 dark:text-white flex items-center justify-center shrink-0">
+                            <QrCode size={24} />
                         </div>
-                        <h3 className="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Espace Client</h3>
+                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Espace Client</h3>
                     </div>
                     <div className="flex-1 flex items-center justify-center py-2">
                         <div className="p-3 bg-white dark:bg-white/90 rounded-2xl shadow-lg group-hover:scale-105 transition-transform">
-                            <QRCodeSVG value={`${window.location.origin}/mon-espace`} size={100} fgColor="#0F172A" />
+                            <QRCodeSVG value={`${window.location.origin}/mon-espace`} size={90} fgColor="#0F172A" />
                         </div>
                     </div>
                 </div>
 
                 {profile?.role === 'admin' && (
                     <div onClick={() => navigate('/admin-finance')} className="bento-card-luxe bento-col-3 group cursor-pointer !bg-slate-900 border-none">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-14 h-14 rounded-2xl bg-orange-500/20 text-orange-500 flex items-center justify-center ring-1 ring-orange-500/30">
-                                <Wallet size={28} />
+                        <div className="flex items-center justify-between gap-3 mb-5">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-12 h-12 rounded-2xl bg-orange-500/20 text-orange-500 flex items-center justify-center ring-1 ring-orange-500/30 shrink-0">
+                                    <Wallet size={24} />
+                                </div>
+                                <h3 className="text-sm 2xl:text-base font-black text-white uppercase tracking-wider leading-tight truncate">Gestion Caisse</h3>
                             </div>
-                            <h3 className="text-lg font-black text-white uppercase tracking-widest leading-none">Gestion Caisse</h3>
+                            <span className="bg-orange-500/90 px-2 py-0.5 rounded text-xs font-black text-white shrink-0 tracking-wider">ADMIN</span>
                         </div>
-                        <div className="flex flex-col gap-1">
-                            <p className="text-sm font-black text-slate-400 uppercase tracking-widest mb-1">Actions Requises</p>
-                            <div className="flex items-end gap-3">
-                                <p className="text-4xl font-black text-white tracking-tighter leading-none">FINANCES</p>
-                                <div className="mb-1 bg-orange-500 px-2 py-0.5 rounded text-[10px] font-black text-white animate-pulse">ADMIN</div>
-                            </div>
+                        <div className="flex flex-col gap-1 min-w-0 mt-auto">
+                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest truncate">Actions Requises</p>
+                            <p className="text-2xl 2xl:text-3xl font-black text-white tracking-tight truncate leading-none">FINANCES</p>
                         </div>
                     </div>
                 )}
 
                 {profile?.role === 'admin' && (
                     <div onClick={() => navigate('/settings')} className="bento-card-luxe bento-col-3 group cursor-pointer !bg-blue-900 border-none">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center ring-1 ring-blue-500/30">
-                                <Settings size={28} />
+                        <div className="flex items-center gap-3.5 mb-5">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center ring-1 ring-blue-500/30 shrink-0">
+                                <Settings size={24} />
                             </div>
-                            <h3 className="text-lg font-black text-white uppercase tracking-widest leading-none">Configuration</h3>
+                            <h3 className="text-sm 2xl:text-base font-black text-white uppercase tracking-wider leading-tight truncate">Configuration</h3>
                         </div>
-                        <div className="flex flex-col gap-1">
-                            <p className="text-sm font-black text-blue-300/60 uppercase tracking-widest mb-1">Système</p>
-                            <div className="flex items-end gap-3">
-                                <p className="text-4xl font-black text-white tracking-tighter leading-none">PARAMÈTRES</p>
-                            </div>
+                        <div className="flex flex-col gap-1 min-w-0 mt-auto">
+                            <p className="text-xs font-black text-blue-300/70 uppercase tracking-widest truncate">Système</p>
+                            <p className="text-2xl 2xl:text-3xl font-black text-white tracking-tight truncate leading-none">PARAMÈTRES</p>
                         </div>
                     </div>
                 )}
 
                 <div onClick={() => navigate('/technician-portal')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
-                            <Activity size={28} />
+                    <div className="flex items-center gap-3.5 mb-4">
+                        <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+                            <Activity size={24} />
                         </div>
-                        <h3 className="text-lg font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Ma Tournée</h3>
+                        <h3 className="text-sm 2xl:text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Ma Tournée</h3>
                     </div>
-                    <div className="flex justify-between items-end mb-2">
-                        <p className="text-base font-bold text-slate-900 dark:text-white">{counts.scheduled} en cours</p>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">/ {counts.scheduled + 5} total</span>
+                    <div className="flex justify-between items-end mb-2 min-w-0">
+                        <p className="text-sm font-black text-slate-900 dark:text-white truncate">{counts.scheduled} en cours</p>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">/ {counts.scheduled + 5} total</span>
                     </div>
-                    <div className="w-full h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mb-4">
+                    <div className="w-full h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden mb-3">
                         <div className="w-1/3 h-full bg-rose-500" />
                     </div>
-                    <div className="space-y-2">
-                        <p className="text-xs font-bold text-slate-600 dark:text-slate-300">Project Name A</p>
-                        <p className="text-xs font-bold text-slate-600 dark:text-slate-300">Project Name B</p>
+                    <div className="space-y-1.5 min-w-0">
+                        <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">Project Name A</p>
+                        <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">Project Name B</p>
                     </div>
                 </div>
 
                 <div onClick={() => navigate('/technicians')} className="bento-card-luxe bento-col-3 group cursor-pointer">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
                             <Users size={24} />
                         </div>
-                        <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Équipe</h3>
+                        <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Équipe</h3>
                     </div>
                     <div className="flex-1 bg-slate-100 dark:bg-slate-900/50 rounded-2xl p-2 relative overflow-hidden flex items-center justify-center">
                         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px]" />
@@ -567,10 +568,10 @@ const Dashboard: React.FC = () => {
 
                 <div onClick={() => navigate('/partners')} className="bento-card-luxe bento-col-3 group cursor-pointer">
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="w-12 h-12 rounded-xl bg-slate-500/10 text-slate-500 flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-xl bg-slate-500/10 text-slate-500 flex items-center justify-center shrink-0">
                             <Briefcase size={24} />
                         </div>
-                        <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest leading-none">Partenaires</h3>
+                        <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Partenaires</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                         {Array.from({ length: 4 }).map((_, i) => (
@@ -585,7 +586,7 @@ const Dashboard: React.FC = () => {
             <div className="mt-10">
                 <div className="flex justify-between items-center mb-4 px-1">
                     <h3 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Flux d'activité</h3>
-                    <div className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800/50 rounded text-[11px] font-black text-slate-500 uppercase tracking-widest">LIVE</div>
+                    <div className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800/50 rounded text-xs font-black text-slate-500 uppercase tracking-widest">LIVE</div>
                 </div>
                 <div className="flex flex-col gap-3">
                     {recentInterventions.length === 0 ? (
@@ -701,6 +702,12 @@ const Dashboard: React.FC = () => {
                     </div>
                 </ModalLayout>
             )}
+
+            <AdminReclamationModal 
+                isOpen={isReclamationsModalOpen}
+                onClose={() => setIsReclamationsModalOpen(false)}
+                onUpdated={fetchStats}
+            />
             </div>
         </PageLayout>
     );

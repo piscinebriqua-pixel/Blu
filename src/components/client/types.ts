@@ -75,6 +75,7 @@ export interface Client {
   pool_builder_id?: string;
   site_manager_id?: string;
   billing_partner_id?: string;
+  matricule_fiscal?: string | null;
 }
 
 export interface ClientPartner {

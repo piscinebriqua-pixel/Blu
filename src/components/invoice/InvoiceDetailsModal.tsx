@@ -7,6 +7,7 @@ import {
   Share2, 
   Trash2, 
   CheckCircle2,
+  Hash,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -33,8 +34,11 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
     const dateStr = new Date(invoice.invoice_date).toLocaleDateString('fr-FR');
     let msg = `*FACTURE BCCP BLU N° ${invoice.number}*\n`;
     msg += `📅 Date : ${dateStr}\n`;
-    msg += `👤 Client : ${invoice.client.first_name} ${invoice.client.last_name}\n\n`;
-    msg += `*Détails des prestations :*\n`;
+    msg += `👤 Client : ${invoice.client.first_name} ${invoice.client.last_name}\n`;
+    if (invoice.client.matricule_fiscal) {
+      msg += `🏢 M.F. Client : ${invoice.client.matricule_fiscal}\n`;
+    }
+    msg += `\n*Détails des prestations :*\n`;
 
     (invoice.items || []).forEach((it) => {
       msg += `• ${it.description} : ${Number(it.total_price).toFixed(3)} DT\n`;
@@ -134,6 +138,49 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
               >
                 <Trash2 size={18} />
               </button>
+            </div>
+          </div>
+
+          {/* EN-TÊTE CLIENT & INFORMATIONS FACTURE (Écran & Impression) */}
+          <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start gap-4">
+            <div className="space-y-1">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Facturé à (Client)
+              </span>
+              <h4 className="text-base font-black text-slate-900 dark:text-white uppercase leading-tight">
+                {invoice.client?.first_name} {invoice.client?.last_name}
+              </h4>
+              {invoice.client?.matricule_fiscal && (
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/50 text-xs font-black tracking-wide">
+                  <Hash size={13} />
+                  <span>M.F. : {invoice.client.matricule_fiscal}</span>
+                </div>
+              )}
+              {invoice.client?.phone && (
+                <p className="text-xs font-bold text-slate-500">Tél : {invoice.client.phone}</p>
+              )}
+              {(invoice.client?.address || invoice.client?.city) && (
+                <p className="text-xs font-medium text-slate-500">
+                  {[invoice.client.address, invoice.client.city].filter(Boolean).join(', ')}
+                </p>
+              )}
+            </div>
+
+            <div className="sm:text-right space-y-1 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-700">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Référence Document
+              </span>
+              <p className="text-sm font-black text-slate-800 dark:text-white">
+                Facture N° {invoice.number}
+              </p>
+              <p className="text-xs font-bold text-slate-500">
+                Date : {new Date(invoice.invoice_date).toLocaleDateString('fr-FR')}
+              </p>
+              {invoice.due_date && (
+                <p className="text-xs font-medium text-slate-500">
+                  Échéance : {new Date(invoice.due_date).toLocaleDateString('fr-FR')}
+                </p>
+              )}
             </div>
           </div>
 

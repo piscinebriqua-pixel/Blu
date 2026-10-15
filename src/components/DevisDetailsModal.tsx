@@ -87,6 +87,11 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
             <h3 className="text-base print:text-sm font-bold text-slate-500 dark:text-slate-400 capitalize mt-1 print:mt-0">
               {devis.client?.first_name} {devis.client?.last_name}
             </h3>
+            {devis.client?.matricule_fiscal && (
+              <span className="mt-1 px-3 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/40 text-xs font-black uppercase tracking-wider print:hidden">
+                MF Client : {devis.client.matricule_fiscal}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-3 text-4xl print:text-2xl font-black text-slate-900 dark:text-white tracking-tighter mt-4 print:mt-2">
@@ -132,10 +137,19 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
                     <div className="text-[12px] font-black uppercase text-slate-900 leading-none">Votre Prestataire</div>
                     <div className="text-[10px] font-bold text-slate-600">Tel: {devis.company_phone}</div>
                     <div className="text-[10px] font-bold text-slate-600">Email: {devis.company_email}</div>
+                    <div className="text-[10px] font-bold text-slate-600">{devis.company_address}</div>
+                    {devis.company_tax_id && (
+                      <div className="text-[10px] font-black uppercase text-slate-700">MF: {devis.company_tax_id}</div>
+                    )}
                   </div>
                   <div className="text-right space-y-0.5">
-                    <div className="text-[10px] font-bold text-slate-600">{devis.company_address}</div>
-                    <div className="text-[10px] font-black uppercase text-slate-400">MF: {devis.company_tax_id}</div>
+                    <div className="text-[12px] font-black uppercase text-slate-900 leading-none">Client</div>
+                    <div className="text-[11px] font-bold text-slate-800">{devis.client?.first_name} {devis.client?.last_name}</div>
+                    {devis.client?.matricule_fiscal && (
+                      <div className="text-[10px] font-black text-slate-900 uppercase">MF Client : {devis.client.matricule_fiscal}</div>
+                    )}
+                    {devis.client?.address && <div className="text-[10px] font-medium text-slate-600">{devis.client.address}</div>}
+                    {devis.client?.city && <div className="text-[10px] font-medium text-slate-600">{devis.client.city}</div>}
                   </div>
                 </div>
               </div>
@@ -172,9 +186,11 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
             </span>
           </div>
           <div className="p-4 print:p-2 bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg border border-slate-100 dark:border-white/5 flex flex-col">
-            <span className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 print:mb-0">Ville</span>
-            <span className="text-[13px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
-              {devis.client?.city || 'N/A'}
+            <span className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 print:mb-0">
+              {devis.client?.matricule_fiscal ? 'MF Client' : 'Ville'}
+            </span>
+            <span className="text-[13px] print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
+              {devis.client?.matricule_fiscal ? devis.client.matricule_fiscal : (devis.client?.city || 'N/A')}
             </span>
           </div>
         </div>

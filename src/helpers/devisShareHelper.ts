@@ -19,7 +19,11 @@ export function shareDevisViaWhatsApp(devis: any, items: ShareableDevisItem[]) {
   const date = new Date(devis.created_at).toLocaleDateString('fr-FR');
   let message = `*DEVIS ${devis.number}*\n`;
   message += `Titre: ${devis.title}\n`;
-  message += `📅 Date: ${date}\n\n`;
+  message += `📅 Date: ${date}\n`;
+  if (devis.client?.matricule_fiscal) {
+    message += `🏢 M.F. Client : ${devis.client.matricule_fiscal}\n`;
+  }
+  message += `\n`;
 
   if (items.length > 0) {
     message += `*Détails des prestations :*\n`;

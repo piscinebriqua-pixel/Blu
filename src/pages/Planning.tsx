@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
     ChevronLeft,
@@ -6,13 +7,15 @@ import {
     Calendar as CalendarIcon,
     Plus,
     User,
+    Users,
     List,
     Clock,
     LayoutGrid,
     RotateCcw,
     Edit2,
     Trash2,
-    Layers
+    Layers,
+    Sparkles
 } from 'lucide-react';
 import NewIntervention from '../components/NewIntervention';
 import InterventionDetailsModal from '../components/InterventionDetailsModal';
@@ -20,6 +23,8 @@ import ConfirmModal from '../components/ConfirmModal';
 import { toast } from 'react-hot-toast';
 import PageLayout from '../components/PageLayout';
 import Combobox from '../components/ui/Combobox';
+import { generateRecurringInterventionsBatch, type BatchGenerationOptions } from '../lib/recurrenceService';
+import { GenerateRecurrencesModal } from '../components/planning/GenerateRecurrencesModal';
 
 interface Intervention {
     id: string;
@@ -42,6 +47,7 @@ interface Intervention {
 }
 
 const Planning: React.FC = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [viewMode, setViewMode] = useState<'month' | 'week' | 'day' | 'agenda' | 'all'>('month');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [interventions, setInterventions] = useState<Intervention[]>([]);
@@ -56,6 +62,9 @@ const Planning: React.FC = () => {
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [technicians, setTechnicians] = useState<any[]>([]);
     const [startMode, setStartMode] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
 
     const fetchInterventions = useCallback(async () => {
         try {
@@ -68,6 +77,8 @@ const Planning: React.FC = () => {
                 .select('role, technician_id')
                 .eq('id', session.user.id)
                 .single();
+
+            setIsAdmin(profile?.role === 'admin');
 
             let query = supabase
                 .from('interventions')
@@ -132,10 +143,54 @@ const Planning: React.FC = () => {
         }
     };
 
+    const handleGenerateRecurrences = async (options: BatchGenerationOptions) => {
+        try {
+            setIsGenerating(true);
+            const res = await generateRecurringInterventionsBatch(options);
+            if (!res.success) {
+                throw new Error(res.error || "Erreur lors de la génération");
+            }
+
+            if (res.createdCount > 0) {
+                toast.success(`${res.createdCount} visites générées (${res.alreadyExistingCount} déjà planifiées, 0 doublon)`);
+            } else {
+                toast.success(`Planning à jour : ${res.alreadyExistingCount} visites déjà planifiées (0 doublon)`);
+            }
+            setIsGenerateModalOpen(false);
+            await fetchInterventions();
+        } catch (error: any) {
+            console.error('Erreur génération récurrences:', error);
+            toast.error(error.message || "Erreur lors de la génération");
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     useEffect(() => {
         fetchInterventions();
         fetchTechnicians();
     }, [fetchInterventions, fetchTechnicians]);
+
+    // Synchronisation avec le query parameter de l'URL (?tech=...)
+    useEffect(() => {
+        const techParam = searchParams.get('tech');
+        if (techParam) {
+            setSelectedTech(techParam);
+        }
+    }, [searchParams]);
+
+    const handleTechSelect = (techId: string) => {
+        setSelectedTech(techId);
+        setSearchParams(prev => {
+            const next = new URLSearchParams(prev);
+            if (techId === 'all') {
+                next.delete('tech');
+            } else {
+                next.set('tech', techId);
+            }
+            return next;
+        }, { replace: true });
+    };
 
     const filteredInterventions = interventions.filter(i => {
         const matchesTech = selectedTech === 'all' ||
@@ -586,6 +641,21 @@ const Planning: React.FC = () => {
 
                 {/* LINE 2 (Mobile) / Right (Desktop): View Switcher & Filters */}
                 <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-auto">
+                    {/* Admin Action: Générer Récurrences */}
+                    {isAdmin && (
+                        <button
+                            type="button"
+                            onClick={() => setIsGenerateModalOpen(true)}
+                            disabled={isGenerating}
+                            title="Générer les visites d'entretien récurrentes pour les 4 prochaines semaines"
+                            className="flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl font-black text-xs uppercase tracking-wider shadow-md hover:shadow-lg active:scale-95 transition-all disabled:opacity-50 shrink-0"
+                        >
+                            <Sparkles size={16} className="text-blue-200" />
+                            <span className="hidden sm:inline">Générer Récurrences</span>
+                            <span className="sm:hidden">Récurrences</span>
+                        </button>
+                    )}
+
                     {/* View Switcher Buttons */}
                     <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-full border border-slate-200/50 dark:border-white/5 backdrop-blur-xl shadow-sm">
                         <button
@@ -633,8 +703,8 @@ const Planning: React.FC = () => {
                                 ...technicians.map(t => ({ label: t.full_name, value: t.id }))
                             ]}
                             value={selectedTech}
-                            onChange={setSelectedTech}
-                            className="!h-10 !py-0 !text-[11px]"
+                            onChange={handleTechSelect}
+                            className="!h-10 !py-0 !text-xs font-bold"
                             containerClassName="min-w-[180px]"
                         />
                         <Combobox
@@ -646,11 +716,60 @@ const Planning: React.FC = () => {
                             ]}
                             value={selectedStatus}
                             onChange={setSelectedStatus}
-                            className="!h-10 !py-0 !text-[11px]"
+                            className="!h-10 !py-0 !text-xs font-bold"
                             containerClassName="min-w-[150px]"
                         />
                     </div>
                 </div>
+            </div>
+
+            {/* Quick-Filter Pills pour Techniciens (1-Clic sur Mobile et Desktop) */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
+                <button
+                    type="button"
+                    onClick={() => handleTechSelect('all')}
+                    className={`flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-xl font-black text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 border cursor-pointer ${
+                        selectedTech === 'all'
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'
+                    }`}
+                >
+                    <Users size={16} />
+                    <span>Tous les techniciens</span>
+                    <span className={`px-1.5 py-0.5 rounded-full text-xs font-black ${
+                        selectedTech === 'all' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                    }`}>
+                        {interventions.length}
+                    </span>
+                </button>
+                {technicians.map(t => {
+                    const techInterventionsCount = interventions.filter(i => i.technician?.full_name === t.full_name).length;
+                    const isSelected = selectedTech === t.id;
+                    return (
+                        <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => handleTechSelect(t.id)}
+                            className={`flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-xl font-black text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 border cursor-pointer ${
+                                isSelected
+                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
+                                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'
+                            }`}
+                        >
+                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black ${
+                                isSelected ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                            }`}>
+                                {t.full_name.charAt(0).toUpperCase()}
+                            </div>
+                            <span>{t.full_name}</span>
+                            <span className={`px-1.5 py-0.5 rounded-full text-xs font-black ${
+                                isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                            }`}>
+                                {techInterventionsCount}
+                            </span>
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Mobile Filters */}
@@ -660,7 +779,7 @@ const Planning: React.FC = () => {
                     <select
                         title="Filtrer par technicien (Mobile)"
                         value={selectedTech}
-                        onChange={(e) => setSelectedTech(e.target.value)}
+                        onChange={(e) => handleTechSelect(e.target.value)}
                         className="w-full min-h-[44px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-base font-bold text-slate-800 dark:text-white shadow-sm"
                     >
                         <option value="all">Tous Techniciens</option>
@@ -758,6 +877,13 @@ const Planning: React.FC = () => {
                 onClose={() => setInterventionToDelete(null)}
                 loading={isDeleting}
                 variant="danger"
+            />
+
+            <GenerateRecurrencesModal
+                isOpen={isGenerateModalOpen}
+                onClose={() => setIsGenerateModalOpen(false)}
+                onConfirm={handleGenerateRecurrences}
+                loading={isGenerating}
             />
 
             {(isNewModalOpen || editingInterventionId) && (
