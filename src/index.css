@@ -719,6 +719,10 @@ a,
 
 /* --- PRINT STYLES --- */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm;
+  }
 
   /* Enlever les limitations de hauteur et d'overflow pour permettre l'impression de toutes les pages */
   html,
@@ -733,6 +737,11 @@ a,
 
   /* Si une modale est ouverte, cacher le reste de l'application */
   body:has(.modal-overlay) #root {
+    display: none !important;
+  }
+
+  /* Si une modale d'impression officielle est ouverte, MASQUER impérativement toutes les autres modales */
+  body:has(.print-clean-modal) .modal-overlay:not(:has(.print-clean-modal)) {
     display: none !important;
   }
 
@@ -774,8 +783,17 @@ a,
   .modal-footer,
   button[title],
   .btn-flow,
-  .fab-adaptive {
+  .fab-adaptive,
+  .print-hidden-element,
+  .print-clean-modal .modal-header,
+  .print-clean-modal .drawer-indicator {
     display: none !important;
+  }
+
+  /* Préservation stricte de la mise en page d'impression */
+  .break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   /* Forcer les couleurs des headers d'articles */

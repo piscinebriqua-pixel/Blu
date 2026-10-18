@@ -1,18 +1,20 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PageLayout from '../components/PageLayout';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
-import { Save, Phone, Mail, MapPin, Hash, Loader2 } from 'lucide-react';
+import { Save, Phone, Mail, MapPin, Hash, Loader2, Building2, Landmark } from 'lucide-react';
 import Button from '../components/ui/Button';
 
 const CompanySettings: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [settings, setSettings] = useState({
+        company_name: '',
         phone: '',
         email: '',
         address: '',
         tax_id: '',
+        bank_rib: '',
         default_footer: ''
     });
 
@@ -82,6 +84,20 @@ const CompanySettings: React.FC = () => {
                 <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-sm border border-slate-100 dark:border-white/5 space-y-6">
                     <div className="space-y-4">
                         <div className="flex flex-col gap-2">
+                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Raison Sociale / Nom Commercial</label>
+                            <div className="relative">
+                                <Building2 className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                                <input
+                                    type="text"
+                                    value={settings.company_name || ''}
+                                    onChange={(e) => setSettings({ ...settings, company_name: e.target.value })}
+                                    className="w-full h-16 pl-14 pr-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-primary transition-all text-base"
+                                    placeholder="Ex: BLU POOL MANAGEMENT"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Numéro de Téléphone</label>
                             <div className="relative">
                                 <Phone className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
@@ -89,7 +105,7 @@ const CompanySettings: React.FC = () => {
                                     type="text"
                                     value={settings.phone}
                                     onChange={(e) => setSettings({ ...settings, phone: e.target.value })}
-                                    className="w-full h-16 pl-14 pr-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-primary transition-all"
+                                    className="w-full h-16 pl-14 pr-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-primary transition-all text-base"
                                     placeholder="+216 -- --- ---"
                                 />
                             </div>
@@ -130,8 +146,22 @@ const CompanySettings: React.FC = () => {
                                     type="text"
                                     value={settings.tax_id}
                                     onChange={(e) => setSettings({ ...settings, tax_id: e.target.value })}
-                                    className="w-full h-16 pl-14 pr-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-primary transition-all"
+                                    className="w-full h-16 pl-14 pr-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-primary transition-all text-base"
                                     placeholder="MF: 0000000/A/B/C/000"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Coordonnées Bancaires & RIB (pour virement)</label>
+                            <div className="relative">
+                                <Landmark className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                                <input
+                                    type="text"
+                                    value={settings.bank_rib || ''}
+                                    onChange={(e) => setSettings({ ...settings, bank_rib: e.target.value })}
+                                    className="w-full h-16 pl-14 pr-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-primary transition-all text-base font-mono"
+                                    placeholder="Ex: BIAT - RIB : 08 012 0001234567890 12"
                                 />
                             </div>
                         </div>

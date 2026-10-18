@@ -1,12 +1,14 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import ModalLayout from '../ModalLayout';
 import ConfirmModal from '../ConfirmModal';
 import { invoiceService, type InvoiceWithItems } from '../../services/invoiceService';
+import { DocumentPrintModal } from '../print/DocumentPrintModal';
+import { getInvoicePrintData } from '../print/helpers';
 import { 
   Printer, 
   Share2, 
   Trash2, 
-  CheckCircle2,
+  CheckCircle2, 
   Hash,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -24,6 +26,7 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
 }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   const handleWhatsAppShare = () => {
     if (!invoice.client?.phone) {
@@ -54,7 +57,7 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
   };
 
   const handlePrint = () => {
-    window.print();
+    setShowPrintModal(true);
   };
 
   const handleStatusChange = async (newStatus: 'issued' | 'paid' | 'cancelled') => {
@@ -84,7 +87,7 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
       <ModalLayout
         title={`Facture ${invoice.number}`}
         onClose={onClose}
-        className="max-w-2xl !min-h-0 print:m-0 print:p-0 print:max-w-none print:shadow-none"
+        className={`max-w-2xl !min-h-0 print:m-0 print:p-0 print:max-w-none print:shadow-none ${showPrintModal ? 'print:!hidden' : ''}`}
       >
         <div className="space-y-6 pb-2 print:space-y-4">
           {/* En-tête Statut & Actions Rapides */}
@@ -263,6 +266,15 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
         onConfirm={handleDelete}
         onClose={() => setShowDeleteConfirm(false)}
       />
+
+      {/* Modal d'impression et export PDF officiel A4 */}
+      {showPrintModal && (
+        <DocumentPrintModal
+          data={getInvoicePrintData(invoice)}
+          onClose={() => setShowPrintModal(false)}
+          onWhatsAppShare={handleWhatsAppShare}
+        />
+      )}
     </>
   );
 };

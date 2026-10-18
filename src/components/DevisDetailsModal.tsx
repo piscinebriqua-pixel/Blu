@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ModalLayout from './ModalLayout';
 import { 
   MessageCircle, 
@@ -8,7 +8,8 @@ import {
   CheckCircle2, 
   XCircle, 
   Download, 
-  Receipt 
+  Receipt,
+  Printer
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -16,6 +17,8 @@ import { shareDevisViaWhatsApp, type ShareableDevisItem } from '../helpers/devis
 import { DevisItemsList } from './devis/DevisItemsList';
 import { DevisAdditionalInfo } from './devis/DevisAdditionalInfo';
 import { CreateInvoiceModal } from './invoice/CreateInvoiceModal';
+import { DocumentPrintModal } from './print/DocumentPrintModal';
+import { getDevisPrintData } from './print/helpers';
 
 interface DevisDetailsModalProps {
   devis: any;
@@ -37,6 +40,7 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
   const [items, setItems] = useState<ShareableDevisItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -73,7 +77,11 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
   };
 
   return (
-    <ModalLayout onClose={onClose} title="Détails du Devis" className="max-w-4xl">
+    <ModalLayout
+      onClose={onClose}
+      title="Détails du Devis"
+      className={`max-w-4xl ${showPrintModal ? 'print:!hidden' : ''}`}
+    >
       <div className="flex flex-col gap-6 print:gap-4 pb-4 print:pb-0">
         {/* Header Section */}
         <div className="flex flex-col items-center gap-2 print:gap-1 print:mt-4">
@@ -127,41 +135,12 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
           </div>
         </div>
 
-        {/* Company & Header Content */}
-        {(devis.header_content || devis.company_phone) && (
-          <div className="flex flex-col gap-4 print:gap-2">
-            {(devis.company_phone || devis.company_address) && (
-              <div className="hidden print:flex flex-col border-b border-slate-100 pb-4 mb-2">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-0.5">
-                    <div className="text-xs font-black uppercase text-slate-900 leading-none">Votre Prestataire</div>
-                    <div className="text-xs font-bold text-slate-600">Tel: {devis.company_phone}</div>
-                    <div className="text-xs font-bold text-slate-600">Email: {devis.company_email}</div>
-                    <div className="text-xs font-bold text-slate-600">{devis.company_address}</div>
-                    {devis.company_tax_id && (
-                      <div className="text-xs font-black uppercase text-slate-700">MF: {devis.company_tax_id}</div>
-                    )}
-                  </div>
-                  <div className="text-right space-y-0.5">
-                    <div className="text-xs font-black uppercase text-slate-900 leading-none">Client</div>
-                    <div className="text-xs font-bold text-slate-800">{devis.client?.first_name} {devis.client?.last_name}</div>
-                    {devis.client?.matricule_fiscal && (
-                      <div className="text-xs font-black text-slate-900 uppercase">MF Client : {devis.client.matricule_fiscal}</div>
-                    )}
-                    {devis.client?.address && <div className="text-xs font-medium text-slate-600">{devis.client.address}</div>}
-                    {devis.client?.city && <div className="text-xs font-medium text-slate-600">{devis.client.city}</div>}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {devis.header_content && (
-              <div className="p-6 print:p-2 bg-blue-50/30 dark:bg-white/5 rounded-[2rem] print:rounded-none border border-blue-50 dark:border-white/5">
-                <p className="text-sm print:text-[11px] font-bold text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed italic">
-                  {devis.header_content}
-                </p>
-              </div>
-            )}
+        {/* Message d'introduction si présent */}
+        {devis.header_content && (
+          <div className="p-6 print:p-2 bg-blue-50/30 dark:bg-white/5 rounded-[2rem] print:rounded-none border border-blue-50 dark:border-white/5">
+            <p className="text-sm print:text-[11px] font-bold text-slate-700 dark:text-slate-300 whitespace-pre-line leading-relaxed italic">
+              {devis.header_content}
+            </p>
           </div>
         )}
 
@@ -282,12 +261,12 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
 
             <button
               type="button"
-              onClick={() => window.print()}
-              title="Télécharger en PDF"
+              onClick={() => setShowPrintModal(true)}
+              title="Aperçu & Impression A4 / PDF"
               className="min-h-[44px] px-4 rounded-2xl bg-slate-800 hover:bg-slate-900 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all"
             >
-              <Download size={16} strokeWidth={2.5} />
-              <span className="hidden sm:inline">PDF</span>
+              <Printer size={16} strokeWidth={2.5} />
+              <span>Imprimer / PDF</span>
             </button>
 
             {devis.client?.phone && (
@@ -331,6 +310,17 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
               onStatusChange(devis.id, 'closed');
             }
           }}
+        />
+      )}
+
+      {/* Modal d'impression et export PDF officiel A4 */}
+      {showPrintModal && (
+        <DocumentPrintModal
+          data={getDevisPrintData(devis, items)}
+          onClose={() => setShowPrintModal(false)}
+          onWhatsAppShare={
+            devis.client?.phone ? () => shareDevisViaWhatsApp(devis, items) : undefined
+          }
         />
       )}
     </ModalLayout>
