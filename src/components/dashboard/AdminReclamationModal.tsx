@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
     AlertTriangle, 
     CheckCircle2, 
@@ -213,7 +213,7 @@ export const AdminReclamationModal: React.FC<AdminReclamationModalProps> = ({
                                                 </span>
                                             )}
 
-                                            <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-400">
+                                            <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500">
                                                 {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                                             </div>
                                         </div>
@@ -255,14 +255,14 @@ export const AdminReclamationModal: React.FC<AdminReclamationModalProps> = ({
                                                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-700">
                                                     <label className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center justify-between">
                                                         <span>Solution / Note de résolution pour le client</span>
-                                                        <span className="font-semibold text-slate-400 lowercase">(visible dans son espace)</span>
+                                                        <span className="font-semibold text-slate-500 lowercase">(visible dans son espace)</span>
                                                     </label>
                                                     <textarea
                                                         value={adminResponseText[rec.id] ?? ''}
                                                         onChange={(e) => setAdminResponseText({ ...adminResponseText, [rec.id]: e.target.value })}
                                                         placeholder="Ex: Le technicien est intervenu pour rééquilibrer le produit et vérifier le filtre..."
                                                         rows={2}
-                                                        className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 resize-none"
+                                                        className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 resize-none"
                                                     />
 
                                                     <button

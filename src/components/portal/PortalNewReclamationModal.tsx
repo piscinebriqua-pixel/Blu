@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { AlertCircle, Send, Droplets, Wrench, Calendar, Receipt, HelpCircle } from 'lucide-react';
 import ModalLayout from '../ModalLayout';
 import { createClientReclamation } from '../../services/reclamationService';
@@ -145,7 +145,7 @@ export const PortalNewReclamationModal: React.FC<PortalNewReclamationModalProps>
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
                         placeholder="Ex: Eau trouble après le passage, bruit pompe..."
-                        className="w-full min-h-[44px] px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white text-base placeholder:text-slate-400 focus:outline-none focus:border-blue-500 transition-all"
+                        className="w-full min-h-[44px] px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-bold text-slate-800 dark:text-white text-base placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-all"
                         required
                     />
                 </div>
@@ -160,7 +160,7 @@ export const PortalNewReclamationModal: React.FC<PortalNewReclamationModalProps>
                         onChange={(e) => setDescription(e.target.value)}
                         placeholder="Décrivez précisément ce que vous constatez afin que notre équipe intervienne efficacement..."
                         rows={4}
-                        className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-slate-800 dark:text-white text-base placeholder:text-slate-400 focus:outline-none focus:border-blue-500 transition-all resize-none"
+                        className="w-full p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-medium text-slate-800 dark:text-white text-base placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-all resize-none"
                         required
                     />
                 </div>

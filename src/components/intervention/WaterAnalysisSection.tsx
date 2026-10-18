@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { FlaskConical, Waves, CheckSquare, Square, FileText, X } from "lucide-react";
 import type { Devis, NewInterventionFormData } from "./types";
 
@@ -55,7 +55,7 @@ export const WaterAnalysisSection: React.FC<WaterAnalysisSectionProps> = ({
                 type="button"
                 title="Effacer la sélection"
                 onClick={() => setFormData({ ...formData, devis_id: '', is_final_devis_billing: false })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition-colors p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-red-500 transition-colors p-1"
               >
                 <X size={16} strokeWidth={3} />
               </button>
@@ -124,7 +124,7 @@ export const WaterAnalysisSection: React.FC<WaterAnalysisSectionProps> = ({
               value={formData.water_temp}
               onChange={(e) => setFormData({ ...formData, water_temp: e.target.value })}
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-black text-sm pointer-events-none">°C</span>
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 font-black text-sm pointer-events-none">°C</span>
           </div>
         </div>
       </div>

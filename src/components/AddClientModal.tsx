@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Phone, MapPin, User, Mail, Globe, FileText } from 'lucide-react';
 import ModalLayout from './ModalLayout';
@@ -130,7 +130,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess, ini
 
                 <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center w-full">
-                        <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
                             <Phone size={12} className="text-slate-500" /> Téléphones
                         </label>
                         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setIsWhatsAppEnabled(!isWhatsAppEnabled)}>
@@ -199,7 +199,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess, ini
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
                         <Globe size={12} className="text-slate-500" /> Géolocalisation
                     </label>
                     <MapPicker
@@ -214,7 +214,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess, ini
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
                         <FileText size={12} className="text-slate-500 dark:text-slate-500" /> Notes Internes
                     </label>
                     <textarea

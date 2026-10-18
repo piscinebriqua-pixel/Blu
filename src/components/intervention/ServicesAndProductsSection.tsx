@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Calculator, Waves, Plus, X, FileText } from "lucide-react";
 import type { Service, Product, DevisItemConsumption, NewInterventionFormData } from "./types";
 
@@ -55,7 +55,7 @@ export const ServicesAndProductsSection: React.FC<ServicesAndProductsSectionProp
 
           <div className="space-y-3">
             {devisConsumption.length === 0 ? (
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center py-4">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest text-center py-4">
                 Recherche des articles...
               </p>
             ) : (
@@ -84,10 +84,10 @@ export const ServicesAndProductsSection: React.FC<ServicesAndProductsSectionProp
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-black text-slate-800 dark:text-white truncate">{item.designation}</p>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">
                         PU: <span className="text-blue-500 font-black">{item.unit_price} DT</span>{' '}
                         <span className="mx-2 opacity-50">|</span>{' '}
-                        <span className={remaining > 0 ? 'text-emerald-500 font-black' : 'text-slate-400'}>
+                        <span className={remaining > 0 ? 'text-emerald-500 font-black' : 'text-slate-500'}>
                           Reste: {remaining} {item.unit}
                         </span>
                       </p>
@@ -209,7 +209,7 @@ export const ServicesAndProductsSection: React.FC<ServicesAndProductsSectionProp
                       className="w-24 bg-transparent border-none focus:ring-0 text-xl font-black text-blue-600 dark:text-blue-400 text-right p-0"
                       onFocus={(e) => e.target.select()}
                     />
-                    <span className="text-xs font-black text-slate-400 uppercase ml-2 tracking-widest">DT</span>
+                    <span className="text-xs font-black text-slate-500 uppercase ml-2 tracking-widest">DT</span>
                   </div>
 
                   <button
@@ -219,7 +219,7 @@ export const ServicesAndProductsSection: React.FC<ServicesAndProductsSectionProp
                       delete next[sId];
                       setSelectedServices(next);
                     }}
-                    className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all"
+                    className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all"
                     title="Supprimer ce service"
                   >
                     <X size={18} strokeWidth={2.5} />
@@ -229,7 +229,7 @@ export const ServicesAndProductsSection: React.FC<ServicesAndProductsSectionProp
             ))}
             {Object.keys(selectedServices).length === 0 && (
               <div className="py-8 text-center border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-[2rem]">
-                <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">
+                <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">
                   Aucun service sélectionné
                 </p>
               </div>
@@ -256,7 +256,7 @@ export const ServicesAndProductsSection: React.FC<ServicesAndProductsSectionProp
 
             <div className="flex items-center gap-2">
               <div className="flex items-center bg-slate-50 dark:bg-slate-800 px-3 py-2 rounded-2xl border border-slate-100 dark:border-slate-700 focus-within:border-violet-500 transition-colors">
-                <span className="text-xs font-black text-slate-400 uppercase mr-1.5 opacity-70">Qté</span>
+                <span className="text-xs font-black text-slate-500 uppercase mr-1.5 opacity-70">Qté</span>
                 <input
                   type="number"
                   value={item.quantity}
@@ -280,7 +280,7 @@ export const ServicesAndProductsSection: React.FC<ServicesAndProductsSectionProp
                   className="w-20 bg-transparent border-none focus:ring-0 text-xl font-black text-violet-600 dark:text-violet-400 text-right p-0"
                   onFocus={(e) => e.target.select()}
                 />
-                <span className="text-xs font-black text-slate-400 uppercase ml-1.5 opacity-70">DT</span>
+                <span className="text-xs font-black text-slate-500 uppercase ml-1.5 opacity-70">DT</span>
               </div>
 
               <button
@@ -290,7 +290,7 @@ export const ServicesAndProductsSection: React.FC<ServicesAndProductsSectionProp
                   delete next[pId];
                   setUsedProducts(next);
                 }}
-                className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all"
+                className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-all"
                 title="Supprimer ce produit"
               >
                 <X size={18} strokeWidth={2.5} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, ChevronRight, Users, ArrowUpRight } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -152,11 +152,11 @@ export const PlanningBentoCard: React.FC<PlanningBentoCardProps> = ({ counts }) 
 
                     <div className="space-y-2 max-h-[175px] overflow-y-auto pr-1 scrollbar-thin">
                         {loadingTechs ? (
-                            <div className="py-4 text-center text-xs font-semibold text-slate-400">
+                            <div className="py-4 text-center text-xs font-semibold text-slate-500">
                                 Chargement des techniciens...
                             </div>
                         ) : techWorkloads.length === 0 ? (
-                            <div className="py-3 px-3 text-center text-xs font-semibold text-slate-400 bg-slate-50 dark:bg-white/5 rounded-xl border border-dashed border-slate-200 dark:border-white/10">
+                            <div className="py-3 px-3 text-center text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-white/5 rounded-xl border border-dashed border-slate-200 dark:border-white/10">
                                 Aucun technicien actif
                             </div>
                         ) : (
@@ -180,11 +180,11 @@ export const PlanningBentoCard: React.FC<PlanningBentoCardProps> = ({ counts }) 
                                         <span className={`text-xs font-black px-2 py-0.5 rounded-lg border ${
                                             t.scheduledCount > 0
                                                 ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20'
-                                                : 'bg-slate-100 dark:bg-white/5 text-slate-400 border-slate-200/60 dark:border-white/10'
+                                                : 'bg-slate-100 dark:bg-white/5 text-slate-500 border-slate-200/60 dark:border-white/10'
                                         }`}>
                                             {t.scheduledCount} {t.scheduledCount > 1 ? 'visites' : 'visite'}
                                         </span>
-                                        <ArrowUpRight size={14} className="text-slate-400 group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors" />
+                                        <ArrowUpRight size={14} className="text-slate-500 group-hover/item:text-blue-600 dark:group-hover/item:text-blue-400 transition-colors" />
                                     </div>
                                 </button>
                             ))

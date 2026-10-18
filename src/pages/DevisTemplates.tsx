@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import {
     FileText,
@@ -86,7 +86,7 @@ const DevisTemplates: React.FC = () => {
             showBackButton={true}
             toolbar={
                 <div className="relative w-full">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                     <input
                         type="text"
                         placeholder="Rechercher un modèle..."
@@ -126,7 +126,7 @@ const DevisTemplates: React.FC = () => {
                                 <div className="flex-1 min-w-0">
                                     <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-tight text-sm truncate">{t.title}</h3>
                                     <div className="flex items-center gap-2 mt-0.5">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest">
                                             {t.total_amount.toFixed(0)} DT
                                         </span>
                                     </div>
@@ -135,7 +135,7 @@ const DevisTemplates: React.FC = () => {
                                 <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); setTemplateToDelete(t); }} 
-                                        className="p-2 text-slate-400 hover:text-red-500 transition-all rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        className="p-2 text-slate-500 hover:text-red-500 transition-all rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20"
                                     >
                                         <Trash2 size={16} />
                                     </button>

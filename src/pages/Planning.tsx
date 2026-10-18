@@ -7,7 +7,6 @@ import {
     Calendar as CalendarIcon,
     Plus,
     User,
-    Users,
     List,
     Clock,
     LayoutGrid,
@@ -25,6 +24,7 @@ import PageLayout from '../components/PageLayout';
 import Combobox from '../components/ui/Combobox';
 import { generateRecurringInterventionsBatch, type BatchGenerationOptions } from '../lib/recurrenceService';
 import { GenerateRecurrencesModal } from '../components/planning/GenerateRecurrencesModal';
+import { TechnicianSelectDropdown } from '../components/planning/TechnicianSelectDropdown';
 
 interface Intervention {
     id: string;
@@ -299,10 +299,10 @@ const Planning: React.FC = () => {
                             onClick={() => setCurrentDate(d)}
                             className={`flex-1 flex flex-col items-center py-3 rounded-2xl transition-all relative ${isSelected
                                 ? 'bg-gradient-to-br from-primary to-primary-dark text-white shadow-lg scale-105 z-10'
-                                : 'text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                                : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                                 }`}
                         >
-                            <span className={`text-[9px] font-black uppercase tracking-tighter mb-1 ${isSelected ? 'text-white/70' : 'text-slate-400'}`}>
+                            <span className={`text-xs font-black uppercase tracking-tighter mb-1 ${isSelected ? 'text-white/70' : 'text-slate-500'}`}>
                                 {d.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', '')}
                             </span>
                             <span className="text-sm font-black leading-none">{d.getDate()}</span>
@@ -332,7 +332,7 @@ const Planning: React.FC = () => {
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${i.status === 'completed'
                 ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600'
                 : i.status === 'cancelled'
-                    ? 'bg-slate-200 dark:bg-slate-800 text-slate-400'
+                    ? 'bg-slate-200 dark:bg-slate-800 text-slate-500'
                     : 'bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white'
                 }`}>
                 <User size={18} />
@@ -340,14 +340,14 @@ const Planning: React.FC = () => {
             <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start mb-0.5">
                     <h3 className={`text-base font-black uppercase tracking-tight truncate ${i.status === 'completed' ? 'text-emerald-800 dark:text-emerald-200' :
-                        i.status === 'cancelled' ? 'text-slate-400 line-through' :
+                        i.status === 'cancelled' ? 'text-slate-500 line-through' :
                             'text-slate-800 dark:text-white'
                         }`}>
                         {i.pool?.client?.first_name} {i.pool?.client?.last_name}
                     </h3>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className={`text-[12px] font-black uppercase truncate ${i.status === 'cancelled' ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <span className={`text-xs font-black uppercase truncate ${i.status === 'cancelled' ? 'text-slate-500' : 'text-slate-500'}`}>
                         {i.technician?.full_name || '...'}
                     </span>
                 </div>
@@ -387,7 +387,7 @@ const Planning: React.FC = () => {
             <div className="flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500 mt-4">
                 <div className="grid grid-cols-7 mb-4">
                     {weekDays.map(d => (
-                        <div key={d} className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">{d}</div>
+                        <div key={d} className="text-center text-xs font-black text-slate-500 uppercase tracking-widest">{d}</div>
                     ))}
                 </div>
                 <div className="grid grid-cols-7 gap-1.5 sm:gap-3">
@@ -413,7 +413,7 @@ const Planning: React.FC = () => {
                                 <div className="flex justify-between items-start w-full mb-1">
                                     <span className={`text-lg font-black ${!isCurrentMonth ? 'opacity-30' : ''}`}>{d.getDate()}</span>
                                     {dayInterventions.length > 0 && (
-                                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shadow-sm ${isToday
+                                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-black shadow-sm ${isToday
                                             ? 'bg-white text-primary ring-2 ring-primary/20'
                                             : 'bg-primary text-white border-2 border-white dark:border-slate-800'
                                             }`}>
@@ -426,7 +426,7 @@ const Planning: React.FC = () => {
                                     {dayInterventions.slice(0, 2).map(inter => (
                                         <div
                                             key={inter.id}
-                                            className={`text-[10px] font-bold truncate px-2 py-1 rounded-lg leading-none w-full shadow-sm ${isToday
+                                            className={`text-xs font-bold truncate px-2 py-1 rounded-lg leading-none w-full shadow-sm ${isToday
                                                 ? 'bg-white/30 text-white backdrop-blur-sm'
                                                 : 'bg-slate-50 dark:bg-slate-700/80 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-white/5'
                                                 }`}
@@ -435,7 +435,7 @@ const Planning: React.FC = () => {
                                         </div>
                                     ))}
                                     {dayInterventions.length > 2 && (
-                                        <div className={`text-[8px] font-bold uppercase opacity-60 ml-1 mt-0.5`}>
+                                        <div className={`text-xs font-bold uppercase opacity-60 ml-1 mt-0.5`}>
                                             + {dayInterventions.length - 2} plus
                                         </div>
                                     )}
@@ -459,7 +459,7 @@ const Planning: React.FC = () => {
                     return (
                         <div key={i} className="flex flex-col gap-3 min-h-[300px]">
                             <div onClick={() => { setCurrentDate(d); setViewMode('day'); }} className={`flex flex-col items-center p-3 rounded-2xl cursor-pointer transition-all ${isToday ? 'bg-primary text-white shadow-xl ring-4 ring-primary/10' : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100'}`}>
-                                <span className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-0.5">{d.toLocaleDateString('fr-FR', { weekday: 'short' })}</span>
+                                <span className="text-xs font-black uppercase tracking-widest opacity-70 mb-0.5">{d.toLocaleDateString('fr-FR', { weekday: 'short' })}</span>
                                 <span className="text-sm font-black">{d.getDate()}</span>
                             </div>
                             <div className="flex flex-col gap-2">
@@ -467,15 +467,15 @@ const Planning: React.FC = () => {
                                     <div
                                         key={inter.id}
                                         onClick={() => setSelectedIntervention(inter)}
-                                        className={`p-3 rounded-2xl text-[11px] font-bold border transition-all cursor-pointer shadow-sm ${inter.status === 'completed'
+                                        className={`p-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer shadow-sm ${inter.status === 'completed'
                                             ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800/30 text-emerald-700'
                                             : inter.status === 'cancelled'
-                                                ? 'bg-slate-50 dark:bg-slate-900/40 border-slate-100 dark:border-white/5 text-slate-400 opacity-60 line-through'
+                                                ? 'bg-slate-50 dark:bg-slate-900/40 border-slate-100 dark:border-white/5 text-slate-500 opacity-60 line-through'
                                                 : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-white/10 text-slate-700 dark:text-slate-200'
                                             }`}
                                     >
                                         <div className="truncate font-black mb-1">{inter.pool?.client?.last_name}</div>
-                                        <div className="opacity-70 truncate text-[9px] flex items-center gap-1">
+                                        <div className="opacity-70 truncate text-xs flex items-center gap-1">
                                             <Clock size={10} />
                                             {inter.scheduled_date && new Date(inter.scheduled_date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
                                         </div>
@@ -545,11 +545,11 @@ const Planning: React.FC = () => {
                                                 <div className="flex items-center gap-3 -ml-[17px]">
                                                     <div className={`w-3 h-3 rounded-full border-2 border-white dark:border-[#0f141e] shadow-sm z-10 ${isToday ? 'bg-primary scale-125 ring-4 ring-primary/20' : 'bg-slate-300 dark:bg-slate-700'}`} />
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`text-[11px] font-black uppercase tracking-widest ${isToday ? 'text-primary' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                        <span className={`text-xs font-black uppercase tracking-widest ${isToday ? 'text-primary' : 'text-slate-500 dark:text-slate-400'}`}>
                                                             {dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
                                                         </span>
                                                         {isToday && (
-                                                            <span className="px-2 py-0.5 bg-primary/10 text-primary text-[9px] font-black rounded-full tracking-widest">AUJOURD'HUI</span>
+                                                            <span className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-black rounded-full tracking-widest">AUJOURD'HUI</span>
                                                         )}
                                                     </div>
                                                 </div>
@@ -566,7 +566,7 @@ const Planning: React.FC = () => {
                             </div>
                         ))
                     ) : (
-                        <div className="py-20 flex flex-col items-center justify-center text-slate-400">
+                        <div className="py-20 flex flex-col items-center justify-center text-slate-500">
                             <List size={48} className="opacity-20 mb-4" />
                             <p className="font-bold uppercase tracking-widest">Aucune intervention planifiée</p>
                         </div>
@@ -587,8 +587,8 @@ const Planning: React.FC = () => {
                     ) : (
                         <div className="py-20 flex flex-col items-center justify-center bg-white/30 dark:bg-slate-800/20 rounded-[3rem] border-2 border-dashed border-slate-100 dark:border-white/5">
                             <CalendarIcon size={32} className="text-slate-200 mb-4" />
-                            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Aucune intervention</h3>
-                            <p className="text-[10px] font-bold text-slate-300 uppercase">Journée libre</p>
+                            <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest">Aucune intervention</h3>
+                            <p className="text-xs font-bold text-slate-300 uppercase">Journée libre</p>
                         </div>
                     )}
                 </div>
@@ -596,8 +596,15 @@ const Planning: React.FC = () => {
         );
     };
 
+    const getTechInterventionsCount = (techId: string) => {
+        if (techId === 'all') return interventions.length;
+        const tech = technicians.find(t => t.id === techId);
+        if (!tech) return 0;
+        return interventions.filter(i => i.technician?.full_name === tech.full_name).length;
+    };
+
     const toolbar = (
-        <div className="flex flex-col gap-3 w-full">
+        <div className="flex flex-col gap-2.5 w-full">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 w-full">
                 {/* LINE 1 (Mobile) / Left (Desktop): Date Selector */}
                 <div className="flex items-center gap-3 bg-white/70 dark:bg-slate-800/70 p-2 rounded-[24px] border border-white/40 dark:border-white/10 backdrop-blur-md shadow-lg ring-1 ring-slate-200/20 w-full md:w-auto">
@@ -630,7 +637,7 @@ const Planning: React.FC = () => {
                         </button>
                     </div>
                     <div className="flex flex-col pr-4 flex-1">
-                        <span className="text-[8px] font-black text-primary uppercase tracking-[0.25em] leading-none mb-1">
+                        <span className="text-xs font-black text-primary uppercase tracking-[0.25em] leading-none mb-1">
                             {viewMode === 'month' ? 'Mensuel' : viewMode === 'week' ? 'Hebdomadaire' : viewMode === 'all' ? 'Global' : 'Quotidien'}
                         </span>
                         <h3 className="text-[14px] font-black text-slate-900 dark:text-white uppercase tracking-tight leading-none truncate">
@@ -666,51 +673,48 @@ const Planning: React.FC = () => {
                         <button
                             title="Mensuel"
                             onClick={() => setViewMode('month')}
-                            className={`p-2.5 rounded-full transition-all ${viewMode === 'month' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                            className={`p-2.5 rounded-full transition-all ${viewMode === 'month' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-500 hover:text-slate-600'}`}
                         >
                             <CalendarIcon size={18} />
                         </button>
                         <button
                             title="Hebdo"
                             onClick={() => setViewMode('week')}
-                            className={`p-2.5 rounded-full transition-all ${viewMode === 'week' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                            className={`p-2.5 rounded-full transition-all ${viewMode === 'week' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-500 hover:text-slate-600'}`}
                         >
                             <LayoutGrid size={18} />
                         </button>
                         <button
                             title="Jour"
                             onClick={() => setViewMode('day')}
-                            className={`p-2.5 rounded-full transition-all ${viewMode === 'day' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                            className={`p-2.5 rounded-full transition-all ${viewMode === 'day' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-500 hover:text-slate-600'}`}
                         >
                             <Clock size={18} />
                         </button>
                         <button
                             title="Agenda"
                             onClick={() => setViewMode('agenda')}
-                            className={`p-2.5 rounded-full transition-all ${viewMode === 'agenda' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                            className={`p-2.5 rounded-full transition-all ${viewMode === 'agenda' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-500 hover:text-slate-600'}`}
                         >
                             <List size={18} />
                         </button>
                         <button
                             title="Tout"
                             onClick={() => setViewMode('all')}
-                            className={`p-2.5 rounded-full transition-all ${viewMode === 'all' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-400 hover:text-slate-600'}`}
+                            className={`p-2.5 rounded-full transition-all ${viewMode === 'all' ? 'bg-white dark:bg-slate-700 text-primary shadow-md' : 'text-slate-500 hover:text-slate-600'}`}
                         >
                             <Layers size={18} />
                         </button>
                     </div>
 
-                    {/* Desktop Filters (Hidden on Mobile) */}
+                    {/* Filtres Desktop : Technicien Enrichi & Statut */}
                     <div className="hidden lg:flex items-center gap-2">
-                        <Combobox
-                            options={[
-                                { label: "Tous Techniciens", value: "all" },
-                                ...technicians.map(t => ({ label: t.full_name, value: t.id }))
-                            ]}
-                            value={selectedTech}
-                            onChange={handleTechSelect}
-                            className="!h-10 !py-0 !text-xs font-bold"
-                            containerClassName="min-w-[180px]"
+                        <TechnicianSelectDropdown
+                            technicians={technicians}
+                            selectedTechId={selectedTech}
+                            onSelect={handleTechSelect}
+                            getInterventionCount={getTechInterventionsCount}
+                            className="min-w-[220px]"
                         />
                         <Combobox
                             options={[
@@ -722,91 +726,33 @@ const Planning: React.FC = () => {
                             value={selectedStatus}
                             onChange={setSelectedStatus}
                             className="!h-10 !py-0 !text-xs font-bold"
-                            containerClassName="min-w-[150px]"
+                            containerClassName="min-w-[140px]"
                         />
                     </div>
                 </div>
             </div>
 
-            {/* Quick-Filter Pills pour Techniciens (1-Clic sur Mobile et Desktop) */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
-                <button
-                    type="button"
-                    onClick={() => handleTechSelect('all')}
-                    className={`flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-xl font-black text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 border cursor-pointer ${
-                        selectedTech === 'all'
-                            ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
-                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'
-                    }`}
+            {/* Filtres Mobile Compacts : Technicien & Statut en 1 seule ligne (Zéro gaspillage d'espace vertical) */}
+            <div className="grid grid-cols-2 gap-2 lg:hidden">
+                <TechnicianSelectDropdown
+                    technicians={technicians}
+                    selectedTechId={selectedTech}
+                    onSelect={handleTechSelect}
+                    getInterventionCount={getTechInterventionsCount}
+                    className="w-full"
+                />
+                <select
+                    title="Filtrer par statut"
+                    value={selectedStatus}
+                    onChange={(e) => setSelectedStatus(e.target.value)}
+                    className="w-full min-h-[44px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2 px-3 text-xs font-bold text-slate-800 dark:text-white shadow-sm"
                 >
-                    <Users size={16} />
-                    <span>Tous les techniciens</span>
-                    <span className={`px-1.5 py-0.5 rounded-full text-xs font-black ${
-                        selectedTech === 'all' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                    }`}>
-                        {interventions.length}
-                    </span>
-                </button>
-                {technicians.map(t => {
-                    const techInterventionsCount = interventions.filter(i => i.technician?.full_name === t.full_name).length;
-                    const isSelected = selectedTech === t.id;
-                    return (
-                        <button
-                            key={t.id}
-                            type="button"
-                            onClick={() => handleTechSelect(t.id)}
-                            className={`flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-xl font-black text-xs uppercase tracking-wider transition-all whitespace-nowrap shrink-0 border cursor-pointer ${
-                                isSelected
-                                    ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20'
-                                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'
-                            }`}
-                        >
-                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black ${
-                                isSelected ? 'bg-white/20 text-white' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                            }`}>
-                                {t.full_name.charAt(0).toUpperCase()}
-                            </div>
-                            <span>{t.full_name}</span>
-                            <span className={`px-1.5 py-0.5 rounded-full text-xs font-black ${
-                                isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                            }`}>
-                                {techInterventionsCount}
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
-
-            {/* Mobile Filters */}
-            <div className="flex lg:hidden items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
-                {/* Simplified filters for mobile */}
-                <div className="flex-1">
-                    <select
-                        title="Filtrer par technicien (Mobile)"
-                        value={selectedTech}
-                        onChange={(e) => handleTechSelect(e.target.value)}
-                        className="w-full min-h-[44px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-base font-bold text-slate-800 dark:text-white shadow-sm"
-                    >
-                        <option value="all">Tous Techniciens</option>
-                        {technicians.map(t => (
-                            <option key={t.id} value={t.id}>{t.full_name}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="flex-1">
-                    <select
-                        title="Filtrer par statut (Mobile)"
-                        value={selectedStatus}
-                        onChange={(e) => setSelectedStatus(e.target.value)}
-                        className="w-full min-h-[44px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl py-2.5 px-3 text-base font-bold text-slate-800 dark:text-white shadow-sm"
-                    >
-                        <option value="all">Tous Statuts</option>
-                        <option value="scheduled">Planifié</option>
-                        <option value="completed">Terminé</option>
-                        <option value="unvisited">Non Visité</option>
-                        <option value="cancelled">Annulé</option>
-                    </select>
-                </div>
+                    <option value="all">Tous les Statuts</option>
+                    <option value="scheduled">Planifié</option>
+                    <option value="completed">Terminé</option>
+                    <option value="unvisited">Non Visité</option>
+                    <option value="cancelled">Annulé</option>
+                </select>
             </div>
         </div>
     );
@@ -827,7 +773,7 @@ const Planning: React.FC = () => {
                             <Plus size={40} className="text-primary/20" />
                         </div>
                         <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight mb-2">Aucune donnée</h2>
-                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest text-center max-w-xs">Planifiez votre première intervention pour commencer</p>
+                        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest text-center max-w-xs">Planifiez votre première intervention pour commencer</p>
                     </div>
                 ) : (
                     <>

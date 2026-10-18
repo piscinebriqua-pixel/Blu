@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import PageLayout from '../components/PageLayout';
 import { 
   invoiceService, 
@@ -104,7 +104,7 @@ export const Invoices: React.FC = () => {
             <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
               {stats.totalTtc.toFixed(2)} <span className="text-xs text-slate-500 font-bold">DT</span>
             </p>
-            <span className="text-xs font-bold text-slate-400 mt-1 block">{stats.count} facture(s) au total</span>
+            <span className="text-xs font-bold text-slate-500 mt-1 block">{stats.count} facture(s) au total</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
@@ -112,7 +112,7 @@ export const Invoices: React.FC = () => {
             <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
               {stats.paidTtc.toFixed(2)} <span className="text-xs text-slate-500 font-bold">DT</span>
             </p>
-            <span className="text-xs font-bold text-slate-400 mt-1 block">Règlements reçus</span>
+            <span className="text-xs font-bold text-slate-500 mt-1 block">Règlements reçus</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
@@ -120,7 +120,7 @@ export const Invoices: React.FC = () => {
             <p className="text-2xl font-black text-amber-500 mt-1">
               {stats.pendingTtc.toFixed(2)} <span className="text-xs text-slate-500 font-bold">DT</span>
             </p>
-            <span className="text-xs font-bold text-slate-400 mt-1 block">À recouvrer</span>
+            <span className="text-xs font-bold text-slate-500 mt-1 block">À recouvrer</span>
           </div>
 
           <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
@@ -148,7 +148,7 @@ export const Invoices: React.FC = () => {
         {/* BARRE DE RECHERCHE & FILTRES */}
         <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
             <input
               type="text"
               value={searchTerm}
@@ -231,15 +231,15 @@ export const Invoices: React.FC = () => {
                           {inv.number}
                         </span>
                         {inv.status === 'paid' ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
                             <CheckCircle2 size={12} /> Payée
                           </span>
                         ) : inv.status === 'cancelled' ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-md">
                             <XCircle size={12} /> Annulée
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md">
                             <Clock size={12} /> Émise
                           </span>
                         )}
@@ -255,11 +255,11 @@ export const Invoices: React.FC = () => {
                       <p className="text-base font-black text-slate-900 dark:text-white">
                         {Number(inv.total_ttc).toFixed(3)} <span className="text-xs text-slate-500">DT</span>
                       </p>
-                      <p className="text-xs font-semibold text-slate-400">
+                      <p className="text-xs font-semibold text-slate-500">
                         HT: {Number(inv.subtotal_ht).toFixed(3)} DT
                       </p>
                     </div>
-                    <ChevronRight size={18} className="text-slate-400 group-hover:text-primary transition-colors" />
+                    <ChevronRight size={18} className="text-slate-500 group-hover:text-primary transition-colors" />
                   </div>
                 </div>
               );

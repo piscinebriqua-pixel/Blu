@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import PageLayout from '../components/PageLayout';
@@ -162,11 +162,11 @@ const Payments: React.FC = () => {
 
     const toolbar = (
         <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
             <input
                 type="text"
                 placeholder="Rechercher par client ou technicien..."
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -191,9 +191,9 @@ const Payments: React.FC = () => {
                                 setTimeRange(range);
                                 navigate(`/payments?range=${range}`);
                             }}
-                            className={`px-2 md:px-4 py-1.5 md:py-2 rounded-xl text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all ${timeRange === range
+                            className={`px-2 md:px-4 py-1.5 md:py-2 rounded-xl text-xs md:text-xs font-black uppercase tracking-widest transition-all ${timeRange === range
                                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                : 'text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
                                 }`}
                         >
                             {range === 'all' ? 'Tous' : range === 'day' ? 'Jour' : range === 'week' ? 'Semaine' : range === 'month' ? 'Mois' : 'Année'}
@@ -260,20 +260,20 @@ const Payments: React.FC = () => {
                                         {p.client?.first_name} {p.client?.last_name}
                                     </h4>
                                     <span className="text-[15px] font-black text-emerald-600 dark:text-emerald-400">
-                                        +{(p.amount || 0).toFixed(0)} <span className="text-[10px] opacity-60 uppercase">DT</span>
+                                        +{(p.amount || 0).toFixed(0)} <span className="text-xs opacity-60 uppercase">DT</span>
                                     </span>
                                 </div>
 
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                    <div className="flex items-center gap-1.5 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">
                                         <User size={12} className="text-slate-300 dark:text-slate-600" />
                                         {p.technician?.full_name}
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                    <div className="flex items-center gap-1.5 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest">
                                         <Calendar size={12} className="text-slate-300 dark:text-slate-600" />
                                         {new Date(p.payment_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
                                     </div>
-                                    <div className={`px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-[0.1em] border ${p.method === 'Espèces' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' :
+                                    <div className={`px-1.5 py-0.5 rounded-md text-xs font-black uppercase tracking-[0.1em] border ${p.method === 'Espèces' ? 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/30' :
                                         p.method === 'Carte' ? 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/30' :
                                             'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/30'
                                         }`}>
@@ -307,7 +307,7 @@ const Payments: React.FC = () => {
                             </div>
                             <div className="text-center">
                                 <p className="text-base font-black uppercase tracking-[0.2em] text-slate-500">Aucun résultat</p>
-                                <p className="text-[13px] font-bold text-slate-300 dark:text-slate-600 mt-1">Ajustez vos filtres de recherche</p>
+                                <p className="text-xs font-bold text-slate-300 dark:text-slate-600 mt-1">Ajustez vos filtres de recherche</p>
                             </div>
                         </div>
                     )}

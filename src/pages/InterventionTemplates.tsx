@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '../components/PageLayout';
 import { supabase } from '../lib/supabase';
@@ -263,7 +263,7 @@ const InterventionTemplates: React.FC = () => {
             showBackButton={true}
             toolbar={
                 <div className="relative w-full">
-                    <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                     <input
                         type="text"
                         placeholder="Rechercher un modèle..."
@@ -278,18 +278,18 @@ const InterventionTemplates: React.FC = () => {
             <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-fit border border-slate-200 dark:border-slate-700 mb-6">
                 <button
                     onClick={() => navigate('/settings/services')}
-                    className="flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all text-slate-500 hover:text-slate-600"
+                    className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all text-slate-500 hover:text-slate-600"
                 >
                     <Wrench size={14} /> Services
                 </button>
                 <button
                     onClick={() => navigate('/settings/services')}
-                    className="flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all text-slate-500 hover:text-slate-600"
+                    className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all text-slate-500 hover:text-slate-600"
                 >
                     <Package size={14} /> Produits
                 </button>
                 <button
-                    className="flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all bg-white dark:bg-slate-700 text-primary shadow-sm"
+                    className="flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-white dark:bg-slate-700 text-primary shadow-sm"
                 >
                     <ClipboardList size={14} /> Modèles
                 </button>
@@ -320,11 +320,11 @@ const InterventionTemplates: React.FC = () => {
                             <div className="flex-1 min-width-0">
                                 <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-tight text-sm line-clamp-1">{t.name}</h3>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
                                         {t.services?.length || 0} Serv.
                                     </span>
                                     <div className="w-1 h-1 bg-slate-300 rounded-full" />
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
                                         {t.products?.length || 0} Prod.
                                     </span>
                                 </div>
@@ -333,7 +333,7 @@ const InterventionTemplates: React.FC = () => {
                             <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); setTemplateToDelete(t); }} 
-                                    className="p-2 text-slate-400 hover:text-red-500 transition-all rounded-xl hover:bg-red-50"
+                                    className="p-2 text-slate-500 hover:text-red-500 transition-all rounded-xl hover:bg-red-50"
                                 >
                                     <Trash2 size={16} />
                                 </button>
@@ -362,7 +362,7 @@ const InterventionTemplates: React.FC = () => {
                                 </h2>
                                 <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Configurez les tâches et fournitures par défaut</p>
                             </div>
-                            <button onClick={() => setIsModalOpen(false)} className="w-12 h-12 bg-white dark:bg-slate-700 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-800 transition-all shadow-sm">
+                            <button onClick={() => setIsModalOpen(false)} className="w-12 h-12 bg-white dark:bg-slate-700 rounded-2xl flex items-center justify-center text-slate-500 hover:text-slate-800 transition-all shadow-sm">
                                 <X size={20} />
                             </button>
                         </div>
@@ -372,7 +372,7 @@ const InterventionTemplates: React.FC = () => {
                                 {/* Colonne Gauche: Infos & Tâches */}
                                 <div className="space-y-6">
                                     <div className="space-y-4">
-                                        <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
                                             <div className="w-1 h-3 bg-primary rounded-full" /> Informations de base
                                         </h3>
                                         <input
@@ -381,18 +381,18 @@ const InterventionTemplates: React.FC = () => {
                                             required
                                             value={form.name}
                                             onChange={e => setForm({ ...form, name: e.target.value })}
-                                            className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-400"
+                                            className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-slate-500"
                                         />
                                         <textarea
                                             placeholder="Description optionnelle..."
                                             value={form.description}
                                             onChange={e => setForm({ ...form, description: e.target.value })}
-                                            className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold h-24 focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none placeholder:text-slate-400"
+                                            className="w-full p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold h-24 focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none placeholder:text-slate-500"
                                         />
                                     </div>
 
                                     <div className="space-y-4">
-                                        <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] flex items-center gap-2">
                                             <div className="w-1 h-3 bg-primary rounded-full" /> Checkpoint de Maintenance
                                         </h3>
                                         <div className="grid grid-cols-1 gap-2">
@@ -426,13 +426,13 @@ const InterventionTemplates: React.FC = () => {
                                 <div className="space-y-10">
                                     {/* Services */}
                                     <div className="space-y-4">
-                                        <h3 className="text-[11px] font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
+                                        <h3 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2">
                                             <div className="w-1 h-3 bg-blue-600 rounded-full" /> Services inclus
                                         </h3>
                                         
                                         {/* Search Box */}
                                         <div className="relative">
-                                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
                                             <input
                                                 type="text"
                                                 placeholder="Ajouter un service..."
@@ -442,7 +442,7 @@ const InterventionTemplates: React.FC = () => {
                                                     setIsServiceDropdownOpen(true);
                                                 }}
                                                 onFocus={() => setIsServiceDropdownOpen(true)}
-                                                className="w-full min-h-[44px] pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-400 text-base text-slate-800 dark:text-white"
+                                                className="w-full min-h-[44px] pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-slate-500 text-base text-slate-800 dark:text-white"
                                             />
                                             {isServiceDropdownOpen && serviceSearch && (
                                                 <div className="absolute z-[60] w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[220px] overflow-y-auto no-scrollbar">
@@ -474,7 +474,7 @@ const InterventionTemplates: React.FC = () => {
                                                     <button 
                                                         type="button" 
                                                         onClick={() => removeService(s.id)}
-                                                        className="p-1.5 text-slate-400 hover:text-red-500 bg-white dark:bg-slate-800 rounded-lg shadow-sm"
+                                                        className="p-1.5 text-slate-500 hover:text-red-500 bg-white dark:bg-slate-800 rounded-lg shadow-sm"
                                                     >
                                                         <Trash2 size={14} />
                                                     </button>
@@ -491,7 +491,7 @@ const InterventionTemplates: React.FC = () => {
 
                                         {/* Search Box */}
                                         <div className="relative">
-                                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                                            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
                                             <input
                                                 type="text"
                                                 placeholder="Ajouter un produit..."
@@ -501,7 +501,7 @@ const InterventionTemplates: React.FC = () => {
                                                     setIsProductDropdownOpen(true);
                                                 }}
                                                 onFocus={() => setIsProductDropdownOpen(true)}
-                                                className="w-full min-h-[44px] pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-violet-500/20 outline-none transition-all placeholder:text-slate-400 text-base text-slate-800 dark:text-white"
+                                                className="w-full min-h-[44px] pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold focus:ring-2 focus:ring-violet-500/20 outline-none transition-all placeholder:text-slate-500 text-base text-slate-800 dark:text-white"
                                             />
                                             {isProductDropdownOpen && productSearch && (
                                                 <div className="absolute z-[60] w-full mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden max-h-[220px] overflow-y-auto no-scrollbar">
@@ -534,7 +534,7 @@ const InterventionTemplates: React.FC = () => {
                                                         <button 
                                                             type="button" 
                                                             onClick={() => removeProduct(sp.product.id)}
-                                                            className="p-1.5 text-slate-400 hover:text-red-500 bg-white dark:bg-slate-800 rounded-lg shadow-sm"
+                                                            className="p-1.5 text-slate-500 hover:text-red-500 bg-white dark:bg-slate-800 rounded-lg shadow-sm"
                                                         >
                                                             <Trash2 size={14} />
                                                         </button>
@@ -548,7 +548,7 @@ const InterventionTemplates: React.FC = () => {
                                                                 onChange={e => updateProductQty(sp.product.id, parseFloat(e.target.value))}
                                                                 className="w-full bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm outline-none focus:ring-2 focus:ring-violet-500/20"
                                                             />
-                                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase text-slate-400 pointer-events-none">
+                                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black uppercase text-slate-500 pointer-events-none">
                                                                 {sp.product.unit}
                                                             </span>
                                                         </div>

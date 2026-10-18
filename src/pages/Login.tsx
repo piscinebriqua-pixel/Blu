@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Lock, Loader2, AlertCircle, User } from 'lucide-react';
@@ -78,7 +78,7 @@ const Login: React.FC = () => {
                     />
                     <div className="flex flex-col text-left">
                         <h1 className="text-4xl font-black text-white tracking-widest leading-none">BCCP</h1>
-                        <p className="text-[10px] font-black text-blue-100/60 uppercase tracking-[0.4em] mt-1.5 whitespace-nowrap">Clean and Clean Pool</p>
+                        <p className="text-xs font-black text-blue-100/60 uppercase tracking-[0.4em] mt-1.5 whitespace-nowrap">Clean and Clean Pool</p>
                     </div>
                 </div>
 
@@ -94,7 +94,7 @@ const Login: React.FC = () => {
                     {error && (
                         <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-3 mb-6 animate-in fade-in zoom-in-95 duration-200">
                             <AlertCircle size={20} className="text-red-500 shrink-0" />
-                            <p className="text-red-600 text-[13px] font-bold">{error}</p>
+                            <p className="text-red-600 text-xs font-bold">{error}</p>
                         </div>
                     )}
 
@@ -126,19 +126,19 @@ const Login: React.FC = () => {
 
                         <div className="relative flex items-center py-2">
                             <div className="grow border-t border-slate-200"></div>
-                            <span className="flex-shrink-0 mx-4 text-xs font-bold text-slate-400 uppercase tracking-wider">OU</span>
+                            <span className="flex-shrink-0 mx-4 text-xs font-bold text-slate-500 uppercase tracking-wider">OU</span>
                             <div className="grow border-t border-slate-200"></div>
                         </div>
 
                         <form onSubmit={handleLogin} className="flex flex-col gap-5">
                             <div className="space-y-2">
-                                <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest ml-1">E-mail ou Identifiant</label>
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">E-mail ou Identifiant</label>
                                 <div className="relative">
                                     <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                     <input
                                         type="text"
                                         autoCapitalize="none"
-                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-2xl border-none font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-base"
+                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-2xl border-none font-bold text-slate-800 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-base"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="identifiant ou email"
@@ -147,12 +147,12 @@ const Login: React.FC = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest ml-1">Mot de Passe</label>
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Mot de Passe</label>
                                 <div className="relative">
                                     <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                     <input
                                         type="password"
-                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-2xl border-none font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-base"
+                                        className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-2xl border-none font-bold text-slate-800 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-base"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="••••••••"
@@ -174,7 +174,7 @@ const Login: React.FC = () => {
 
                 {/* Footer */}
                 <div className="text-center">
-                    <p className="text-sm text-slate-400 font-bold uppercase tracking-[0.2em] opacity-60">
+                    <p className="text-sm text-slate-500 font-bold uppercase tracking-[0.2em] opacity-60">
                         Conception et développement par M.A.K
                     </p>
                 </div>

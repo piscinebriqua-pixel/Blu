@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import {
     Loader2,
@@ -123,7 +123,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                                 <span>{client.address}, {client.city}</span>
                             </div>
                         </div>
-                        <div className={`px-3 py-1 rounded-full text-[13px] font-bold border ${client.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600'}`}>
+                        <div className={`px-3 py-1 rounded-full text-xs font-bold border ${client.status === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600'}`}>
                             {client.status === 'active' ? 'ACTIF' : 'INACTIF'}
                         </div>
                     </div>
@@ -132,7 +132,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                         <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-100 dark:border-slate-600">
                             <div className="flex items-center gap-2 mb-1 text-slate-500 dark:text-slate-300">
                                 <Wallet size={14} />
-                                <span className="text-[13px] font-bold uppercase tracking-wider">Solde</span>
+                                <span className="text-xs font-bold uppercase tracking-wider">Solde</span>
                             </div>
                             <p className={`text-lg font-bold ${client.balance < 0 ? 'text-red-500 dark:text-red-400' : 'text-green-500 dark:text-green-400'}`}>
                                 {client.balance?.toFixed(0)} <span className="text-base text-slate-500 dark:text-slate-500">DT</span>
@@ -142,7 +142,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                         <div className="bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl border border-slate-100 dark:border-slate-600">
                             <div className="flex items-center gap-2 mb-1 text-slate-500 dark:text-slate-300">
                                 <Phone size={14} />
-                                <span className="text-[13px] font-bold uppercase tracking-wider">Contact</span>
+                                <span className="text-xs font-bold uppercase tracking-wider">Contact</span>
                             </div>
                             <p className="text-base font-bold text-slate-700 dark:text-slate-200">
                                 {client.phone || '-----'}
@@ -158,7 +158,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                 <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
                     <button
                         onClick={() => setActiveTab('bassins')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[13px] font-bold transition-all uppercase tracking-wider ${activeTab === 'bassins' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all uppercase tracking-wider ${activeTab === 'bassins' ? 'bg-white dark:bg-slate-600 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     >
                         <Waves size={14} /> Bassins ({pools.length})
                     </button>
@@ -201,7 +201,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                             )}
                             <button
                                 onClick={() => setIsPoolModalOpen(true)}
-                                className="w-full py-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-[13px] font-bold text-slate-500 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all uppercase tracking-wider flex items-center justify-center gap-2"
+                                className="w-full py-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all uppercase tracking-wider flex items-center justify-center gap-2"
                             >
                                 <Plus size={14} /> Ajouter un bassin
                             </button>
@@ -217,14 +217,14 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                                             <Calendar size={20} />
                                         </div>
                                         <div>
-                                            <p className="text-[13px] font-bold text-slate-700 dark:text-slate-200">
+                                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
                                                 {new Date(inter.created_at || inter.completed_date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
                                             </p>
                                             <p className="text-base text-slate-500 dark:text-slate-500 uppercase tracking-wide font-bold">{inter.pool_name}</p>
                                         </div>
                                     </div>
                                     <div className="flex flex-col items-end gap-2">
-                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest border ${
+                                        <span className={`text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-widest border ${
                                             inter.status === 'completed' 
                                             ? 'bg-blue-600 text-white border-blue-600' 
                                             : 'bg-white dark:bg-slate-700 text-blue-500 border-blue-100 dark:border-blue-800'
@@ -232,7 +232,7 @@ const ClientDetailsModal: React.FC<ClientDetailsModalProps> = ({ clientId, onClo
                                             {inter.status === 'completed' ? 'Réalisée' : 'Planifiée'}
                                         </span>
                                         {inter.ph_level && (
-                                            <span className="bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-md text-[11px] font-bold border border-slate-100 dark:border-slate-800">
+                                            <span className="bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-md text-xs font-bold border border-slate-100 dark:border-slate-800">
                                                 PH {inter.ph_level}
                                             </span>
                                         )}

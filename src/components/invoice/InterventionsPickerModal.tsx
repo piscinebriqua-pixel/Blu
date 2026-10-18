@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import ModalLayout from '../ModalLayout';
 import type { UnbilledIntervention } from '../../services/invoiceService';
 import { Calendar, CheckSquare, Square, Plus } from 'lucide-react';
@@ -71,11 +71,11 @@ export const InterventionsPickerModal: React.FC<InterventionsPickerModalProps> =
         <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
           {interventions.length === 0 ? (
             <div className="py-10 text-center bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-4">
-              <Calendar size={32} className="mx-auto text-slate-400 mb-2" />
+              <Calendar size={32} className="mx-auto text-slate-500 mb-2" />
               <p className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
                 Aucun passage d'entretien
               </p>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-500 mt-1">
                 Tous les passages de ce client sont déjà facturés ou aucun passage n'est terminé.
               </p>
             </div>
@@ -101,7 +101,7 @@ export const InterventionsPickerModal: React.FC<InterventionsPickerModalProps> =
                       {isChecked ? (
                         <CheckSquare size={20} />
                       ) : (
-                        <Square size={20} className="text-slate-400" />
+                        <Square size={20} className="text-slate-500" />
                       )}
                     </div>
                     <div>

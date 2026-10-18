@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import PageLayout from '../components/PageLayout';
@@ -253,9 +253,9 @@ const Revenue: React.FC = () => {
                         <button
                             key={range}
                             onClick={() => setTimeRange(range)}
-                            className={`px-2 md:px-4 py-1.5 md:py-2 rounded-xl text-[10px] md:text-[11px] font-black uppercase tracking-widest transition-all ${timeRange === range
+                            className={`px-2 md:px-4 py-1.5 md:py-2 rounded-xl text-xs md:text-xs font-black uppercase tracking-widest transition-all ${timeRange === range
                                 ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                                : 'text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
                                 }`}
                         >
                             {range === 'day' ? 'Jour' : range === 'week' ? 'Semaine' : range === 'month' ? 'Mois' : 'Année'}
@@ -278,10 +278,10 @@ const Revenue: React.FC = () => {
                                 {stats.total.toLocaleString()} <span className="text-sm opacity-60">DT</span>
                             </h3>
                             <div className="flex items-center gap-1.5 mt-2">
-                                <span className={`text-[11px] font-black px-2 py-0.5 rounded-full ${stats.growth >= 0 ? 'bg-emerald-400/20 text-emerald-300' : 'bg-rose-400/20 text-rose-300'}`}>
+                                <span className={`text-xs font-black px-2 py-0.5 rounded-full ${stats.growth >= 0 ? 'bg-emerald-400/20 text-emerald-300' : 'bg-rose-400/20 text-rose-300'}`}>
                                     {stats.growth >= 0 ? '+' : ''}{stats.growth.toFixed(0)}%
                                 </span>
-                                <span className="text-[10px] font-medium text-blue-100/60 uppercase">vs mois dernier</span>
+                                <span className="text-xs font-medium text-blue-100/60 uppercase">vs mois dernier</span>
                             </div>
                         </div>
                         <Wallet className="absolute -right-4 -bottom-4 w-24 h-24 text-white/10 rotate-12 group-hover:rotate-0 transition-transform duration-500" />
@@ -294,7 +294,7 @@ const Revenue: React.FC = () => {
                         </h3>
                         <div className="flex items-center gap-2 mt-2">
                             <Wrench size={14} className="text-blue-500" />
-                            <span className="text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase">Valeur Interventions</span>
+                            <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase">Valeur Interventions</span>
                         </div>
                     </div>
 
@@ -305,7 +305,7 @@ const Revenue: React.FC = () => {
                         </h3>
                         <div className="flex items-center gap-2 mt-2">
                             <TrendingUp size={14} className="text-emerald-500" />
-                            <span className="text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase">{stats.transactionCount} transactions</span>
+                            <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase">{stats.transactionCount} transactions</span>
                         </div>
                     </div>
 
@@ -322,7 +322,7 @@ const Revenue: React.FC = () => {
                         </h3>
                         <div className="flex items-center gap-2 mt-2">
                             <Calendar size={14} className="text-rose-400" />
-                            <span className="text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase">
+                            <span className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase">
                                 Total Dettes Clients
                             </span>
                         </div>
@@ -333,7 +333,7 @@ const Revenue: React.FC = () => {
                         <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tighter">
                             {stats.lastMonthTotal.toLocaleString()} <span className="text-sm opacity-40">DT</span>
                         </h3>
-                        <p className="text-[11px] font-black text-slate-600 dark:text-slate-400 mt-2 uppercase">Mois Précédent</p>
+                        <p className="text-xs font-black text-slate-600 dark:text-slate-400 mt-2 uppercase">Mois Précédent</p>
                     </div>
                 </div>
 
@@ -343,7 +343,7 @@ const Revenue: React.FC = () => {
                     {/* Payment Methods */}
                     <div className="card-white !p-4 md:!p-8 flex flex-col gap-4 md:gap-6 md:col-span-1">
                         <div className="flex items-center justify-between">
-                            <h4 className="text-[12px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                 <PieChart size={16} className="text-primary" /> Modes de Paiement
                             </h4>
                         </div>
@@ -352,15 +352,15 @@ const Revenue: React.FC = () => {
                                 <div key={item.method} className="group">
                                     <div className="flex justify-between items-end mb-2">
                                         <div className="flex flex-col">
-                                            <span className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                                            <span className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-tight flex items-center gap-2">
                                                 {item.method === 'Espèces' ? <Coins size={14} className="text-amber-500" /> :
                                                     item.method === 'Carte' ? <CreditCard size={14} className="text-blue-500" /> :
                                                         <Banknote size={14} className="text-emerald-500" />}
                                                 {item.method}
                                             </span>
-                                            <span className="text-[11px] font-bold text-slate-400">{((item.amount / stats.total) * 100).toFixed(0)}% du total</span>
+                                            <span className="text-xs font-bold text-slate-500">{((item.amount / stats.total) * 100).toFixed(0)}% du total</span>
                                         </div>
-                                        <span className="text-base font-black text-slate-800 dark:text-white">{item.amount.toLocaleString()} <span className="text-[10px] opacity-40">DT</span></span>
+                                        <span className="text-base font-black text-slate-800 dark:text-white">{item.amount.toLocaleString()} <span className="text-xs opacity-40">DT</span></span>
                                     </div>
                                     <div className="w-full h-1.5 bg-slate-50 dark:bg-slate-900 rounded-full overflow-hidden">
                                         <div
@@ -370,14 +370,14 @@ const Revenue: React.FC = () => {
                                     </div>
                                 </div>
                             ))}
-                            {stats.byMethod.length === 0 && <p className="text-slate-400 text-center py-6 italic text-sm">Aucune donnée disponible</p>}
+                            {stats.byMethod.length === 0 && <p className="text-slate-500 text-center py-6 italic text-sm">Aucune donnée disponible</p>}
                         </div>
                     </div>
 
                     {/* Performance by Technician */}
                     <div className="card-white !p-4 md:!p-8 flex flex-col gap-4 md:gap-6 md:col-span-2">
                         <div className="flex items-center justify-between">
-                            <h4 className="text-[12px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <h4 className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                 <BarChart3 size={16} className="text-primary" /> CA par Technicien (Encaissements)
                             </h4>
                         </div>
@@ -388,19 +388,19 @@ const Revenue: React.FC = () => {
                                         {item.name.charAt(0)}
                                     </div>
                                     <div className="flex flex-col flex-1 min-w-0">
-                                        <span className="text-[13px] font-black text-slate-800 dark:text-white truncate uppercase tracking-tight">{item.name}</span>
+                                        <span className="text-xs font-black text-slate-800 dark:text-white truncate uppercase tracking-tight">{item.name}</span>
                                         <div className="flex items-center gap-2">
                                             <div className="flex-1 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full bg-primary rounded-full bar-tech-${stats.byTech.indexOf(item)}`}
                                                 />
                                             </div>
-                                            <span className="text-[13px] font-bold text-slate-900 dark:text-white shrink-0">{item.amount.toLocaleString()} <span className="text-[9px] opacity-40">DT</span></span>
+                                            <span className="text-xs font-bold text-slate-900 dark:text-white shrink-0">{item.amount.toLocaleString()} <span className="text-xs opacity-40">DT</span></span>
                                         </div>
                                     </div>
                                 </div>
                             ))}
-                            {stats.byTech.length === 0 && <p className="text-slate-400 text-center py-6 italic text-sm">Aucune donnée disponible</p>}
+                            {stats.byTech.length === 0 && <p className="text-slate-500 text-center py-6 italic text-sm">Aucune donnée disponible</p>}
                         </div>
                     </div>
                 </div>
@@ -412,7 +412,7 @@ const Revenue: React.FC = () => {
                         className="flex-1 min-w-[200px] h-16 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all group"
                     >
                         <Search size={18} className="text-primary group-hover:scale-110 transition-transform" />
-                        <span className="text-[12px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">Voir toutes les transactions</span>
+                        <span className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">Voir toutes les transactions</span>
                     </button>
                     <button
                         onClick={handleExportPDF}
@@ -420,7 +420,7 @@ const Revenue: React.FC = () => {
                         className={`flex-1 min-w-[200px] h-16 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl flex items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all group ${stats.total === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                         <FileDown size={18} className="text-primary group-hover:scale-110 transition-transform" />
-                        <span className="text-[12px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">Exporter rapport (PDF)</span>
+                        <span className="text-xs font-black uppercase tracking-widest text-slate-600 dark:text-slate-300">Exporter rapport (PDF)</span>
                     </button>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+﻿import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
@@ -328,10 +328,10 @@ const AdminUsers: React.FC = () => {
         <div className="space-y-4">
           {/* Search bar */}
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
             <input
               type="text"
-              className="w-full h-12 pl-11 pr-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-semibold text-base text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm"
+              className="w-full h-12 pl-11 pr-10 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl font-semibold text-base text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm"
               placeholder="Rechercher par nom ou email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -339,7 +339,7 @@ const AdminUsers: React.FC = () => {
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-slate-600 rounded-lg"
               >
                 <X size={16} />
               </button>
@@ -449,7 +449,7 @@ const AdminUsers: React.FC = () => {
             ))
           ) : (
             <div className="py-16 text-center bg-white dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800">
-              <Users size={32} className="mx-auto mb-3 text-slate-400 opacity-60" />
+              <Users size={32} className="mx-auto mb-3 text-slate-500 opacity-60" />
               <p className="text-base font-bold text-slate-500">
                 Aucun utilisateur trouvé {searchQuery ? `pour "${searchQuery}"` : 'dans cette catégorie'}
               </p>
@@ -518,7 +518,7 @@ const AdminUsers: React.FC = () => {
                 <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Ajouter Produit</span>
               </button>
             </div>
-            <p className="mt-6 text-xs text-center font-bold text-slate-400 uppercase tracking-wider italic">
+            <p className="mt-6 text-xs text-center font-bold text-slate-500 uppercase tracking-wider italic">
               L'ajout direct ouvrira le gestionnaire de catalogue
             </p>
           </div>

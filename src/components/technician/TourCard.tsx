@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { Check, Clock, Droplets, MapPin, MessageCircle, Navigation, Play, AlertCircle } from 'lucide-react';
 import { openWhatsAppChat } from '../../lib/phoneUtils';
 
@@ -97,7 +97,7 @@ export const TourCard: React.FC<TourCardProps> = ({
             <MapPin size={16} className="text-blue-600" />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+            <span className="text-xs font-black text-slate-500 uppercase tracking-widest leading-none mb-1">
               Destination
             </span>
             <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">
@@ -113,7 +113,7 @@ export const TourCard: React.FC<TourCardProps> = ({
           <button
             type="button"
             onClick={() => runNavigation(fullAddress)}
-            className="w-11 h-11 sm:w-12 sm:h-12 bg-white dark:bg-slate-800 text-slate-400 hover:text-blue-600 rounded-xl flex items-center justify-center transition-all shadow-sm border border-slate-100 dark:border-slate-700 active:scale-95"
+            className="w-11 h-11 sm:w-12 sm:h-12 bg-white dark:bg-slate-800 text-slate-500 hover:text-blue-600 rounded-xl flex items-center justify-center transition-all shadow-sm border border-slate-100 dark:border-slate-700 active:scale-95"
             title="Itinéraire GPS"
           >
             <Navigation size={20} strokeWidth={2.5} />
@@ -124,7 +124,7 @@ export const TourCard: React.FC<TourCardProps> = ({
           <button
             type="button"
             onClick={() => openWhatsAppChat(client.phone || '')}
-            className="w-11 h-11 sm:w-12 sm:h-12 bg-white dark:bg-slate-800 text-slate-400 hover:text-emerald-500 rounded-xl flex items-center justify-center transition-all shadow-sm border border-slate-100 dark:border-slate-700 active:scale-95"
+            className="w-11 h-11 sm:w-12 sm:h-12 bg-white dark:bg-slate-800 text-slate-500 hover:text-emerald-500 rounded-xl flex items-center justify-center transition-all shadow-sm border border-slate-100 dark:border-slate-700 active:scale-95"
             title="WhatsApp"
           >
             <MessageCircle size={20} strokeWidth={2.5} />

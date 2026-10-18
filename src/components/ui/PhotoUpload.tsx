@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 import { Camera, Image as ImageIcon, Loader2, Check } from "lucide-react";
 import imageCompression from "browser-image-compression";
 import { supabase } from "../../lib/supabase";
@@ -86,7 +86,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
     <div className="flex-column gap-2">
       <label
         htmlFor={`photo-upload-${label.replace(/\s+/g, "-").toLowerCase()}`}
-        className="text-[13px] font-black text-muted uppercase tracking-widest ml-1"
+        className="text-xs font-black text-muted uppercase tracking-widest ml-1"
       >
         {label}
       </label>
@@ -119,7 +119,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
             ) : (
               <>
                 <ImageIcon size={28} className="opacity-40" />
-                <span className="text-[13px] font-black uppercase tracking-wider">
+                <span className="text-xs font-black uppercase tracking-wider">
                   Tap pour ajouter
                 </span>
               </>

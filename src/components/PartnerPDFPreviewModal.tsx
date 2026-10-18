@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import ModalLayout from './ModalLayout';
 import Button from './ui/Button';
 import { FileText, Download, X, Printer, Share2 } from 'lucide-react';
@@ -192,7 +192,7 @@ const PartnerPDFPreviewModal: React.FC<PartnerPDFPreviewModalProps> = ({
                             <h2 className="text-2xl font-black text-primary uppercase tracking-tighter">
                                 {partner.is_billing_partner ? "Relevé de Compte" : "Suivi Partenaire"}
                             </h2>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">UNITEC • {new Date().toLocaleDateString('fr-FR')}</p>
+                            <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">UNITEC • {new Date().toLocaleDateString('fr-FR')}</p>
                         </div>
                         <div className="text-right">
                             <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center ml-auto">
@@ -202,7 +202,7 @@ const PartnerPDFPreviewModal: React.FC<PartnerPDFPreviewModalProps> = ({
                     </div>
 
                     <div className="mb-8">
-                        <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Détails Partenaire</p>
+                        <p className="text-xs font-black text-slate-500 uppercase mb-1">Détails Partenaire</p>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white">{partnerName}</h3>
                         <p className="text-sm text-slate-500">{partner.company}</p>
                         <p className="text-sm text-slate-500">{partner.role}</p>
@@ -212,30 +212,30 @@ const PartnerPDFPreviewModal: React.FC<PartnerPDFPreviewModalProps> = ({
                     <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border-l-4 border-primary mb-8">
                         <div className="flex justify-between items-end mb-4">
                             <div>
-                                <p className="text-xs font-black text-slate-400 uppercase mb-1">Solde Actuel</p>
+                                <p className="text-xs font-black text-slate-500 uppercase mb-1">Solde Actuel</p>
                                 <h4 className="text-3xl font-black text-primary">{Math.abs(balance).toFixed(0)} <span className="text-lg opacity-50">DT</span></h4>
                             </div>
                             <div className="text-right">
                                 {partner.is_billing_partner ? (
                                     <>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase">Facturé: {totalBilled.toFixed(0)} DT</p>
-                                        <p className="text-[10px] text-slate-400 font-bold uppercase">Encaissé: {totalPaid.toFixed(0)} DT</p>
+                                        <p className="text-xs text-slate-500 font-bold uppercase">Facturé: {totalBilled.toFixed(0)} DT</p>
+                                        <p className="text-xs text-slate-500 font-bold uppercase">Encaissé: {totalPaid.toFixed(0)} DT</p>
                                     </>
                                 ) : (
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase">Total Versé: {totalPaid.toFixed(0)} DT</p>
+                                    <p className="text-xs text-slate-500 font-bold uppercase">Total Versé: {totalPaid.toFixed(0)} DT</p>
                                 )}
                             </div>
                         </div>
-                        <p className="text-[10px] text-slate-400 italic">
+                        <p className="text-xs text-slate-500 italic">
                             {balance > 0 ? "Somme restant à régler par UNITEC au partenaire." : "Avance en faveur de UNITEC."}
                         </p>
                     </div>
 
                     {/* Table Mockup */}
                     <div className="space-y-4">
-                        <p className="text-[10px] font-black text-slate-400 uppercase">Aperçu de la table des interventions</p>
+                        <p className="text-xs font-black text-slate-500 uppercase">Aperçu de la table des interventions</p>
                         <div className="border border-slate-100 dark:border-slate-700 rounded-lg overflow-hidden">
-                            <table className="w-full text-left text-[11px]">
+                            <table className="w-full text-left text-xs">
                                 <thead className="bg-primary text-white">
                                     <tr>
                                         <th className="p-2">Date</th>
@@ -257,7 +257,7 @@ const PartnerPDFPreviewModal: React.FC<PartnerPDFPreviewModalProps> = ({
                                     })}
                                     {interventions.length > 5 && (
                                         <tr>
-                                            <td colSpan={3} className="p-2 text-center text-slate-400 italic">... et {interventions.length - 5} autres interventions</td>
+                                            <td colSpan={3} className="p-2 text-center text-slate-500 italic">... et {interventions.length - 5} autres interventions</td>
                                         </tr>
                                     )}
                                 </tbody>
@@ -294,7 +294,7 @@ const PartnerPDFPreviewModal: React.FC<PartnerPDFPreviewModalProps> = ({
                     <div className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-2xl border border-blue-100 dark:border-blue-900/20">
                         <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-2">
                             <Share2 size={16} />
-                            <span className="text-[11px] font-black uppercase">Conseil</span>
+                            <span className="text-xs font-black uppercase">Conseil</span>
                         </div>
                         <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
                             Une fois téléchargé, vous pouvez envoyer ce document par email ou WhatsApp comme preuve de règlement.

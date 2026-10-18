@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Search, User, MapPin, Plus, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import ModalLayout from './ModalLayout';
@@ -86,7 +86,7 @@ const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({ isOpen, onC
             <div className="flex flex-col gap-4 p-4">
                 <div className="flex gap-2">
                     <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                         <input
                             type="text"
                             placeholder="Rechercher..."
@@ -113,7 +113,7 @@ const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({ isOpen, onC
                     ) : filteredClients.length === 0 ? (
                         <div className="text-center py-8 text-slate-500">
                             <User size={32} className="mx-auto mb-2 opacity-50" />
-                            <p className="text-[13px] font-bold uppercase">Aucun client trouvé</p>
+                            <p className="text-xs font-bold uppercase">Aucun client trouvé</p>
                         </div>
                     ) : (
                         filteredClients.map(client => {
@@ -135,7 +135,7 @@ const ClientSelectionModal: React.FC<ClientSelectionModalProps> = ({ isOpen, onC
                                         <p className={`text-base font-black ${isSelected ? 'text-blue-900 dark:text-blue-300' : 'text-slate-700 dark:text-slate-200'}`}>
                                             {client.first_name} {client.last_name}
                                         </p>
-                                        <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-wide">
+                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wide">
                                             <MapPin size={10} />
                                             {client.city || 'Ville inconnue'}
                                         </div>

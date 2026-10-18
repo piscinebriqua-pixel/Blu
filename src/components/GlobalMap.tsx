@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
 import { Loader2, Navigation, User, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -99,7 +99,7 @@ const GlobalMap: React.FC<GlobalMapProps> = ({ clients }) => {
                                 </div>
                                 <button
                                     onClick={() => navigate(`/client/${selectedClient.id}`)}
-                                    className="w-full py-2 bg-blue-600 text-white rounded-xl text-[13px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
+                                    className="w-full py-2 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
                                 >
                                     <Navigation size={12} /> VOIR LE PROFIL
                                 </button>
@@ -112,7 +112,7 @@ const GlobalMap: React.FC<GlobalMapProps> = ({ clients }) => {
 
                 {/* Stats Overlay */}
                 <div className="absolute bottom-28 left-6 px-4 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl shadow-lg border border-slate-100 dark:border-white/10">
-                    <span className="text-[13px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
+                    <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">
                         {validClients.length} Localisations affichées
                     </span>
                 </div>

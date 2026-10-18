@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import PageLayout from '../components/PageLayout';
 import ModalLayout from '../components/ModalLayout';
@@ -156,7 +156,7 @@ const VehiclesSettings: React.FC = () => {
                         {/* Active Vehicles */}
                         {activeVehicles.length > 0 && (
                             <div className="flex flex-col gap-4">
-                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Actifs</h3>
+                                <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest">Actifs</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {activeVehicles.map(v => (
                                         <div
@@ -173,20 +173,20 @@ const VehiclesSettings: React.FC = () => {
                                             <div className="flex gap-1 flex-shrink-0">
                                                 <button
                                                     onClick={() => openEditModal(v)}
-                                                    className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+                                                    className="w-11 h-11 flex items-center justify-center text-slate-500 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
                                                 >
                                                     <Edit2 size={16} />
                                                 </button>
                                                 <button
                                                     onClick={() => toggleActive(v)}
-                                                    className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-amber-500 hover:bg-amber-500/5 rounded-xl transition-all"
+                                                    className="w-11 h-11 flex items-center justify-center text-slate-500 hover:text-amber-500 hover:bg-amber-500/5 rounded-xl transition-all"
                                                     title="Désactiver"
                                                 >
                                                     <CheckCircle2 size={16} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(v)}
-                                                    className="w-11 h-11 flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-500/5 rounded-xl transition-all"
+                                                    className="w-11 h-11 flex items-center justify-center text-slate-500 hover:text-rose-500 hover:bg-rose-500/5 rounded-xl transition-all"
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
@@ -200,19 +200,19 @@ const VehiclesSettings: React.FC = () => {
                         {/* Inactive Vehicles */}
                         {inactiveVehicles.length > 0 && (
                             <div className="flex flex-col gap-4">
-                                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Inactifs</h3>
+                                <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest">Inactifs</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 opacity-50">
                                     {inactiveVehicles.map(v => (
                                         <div
                                             key={v.id}
                                             className="flex items-center gap-4 p-5 bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-white/5 rounded-[24px]"
                                         >
-                                            <div className="w-14 h-14 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-400 flex items-center justify-center flex-shrink-0">
+                                            <div className="w-14 h-14 rounded-2xl bg-slate-200 dark:bg-slate-800 text-slate-500 flex items-center justify-center flex-shrink-0">
                                                 {getVehicleIcon(v.type, 24)}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-base font-black text-slate-600 dark:text-slate-400 uppercase truncate">{v.name}</p>
-                                                <p className="text-sm font-bold text-slate-400">{v.plate || 'Sans immatriculation'}</p>
+                                                <p className="text-sm font-bold text-slate-500">{v.plate || 'Sans immatriculation'}</p>
                                             </div>
                                             <button
                                                 onClick={() => toggleActive(v)}
@@ -229,7 +229,7 @@ const VehiclesSettings: React.FC = () => {
                         {vehicles.length === 0 && (
                             <div className="text-center py-20 bg-white/50 dark:bg-slate-800/10 rounded-[32px] border-2 border-dashed border-slate-200 dark:border-slate-800/50">
                                 <Truck size={40} className="mx-auto mb-4 text-slate-300" />
-                                <p className="text-base font-black text-slate-400 uppercase tracking-widest">Aucun véhicule enregistré</p>
+                                <p className="text-base font-black text-slate-500 uppercase tracking-widest">Aucun véhicule enregistré</p>
                                 <p className="text-sm font-bold text-slate-300 mt-1">Ajoutez votre première flotte</p>
                             </div>
                         )}
@@ -257,7 +257,7 @@ const VehiclesSettings: React.FC = () => {
 
                         {/* Type selector */}
                         <div className="flex flex-col gap-3">
-                            <label className="text-[14px] font-black text-slate-400 uppercase tracking-widest ml-1">Type de véhicule</label>
+                            <label className="text-[14px] font-black text-slate-500 uppercase tracking-widest ml-1">Type de véhicule</label>
                             <div className="grid grid-cols-4 gap-2">
                                 {VEHICLE_TYPES.map(t => (
                                     <label
@@ -265,12 +265,12 @@ const VehiclesSettings: React.FC = () => {
                                         className={`flex flex-col items-center gap-2 p-4 rounded-2xl cursor-pointer transition-all border-2 ${
                                             selectedType === t.value
                                                 ? 'bg-primary/10 border-primary text-primary'
-                                                : 'bg-slate-50 dark:bg-slate-900 border-transparent text-slate-400 hover:border-slate-200'
+                                                : 'bg-slate-50 dark:bg-slate-900 border-transparent text-slate-500 hover:border-slate-200'
                                         }`}
                                         onClick={() => setSelectedType(t.value)}
                                     >
                                         {t.icon}
-                                        <span className="text-[12px] font-black uppercase">{t.label}</span>
+                                        <span className="text-xs font-black uppercase">{t.label}</span>
                                     </label>
                                 ))}
                             </div>
@@ -278,7 +278,7 @@ const VehiclesSettings: React.FC = () => {
 
                         {/* Name */}
                         <div className="flex flex-col gap-2">
-                            <label className="text-[14px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom / Modèle</label>
+                            <label className="text-[14px] font-black text-slate-500 uppercase tracking-widest ml-1">Nom / Modèle</label>
                             <input
                                 name="name"
                                 required
@@ -290,7 +290,7 @@ const VehiclesSettings: React.FC = () => {
 
                         {/* Plate */}
                         <div className="flex flex-col gap-2">
-                            <label className="text-[14px] font-black text-slate-400 uppercase tracking-widest ml-1">Immatriculation</label>
+                            <label className="text-[14px] font-black text-slate-500 uppercase tracking-widest ml-1">Immatriculation</label>
                             <input
                                 name="plate"
                                 defaultValue={editingVehicle?.plate}

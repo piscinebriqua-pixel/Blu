@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { format, addWeeks, addDays, startOfDay, parseISO, isBefore } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Sparkles, Calendar, ShieldCheck, Clock } from 'lucide-react';
@@ -175,7 +175,7 @@ export const GenerateRecurrencesModal: React.FC<GenerateRecurrencesModalProps> =
                                                 {p.label}
                                             </span>
                                             {p.id === '1_month' && (
-                                                <span className="text-[10px] font-black uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                                <span className="text-xs font-black uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                                                     Optimal
                                                 </span>
                                             )}

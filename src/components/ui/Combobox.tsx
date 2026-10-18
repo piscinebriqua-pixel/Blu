@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check, Search } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -90,7 +90,7 @@ const Combobox: React.FC<ComboboxProps> = ({
                     className={`
                         w-full h-14 bg-slate-50 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-2xl 
                         ${Icon ? 'pl-14' : 'pl-5'} pr-14
-                        font-bold text-base text-slate-800 dark:text-white placeholder:text-slate-400
+                        font-bold text-base text-slate-800 dark:text-white placeholder:text-slate-500
                         focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 
                         transition-all cursor-pointer ${className}
                     `}
@@ -135,7 +135,7 @@ const Combobox: React.FC<ComboboxProps> = ({
                             ) : (
                                 <div className="px-4 py-8 text-center">
                                     <Search size={28} className="mx-auto text-slate-300 mb-2 opacity-30" />
-                                    <p className="text-sm font-bold text-slate-400">Aucun résultat trouvé</p>
+                                    <p className="text-sm font-bold text-slate-500">Aucun résultat trouvé</p>
                                 </div>
                             )}
                         </div>

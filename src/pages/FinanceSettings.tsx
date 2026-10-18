@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import PageLayout from '../components/PageLayout';
 import ModalLayout from '../components/ModalLayout';
@@ -114,11 +114,11 @@ const FinanceSettings: React.FC = () => {
                     <div className="flex justify-between items-center">
                         <div className="flex flex-col">
                             <h3 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">Types de Dépenses</h3>
-                            <p className="text-xs font-bold text-slate-400">Pour le carburant, outillage, etc.</p>
+                            <p className="text-xs font-bold text-slate-500">Pour le carburant, outillage, etc.</p>
                         </div>
                         <button 
                             onClick={() => { setEditingCat({ type: 'expense' }); setIsCatModalOpen(true); }}
-                            className="h-11 px-6 bg-primary text-white rounded-xl text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-primary/20"
+                            className="h-11 px-6 bg-primary text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-primary/20"
                         >
                             <Plus size={18} /> Ajouter
                         </button>
@@ -150,11 +150,11 @@ const FinanceSettings: React.FC = () => {
                     <div className="flex justify-between items-center">
                         <div className="flex flex-col">
                             <h3 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">Types d'Avances</h3>
-                            <p className="text-xs font-bold text-slate-400">Acomptes, prêts, frais spéciaux</p>
+                            <p className="text-xs font-bold text-slate-500">Acomptes, prêts, frais spéciaux</p>
                         </div>
                         <button 
                             onClick={() => { setEditingCat({ type: 'advance' }); setIsCatModalOpen(true); }}
-                            className="h-11 px-6 bg-amber-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-amber-500/20"
+                            className="h-11 px-6 bg-amber-500 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-amber-500/20"
                         >
                             <Plus size={18} /> Ajouter
                         </button>
@@ -195,7 +195,7 @@ const FinanceSettings: React.FC = () => {
                 >
                     <form id="cat-form" onSubmit={handleCategorySubmit} className="flex flex-col gap-6">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Nom du type</label>
+                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Nom du type</label>
                             <input 
                                 name="name"
                                 required
@@ -205,7 +205,7 @@ const FinanceSettings: React.FC = () => {
                             />
                         </div>
                         <div className="flex flex-col gap-2">
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Sélectionner une Icône</label>
+                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Sélectionner une Icône</label>
                             <div className="grid grid-cols-4 gap-2">
                                 {['Fuel', 'Wrench', 'Package', 'Coffee', 'Truck', 'Star', 'Coins', 'Wallet', 'MoreHorizontal'].map(icon => (
                                     <label key={icon} className="relative flex flex-col items-center gap-2 p-4 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl cursor-pointer hover:bg-slate-100 transition-all has-[:checked]:bg-primary/10 has-[:checked]:border-primary hover:scale-[1.05]">

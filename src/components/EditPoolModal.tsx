@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import Button from './ui/Button';
 import Input from './ui/Input';
@@ -243,7 +243,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                         <Waves size={24} />
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">Configuration technique</p>
+                        <p className="text-xs font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">Configuration technique</p>
                         <h3 className="text-lg font-bold uppercase text-slate-800 dark:text-white leading-none">{pool.name}</h3>
                     </div>
                 </div>
@@ -273,8 +273,8 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                                 <Calendar size={18} />
                             </div>
                             <div>
-                                <h4 className="text-[13px] font-black uppercase text-slate-800 dark:text-white tracking-widest">Contrat Entretien</h4>
-                                <p className="text-[13px] font-bold text-slate-500 uppercase tracking-tight">Planification automatique</p>
+                                <h4 className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-widest">Contrat Entretien</h4>
+                                <p className="text-xs font-bold text-slate-500 uppercase tracking-tight">Planification automatique</p>
                             </div>
                         </div>
                         <button
@@ -290,7 +290,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                     {formData.is_contracted && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
                             <div className="flex flex-col gap-2">
-                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Modèle d'intervention</label>
+                                <label className="text-xs font-black uppercase text-slate-500 ml-1">Modèle d'intervention</label>
                                 <select
                                     className="search-input !h-14 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.template_id}
@@ -302,7 +302,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                                 </select>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Technicien attitré</label>
+                                <label className="text-xs font-black uppercase text-slate-500 ml-1">Technicien attitré</label>
                                 <select
                                     className="search-input !h-14 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.technician_id}
@@ -314,7 +314,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                                 </select>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Fréquence</label>
+                                <label className="text-xs font-black uppercase text-slate-500 ml-1">Fréquence</label>
                                 <select
                                     className="search-input !h-14 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.maintenance_frequency}
@@ -328,7 +328,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                                 </select>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Jour préféré</label>
+                                <label className="text-xs font-black uppercase text-slate-500 ml-1">Jour préféré</label>
                                 <select
                                     className="search-input !h-14 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.preferred_day}
@@ -358,8 +358,8 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                 {/* Section Photos */}
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between px-2">
-                        <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Gestion des Photos</label>
-                        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em]">Gestion des Photos</label>
+                        <span className="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
                             {existingPhotos.length + newPhotos.length - photosToDelete.length} au total
                         </span>
                     </div>
@@ -373,7 +373,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                                     <button
                                         type="button"
                                         onClick={() => handleSetMainPhoto(photo.id)}
-                                        className={`p-1.5 rounded-lg shadow-lg flex items-center justify-center ${photo.is_main ? 'bg-amber-400 text-white' : 'bg-white text-slate-400 hover:text-amber-500'}`}
+                                        className={`p-1.5 rounded-lg shadow-lg flex items-center justify-center ${photo.is_main ? 'bg-amber-400 text-white' : 'bg-white text-slate-500 hover:text-amber-500'}`}
                                         title="Photo de couverture"
                                     >
                                         <Star size={14} fill={photo.is_main ? 'currentColor' : 'none'} />
@@ -388,7 +388,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                                     </button>
                                 </div>
                                 {photo.is_main && (
-                                    <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black uppercase rounded-md shadow-lg">
+                                    <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-emerald-500 text-white text-xs font-black uppercase rounded-md shadow-lg">
                                         Principale
                                     </span>
                                 )}
@@ -406,7 +406,7 @@ const EditPoolModal: React.FC<EditPoolModalProps> = ({ pool, onClose, onSuccess 
                                 >
                                     <X size={14} />
                                 </button>
-                                <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-blue-500 text-white text-[8px] font-black uppercase rounded-md shadow-lg">
+                                <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-blue-500 text-white text-xs font-black uppercase rounded-md shadow-lg">
                                     Nouveau
                                 </span>
                             </div>

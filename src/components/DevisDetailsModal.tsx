@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import ModalLayout from './ModalLayout';
 import { 
   MessageCircle, 
@@ -78,7 +78,7 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
         {/* Header Section */}
         <div className="flex flex-col items-center gap-2 print:gap-1 print:mt-4">
           <div className="flex flex-col items-center">
-            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500/60 mb-1 print:mb-0">
+            <span className="text-xs font-black uppercase tracking-[0.3em] text-blue-500/60 mb-1 print:mb-0">
               Proposition Commerciale
             </span>
             <h2 className="text-2xl print:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight text-center">
@@ -100,7 +100,7 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2 flex-wrap justify-center mt-2 print:mt-1">
-            <div className={`px-4 py-1.5 print:py-1 rounded-xl uppercase tracking-widest text-[11px] print:text-[9px] font-black ${
+            <div className={`px-4 py-1.5 print:py-1 rounded-xl uppercase tracking-widest text-xs print:text-[9px] font-black ${
               devis.status === 'closed'
                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300'
                 : devis.status === 'cancelled'
@@ -111,14 +111,14 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
             </div>
 
             {devis.invoice_id ? (
-              <div className="px-3.5 py-1.5 rounded-xl uppercase tracking-widest text-[11px] font-black bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 flex items-center gap-1.5">
+              <div className="px-3.5 py-1.5 rounded-xl uppercase tracking-widest text-xs font-black bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 flex items-center gap-1.5">
                 <Receipt size={14} /> Facturé
               </div>
             ) : (
               <button
                 type="button"
                 onClick={handleConvert}
-                className="px-3.5 py-1.5 rounded-xl uppercase tracking-widest text-[11px] font-black bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all print:hidden"
+                className="px-3.5 py-1.5 rounded-xl uppercase tracking-widest text-xs font-black bg-blue-600 text-white hover:bg-blue-700 flex items-center gap-1.5 shadow-sm active:scale-95 transition-all print:hidden"
                 title="Convertir ce devis en facture"
               >
                 <Receipt size={14} /> Facturer ce devis
@@ -134,22 +134,22 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
               <div className="hidden print:flex flex-col border-b border-slate-100 pb-4 mb-2">
                 <div className="flex justify-between items-start">
                   <div className="space-y-0.5">
-                    <div className="text-[12px] font-black uppercase text-slate-900 leading-none">Votre Prestataire</div>
-                    <div className="text-[10px] font-bold text-slate-600">Tel: {devis.company_phone}</div>
-                    <div className="text-[10px] font-bold text-slate-600">Email: {devis.company_email}</div>
-                    <div className="text-[10px] font-bold text-slate-600">{devis.company_address}</div>
+                    <div className="text-xs font-black uppercase text-slate-900 leading-none">Votre Prestataire</div>
+                    <div className="text-xs font-bold text-slate-600">Tel: {devis.company_phone}</div>
+                    <div className="text-xs font-bold text-slate-600">Email: {devis.company_email}</div>
+                    <div className="text-xs font-bold text-slate-600">{devis.company_address}</div>
                     {devis.company_tax_id && (
-                      <div className="text-[10px] font-black uppercase text-slate-700">MF: {devis.company_tax_id}</div>
+                      <div className="text-xs font-black uppercase text-slate-700">MF: {devis.company_tax_id}</div>
                     )}
                   </div>
                   <div className="text-right space-y-0.5">
-                    <div className="text-[12px] font-black uppercase text-slate-900 leading-none">Client</div>
-                    <div className="text-[11px] font-bold text-slate-800">{devis.client?.first_name} {devis.client?.last_name}</div>
+                    <div className="text-xs font-black uppercase text-slate-900 leading-none">Client</div>
+                    <div className="text-xs font-bold text-slate-800">{devis.client?.first_name} {devis.client?.last_name}</div>
                     {devis.client?.matricule_fiscal && (
-                      <div className="text-[10px] font-black text-slate-900 uppercase">MF Client : {devis.client.matricule_fiscal}</div>
+                      <div className="text-xs font-black text-slate-900 uppercase">MF Client : {devis.client.matricule_fiscal}</div>
                     )}
-                    {devis.client?.address && <div className="text-[10px] font-medium text-slate-600">{devis.client.address}</div>}
-                    {devis.client?.city && <div className="text-[10px] font-medium text-slate-600">{devis.client.city}</div>}
+                    {devis.client?.address && <div className="text-xs font-medium text-slate-600">{devis.client.address}</div>}
+                    {devis.client?.city && <div className="text-xs font-medium text-slate-600">{devis.client.city}</div>}
                   </div>
                 </div>
               </div>
@@ -168,28 +168,28 @@ const DevisDetailsModal: React.FC<DevisDetailsModalProps> = ({
         {/* Quick Info Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 print:grid-cols-4 gap-2 print:gap-1">
           <div className="p-4 print:p-2 bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg border border-slate-100 dark:border-white/5 flex flex-col">
-            <span className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 print:mb-0">Numéro</span>
-            <span className="text-[13px] print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
+            <span className="text-xs print:text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 print:mb-0">Numéro</span>
+            <span className="text-xs print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
               {devis.number}
             </span>
           </div>
           <div className="p-4 print:p-2 bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg border border-slate-100 dark:border-white/5 flex flex-col">
-            <span className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 print:mb-0">Date Devis</span>
-            <span className="text-[13px] print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase">
+            <span className="text-xs print:text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 print:mb-0">Date Devis</span>
+            <span className="text-xs print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase">
               {new Date(devis.created_at).toLocaleDateString('fr-FR')}
             </span>
           </div>
           <div className="p-4 print:p-2 bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg border border-slate-100 dark:border-white/5 flex flex-col">
-            <span className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 print:mb-0">Articles</span>
-            <span className="text-[13px] print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
+            <span className="text-xs print:text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 print:mb-0">Articles</span>
+            <span className="text-xs print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
               {items.length} lignes
             </span>
           </div>
           <div className="p-4 print:p-2 bg-slate-50 dark:bg-white/5 rounded-3xl print:rounded-lg border border-slate-100 dark:border-white/5 flex flex-col">
-            <span className="text-[10px] print:text-[8px] font-black text-slate-400 uppercase tracking-widest mb-1 print:mb-0">
+            <span className="text-xs print:text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1 print:mb-0">
               {devis.client?.matricule_fiscal ? 'MF Client' : 'Ville'}
             </span>
-            <span className="text-[13px] print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
+            <span className="text-xs print:text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate">
               {devis.client?.matricule_fiscal ? devis.client.matricule_fiscal : (devis.client?.city || 'N/A')}
             </span>
           </div>

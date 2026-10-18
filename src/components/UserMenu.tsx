@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { LogOut, User, Users, Shield, Receipt } from 'lucide-react';
@@ -48,8 +48,8 @@ const UserMenu: React.FC = () => {
                 className="flex items-center gap-3 pl-3 pr-1.5 py-1.5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 cursor-pointer hover:bg-white/20 transition-all group shadow-lg"
             >
                 <div className="flex flex-col text-right hidden xs:block">
-                    <p className="text-[13px] font-black text-white leading-none">{profile.name}</p>
-                    <p className="text-[9px] font-black text-blue-100/40 uppercase tracking-widest mt-1">
+                    <p className="text-xs font-black text-white leading-none">{profile.name}</p>
+                    <p className="text-xs font-black text-blue-100/40 uppercase tracking-widest mt-1">
                         {profile.role === 'admin' ? 'Administrateur' : 'Technicien'}
                     </p>
                 </div>
@@ -66,7 +66,7 @@ const UserMenu: React.FC = () => {
                             <>
                                 <button
                                     onClick={() => { navigate('/admin/users'); setIsMenuOpen(false); }}
-                                    className="w-full px-4 py-3 text-left text-[11px] font-black text-slate-400 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
+                                    className="w-full px-4 py-3 text-left text-xs font-black text-slate-500 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
                                 >
                                     <Users size={14} className="text-emerald-500" />
                                     Gestion Utilisateurs
@@ -80,7 +80,7 @@ const UserMenu: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={() => { navigate('/settings'); setIsMenuOpen(false); }}
-                                    className="w-full px-4 py-3 text-left text-xs font-black text-slate-400 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
+                                    className="w-full px-4 py-3 text-left text-xs font-black text-slate-500 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
                                 >
                                     <Shield size={16} className="text-blue-500" />
                                     Administration
@@ -89,7 +89,7 @@ const UserMenu: React.FC = () => {
                         )}
                         <button
                             onClick={() => { navigate('/profile'); setIsMenuOpen(false); }}
-                            className="w-full px-4 py-3 text-left text-[11px] font-black text-slate-400 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
+                            className="w-full px-4 py-3 text-left text-xs font-black text-slate-500 hover:text-white hover:bg-white/5 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
                         >
                             <User size={14} className="text-blue-400" />
                             Mon Profil
@@ -97,7 +97,7 @@ const UserMenu: React.FC = () => {
                         <div className="h-px bg-white/5 my-1 mx-4" />
                         <button
                             onClick={handleLogout}
-                            className="w-full px-4 py-3 text-left text-[11px] font-black text-rose-500 hover:bg-rose-500/10 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
+                            className="w-full px-4 py-3 text-left text-xs font-black text-rose-500 hover:bg-rose-500/10 flex items-center gap-3 transition-colors uppercase tracking-[0.1em]"
                         >
                             <LogOut size={14} />
                             Déconnexion

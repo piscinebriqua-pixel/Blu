@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import ModalLayout from './ModalLayout';
 import { toast } from 'react-hot-toast';
@@ -133,7 +133,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                         <Waves size={24} />
                     </div>
                     <div className="flex flex-col">
-                        <p className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">Configuration technique</p>
+                        <p className="text-xs font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">Configuration technique</p>
                         <h3 className="text-lg font-bold uppercase text-slate-800 dark:text-white leading-none">Détails du bassin</h3>
                     </div>
                 </div>
@@ -163,8 +163,8 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></svg>
                             </div>
                             <div>
-                                <h4 className="text-[13px] font-black uppercase text-slate-800 dark:text-white tracking-widest">Contrat Entretien</h4>
-                                <p className="text-[13px] font-bold text-slate-500 uppercase tracking-tight">Planification automatique</p>
+                                <h4 className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-widest">Contrat Entretien</h4>
+                                <p className="text-xs font-bold text-slate-500 uppercase tracking-tight">Planification automatique</p>
                             </div>
                         </div>
                         <button
@@ -179,7 +179,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                     {formData.is_contracted && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-300">
                             <div className="flex flex-col gap-2">
-                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Modèle d'intervention</label>
+                                <label className="text-xs font-black uppercase text-slate-500 ml-1">Modèle d'intervention</label>
                                 <select
                                     className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.template_id}
@@ -190,7 +190,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                                 </select>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Technicien attitré</label>
+                                <label className="text-xs font-black uppercase text-slate-500 ml-1">Technicien attitré</label>
                                 <select
                                     className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.technician_id}
@@ -201,7 +201,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                                 </select>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Fréquence</label>
+                                <label className="text-xs font-black uppercase text-slate-500 ml-1">Fréquence</label>
                                 <select
                                     className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.maintenance_frequency}
@@ -214,7 +214,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                                 </select>
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-[13px] font-black uppercase text-slate-500 ml-1">Jour préféré</label>
+                                <label className="text-xs font-black uppercase text-slate-500 ml-1">Jour préféré</label>
                                 <select
                                     className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 text-base font-bold text-slate-800 dark:text-white"
                                     value={formData.preferred_day}
@@ -236,8 +236,8 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                 {/* Section Photos */}
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between px-2">
-                        <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Photos du Bassin</label>
-                        <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                        <label className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-[0.2em]">Photos du Bassin</label>
+                        <span className="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
                             {photos.length} Photo(s)
                         </span>
                     </div>
@@ -254,7 +254,7 @@ const AddPoolModal: React.FC<AddPoolModalProps> = ({ clientId, onClose, onSucces
                                     <X size={14} />
                                 </button>
                                 {index === 0 && (
-                                    <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black uppercase rounded-md shadow-lg">
+                                    <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-emerald-500 text-white text-xs font-black uppercase rounded-md shadow-lg">
                                         Principale
                                     </span>
                                 )}

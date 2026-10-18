@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import ModalLayout from '../ModalLayout';
 import { Calendar, XCircle, PauseCircle, Clock, Check } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -137,7 +137,7 @@ export const TourUnvisitedModal: React.FC<TourUnvisitedModalProps> = ({
             onChange={(e) => setReason(e.target.value)}
             placeholder="Précisez la situation ou un détail particulier..."
             rows={2}
-            className="w-full mt-1 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-base text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full mt-1 p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-base text-slate-800 dark:text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 

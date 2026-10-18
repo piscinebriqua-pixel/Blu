@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { supabase } from '../lib/supabase';
 import PageLayout from '../components/PageLayout';
@@ -82,7 +82,7 @@ const PoolCatalogue: React.FC = () => {
         >
             {/* Search Bar */}
             <div className="relative mb-8">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
                 <input
                     type="text"
                     placeholder="Rechercher par client, ville ou bassin..."
@@ -118,7 +118,7 @@ const PoolCatalogue: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="absolute bottom-4 left-4 right-4">
-                                     <span className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-[10px] font-black uppercase text-slate-900 dark:text-white px-3 py-1.5 rounded-full shadow-lg">
+                                     <span className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md text-xs font-black uppercase text-slate-900 dark:text-white px-3 py-1.5 rounded-full shadow-lg">
                                         {photo.city}
                                      </span>
                                 </div>
@@ -127,7 +127,7 @@ const PoolCatalogue: React.FC = () => {
                                 <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase leading-tight line-clamp-1">{photo.client_name}</h3>
                                 <div className="flex items-center gap-2 mt-2">
                                     <Waves size={12} className="text-blue-500" />
-                                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">{photo.pool_name}</span>
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{photo.pool_name}</span>
                                 </div>
                             </div>
                         </div>
@@ -169,7 +169,7 @@ const PoolCatalogue: React.FC = () => {
                                 <div className="flex flex-col">
                                     <h2 className="text-2xl font-black uppercase tracking-tight">{selectedPhoto.client_name}</h2>
                                     <div className="flex items-center gap-3">
-                                        <span className="text-slate-400 font-bold uppercase text-xs tracking-widest flex items-center gap-1">
+                                        <span className="text-slate-500 font-bold uppercase text-xs tracking-widest flex items-center gap-1">
                                             <MapPin size={12} /> {selectedPhoto.city}
                                         </span>
                                         <span className="w-1 h-1 rounded-full bg-white/20" />

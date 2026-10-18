@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+﻿import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TrendingUp, TrendingDown, ArrowUpRight, Calendar } from 'lucide-react';
 import { formatRevenue } from '../../lib/formatters';
@@ -121,7 +121,7 @@ export const AnnualPerformanceBentoCard: React.FC<AnnualPerformanceBentoCardProp
                         }`}>
                             {growthPercent >= 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                             <span>{growthPercent >= 0 ? `+${growthPercent}%` : `${growthPercent}%`}</span>
-                            <span className="text-slate-400 font-semibold text-xs ml-0.5">vs m-1</span>
+                            <span className="text-slate-500 font-semibold text-xs ml-0.5">vs m-1</span>
                         </div>
                     </div>
                 </div>
@@ -284,7 +284,7 @@ export const AnnualPerformanceBentoCard: React.FC<AnnualPerformanceBentoCardProp
                                             ? 'font-black text-emerald-600 dark:text-emerald-400 underline decoration-2' 
                                             : hasRevenue 
                                                 ? 'font-bold text-slate-700 dark:text-slate-300' 
-                                                : 'font-semibold text-slate-400 dark:text-slate-500'
+                                                : 'font-semibold text-slate-500 dark:text-slate-500'
                                 }`}
                             >
                                 {label}

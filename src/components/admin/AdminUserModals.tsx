@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import ReactDOM from 'react-dom';
 import { Key, UserPlus } from 'lucide-react';
 import type { Profile, Technician, Client, AdminActionType } from './types';
@@ -189,7 +189,7 @@ export const AdminUserModals: React.FC<AdminUserModalsProps> = ({
               value={passwordInput}
               onChange={(e) => setPasswordInput(e.target.value)}
             />
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Un appel sécurisé sera effectué pour réassigner le mot de passe utilisateur.
             </p>
           </div>

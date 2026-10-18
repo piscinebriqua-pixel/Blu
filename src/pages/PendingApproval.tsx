@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, Clock, ShieldAlert, RotateCw } from 'lucide-react';
@@ -42,7 +42,7 @@ const PendingApproval: React.FC = () => {
                     </p>
 
                     <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl px-4 py-3 mb-6">
-                        <span className="text-xs font-black uppercase text-slate-400 tracking-wider block mb-1">
+                        <span className="text-xs font-black uppercase text-slate-500 tracking-wider block mb-1">
                             Compte connecté
                         </span>
                         <span className="text-sm font-bold text-slate-700 dark:text-slate-200 break-all">
@@ -79,7 +79,7 @@ const PendingApproval: React.FC = () => {
                     </div>
                 </div>
 
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] opacity-80">
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.2em] opacity-80">
                     BCCP Security
                 </p>
             </div>

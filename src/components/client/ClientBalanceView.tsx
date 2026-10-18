@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { formatBalance } from "../../lib/formatters";
 import type { Client } from "./types";
 
@@ -35,7 +35,7 @@ export const ClientBalanceView: React.FC<ClientBalanceViewProps> = ({
       </div>
 
       <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white shadow-xl shadow-slate-900/20 text-center">
-        <p className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-3">
+        <p className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-3">
           Solde Final
         </p>
         <h3 className="text-5xl font-black tracking-tighter">
@@ -46,7 +46,7 @@ export const ClientBalanceView: React.FC<ClientBalanceViewProps> = ({
               {formatBalance(client.balance).label}
             </span>
           ) : (
-            <span className="text-slate-400">0 DT</span>
+            <span className="text-slate-500">0 DT</span>
           )}
         </h3>
       </div>

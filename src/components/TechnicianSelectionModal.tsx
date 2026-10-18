@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Search, Check, User } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import ModalLayout from './ModalLayout';
@@ -90,7 +90,7 @@ const TechnicianSelectionModal: React.FC<TechnicianSelectionModalProps> = ({ isO
                     ) : filtered.length === 0 ? (
                         <div className="text-center py-8 text-slate-500 dark:text-slate-500">
                             <User size={32} className="mx-auto mb-2 opacity-50" />
-                            <p className="text-[13px] font-bold uppercase">Aucun technicien trouvé</p>
+                            <p className="text-xs font-bold uppercase">Aucun technicien trouvé</p>
                         </div>
                     ) : (
                         filtered.map(tech => {
@@ -114,7 +114,7 @@ const TechnicianSelectionModal: React.FC<TechnicianSelectionModalProps> = ({ isO
                                     </div>
                                     <div className="text-left flex-1">
                                         <p className={`text-base font-black ${isSelected ? 'text-blue-900 dark:text-blue-300' : 'text-slate-700 dark:text-slate-200'}`}>{tech.full_name}</p>
-                                        <p className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wide">Technicien</p>
+                                        <p className="text-xs font-bold text-slate-500 dark:text-slate-500 uppercase tracking-wide">Technicien</p>
                                     </div>
                                     {isSelected && (
                                         <div className="w-11 h-11 rounded-full bg-blue-500 flex items-center justify-center text-white shadow-lg animate-in zoom-in duration-300">

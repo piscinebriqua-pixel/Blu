@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import type { DevisRecord } from '../../services/devisService';
 import { 
   FileText, 
@@ -101,7 +101,7 @@ export const DevisCard: React.FC<DevisCardProps> = ({
       {/* SECTION DROITE : MONTANT & ACTIONS RAPIDES */}
       <div className="flex items-center justify-between md:justify-end gap-3 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
         <div className="text-left md:text-right">
-          <span className="text-xs font-bold text-slate-400 block uppercase">Total Devis</span>
+          <span className="text-xs font-bold text-slate-500 block uppercase">Total Devis</span>
           <p className="text-lg font-black text-slate-900 dark:text-white">
             {(Number(devis.total_amount) || 0).toFixed(0)}{' '}
             <span className="text-xs text-slate-500 font-bold">DT</span>

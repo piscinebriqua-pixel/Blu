@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import ModalLayout from '../ModalLayout';
 import Combobox from '../ui/Combobox';
 import { LayoutGrid, Wallet, Package as PackageIcon } from 'lucide-react';
@@ -104,7 +104,7 @@ export const TechnicianFinanceModals: React.FC<TechnicianFinanceModalsProps> = (
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                   Montant (TND)
                 </label>
                 <input
@@ -118,7 +118,7 @@ export const TechnicianFinanceModals: React.FC<TechnicianFinanceModalsProps> = (
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                   Notes / Justification
                 </label>
                 <textarea
@@ -202,7 +202,7 @@ export const TechnicianFinanceModals: React.FC<TechnicianFinanceModalsProps> = (
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                 Montant de l'avance (TND)
               </label>
               <input
@@ -216,7 +216,7 @@ export const TechnicianFinanceModals: React.FC<TechnicianFinanceModalsProps> = (
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                 Motif
               </label>
               <textarea
@@ -279,7 +279,7 @@ export const TechnicianFinanceModals: React.FC<TechnicianFinanceModalsProps> = (
             }}
           >
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                 Mode de Versement
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -301,7 +301,7 @@ export const TechnicianFinanceModals: React.FC<TechnicianFinanceModalsProps> = (
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                 Montant versé (TND)
               </label>
               <input
@@ -315,7 +315,7 @@ export const TechnicianFinanceModals: React.FC<TechnicianFinanceModalsProps> = (
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
+              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">
                 Commentaires
               </label>
               <textarea

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import ModalLayout from '../ModalLayout';
 import { invoiceService } from '../../services/invoiceService';
 import { Search, Tag, Package, Plus, Check } from 'lucide-react';
@@ -85,7 +85,7 @@ export const CataloguePickerModal: React.FC<CataloguePickerModalProps> = ({
 
         {/* Barre de recherche */}
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
           <input
             type="text"
             value={searchTerm}
@@ -98,12 +98,12 @@ export const CataloguePickerModal: React.FC<CataloguePickerModalProps> = ({
         {/* Liste */}
         <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
           {loading ? (
-            <div className="py-8 text-center text-xs font-bold text-slate-400 uppercase">
+            <div className="py-8 text-center text-xs font-bold text-slate-500 uppercase">
               Chargement du catalogue...
             </div>
           ) : activeTab === 'services' ? (
             filteredServices.length === 0 ? (
-              <div className="py-8 text-center text-xs font-bold text-slate-400 uppercase">
+              <div className="py-8 text-center text-xs font-bold text-slate-500 uppercase">
                 Aucune prestation trouvée
               </div>
             ) : (
@@ -147,7 +147,7 @@ export const CataloguePickerModal: React.FC<CataloguePickerModalProps> = ({
               })
             )
           ) : filteredProducts.length === 0 ? (
-            <div className="py-8 text-center text-xs font-bold text-slate-400 uppercase">
+            <div className="py-8 text-center text-xs font-bold text-slate-500 uppercase">
               Aucun produit trouvé
             </div>
           ) : (

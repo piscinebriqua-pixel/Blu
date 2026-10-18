@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import ModalLayout from './ModalLayout';
 import Button from './ui/Button';
 import { supabase } from '../lib/supabase';
@@ -85,8 +85,8 @@ const AssignPartnerModal: React.FC<AssignPartnerModalProps> = ({ clientId, onClo
             className="max-w-md"
             actions={
                 <div className="flex gap-4 w-full">
-                    <Button variant="secondary" onClick={onClose} className="flex-1 font-black text-[11px] h-14">ANNULER</Button>
-                    <Button onClick={handleSubmit} loading={loading} className="flex-[2] btn-primary font-black text-[11px] h-14" form="assign-partner-form">
+                    <Button variant="secondary" onClick={onClose} className="flex-1 font-black text-xs h-14">ANNULER</Button>
+                    <Button onClick={handleSubmit} loading={loading} className="flex-[2] btn-primary font-black text-xs h-14" form="assign-partner-form">
                         AFFECTER AU CLIENT
                     </Button>
                 </div>
@@ -94,7 +94,7 @@ const AssignPartnerModal: React.FC<AssignPartnerModalProps> = ({ clientId, onClo
         >
             <form id="assign-partner-form" onSubmit={handleSubmit} className="flex flex-col gap-5 pb-10 p-4">
                 <div className="flex flex-col gap-2">
-                    <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
                         <Briefcase size={12} className="text-slate-500" /> Quel poste ?
                     </label>
                     <div className="relative group">
@@ -111,14 +111,14 @@ const AssignPartnerModal: React.FC<AssignPartnerModalProps> = ({ clientId, onClo
                                 <option key={r.value} value={r.value}>{r.label}</option>
                             ))}
                         </select>
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
                             <ChevronDown size={18} />
                         </div>
                     </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1 flex items-center gap-1">
                         <User size={12} className="text-slate-500" /> Choisir le partenaire
                     </label>
                     <div className="flex gap-2">
@@ -139,7 +139,7 @@ const AssignPartnerModal: React.FC<AssignPartnerModalProps> = ({ clientId, onClo
                                     </option>
                                 ))}
                             </select>
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
                                 <ChevronDown size={18} />
                             </div>
                         </div>

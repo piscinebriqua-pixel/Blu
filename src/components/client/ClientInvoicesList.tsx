@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { invoiceService, type InvoiceWithItems } from '../../services/invoiceService';
 import CreateInvoiceModal from '../invoice/CreateInvoiceModal';
 import InvoiceDetailsModal from '../invoice/InvoiceDetailsModal';
@@ -127,7 +127,7 @@ export const ClientInvoicesList: React.FC<ClientInvoicesListProps> = ({
                   <span className="text-sm font-black text-slate-900 dark:text-white">
                     {Number(inv.total_ttc).toFixed(3)} DT
                   </span>
-                  <ChevronRight size={18} className="text-slate-400" />
+                  <ChevronRight size={18} className="text-slate-500" />
                 </div>
               </div>
             );

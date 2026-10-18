@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { FileText, Edit2, Copy, Trash2 } from "lucide-react";
 import type { Devis } from "./types";
 
@@ -20,7 +20,7 @@ export const ClientDevisList: React.FC<ClientDevisListProps> = ({
   if (devis.length === 0) {
     return (
       <div className="py-16 text-center bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-slate-700">
-        <FileText size={44} className="mx-auto mb-3 text-slate-400" />
+        <FileText size={44} className="mx-auto mb-3 text-slate-500" />
         <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">
           Aucun devis enregistré
         </p>

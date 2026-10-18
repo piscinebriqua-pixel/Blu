@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import ModalLayout from '../ModalLayout';
 import Button from '../ui/Button';
 import { invoiceService, type InvoiceSettings } from '../../services/invoiceService';
@@ -83,7 +83,7 @@ export const InvoiceSettingsModal: React.FC<InvoiceSettingsModalProps> = ({
             Préfixe de facture
           </label>
           <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500">
               <Hash size={18} />
             </span>
             <input
@@ -116,7 +116,7 @@ export const InvoiceSettingsModal: React.FC<InvoiceSettingsModalProps> = ({
         {/* Aperçu en direct */}
         <div className="p-4 rounded-2xl bg-slate-900 text-white flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
               Aperçu de la prochaine facture
             </p>
             <p className="text-xl font-black text-emerald-400 tracking-wider mt-0.5">

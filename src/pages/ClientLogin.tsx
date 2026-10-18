@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Phone, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
@@ -63,7 +63,7 @@ const ClientLogin: React.FC = () => {
                     />
                     <div className="flex flex-col text-left">
                         <h1 className="text-3xl font-black text-white tracking-widest leading-none">BCCP</h1>
-                        <p className="text-[12px] font-black text-blue-100/90 uppercase tracking-widest leading-none mt-1 opacity-80">Espace Client</p>
+                        <p className="text-xs font-black text-blue-100/90 uppercase tracking-widest leading-none mt-1 opacity-80">Espace Client</p>
                     </div>
                 </div>
 
@@ -78,18 +78,18 @@ const ClientLogin: React.FC = () => {
                     {error && (
                         <div className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-start gap-3 mb-6 animate-in fade-in zoom-in-95">
                             <AlertCircle size={20} className="text-red-500 shrink-0 mt-0.5" />
-                            <p className="text-red-600 text-[13px] font-bold leading-snug">{error}</p>
+                            <p className="text-red-600 text-xs font-bold leading-snug">{error}</p>
                         </div>
                     )}
 
                     <form onSubmit={handleLogin} className="flex flex-col gap-6">
                         <div className="space-y-2">
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Numéro de téléphone</label>
+                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Numéro de téléphone</label>
                             <div className="relative group">
-                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />
+                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" size={18} />
                                 <input
                                     type="tel"
-                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-2xl border-2 border-transparent font-bold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/10 transition-all text-lg"
+                                    className="w-full pl-12 pr-4 py-4 bg-slate-50 rounded-2xl border-2 border-transparent font-bold text-slate-800 placeholder:text-slate-500 focus:outline-none focus:border-blue-500/20 focus:ring-4 focus:ring-blue-500/10 transition-all text-lg"
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                     placeholder="06 12 34 56 78"
@@ -116,7 +116,7 @@ const ClientLogin: React.FC = () => {
                 </div>
 
                 <div className="text-center">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] opacity-60">
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-[0.2em] opacity-60">
                         Propulsé par Blu • Système de Gestion Piscine
                     </p>
                 </div>

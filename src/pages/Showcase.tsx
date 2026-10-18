@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
     Check,
     AlertTriangle,
@@ -84,7 +84,7 @@ const MockupShowcase: React.FC = () => {
                 <button title="Retour" onClick={() => setView('dash')} className="btn-back-flow">
                     <ArrowLeft size={20} />
                 </button>
-                <div className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-full text-[13px] font-bold shadow-lg shadow-blue-500/30">
+                <div className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg shadow-blue-500/30">
                     <Sun size={14} /> Outdoor Mode
                 </div>
             </header>
@@ -106,7 +106,7 @@ const MockupShowcase: React.FC = () => {
                             </svg>
                             <span className="gauge-value">6.8</span>
                         </div>
-                        <span className="text-[13px] font-bold text-slate-500 uppercase">pH Level</span>
+                        <span className="text-xs font-bold text-slate-500 uppercase">pH Level</span>
                     </div>
 
                     <div className="circular-gauge">
@@ -120,7 +120,7 @@ const MockupShowcase: React.FC = () => {
                                 <span className="text-base text-slate-500">ppm</span>
                             </div>
                         </div>
-                        <span className="text-[13px] font-bold text-slate-500 uppercase">Chlorine</span>
+                        <span className="text-xs font-bold text-slate-500 uppercase">Chlorine</span>
                     </div>
                 </div>
 
@@ -141,7 +141,7 @@ const MockupShowcase: React.FC = () => {
 
                 <div className="photo-dropzone">
                     <Camera size={28} className="mx-auto mb-2 text-blue-500" />
-                    <p className="text-[13px] font-bold">Drag & Drop Photos</p>
+                    <p className="text-xs font-bold">Drag & Drop Photos</p>
                     <p className="text-xs">Before / After</p>
                 </div>
 

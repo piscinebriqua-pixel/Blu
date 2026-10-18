@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import type { DevisStats } from '../../services/devisService';
 import { FileText, CheckCircle2, Clock, Plus } from 'lucide-react';
 
@@ -21,7 +21,7 @@ export const DevisStatsGrid: React.FC<DevisStatsGridProps> = ({ stats, onNewDevi
             <span className="text-xs text-slate-500 font-bold">DT</span>
           </p>
         </div>
-        <span className="text-xs font-bold text-slate-400 mt-2 block">
+        <span className="text-xs font-bold text-slate-500 mt-2 block">
           {stats.pendingCount} proposition(s) en cours
         </span>
       </div>
@@ -37,7 +37,7 @@ export const DevisStatsGrid: React.FC<DevisStatsGridProps> = ({ stats, onNewDevi
             <span className="text-xs text-slate-500 font-bold">DT</span>
           </p>
         </div>
-        <span className="text-xs font-bold text-slate-400 mt-2 block">
+        <span className="text-xs font-bold text-slate-500 mt-2 block">
           {stats.closedCount} devis signé(s)
         </span>
       </div>
@@ -52,7 +52,7 @@ export const DevisStatsGrid: React.FC<DevisStatsGridProps> = ({ stats, onNewDevi
             {stats.totalCount}
           </p>
         </div>
-        <span className="text-xs font-bold text-slate-400 mt-2 block">
+        <span className="text-xs font-bold text-slate-500 mt-2 block">
           {stats.cancelledCount} classé(s) ou refusé(s)
         </span>
       </div>

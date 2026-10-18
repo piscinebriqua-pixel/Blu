@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import PageLayout from '../components/PageLayout';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -82,9 +82,9 @@ const CompanySettings: React.FC = () => {
                 <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-sm border border-slate-100 dark:border-white/5 space-y-6">
                     <div className="space-y-4">
                         <div className="flex flex-col gap-2">
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">Numéro de Téléphone</label>
+                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Numéro de Téléphone</label>
                             <div className="relative">
-                                <Phone className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <Phone className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                 <input
                                     type="text"
                                     value={settings.phone}
@@ -96,9 +96,9 @@ const CompanySettings: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">Email de contact</label>
+                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Email de contact</label>
                             <div className="relative">
-                                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                 <input
                                     type="email"
                                     value={settings.email}
@@ -110,9 +110,9 @@ const CompanySettings: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">Adresse de la société</label>
+                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Adresse de la société</label>
                             <div className="relative">
-                                <MapPin className="absolute left-5 top-5 text-slate-400" size={18} />
+                                <MapPin className="absolute left-5 top-5 text-slate-500" size={18} />
                                 <textarea
                                     value={settings.address}
                                     onChange={(e) => setSettings({ ...settings, address: e.target.value })}
@@ -123,9 +123,9 @@ const CompanySettings: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">Matricule Fiscal</label>
+                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Matricule Fiscal</label>
                             <div className="relative">
-                                <Hash className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                <Hash className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                                 <input
                                     type="text"
                                     value={settings.tax_id}
@@ -137,7 +137,7 @@ const CompanySettings: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-4">Pied de page par défaut</label>
+                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Pied de page par défaut</label>
                             <div className="relative">
                                 <textarea
                                     value={settings.default_footer}

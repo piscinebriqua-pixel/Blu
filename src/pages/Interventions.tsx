@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../components/PageLayout";
 import NewIntervention from "../components/NewIntervention";
@@ -192,7 +192,7 @@ const Interventions: React.FC = () => {
       <div className="flex gap-3">
         <div className="relative flex-1 group">
           <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors"
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors"
             size={18}
           />
           <input
@@ -254,9 +254,9 @@ const Interventions: React.FC = () => {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === tab
+            className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all ${activeTab === tab
                 ? "bg-white dark:bg-slate-700 text-primary shadow-lg ring-1 ring-black/5"
-                : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                : "text-slate-500 hover:text-slate-600 dark:hover:text-slate-200"
               }`}
           >
             {tab === 'planifie' ? 'À faire' : tab === 'termine' ? 'Terminé' : 'Annulé'}
@@ -287,7 +287,7 @@ const Interventions: React.FC = () => {
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${i.status === 'completed'
                   ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600'
                   : i.status === 'cancelled'
-                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-500'
                     : 'bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white'
                 }`}>
                 {i.status === 'completed' ? <FileText size={24} /> : <Clock size={24} />}
@@ -295,11 +295,11 @@ const Interventions: React.FC = () => {
 
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between items-start mb-0.5">
-                  <h3 className={`text-base font-black uppercase tracking-tight truncate ${i.status === 'cancelled' ? 'text-slate-400 line-through' : 'text-slate-900 dark:text-white'
+                  <h3 className={`text-base font-black uppercase tracking-tight truncate ${i.status === 'cancelled' ? 'text-slate-500 line-through' : 'text-slate-900 dark:text-white'
                     }`}>
                     {i.pool?.client?.first_name} {i.pool?.client?.last_name}
                   </h3>
-                  <div className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase ${i.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                  <div className={`px-2 py-0.5 rounded-lg text-xs font-black uppercase ${i.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
                       i.status === 'cancelled' ? 'bg-slate-100 text-slate-500' :
                         'bg-primary/10 text-primary'
                     }`}>
@@ -311,11 +311,11 @@ const Interventions: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className={`text-[11px] font-bold uppercase tracking-widest ${i.status === 'cancelled' ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <span className={`text-xs font-bold uppercase tracking-widest ${i.status === 'cancelled' ? 'text-slate-500' : 'text-slate-500'}`}>
                     {i.pool?.name || 'Piscine'}
                   </span>
                   <div className="w-1 h-1 rounded-full bg-slate-200"></div>
-                  <span className={`text-[11px] font-black uppercase ${i.status === 'cancelled' ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <span className={`text-xs font-black uppercase ${i.status === 'cancelled' ? 'text-slate-500' : 'text-slate-500'}`}>
                     {i.technician?.full_name}
                   </span>
                 </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Wallet, User, CheckCircle2, Globe, Calendar, FileText, ChevronDown, CreditCard } from 'lucide-react';
 import ModalLayout from './ModalLayout';
@@ -84,7 +84,7 @@ const AddPartnerPaymentModal: React.FC<AddPartnerPaymentModalProps> = ({ partner
 
                 {/* MONTANT */}
                 <div className="flex flex-col gap-2">
-                    <label className="text-[13px] font-black uppercase text-slate-500 ml-1 tracking-wider">Montant de la Transaction (DT)</label>
+                    <label className="text-xs font-black uppercase text-slate-500 ml-1 tracking-wider">Montant de la Transaction (DT)</label>
                     <div className="relative group">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-orange-500/10 flex items-center justify-center transition-all group-focus-within:bg-orange-500 group-focus-within:text-white">
                             <Wallet size={18} className="text-orange-500 group-focus-within:text-inherit" />
@@ -105,9 +105,9 @@ const AddPartnerPaymentModal: React.FC<AddPartnerPaymentModalProps> = ({ partner
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* DATE */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-[13px] font-black uppercase text-slate-500 ml-1 tracking-wider">Date de Paiement</label>
+                        <label className="text-xs font-black uppercase text-slate-500 ml-1 tracking-wider">Date de Paiement</label>
                         <div className="relative group">
-                            <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+                            <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors" />
                             <input
                                 type="date"
                                 required
@@ -121,9 +121,9 @@ const AddPartnerPaymentModal: React.FC<AddPartnerPaymentModalProps> = ({ partner
 
                     {/* MODE DE RÈGLEMENT */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-[13px] font-black uppercase text-slate-500 ml-1 tracking-wider">Mode de Règlement</label>
+                        <label className="text-xs font-black uppercase text-slate-500 ml-1 tracking-wider">Mode de Règlement</label>
                         <div className="relative group">
-                            <CreditCard size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+                            <CreditCard size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors" />
                             <select
                                 className="search-input !pl-12 pr-10 !h-14 text-base font-bold appearance-none bg-slate-50/50 dark:bg-slate-900/50 border-transparent focus:bg-white dark:focus:bg-slate-800"
                                 value={formData.method}
@@ -135,7 +135,7 @@ const AddPartnerPaymentModal: React.FC<AddPartnerPaymentModalProps> = ({ partner
                                 <option value="espèces">Espèces</option>
                                 <option value="autre">Autre</option>
                             </select>
-                            <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
                         </div>
                     </div>
                 </div>
@@ -143,9 +143,9 @@ const AddPartnerPaymentModal: React.FC<AddPartnerPaymentModalProps> = ({ partner
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* RÉFÉRENCE */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-[13px] font-black uppercase text-slate-500 ml-1 tracking-wider">Référence (N° Chèque/Virement)</label>
+                        <label className="text-xs font-black uppercase text-slate-500 ml-1 tracking-wider">Référence (N° Chèque/Virement)</label>
                         <div className="relative group">
-                            <FileText size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+                            <FileText size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
                                 className="search-input !pl-12 !h-14 text-base font-bold bg-slate-50/50 dark:bg-slate-900/50 border-transparent focus:bg-white dark:focus:bg-slate-800"
@@ -158,9 +158,9 @@ const AddPartnerPaymentModal: React.FC<AddPartnerPaymentModalProps> = ({ partner
 
                     {/* RESPONSABLE */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-[13px] font-black uppercase text-slate-500 ml-1 tracking-wider">Responsable (Enregistré par)</label>
+                        <label className="text-xs font-black uppercase text-slate-500 ml-1 tracking-wider">Responsable (Enregistré par)</label>
                         <div className="relative group">
-                            <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+                            <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors" />
                             <select
                                 required
                                 className="search-input !pl-12 pr-10 !h-14 text-base font-bold appearance-none bg-slate-50/50 dark:bg-slate-900/50 border-transparent focus:bg-white dark:focus:bg-slate-800"
@@ -175,13 +175,13 @@ const AddPartnerPaymentModal: React.FC<AddPartnerPaymentModalProps> = ({ partner
                                     </option>
                                 ))}
                             </select>
-                            <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                            <ChevronDown size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
                         </div>
                     </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-[13px] font-black uppercase text-slate-500 ml-1 tracking-wider">Commentaires / Notes</label>
+                    <label className="text-xs font-black uppercase text-slate-500 ml-1 tracking-wider">Commentaires / Notes</label>
                     <textarea
                         className="search-input !h-28 !py-4 resize-none text-base font-medium bg-slate-50/50 dark:bg-slate-900/50 border-transparent focus:bg-white dark:focus:bg-slate-800"
                         placeholder="Informations complémentaires..."
@@ -194,7 +194,7 @@ const AddPartnerPaymentModal: React.FC<AddPartnerPaymentModalProps> = ({ partner
                     <button
                         type="button"
                         onClick={onClose}
-                        className="flex-1 px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black rounded-2xl uppercase tracking-widest text-[13px] hover:bg-slate-200 transition-all active:scale-95"
+                        className="flex-1 px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black rounded-2xl uppercase tracking-widest text-xs hover:bg-slate-200 transition-all active:scale-95"
                         disabled={loading}
                     >
                         Annuler

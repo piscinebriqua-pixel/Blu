@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import PageLayout from '../components/PageLayout';
 import ModalLayout from '../components/ModalLayout';
@@ -435,7 +435,7 @@ const AdminFinance: React.FC = () => {
             {vehicleStats.length === 0 ? (
                 <div className="text-center py-20 bg-white/50 dark:bg-slate-800/10 rounded-[32px] border-2 border-dashed border-slate-200 dark:border-slate-800/50">
                     <Truck size={40} className="mx-auto mb-4 text-slate-300" />
-                    <p className="text-base font-black text-slate-400 uppercase tracking-widest">Aucune donnée carburant</p>
+                    <p className="text-base font-black text-slate-500 uppercase tracking-widest">Aucune donnée carburant</p>
                     <p className="text-sm font-bold text-slate-300 mt-1">Ajoutez des dépenses de type Carburant</p>
                 </div>
             ) : (
@@ -479,15 +479,15 @@ const AdminFinance: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-3 gap-3">
                                 <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl text-center">
-                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Litres</p>
+                                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Litres</p>
                                     <p className="text-lg font-black text-slate-700 dark:text-slate-300">{v.totalLiters > 0 ? v.totalLiters.toFixed(0) : '—'} L</p>
                                 </div>
                                 <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl text-center">
-                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Km relevés</p>
+                                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Km relevés</p>
                                     <p className="text-lg font-black text-slate-700 dark:text-slate-300">{v.totalKm > 0 ? v.totalKm.toLocaleString() : '—'}</p>
                                 </div>
                                 <div className="bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl text-center">
-                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Coût/km</p>
+                                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-1">Coût/km</p>
                                     <p className="text-lg font-black text-slate-700 dark:text-slate-300">
                                         {v.totalKm > 0 ? (v.totalCost / v.totalKm).toFixed(2) : '—'}
                                     </p>
@@ -504,7 +504,7 @@ const AdminFinance: React.FC = () => {
         <div className="flex flex-col gap-4">
             {items.length === 0 ? (
                 <div className="text-center py-20 bg-white/50 dark:bg-slate-800/10 rounded-[32px] border-2 border-dashed border-slate-200 dark:border-slate-800/50">
-                    <p className="text-slate-400 font-bold uppercase tracking-widest">Aucune demande en attente</p>
+                    <p className="text-slate-500 font-bold uppercase tracking-widest">Aucune demande en attente</p>
                 </div>
             ) : (
                 items.map(item => (
@@ -526,12 +526,12 @@ const AdminFinance: React.FC = () => {
                                          item.type === 'advance' ? `Avance : ${item.category_name || 'Demande'}` : 
                                          `Versement : ${item.method}`}
                                     </h3>
-                                    <p className="text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{item.technician_name} • {new Date(item.created_at).toLocaleDateString()}</p>
+                                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{item.technician_name} • {new Date(item.created_at).toLocaleDateString()}</p>
                                 </div>
                             </div>
                             <div className="text-right">
                                 <p className="text-2xl font-black text-slate-900 dark:text-white">{item.amount.toLocaleString()} <span className="text-xs opacity-40">TND</span></p>
-                                <span className="px-2 py-0.5 bg-orange-500/10 text-orange-600 text-[11px] font-black uppercase tracking-widest rounded-md">En attente</span>
+                                <span className="px-2 py-0.5 bg-orange-500/10 text-orange-600 text-xs font-black uppercase tracking-widest rounded-md">En attente</span>
                             </div>
                         </div>
                         
@@ -579,19 +579,19 @@ const AdminFinance: React.FC = () => {
 
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <div className="bg-slate-50 dark:bg-slate-900/40 p-5 rounded-[24px] flex flex-col gap-1.5">
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">Recettes</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest leading-none">Recettes</span>
                             <span className="text-xl font-black text-slate-700 dark:text-slate-300">{tech.receipts.toLocaleString()} <span className="text-xs opacity-40">TND</span></span>
                         </div>
                         <div className="bg-slate-50 dark:bg-slate-900/40 p-5 rounded-[24px] flex flex-col gap-1.5">
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">Dépenses</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest leading-none">Dépenses</span>
                             <span className="text-xl font-black text-rose-500">{tech.expenses.toLocaleString()} <span className="text-xs opacity-40">TND</span></span>
                         </div>
                         <div className="bg-slate-50 dark:bg-slate-900/40 p-5 rounded-[24px] flex flex-col gap-1.5">
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">Avances</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest leading-none">Avances</span>
                             <span className="text-xl font-black text-amber-500">{tech.advances.toLocaleString()} <span className="text-xs opacity-40">TND</span></span>
                         </div>
                         <div className="bg-slate-50 dark:bg-slate-900/40 p-5 rounded-[24px] flex flex-col gap-1.5">
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest leading-none">Versements</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest leading-none">Versements</span>
                             <span className="text-xl font-black text-emerald-500">{tech.remittances.toLocaleString()} <span className="text-xs opacity-40">TND</span></span>
                         </div>
                     </div>
@@ -610,13 +610,13 @@ const AdminFinance: React.FC = () => {
                     <div className="flex gap-2">
                         <button 
                             onClick={() => handleOpenInsertModal('expense', tech.id, tech.full_name)}
-                            className="flex-1 h-12 bg-rose-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                            className="flex-1 h-12 bg-rose-500 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2"
                         >
                             <Plus size={16} /> Dépense
                         </button>
                         <button 
                             onClick={() => handleOpenInsertModal('advance', tech.id, tech.full_name)}
-                            className="flex-1 h-12 bg-amber-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                            className="flex-1 h-12 bg-amber-500 text-white rounded-xl text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2"
                         >
                             <Plus size={16} /> Avance
                         </button>
@@ -630,7 +630,7 @@ const AdminFinance: React.FC = () => {
         <div className="flex flex-col gap-6">
             {/* Admin Wallets Summary */}
             <div className="flex flex-col gap-3">
-                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest ml-1">Répartition des caisses Admins</h3>
+                <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Répartition des caisses Admins</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {adminSummaries.map(admin => (
                         <div key={admin.id} className="bg-white dark:bg-slate-900 p-5 rounded-[24px] border border-slate-100 dark:border-white/5 shadow-sm">
@@ -641,26 +641,26 @@ const AdminFinance: React.FC = () => {
                                     </div>
                                     <span className="font-black text-slate-700 dark:text-white uppercase text-sm truncate max-w-[120px]">{admin.name}</span>
                                 </div>
-                                <span className="text-lg font-black text-indigo-600">{admin.balance.toLocaleString()} <span className="text-[10px] opacity-60">TND</span></span>
+                                <span className="text-lg font-black text-indigo-600">{admin.balance.toLocaleString()} <span className="text-xs opacity-60">TND</span></span>
                             </div>
-                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                            <div className="flex justify-between text-xs font-bold uppercase tracking-widest text-slate-500">
                                 <span>Collecté: {admin.collected.toLocaleString()}</span>
                                 <span className="text-rose-400">Sorties: {admin.spent.toLocaleString()}</span>
                             </div>
                         </div>
                     ))}
                     <div className="bg-indigo-600 p-5 rounded-[24px] text-white flex flex-col justify-center">
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Total En Main Admins</span>
+                        <span className="text-xs font-black uppercase tracking-widest opacity-80">Total En Main Admins</span>
                         <span className="text-2xl font-black">{adminSummaries.reduce((sum, a) => sum + a.balance, 0).toLocaleString()} TND</span>
                     </div>
                 </div>
             </div>
 
-            <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest ml-1">Journal des recettes</h3>
+            <h3 className="text-sm font-black text-slate-500 uppercase tracking-widest ml-1">Journal des recettes</h3>
             <div className="flex flex-col gap-3">
                  {items.length === 0 ? (
                 <div className="text-center py-20 bg-white/50 dark:bg-slate-800/10 rounded-3xl border-2 border-dashed border-slate-200">
-                    <p className="text-slate-400 font-bold uppercase tracking-widest">Aucune recette sur cette période</p>
+                    <p className="text-slate-500 font-bold uppercase tracking-widest">Aucune recette sur cette période</p>
                 </div>
             ) : (
                 items.map(item => (
@@ -672,17 +672,17 @@ const AdminFinance: React.FC = () => {
                                 </div>
                                 <div>
                                     <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-tight leading-tight">{item.client_name}</h4>
-                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{item.technician_name}</p>
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{item.technician_name}</p>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-lg font-black text-emerald-500 leading-none mb-1">{item.amount.toLocaleString()} <span className="text-[10px] opacity-40">TND</span></p>
-                                <p className="text-[9px] font-bold text-slate-300 uppercase">{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</p>
+                                <p className="text-lg font-black text-emerald-500 leading-none mb-1">{item.amount.toLocaleString()} <span className="text-xs opacity-40">TND</span></p>
+                                <p className="text-xs font-bold text-slate-300 uppercase">{item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</p>
                             </div>
                         </div>
                         {item.method && (
                             <div className="flex items-center gap-2 mt-2">
-                                <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 text-[8px] font-black uppercase rounded-md tracking-widest">{item.method}</span>
+                                <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs font-black uppercase rounded-md tracking-widest">{item.method}</span>
                             </div>
                         )}
                     </div>
@@ -710,12 +710,12 @@ const AdminFinance: React.FC = () => {
                                  <Plus size={20} />}
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-tight leading-none mb-1">
+                                <span className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-tight leading-none mb-1">
                                     {item.type === 'payment' ? 'Encaissement' : 
                                      item.type === 'expense' ? 'Dépense' :
                                      item.type === 'advance' ? 'Avance' : 'Versement'} • {item.technician_name}
                                 </span>
-                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                                     {new Date(item.created_at).toLocaleString()} {item.category_name ? `• ${item.category_name}` : ''}
                                 </span>
                             </div>
@@ -724,7 +724,7 @@ const AdminFinance: React.FC = () => {
                             <p className={`text-base font-black ${item.type === 'payment' || item.type === 'remittance' ? 'text-emerald-500' : 'text-slate-900 dark:text-white'}`}>
                                 {item.type === 'expense' || item.type === 'advance' ? '-' : '+'}{item.amount.toLocaleString()} <span className="text-xs opacity-40">TND</span>
                             </p>
-                            <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${
+                            <span className={`text-xs font-black uppercase tracking-[0.2em] ${
                                 item.status === 'validated' || item.type === 'payment' ? 'text-emerald-500' : 
                                 item.status === 'rejected' ? 'text-rose-500' : 
                                 'text-orange-500'
@@ -738,13 +738,13 @@ const AdminFinance: React.FC = () => {
                         <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-white/5">
                             <button 
                                 onClick={() => handleEdit(item)}
-                                className="h-10 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                                className="h-10 rounded-xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2"
                             >
                                 <Edit2 size={14} /> Modifier
                             </button>
                             <button 
                                 onClick={() => handleDelete(item)}
-                                className="h-10 rounded-xl bg-rose-500/10 text-rose-500 text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2"
+                                className="h-10 rounded-xl bg-rose-500/10 text-rose-500 text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2"
                             >
                                 <Trash2 size={14} /> Supprimer
                             </button>
@@ -765,7 +765,7 @@ const AdminFinance: React.FC = () => {
                 {/* Global Stats Summary */}
                 <div className="card-premium grad-blue p-6 rounded-[32px] flex items-center justify-between shadow-xl shadow-blue-500/20">
                     <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/60 leading-none">Total En Attente</span>
+                        <span className="text-xs font-black uppercase tracking-[0.3em] text-white/60 leading-none">Total En Attente</span>
                         <h2 className="text-4xl font-black text-white tracking-tighter">
                             {tab === 'pending' ? items.reduce((sum, i) => sum + i.amount, 0).toLocaleString() : '---'} <span className="text-sm opacity-50">TND</span>
                         </h2>
@@ -789,7 +789,7 @@ const AdminFinance: React.FC = () => {
                         <button 
                             key={t.id}
                             onClick={() => setTab(t.id as any)}
-                            className={`px-3 h-10 rounded-xl text-[11px] font-black uppercase tracking-tight transition-all ${tab === t.id ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            className={`px-3 h-10 rounded-xl text-xs font-black uppercase tracking-tight transition-all ${tab === t.id ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             {t.label}
                         </button>
@@ -808,7 +808,7 @@ const AdminFinance: React.FC = () => {
                             <button
                                 key={f.val}
                                 onClick={() => setTimeRange(f.val as any)}
-                                className={`px-5 py-2 rounded-full text-[11px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${timeRange === f.val ? 'bg-primary text-white shadow-lg' : 'bg-white dark:bg-slate-800 text-slate-400 border border-slate-100 dark:border-slate-700'}`}
+                                className={`px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest whitespace-nowrap transition-all ${timeRange === f.val ? 'bg-primary text-white shadow-lg' : 'bg-white dark:bg-slate-800 text-slate-500 border border-slate-100 dark:border-slate-700'}`}
                             >
                                 {f.label}
                             </button>
@@ -881,12 +881,12 @@ const AdminFinance: React.FC = () => {
                                 />
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-[14px] font-black text-slate-400 uppercase tracking-widest ml-1">Kilométrage</label>
+                                        <label className="text-[14px] font-black text-slate-500 uppercase tracking-widest ml-1">Kilométrage</label>
                                         <input name="kilometers" type="number" placeholder="Ex: 12400"
                                             className="w-full h-14 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold text-base" />
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-[14px] font-black text-slate-400 uppercase tracking-widest ml-1">Litres</label>
+                                        <label className="text-[14px] font-black text-slate-500 uppercase tracking-widest ml-1">Litres</label>
                                         <input name="liters" type="number" step="0.1" placeholder="Ex: 45"
                                             className="w-full h-14 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 font-bold text-base" />
                                     </div>
@@ -896,7 +896,7 @@ const AdminFinance: React.FC = () => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col gap-2">
-                                <label className="text-[13px] font-black text-slate-400 uppercase tracking-widest ml-1">Montant (TND)</label>
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Montant (TND)</label>
                                 <input 
                                     name="amount" type="number" step="0.01" required placeholder="0.00"
                                     defaultValue={editingItem?.amount}
@@ -904,7 +904,7 @@ const AdminFinance: React.FC = () => {
                                 />
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="text-[13px] font-black text-slate-400 uppercase tracking-widest ml-1">Date</label>
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Date</label>
                                 <input 
                                     name="date" type="date" required 
                                     defaultValue={editingItem?.date?.split('T')[0] || new Date().toISOString().split('T')[0]}
@@ -914,7 +914,7 @@ const AdminFinance: React.FC = () => {
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <label className="text-[13px] font-black text-slate-400 uppercase tracking-widest ml-1">Description / Motif</label>
+                            <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Description / Motif</label>
                             <textarea 
                                 name="description" rows={2} placeholder="Précisez la raison..."
                                 defaultValue={(editingItem as any)?.description}
@@ -952,7 +952,7 @@ const AdminFinance: React.FC = () => {
                                 <p className="text-lg font-black text-slate-800 dark:text-white uppercase">{collectTarget.techName}</p>
                             </div>
                             <div className="ml-auto text-right">
-                                <p className="text-sm font-black text-slate-400 uppercase tracking-widest">Solde dû</p>
+                                <p className="text-sm font-black text-slate-500 uppercase tracking-widest">Solde dû</p>
                                 <p className="text-2xl font-black text-emerald-600">{collectTarget.balance.toLocaleString()} <span className="text-sm opacity-60">TND</span></p>
                             </div>
                         </div>
@@ -960,7 +960,7 @@ const AdminFinance: React.FC = () => {
                         {/* Amount */}
                         <div className="flex flex-col gap-2">
                             <div className="flex justify-between items-center mb-1">
-                                <label className="text-[14px] font-black text-slate-400 uppercase tracking-widest ml-1">Montant récupéré (TND)</label>
+                                <label className="text-[14px] font-black text-slate-500 uppercase tracking-widest ml-1">Montant récupéré (TND)</label>
                                 {collectTarget.balance > 0 && (
                                     <button
                                         type="button"
@@ -985,7 +985,7 @@ const AdminFinance: React.FC = () => {
 
                         {/* Method */}
                         <div className="flex flex-col gap-3">
-                            <label className="text-[14px] font-black text-slate-400 uppercase tracking-widest ml-1">Mode de remise</label>
+                            <label className="text-[14px] font-black text-slate-500 uppercase tracking-widest ml-1">Mode de remise</label>
                             <div className="grid grid-cols-3 gap-2">
                                 {[
                                     { value: 'cash', label: 'Espèces', icon: <Banknote size={20} /> },
@@ -999,7 +999,7 @@ const AdminFinance: React.FC = () => {
                                         className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
                                             collectMethod === m.value
                                                 ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500 text-emerald-600'
-                                                : 'bg-slate-50 dark:bg-slate-900 border-transparent text-slate-400 hover:border-slate-200'
+                                                : 'bg-slate-50 dark:bg-slate-900 border-transparent text-slate-500 hover:border-slate-200'
                                         }`}
                                     >
                                         {m.icon}
@@ -1011,7 +1011,7 @@ const AdminFinance: React.FC = () => {
 
                         {/* Note */}
                         <div className="flex flex-col gap-2">
-                            <label className="text-[14px] font-black text-slate-400 uppercase tracking-widest ml-1">Note (optionnel)</label>
+                            <label className="text-[14px] font-black text-slate-500 uppercase tracking-widest ml-1">Note (optionnel)</label>
                             <textarea
                                 rows={2}
                                 value={collectNote}

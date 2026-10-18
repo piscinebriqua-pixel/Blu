@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { AlertCircle, Trash2 } from 'lucide-react';
 import ModalLayout from './ModalLayout';
 import Button from './ui/Button';
@@ -54,11 +54,11 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
                     {variant === 'danger' ? <Trash2 size={24} strokeWidth={2.5} /> : <AlertCircle size={24} strokeWidth={2.5} />}
                 </div>
                 <div className="flex flex-col gap-1.5 w-full">
-                    <div className="text-[13px] font-bold text-slate-800 dark:text-white px-2 leading-relaxed">
+                    <div className="text-xs font-bold text-slate-800 dark:text-white px-2 leading-relaxed">
                         {message}
                     </div>
                     {showIrreversibleWarning && (
-                        <p className="text-[13px] font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">
+                        <p className="text-xs font-bold text-slate-500 dark:text-slate-500 uppercase tracking-widest">
                             Cette action est irréversible
                         </p>
                     )}

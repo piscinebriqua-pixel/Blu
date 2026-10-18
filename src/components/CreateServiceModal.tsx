@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { Loader2, Wrench, Wallet } from 'lucide-react';
@@ -64,9 +64,9 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({ onClose, onSucc
         <ModalLayout title="NOUVEAU SERVICE" onClose={onClose} actions={actions}>
             <form id="create-service-form" onSubmit={handleSubmit} className="p-4 space-y-6">
                 <div>
-                    <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">Nom de la prestation</label>
+                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">Nom de la prestation</label>
                     <div className="relative">
-                        <Wrench className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <Wrench className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                         <input
                             type="text"
                             required
@@ -80,9 +80,9 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({ onClose, onSucc
                 </div>
 
                 <div>
-                    <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">Tarif de base (DT)</label>
+                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">Tarif de base (DT)</label>
                     <div className="relative">
-                        <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                         <input
                             type="number"
                             required

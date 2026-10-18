@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { History as HistoryIcon, User, Wrench, CheckCircle2, Package, FileText, ChevronRight, Droplets } from "lucide-react";
 import type { Intervention } from "./types";
 
@@ -300,7 +300,7 @@ export const ClientInterventionsList: React.FC<ClientInterventionsListProps> = (
         </div>
       ) : (
         <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-slate-700">
-          <HistoryIcon size={44} className="mx-auto text-slate-400 mb-3" />
+          <HistoryIcon size={44} className="mx-auto text-slate-500 mb-3" />
           <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">
             Aucun historique technique
           </p>

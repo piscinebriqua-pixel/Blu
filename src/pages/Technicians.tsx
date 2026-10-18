@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Search as SearchIcon, Plus, ChevronRight, Edit3 } from 'lucide-react';
@@ -63,23 +63,23 @@ const Technicians: React.FC = () => {
             <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl w-full md:w-auto">
                 <button
                     onClick={() => setActiveTab('active')}
-                    className={`flex-1 md:flex-none px-6 py-2 rounded-[10px] text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'active' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`flex-1 md:flex-none px-6 py-2 rounded-[10px] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'active' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
                     Actifs ({activeCount})
                 </button>
                 <button
                     onClick={() => setActiveTab('inactive')}
-                    className={`flex-1 md:flex-none px-6 py-2 rounded-[10px] text-[12px] font-black uppercase tracking-widest transition-all ${activeTab === 'inactive' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    className={`flex-1 md:flex-none px-6 py-2 rounded-[10px] text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'inactive' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
                     Inactifs ({inactiveCount})
                 </button>
             </div>
             <div className="relative flex-1 w-full max-w-[300px]">
-                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                 <input
                     type="text"
                     placeholder="Rechercher..."
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-bold"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all font-bold"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -115,7 +115,7 @@ const Technicians: React.FC = () => {
                                             <h3 className="text-[15px] font-black text-slate-800 dark:text-white leading-tight uppercase tracking-tight">
                                                 {tech.full_name || 'Sans Nom'}
                                             </h3>
-                                            <p className="text-[11px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-0.5 opacity-80">{tech.email}</p>
+                                            <p className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest mt-0.5 opacity-80">{tech.email}</p>
                                         </div>
                                     </div>
                                     <div className="flex gap-2">
@@ -125,12 +125,12 @@ const Technicians: React.FC = () => {
                                                 setSelectedTechnician(tech);
                                                 setIsEditModalOpen(true);
                                             }}
-                                            className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-400 hover:text-blue-500 hover:bg-white dark:hover:bg-slate-700 hover:border-blue-100 flex items-center justify-center transition-all z-10"
+                                            className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-500 hover:text-blue-500 hover:bg-white dark:hover:bg-slate-700 hover:border-blue-100 flex items-center justify-center transition-all z-10"
                                             title="Modifier"
                                         >
                                             <Edit3 size={16} />
                                         </button>
-                                        <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-400 flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
+                                        <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-500 flex items-center justify-center group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
                                             <ChevronRight size={16} className="" />
                                         </div>
                                     </div>

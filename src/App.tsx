@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
+﻿import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import React, { Suspense, Component } from 'react';
 import type { ReactNode } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -138,7 +138,7 @@ function AppContent() {
             await signOut();
             window.location.href = '/login';
           }}
-          className="text-slate-400 text-sm hover:text-white underline mt-2"
+          className="text-slate-500 text-sm hover:text-white underline mt-2"
         >
           Chargement long ? Réinitialiser et se déconnecter
         </button>
@@ -401,7 +401,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
           </div>
           <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Une erreur est survenue</h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs leading-relaxed mb-2">{this.state.errorMessage}</p>
-          <p className="text-slate-400 text-xs max-w-xs leading-relaxed mb-8">L'application a rencontré un problème inattendu.</p>
+          <p className="text-slate-500 text-xs max-w-xs leading-relaxed mb-8">L'application a rencontré un problème inattendu.</p>
           <div className="flex flex-col gap-3 w-full max-w-xs">
             <button
               onClick={() => { this.setState({ hasError: false, errorMessage: '' }); window.location.href = '/'; }}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import ModalLayout from '../ModalLayout';
 import Button from '../ui/Button';
 import { useCreateInvoiceState } from './useCreateInvoiceState';
@@ -68,7 +68,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
               Numéro de Facture
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
                 <Hash size={16} />
               </span>
               <input
@@ -97,7 +97,7 @@ export const CreateInvoiceModal: React.FC<CreateInvoiceModalProps> = ({
                 </button>
               </div>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">
                   <User size={16} />
                 </span>
                 <select

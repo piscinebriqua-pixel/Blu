@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import ModalLayout from './ModalLayout';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -191,7 +191,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                         <div className="flex w-full gap-3">
                             {intervention.status?.toLowerCase() !== 'completed' && onStart && (
                                 <button
-                                    className="flex-1 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[24px] font-black uppercase text-[12px] tracking-[0.2em] shadow-2xl shadow-emerald-500/30 transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-3"
+                                    className="flex-1 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[24px] font-black uppercase text-xs tracking-[0.2em] shadow-2xl shadow-emerald-500/30 transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-3"
                                     onClick={() => onStart(intervention)}
                                 >
                                     <Droplets size={18} strokeWidth={3} className="animate-pulse" />
@@ -201,7 +201,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
 
                             {onEdit && (
                                 <button
-                                    className="flex-1 h-14 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[24px] font-black uppercase text-[12px] tracking-[0.2em] shadow-xl transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-3"
+                                    className="flex-1 h-14 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[24px] font-black uppercase text-xs tracking-[0.2em] shadow-xl transition-all hover:scale-[1.03] active:scale-95 flex items-center justify-center gap-3"
                                     onClick={() => onEdit(intervention)}
                                 >
                                     <Edit2 size={18} strokeWidth={3} />
@@ -220,7 +220,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                                 title="Partager via WhatsApp"
                             >
                                 <MessageCircle size={20} strokeWidth={2.5} />
-                                <span className="text-[10px] font-black uppercase">WhatsApp</span>
+                                <span className="text-xs font-black uppercase">WhatsApp</span>
                             </button>
                         )}
 
@@ -266,7 +266,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
 
                     {/* Glass Client Card */}
                     <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-[24px] px-8 py-4 shadow-2xl text-center max-w-xs w-full">
-                        <span className="text-[10px] font-black text-white/70 uppercase tracking-[0.4em] block mb-1">Rapport Client</span>
+                        <span className="text-xs font-black text-white/70 uppercase tracking-[0.4em] block mb-1">Rapport Client</span>
                         <h2 className="text-xl font-black text-white uppercase tracking-tight leading-tight">
                             {intervention.pool?.client?.first_name} {intervention.pool?.client?.last_name}
                         </h2>
@@ -277,7 +277,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
             {/* Depth Indicators Panel (Chevauchement) */}
             <div className="relative z-30 px-6 -mt-10 flex gap-4">
                 <div className={`flex-1 ${formatBalance(intervention.pool?.client?.balance || 0).bg} rounded-[28px] p-5 shadow-xl border ${formatBalance(intervention.pool?.client?.balance || 0).border} flex flex-col items-center group hover:scale-[1.02] transition-transform`}>
-                    <span className={`text-[10px] font-black ${formatBalance(intervention.pool?.client?.balance || 0).text} opacity-50 uppercase tracking-widest mb-1`}>Solde Actuel</span>
+                    <span className={`text-xs font-black ${formatBalance(intervention.pool?.client?.balance || 0).text} opacity-50 uppercase tracking-widest mb-1`}>Solde Actuel</span>
                     <div className="flex items-baseline gap-1">
                         <span className={`text-xl font-black ${formatBalance(intervention.pool?.client?.balance || 0).text}`}>
                             {formatBalance(intervention.pool?.client?.balance || 0).amount}
@@ -286,7 +286,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                     </div>
                 </div>
                 <div className="flex-1 grad-blue rounded-[28px] p-5 shadow-xl shadow-[#0077B6]/20 flex flex-col items-center group hover:scale-[1.02] transition-transform">
-                    <span className="text-[10px] font-black text-white/70 uppercase tracking-widest mb-1">Total Rapport</span>
+                    <span className="text-xs font-black text-white/70 uppercase tracking-widest mb-1">Total Rapport</span>
                     <div className="flex items-baseline gap-1">
                         <span className="text-2xl font-black text-white tracking-tighter">
                             {totalAmount.toFixed(0)}
@@ -306,7 +306,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                             <User size={22} />
                         </div>
                         <div>
-                            <span className="text-xs font-black text-slate-400 uppercase tracking-widest block">Technicien Référent</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest block">Technicien Référent</span>
                             <h4 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">
                                 {intervention.technician?.full_name || 'Non assigné'}
                             </h4>
@@ -314,7 +314,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                     </div>
                     {intervention.pool?.name && (
                         <div className="text-right">
-                            <span className="text-xs font-black text-slate-400 uppercase tracking-widest block">Bassin</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-widest block">Bassin</span>
                             <span className="text-sm font-black text-blue-600 dark:text-blue-400 uppercase">
                                 {intervention.pool.name}
                             </span>
@@ -325,10 +325,10 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                 {/* 1. Monitoring Technique */}
                 <div className="card-white p-6">
                     <div className="flex justify-between items-center mb-6">
-                        <h4 className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-widest">Analyse Technique</h4>
+                        <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-widest">Analyse Technique</h4>
                         <div className="flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-full">
                             <Calendar size={12} className="text-blue-500" />
-                            <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tight">
+                            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-tight">
                                 {new Date(intervention.completed_date || intervention.scheduled_date || intervention.created_at).toLocaleDateString('fr-FR')}
                             </span>
                         </div>
@@ -339,14 +339,14 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                             <div className="w-12 h-12 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 flex items-center justify-center mb-3">
                                 <Droplets size={24} />
                             </div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Niveau pH</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Niveau pH</span>
                             <div className="text-2xl font-black text-slate-800 dark:text-white">{intervention.ph_level || '--'}</div>
                         </div>
                         <div className="bg-slate-50 dark:bg-[#0f141e] p-4 rounded-2xl border border-slate-100 dark:border-white/5 flex flex-col items-center text-center">
                             <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center mb-3">
                                 <Droplets size={24} />
                             </div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Chlore</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Chlore</span>
                             <div className="text-2xl font-black text-slate-800 dark:text-white">{intervention.chlorine_level || '--'}</div>
                         </div>
                     </div>
@@ -355,8 +355,8 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                 {/* 2. Statut Quick-Manage */}
                 <div className="card-white p-5 border-l-4 border-l-blue-500">
                     <div className="flex items-center justify-between mb-3">
-                        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Statut Intervention</span>
-                        <div className="text-[10px] font-black text-slate-300 uppercase">#{intervention.id.slice(0, 6)}</div>
+                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Statut Intervention</span>
+                        <div className="text-xs font-black text-slate-300 uppercase">#{intervention.id.slice(0, 6)}</div>
                     </div>
                     <div className="relative group">
                         <select
@@ -386,10 +386,10 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                     <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full -mr-16 -mt-16 pointer-events-none" />
                     
                     <div className="flex items-center justify-between mb-6">
-                        <h4 className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-[0.2em]">Protocole Technique</h4>
+                        <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-[0.2em]">Protocole Technique</h4>
                         <div className="flex flex-col items-end">
                             <span className="text-[14px] font-black text-emerald-600">{completedTasksCount}/{totalTasksCount}</span>
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Missions complétées</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-tighter">Missions complétées</span>
                         </div>
                     </div>
 
@@ -409,7 +409,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                                     <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mr-3 transition-all ${isDone ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-110" : "bg-slate-100 dark:bg-slate-700 text-transparent border border-slate-100 dark:border-white/5"}`}>
                                         <CheckCircle2 size={16} strokeWidth={3} />
                                     </div>
-                                    <span className={`text-[13px] font-bold uppercase tracking-tight transition-colors ${isDone ? 'text-slate-800 dark:text-white font-black' : 'text-slate-400 opacity-60'}`}>
+                                    <span className={`text-xs font-bold uppercase tracking-tight transition-colors ${isDone ? 'text-slate-800 dark:text-white font-black' : 'text-slate-500 opacity-60'}`}>
                                         {task.label}
                                     </span>
                                 </div>
@@ -420,10 +420,10 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
 
                 {/* 4. Facturation Détails */}
                 <div className="card-white p-6">
-                    <h4 className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] mb-6">Détail Facturation</h4>
+                    <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] mb-6">Détail Facturation</h4>
                     {!intervention.services?.length && !intervention.products?.length ? (
                         <div className="py-8 text-center bg-slate-50 dark:bg-[#0f141e] rounded-3xl border border-dashed border-slate-200 dark:border-white/5">
-                            <span className="text-sm font-bold text-slate-400 uppercase tracking-widest italic">Aucun article facturé</span>
+                            <span className="text-sm font-bold text-slate-500 uppercase tracking-widest italic">Aucun article facturé</span>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-3">
@@ -442,7 +442,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                                         <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 rounded-xl flex items-center justify-center"><Package size={18} /></div>
                                         <div className="flex flex-col">
                                             <span className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase">{p.product?.name}</span>
-                                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">Quantité: {p.quantity} {p.product?.unit}</span>
+                                            <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest mt-0.5">Quantité: {p.quantity} {p.product?.unit}</span>
                                         </div>
                                     </div>
                                     <span className="text-base font-black px-4 py-1 bg-white dark:bg-slate-800 rounded-xl shadow-sm">{p.total_price} DT</span>
@@ -455,10 +455,10 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                 {/* 5. Photos Section */}
                 {(intervention.photo_before_url || intervention.photo_after_url) && (
                     <div className="card-white p-6">
-                        <h4 className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] mb-6">Preuve Visuelle</h4>
+                        <h4 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] mb-6">Preuve Visuelle</h4>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-3">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block text-center">Avant</span>
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-widest block text-center">Avant</span>
                                 <div className="aspect-[3/4] rounded-[28px] overflow-hidden bg-slate-100 dark:bg-slate-800 ring-4 ring-slate-100/50 dark:ring-white/5 relative group shadow-lg">
                                     {intervention.photo_before_url ? (
                                         <img src={intervention.photo_before_url} alt="Avant" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -468,7 +468,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block text-center">Après</span>
+                                <span className="text-xs font-black text-slate-500 uppercase tracking-widest block text-center">Après</span>
                                 <div className="aspect-[3/4] rounded-[28px] overflow-hidden bg-slate-100 dark:bg-slate-800 ring-4 ring-slate-100/50 dark:ring-white/5 relative group shadow-lg">
                                     {intervention.photo_after_url ? (
                                         <img src={intervention.photo_after_url} alt="Après" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -487,7 +487,7 @@ const InterventionDetailsModal: React.FC<InterventionDetailsModalProps> = ({ int
                         <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/5 rotate-45 -mr-8 -mt-8" />
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 flex items-center justify-center"><Info size={20} /></div>
-                            <span className="text-[12px] font-black text-amber-600 uppercase tracking-widest">Observations techniques</span>
+                            <span className="text-xs font-black text-amber-600 uppercase tracking-widest">Observations techniques</span>
                         </div>
                         <p className="text-base leading-relaxed text-slate-700 dark:text-slate-300 font-medium italic pl-2 border-l-4 border-l-amber-500/30">
                             "{intervention.notes}"

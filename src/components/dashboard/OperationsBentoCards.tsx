@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Wallet, Users, FileText, QrCode, Settings, Activity, Briefcase } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -124,7 +124,7 @@ export const OperationsBentoCards: React.FC<OperationsBentoCardsProps> = ({
                         <span className="bg-orange-500/90 px-2 py-0.5 rounded text-xs font-black text-white shrink-0 tracking-wider">ADMIN</span>
                     </div>
                     <div className="flex flex-col gap-1 min-w-0 mt-auto">
-                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest truncate">Actions Requises</p>
+                        <p className="text-xs font-black text-slate-500 uppercase tracking-widest truncate">Actions Requises</p>
                         <p className="text-2xl 2xl:text-3xl font-black text-white tracking-tight truncate leading-none">FINANCES</p>
                     </div>
                 </div>

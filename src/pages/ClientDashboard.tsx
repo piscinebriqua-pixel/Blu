@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase, type PoolRow } from '../lib/supabase';
 import { 
@@ -311,13 +311,13 @@ const ClientDashboard: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-900/40 group-hover:bg-blue-500 group-hover:text-white transition-all shrink-0">
-                                        <ChevronRight size={18} className="text-slate-400 group-hover:text-white" />
+                                        <ChevronRight size={18} className="text-slate-500 group-hover:text-white" />
                                     </div>
                                 </div>
                             ))
                         ) : (
                             <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center text-center">
-                                <History size={36} className="text-slate-400 mb-2" />
+                                <History size={36} className="text-slate-500 mb-2" />
                                 <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Aucun passage enregistré</p>
                             </div>
                         )
@@ -348,13 +348,13 @@ const ClientDashboard: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-slate-50 dark:bg-slate-900/40 group-hover:bg-emerald-500 group-hover:text-white transition-all shrink-0">
-                                        <ChevronRight size={18} className="text-slate-400 group-hover:text-white" />
+                                        <ChevronRight size={18} className="text-slate-500 group-hover:text-white" />
                                     </div>
                                 </div>
                             ))
                         ) : (
                             <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center text-center">
-                                <CreditCard size={36} className="text-slate-400 mb-2" />
+                                <CreditCard size={36} className="text-slate-500 mb-2" />
                                 <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Aucun versement enregistré</p>
                             </div>
                         )

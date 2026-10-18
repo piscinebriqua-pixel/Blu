@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { detectPhoneInfo } from '../lib/phoneUtils';
 import { CheckCircle2, AlertCircle, Clock } from 'lucide-react';
 
@@ -28,7 +28,7 @@ export const PhoneCountryBadge: React.FC<PhoneCountryBadgeProps> = ({ phone, cla
     if (info.country === 'En cours...') {
         return (
             <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-xs font-medium w-fit ${className}`}>
-                <Clock size={12} className="text-slate-400" />
+                <Clock size={12} className="text-slate-500" />
                 <span>{info.displayHint || 'Saisie en cours...'}</span>
             </div>
         );

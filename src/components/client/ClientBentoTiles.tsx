@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import {
   Wallet,
   FileText,
@@ -465,7 +465,7 @@ export const ClientBentoTiles: React.FC<ClientBentoTilesProps> = ({
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-6 text-center">
-                <Wallet size={24} className="text-slate-400 mb-2" />
+                <Wallet size={24} className="text-slate-500 mb-2" />
                 <p className="text-xs font-black uppercase tracking-wider text-slate-500">Aucun paiement</p>
               </div>
             )}

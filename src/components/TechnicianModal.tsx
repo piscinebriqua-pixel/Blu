@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import ModalLayout from './ModalLayout';
 import { User, Phone, Mail } from 'lucide-react';
 import Input from './ui/Input';
@@ -108,8 +108,8 @@ const TechnicianModal: React.FC<TechnicianModalProps> = ({
                 />
                 <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
                     <div className="flex flex-col">
-                        <span className="text-[13px] font-black text-slate-800 dark:text-white uppercase">Compte Actif</span>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{formData.active ? 'Le technicien pourra recevoir des interventions' : 'Le technicien sera masqué des plannings'}</span>
+                        <span className="text-xs font-black text-slate-800 dark:text-white uppercase">Compte Actif</span>
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{formData.active ? 'Le technicien pourra recevoir des interventions' : 'Le technicien sera masqué des plannings'}</span>
                     </div>
                     <button
                         type="button"

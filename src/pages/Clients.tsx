@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Search, Plus, Filter, MapPin, ChevronRight, LayoutList, Map as MapIcon, Edit2, Trash2 } from 'lucide-react';
@@ -133,20 +133,20 @@ const ClientsList: React.FC = () => {
         <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
                 <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                     <input
                         type="text"
                         placeholder="Rechercher un client..."
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <div className="flex bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200/50 dark:border-slate-700/50 shrink-0">
-                    <button title="Mode Liste" onClick={() => setViewMode('list')} className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                    <button title="Mode Liste" onClick={() => setViewMode('list')} className={`p-2 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-500 hover:text-slate-600'}`}>
                         <LayoutList size={20} />
                     </button>
-                    <button title="Mode Carte" onClick={() => setViewMode('map')} className={`p-2 rounded-xl transition-all ${viewMode === 'map' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}>
+                    <button title="Mode Carte" onClick={() => setViewMode('map')} className={`p-2 rounded-xl transition-all ${viewMode === 'map' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-500 hover:text-slate-600'}`}>
                         <MapIcon size={20} />
                     </button>
                 </div>
@@ -161,7 +161,7 @@ const ClientsList: React.FC = () => {
                         <button
                             key={filter}
                             onClick={() => setActiveFilter(filter)}
-                            className={`px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider shadow-sm border whitespace-nowrap transition-all ${activeFilter === filter ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-100 dark:border-slate-700 hover:bg-slate-50'}`}
+                            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider shadow-sm border whitespace-nowrap transition-all ${activeFilter === filter ? 'bg-primary text-white border-primary' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-100 dark:border-slate-700 hover:bg-slate-50'}`}
                         >
                             {filter}
                         </button>
@@ -204,18 +204,18 @@ const ClientsList: React.FC = () => {
                                                     <h3 className="text-[15px] font-black text-slate-800 dark:text-white leading-tight uppercase tracking-tight">
                                                         {client.first_name || 'Sans Prénom'} {client.last_name || ''}
                                                     </h3>
-                                                    <div className="flex items-center gap-1.5 text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5 opacity-80">
+                                                    <div className="flex items-center gap-1.5 text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mt-0.5 opacity-80">
                                                         <MapPin size={10} className="text-slate-300 dark:text-slate-600" />
                                                         {client.city || 'Ville inconnue'}
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                            <div className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-[0.1em] border ${formatBalance(client.balance).bg} ${formatBalance(client.balance).text} ${formatBalance(client.balance).border}`}>
+                                            <div className={`px-2 py-0.5 rounded-lg text-xs font-black uppercase tracking-[0.1em] border ${formatBalance(client.balance).bg} ${formatBalance(client.balance).text} ${formatBalance(client.balance).border}`}>
                                                 {formatBalance(client.balance).label}
                                             </div>
                                             <span className="text-sm font-black text-slate-700 dark:text-slate-200 mr-2">
-                                                {formatBalance(client.balance).amount} <span className="text-[10px] opacity-50 uppercase">{formatBalance(client.balance).unit}</span>
+                                                {formatBalance(client.balance).amount} <span className="text-xs opacity-50 uppercase">{formatBalance(client.balance).unit}</span>
                                             </span>
                                                 <div className="flex items-center gap-2 transition-opacity" onClick={(e) => e.stopPropagation()}>
                                                     <button

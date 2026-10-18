@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '../components/PageLayout';
 import { supabase } from '../lib/supabase';
@@ -164,13 +164,13 @@ const ServicesManager: React.FC = () => {
 
     const toolbar = (
         <div className="relative w-full">
-            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
             <input
                 type="text"
                 placeholder="Rechercher..."
                 value={activeTab === 'services' ? serviceSearch : productSearch}
                 onChange={e => activeTab === 'services' ? setServiceSearch(e.target.value) : setProductSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
             />
         </div>
     );
@@ -192,7 +192,7 @@ const ServicesManager: React.FC = () => {
             <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl w-fit border border-slate-200 dark:border-slate-700 mb-6">
                 <button
                     onClick={() => setActiveTab('services')}
-                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all ${activeTab === 'services'
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'services'
                         ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm'
                         : 'text-slate-500 hover:text-slate-600'
                         }`}
@@ -201,7 +201,7 @@ const ServicesManager: React.FC = () => {
                 </button>
                 <button
                     onClick={() => setActiveTab('products')}
-                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all ${activeTab === 'products'
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'products'
                         ? 'bg-white dark:bg-slate-700 text-violet-600 shadow-sm'
                         : 'text-slate-500 hover:text-slate-600'
                         }`}
@@ -210,7 +210,7 @@ const ServicesManager: React.FC = () => {
                 </button>
                 <button
                     onClick={() => navigate('/settings/templates')}
-                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-[13px] font-black uppercase tracking-widest transition-all text-slate-500 hover:text-slate-600`}
+                    className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all text-slate-500 hover:text-slate-600`}
                 >
                     <ClipboardList size={14} /> Modèles
                 </button>
@@ -237,13 +237,13 @@ const ServicesManager: React.FC = () => {
                                     <p className="font-black text-slate-800 dark:text-white text-base truncate">{service.name}</p>
                                     <div className="flex items-center gap-1.5 mt-0.5">
                                         <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                                        <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">Disponible</span>
+                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Disponible</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex items-baseline gap-1 flex-shrink-0">
                                 <span className="text-xl font-black text-slate-800 dark:text-white">{service.price.toFixed(0)}</span>
-                                <span className="text-[13px] font-bold text-slate-500">DT</span>
+                                <span className="text-xs font-bold text-slate-500">DT</span>
                             </div>
                             <div className="flex items-center gap-1.5 flex-shrink-0">
                                 <ActionBtn color="blue" onClick={() => handleOpenServiceModal(service)} icon={<Edit2 size={14} />} label="Modifier" />
@@ -275,13 +275,13 @@ const ServicesManager: React.FC = () => {
                                     <p className="font-black text-slate-800 dark:text-white text-base truncate">{product.name}</p>
                                     <div className="flex items-center gap-2 mt-0.5">
                                         <Tag size={10} className="text-slate-500" />
-                                        <span className="text-[13px] font-bold text-slate-500 uppercase tracking-widest">{product.unit || '—'}</span>
+                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">{product.unit || '—'}</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex items-baseline gap-1 flex-shrink-0">
                                 <span className="text-xl font-black text-slate-800 dark:text-white">{product.price_per_unit.toFixed(0)}</span>
-                                <span className="text-[13px] font-bold text-slate-500">DT/{product.unit || 'u'}</span>
+                                <span className="text-xs font-bold text-slate-500">DT/{product.unit || 'u'}</span>
                             </div>
                             <div className="flex items-center gap-1.5 flex-shrink-0">
                                 <ActionBtn color="violet" onClick={() => handleOpenProductModal(product)} icon={<Edit2 size={14} />} label="Modifier" />
@@ -383,7 +383,7 @@ const ActionBtn = ({ color, onClick, icon, label }: { color: 'blue' | 'violet' |
 
 const InputField = ({ label, value, onChange, placeholder, type = 'text', icon }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string; icon?: React.ReactNode }) => (
     <div>
-        <label className="text-[13px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">{label}</label>
+        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">{label}</label>
         <div className="relative">
             {icon && <div className="absolute left-4 top-1/2 -translate-y-1/2">{icon}</div>}
             <input

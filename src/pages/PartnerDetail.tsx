@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -300,7 +300,7 @@ const PartnerDetail: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* 1. Contact Details */}
                     <div className="card-bento p-6">
-                        <h4 className="text-[13px] font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-4">Coordonnées</h4>
+                        <h4 className="text-xs font-black text-slate-500 dark:text-slate-500 uppercase tracking-widest mb-4">Coordonnées</h4>
                         <div className="space-y-4">
                             {partner.phone && (
                                 <div className="flex items-center gap-4 group">
@@ -308,7 +308,7 @@ const PartnerDetail: React.FC = () => {
                                         <Phone size={18} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Téléphone</span>
+                                        <span className="text-xs font-black text-slate-500 uppercase tracking-tighter">Téléphone</span>
                                         <a href={`tel:${partner.phone}`} className="text-sm font-black text-slate-900 dark:text-white hover:text-blue-500 transition-colors uppercase truncate">{partner.phone}</a>
                                     </div>
                                 </div>
@@ -319,18 +319,18 @@ const PartnerDetail: React.FC = () => {
                                         <Mail size={18} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Email</span>
+                                        <span className="text-xs font-black text-slate-500 uppercase tracking-tighter">Email</span>
                                         <a href={`mailto:${partner.email}`} className="text-sm font-black text-slate-900 dark:text-white hover:text-blue-500 transition-colors uppercase truncate max-w-[150px]">{partner.email}</a>
                                     </div>
                                 </div>
                             )}
                             {partner.company && (
                                 <div className="flex items-center gap-4 group">
-                                    <div className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform">
+                                    <div className="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform">
                                         <Building2 size={18} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Société</span>
+                                        <span className="text-xs font-black text-slate-500 uppercase tracking-tighter">Société</span>
                                         <span className="text-sm font-black text-slate-900 dark:text-white uppercase truncate">{partner.company}</span>
                                     </div>
                                 </div>
@@ -358,14 +358,14 @@ const PartnerDetail: React.FC = () => {
                                     className="flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 md:hover:border-primary/30 transition-all cursor-pointer shadow-sm group"
                                 >
                                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <div className="w-10 h-10 shrink-0 rounded-xl bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center text-slate-400 md:group-hover:bg-primary/10 md:group-hover:text-primary transition-colors">
+                                        <div className="w-10 h-10 shrink-0 rounded-xl bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center text-slate-500 md:group-hover:bg-primary/10 md:group-hover:text-primary transition-colors">
                                             <Users size={18} />
                                         </div>
                                         <div className="min-w-0 pr-2">
                                             <p className="text-sm font-black text-slate-800 dark:text-white uppercase truncate md:group-hover:text-primary transition-colors">
                                                 {client.first_name} {client.last_name}
                                             </p>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{client.city || 'Ville'}</p>
+                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest truncate">{client.city || 'Ville'}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-1 shrink-0">
@@ -386,7 +386,7 @@ const PartnerDetail: React.FC = () => {
                                 </div>
                             )) : (
                                 <div className="col-span-full py-12 flex flex-col items-center justify-center opacity-40">
-                                    <Users size={48} className="text-slate-400 mb-4" />
+                                    <Users size={48} className="text-slate-500 mb-4" />
                                     <p className="text-sm font-black uppercase tracking-widest text-slate-500">Aucun client affecté</p>
                                 </div>
                             )}
@@ -404,7 +404,7 @@ const PartnerDetail: React.FC = () => {
                                 <div className="flex items-center justify-between mb-6">
                                     <div className="flex items-center gap-2 opacity-80">
                                         <Wallet size={18} />
-                                        <h3 className="text-[11px] font-black uppercase tracking-widest">
+                                        <h3 className="text-xs font-black uppercase tracking-widest">
                                             {partner.is_billing_partner ? "Balance Financière" : "Suivi des Avances"}
                                         </h3>
                                     </div>
@@ -423,7 +423,7 @@ const PartnerDetail: React.FC = () => {
                                     <h4 className={`text-4xl font-black ${formatBalance(balance).color === 'rose' ? 'text-white' : 'text-emerald-300'}`}>
                                         {formatBalance(balance).amount} <span className="text-xl opacity-50">{formatBalance(balance).unit}</span>
                                     </h4>
-                                    <p className="text-[10px] font-bold text-white/50 uppercase mt-2">
+                                    <p className="text-xs font-bold text-white/50 uppercase mt-2">
                                         {partner.is_billing_partner
                                             ? `Facturé: ${totalBilled.toFixed(0)} | Encaissé: ${totalPaid.toFixed(0)}`
                                             : `Total Versé: ${totalPaid.toFixed(0)}`
@@ -436,9 +436,9 @@ const PartnerDetail: React.FC = () => {
                                         <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
                                             <div className="flex items-center gap-2 text-orange-400 mb-1">
                                                 <AlertCircle size={14} />
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-orange-200">Tiers-Payant Actif</span>
+                                                <span className="text-xs font-black uppercase tracking-widest text-orange-200">Tiers-Payant Actif</span>
                                             </div>
-                                            <p className="text-[10px] font-bold text-white/60 uppercase">
+                                            <p className="text-xs font-bold text-white/60 uppercase">
                                                 {interventions.length} interventions à charge.
                                             </p>
                                         </div>
@@ -502,10 +502,10 @@ const PartnerDetail: React.FC = () => {
                                     <div key={inter.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100 dark:border-slate-800 hover:border-orange-500/30 transition-all gap-4">
                                         <div>
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-[11px] font-black bg-white dark:bg-slate-700 px-2 py-0.5 rounded shadow-sm text-slate-600 dark:text-slate-300">
+                                                <span className="text-xs font-black bg-white dark:bg-slate-700 px-2 py-0.5 rounded shadow-sm text-slate-600 dark:text-slate-300">
                                                     {new Date(inter.scheduled_date).toLocaleDateString('fr-FR')}
                                                 </span>
-                                                <span className={`text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded-lg ${remaining <= 0.5 ? 'bg-emerald-100 text-emerald-600' : (inter.paid_amount && inter.paid_amount > 0) ? 'bg-orange-100 text-orange-600' : 'bg-rose-100 text-rose-600'}`}>
+                                                <span className={`text-xs uppercase font-black tracking-widest px-2 py-0.5 rounded-lg ${remaining <= 0.5 ? 'bg-emerald-100 text-emerald-600' : (inter.paid_amount && inter.paid_amount > 0) ? 'bg-orange-100 text-orange-600' : 'bg-rose-100 text-rose-600'}`}>
                                                     {remaining <= 0.5 ? 'Payé' : (inter.paid_amount && inter.paid_amount > 0) ? 'Partiel' : 'À payer'}
                                                 </span>
                                             </div>
@@ -517,14 +517,14 @@ const PartnerDetail: React.FC = () => {
                                         <div className="text-right">
                                             <p className="text-base font-black text-slate-900 dark:text-white">{totalBilledInter.toFixed(0)} <span className="text-xs opacity-50">DT</span></p>
                                             {remaining > 0 && remaining < totalBilledInter && (
-                                                <p className="text-[10px] font-bold text-orange-500 uppercase mt-0.5">Reste {remaining.toFixed(0)} DT</p>
+                                                <p className="text-xs font-bold text-orange-500 uppercase mt-0.5">Reste {remaining.toFixed(0)} DT</p>
                                             )}
                                         </div>
                                     </div>
                                 );
                             }) : (
                                 <div className="py-12 flex flex-col items-center justify-center opacity-40">
-                                    <HistoryIcon size={48} className="text-slate-400 mb-4" />
+                                    <HistoryIcon size={48} className="text-slate-500 mb-4" />
                                     <p className="text-sm font-black uppercase tracking-widest text-slate-500">Aucun historique de facturation</p>
                                 </div>
                             )}
@@ -549,24 +549,24 @@ const PartnerDetail: React.FC = () => {
                             {payments.map(pay => (
                                 <div key={pay.id} className="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
                                     <div className="flex justify-between items-start mb-3">
-                                        <span className="text-[10px] font-black bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded uppercase tracking-tighter">
+                                        <span className="text-xs font-black bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded uppercase tracking-tighter">
                                             {pay.payment_method}
                                         </span>
-                                        <span className="text-[10px] font-black text-slate-400">
+                                        <span className="text-xs font-black text-slate-500">
                                             {new Date(pay.payment_date).toLocaleDateString('fr-FR')}
                                         </span>
                                     </div>
                                     <div className="flex items-baseline gap-1 mb-3">
                                         <span className="text-2xl font-black text-slate-900 dark:text-white">{pay.amount.toFixed(0)}</span>
-                                        <span className="text-xs font-bold text-slate-400 uppercase">DT</span>
+                                        <span className="text-xs font-bold text-slate-500 uppercase">DT</span>
                                     </div>
                                     <div className="pt-3 border-t border-slate-100 dark:border-slate-700/50 space-y-1">
-                                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 line-clamp-1">
+                                        <p className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5 line-clamp-1">
                                             <User size={10} strokeWidth={3} />
                                             Reçu par: <span className="text-slate-900 dark:text-slate-200">{pay.recipient?.full_name || 'Admin'}</span>
                                         </p>
                                         {pay.reference && (
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase truncate">
+                                            <p className="text-xs font-bold text-slate-500 uppercase truncate">
                                                 Ref: {pay.reference}
                                             </p>
                                         )}

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '../components/PageLayout';
 import { 
@@ -97,7 +97,7 @@ const Settings: React.FC = () => {
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight mb-1">{section.title}</h3>
-                                <p className="text-sm font-bold text-slate-400 leading-relaxed">{section.description}</p>
+                                <p className="text-sm font-bold text-slate-500 leading-relaxed">{section.description}</p>
                             </div>
                             <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 group-hover:text-primary group-hover:bg-primary/10 transition-all">
                                 <ArrowRight size={20} />
@@ -108,23 +108,23 @@ const Settings: React.FC = () => {
 
                 {/* Placeholder for future global settings */}
                 <div className="md:col-span-2 mt-8 pt-8 border-t border-slate-100 dark:border-white/5">
-                    <h4 className="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Préférences Système</h4>
+                    <h4 className="text-xs font-black text-slate-500 uppercase tracking-[0.3em] mb-6">Préférences Système</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 opacity-40 grayscale pointer-events-none">
                         <div className="flex flex-col items-center gap-3 p-6 bg-slate-50 dark:bg-slate-900 rounded-[24px]">
                             <Bell size={24} />
-                            <span className="text-[10px] font-black uppercase">Notifications</span>
+                            <span className="text-xs font-black uppercase">Notifications</span>
                         </div>
                         <div className="flex flex-col items-center gap-3 p-6 bg-slate-50 dark:bg-slate-900 rounded-[24px]">
                             <Database size={24} />
-                            <span className="text-[10px] font-black uppercase">Backup</span>
+                            <span className="text-xs font-black uppercase">Backup</span>
                         </div>
                         <div className="flex flex-col items-center gap-3 p-6 bg-slate-50 dark:bg-slate-900 rounded-[24px]">
                             <Globe size={24} />
-                            <span className="text-[10px] font-black uppercase">Langue</span>
+                            <span className="text-xs font-black uppercase">Langue</span>
                         </div>
                         <div className="flex flex-col items-center gap-3 p-6 bg-slate-50 dark:bg-slate-900 rounded-[24px]">
                             <ShieldCheck size={24} />
-                            <span className="text-[10px] font-black uppercase">Sécurité</span>
+                            <span className="text-xs font-black uppercase">Sécurité</span>
                         </div>
                     </div>
                 </div>

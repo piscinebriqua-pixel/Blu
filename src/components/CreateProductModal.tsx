@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { Loader2, Package, Wallet, Tag } from 'lucide-react';
@@ -65,9 +65,9 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ onClose, onSucc
         <ModalLayout title="NOUVEAU PRODUIT" onClose={onClose} actions={actions}>
             <form id="create-product-form" onSubmit={handleSubmit} className="p-4 space-y-6">
                 <div>
-                    <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">Nom du produit</label>
+                    <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">Nom du produit</label>
                     <div className="relative">
-                        <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <Package className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                         <input
                             type="text"
                             required
@@ -82,9 +82,9 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ onClose, onSucc
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">Unité</label>
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">Unité</label>
                         <div className="relative">
-                            <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                            <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
                             <input
                                 type="text"
                                 required
@@ -97,9 +97,9 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ onClose, onSucc
                     </div>
 
                     <div>
-                        <label className="text-[13px] font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">Prix Unitaire</label>
+                        <label className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2 block ml-1">Prix Unitaire</label>
                         <div className="relative">
-                            <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                            <Wallet className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
                             <input
                                 type="number"
                                 required

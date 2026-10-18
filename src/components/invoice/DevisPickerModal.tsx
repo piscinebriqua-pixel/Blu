@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import ModalLayout from '../ModalLayout';
 import type { UnbilledDevis } from '../../services/invoiceService';
 import { Search, FileSpreadsheet, Plus, CheckCircle2, Clock, Users, User, AlertCircle } from 'lucide-react';
@@ -110,25 +110,25 @@ export const DevisPickerModal: React.FC<DevisPickerModalProps> = ({
 
         {/* Barre de recherche */}
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Rechercher par numéro (ex: DEV-011), client, libellé ou montant..."
-            className="w-full min-h-[44px] pl-10 pr-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base font-semibold text-slate-900 dark:text-white placeholder:text-slate-400"
+            className="w-full min-h-[44px] pl-10 pr-4 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base font-semibold text-slate-900 dark:text-white placeholder:text-slate-500"
           />
         </div>
 
         {/* Liste des devis */}
         <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
           {loading ? (
-            <div className="py-12 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <div className="py-12 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">
               Recherche des devis en cours...
             </div>
           ) : filtered.length === 0 ? (
             <div className="py-12 text-center bg-slate-50 dark:bg-slate-900/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-4">
-              <FileSpreadsheet size={36} className="mx-auto text-slate-400 mb-2" />
+              <FileSpreadsheet size={36} className="mx-auto text-slate-500 mb-2" />
               <p className="text-xs font-black text-slate-700 dark:text-slate-300 uppercase">
                 Aucun devis trouvé
               </p>
@@ -187,9 +187,9 @@ export const DevisPickerModal: React.FC<DevisPickerModalProps> = ({
                     </p>
 
                     <p className="text-xs font-semibold text-slate-500 mt-0.5 flex items-center gap-1 truncate">
-                      <User size={13} className="text-slate-400 shrink-0" />
+                      <User size={13} className="text-slate-500 shrink-0" />
                       <span className="text-slate-700 dark:text-slate-300 font-bold">{clientFullName}</span>
-                      {phone && <span className="text-slate-400">({phone})</span>}
+                      {phone && <span className="text-slate-500">({phone})</span>}
                     </p>
                   </div>
 
@@ -216,7 +216,7 @@ export const DevisPickerModal: React.FC<DevisPickerModalProps> = ({
 
         {/* Pied de modale */}
         <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-400">
+          <span className="text-xs font-bold text-slate-500">
             {filtered.length} devis affiché(s)
           </span>
           <button

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import ModalLayout from '../ModalLayout';
 import ConfirmModal from '../ConfirmModal';
 import { invoiceService, type InvoiceWithItems } from '../../services/invoiceService';
@@ -144,7 +144,7 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
           {/* EN-TÊTE CLIENT & INFORMATIONS FACTURE (Écran & Impression) */}
           <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start gap-4">
             <div className="space-y-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <span className="text-xs font-black uppercase tracking-widest text-slate-500">
                 Facturé à (Client)
               </span>
               <h4 className="text-base font-black text-slate-900 dark:text-white uppercase leading-tight">
@@ -167,7 +167,7 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
             </div>
 
             <div className="sm:text-right space-y-1 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200 dark:border-slate-700">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              <span className="text-xs font-black uppercase tracking-widest text-slate-500">
                 Référence Document
               </span>
               <p className="text-sm font-black text-slate-800 dark:text-white">

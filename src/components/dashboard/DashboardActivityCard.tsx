@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Activity, ChevronRight, ArrowUpRight } from 'lucide-react';
 
@@ -46,7 +46,7 @@ export const DashboardActivityCard: React.FC<DashboardActivityCardProps> = ({ in
             <div className="space-y-2 flex-1 flex flex-col justify-center">
                 {interventions.length === 0 ? (
                     <div className="py-6 px-4 text-center rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
-                        <p className="text-xs font-bold text-slate-400">Aucune intervention récente</p>
+                        <p className="text-xs font-bold text-slate-500">Aucune intervention récente</p>
                     </div>
                 ) : (
                     interventions.map((inter) => {
@@ -89,10 +89,10 @@ export const DashboardActivityCard: React.FC<DashboardActivityCardProps> = ({ in
                                 </div>
 
                                 <div className="flex items-center gap-2 shrink-0">
-                                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                                    <span className="text-xs font-bold text-slate-500 dark:text-slate-500 whitespace-nowrap">
                                         {dateStr}
                                     </span>
-                                    <ChevronRight size={14} className="text-slate-400 group-hover/item:translate-x-0.5 transition-transform" />
+                                    <ChevronRight size={14} className="text-slate-500 group-hover/item:translate-x-0.5 transition-transform" />
                                 </div>
                             </div>
                         );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import PageLayout from '../components/PageLayout';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
@@ -112,11 +112,11 @@ const Partners: React.FC = () => {
         <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3">
                 <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                     <input
                         type="text"
                         placeholder="Rechercher par nom, rôle..."
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold"
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-sm font-bold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -144,7 +144,7 @@ const Partners: React.FC = () => {
                             >
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center text-slate-400 group-hover:scale-110 transition-transform">
+                                        <div className="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center text-slate-500 group-hover:scale-110 transition-transform">
                                             <Briefcase size={22} className={roleColors[partner.role]?.split(' ')[0] || ''} />
                                         </div>
                                         <div>
@@ -154,11 +154,11 @@ const Partners: React.FC = () => {
                                                     : partner.company || 'Sans nom'}
                                             </h3>
                                             <div className="flex items-center gap-2 mt-1">
-                                                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border ${roleColors[partner.role] || roleColors['autre']}`}>
+                                                <span className={`text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border ${roleColors[partner.role] || roleColors['autre']}`}>
                                                     {partner.role}
                                                 </span>
                                                 {partner.is_billing_partner && (
-                                                    <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800">
+                                                    <span className="text-xs font-black uppercase tracking-widest px-2 py-0.5 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800">
                                                         Tiers-Payant
                                                     </span>
                                                 )}
@@ -179,24 +179,24 @@ const Partners: React.FC = () => {
                                     {partner.company && (partner.first_name || partner.last_name) && (
                                         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                                             <Building2 size={14} className="shrink-0" />
-                                            <span className="text-[12px] font-bold truncate">{partner.company}</span>
+                                            <span className="text-xs font-bold truncate">{partner.company}</span>
                                         </div>
                                     )}
                                     {partner.phone && (
                                         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                                             <Phone size={14} className="shrink-0" />
-                                            <span className="text-[12px] font-bold">{partner.phone}</span>
+                                            <span className="text-xs font-bold">{partner.phone}</span>
                                         </div>
                                     )}
                                     {partner.email && (
                                         <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                                             <Mail size={14} className="shrink-0" />
-                                            <span className="text-[12px] font-bold truncate">{partner.email}</span>
+                                            <span className="text-xs font-bold truncate">{partner.email}</span>
                                         </div>
                                     )}
                                 </div>
                                 <div className="flex items-center justify-end mt-2 pt-2 border-t border-slate-50 dark:border-slate-700/50">
-                                    <div className="text-[10px] font-black text-primary uppercase tracking-[0.2em] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                    <div className="text-xs font-black text-primary uppercase tracking-[0.2em] flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
                                         Voir plus <ChevronRight size={12} />
                                     </div>
                                 </div>

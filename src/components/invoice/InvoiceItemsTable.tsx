@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import type { InvoiceDraftItem } from './useCreateInvoiceState';
 import { Plus, Tag, FileSpreadsheet, Calendar, Trash2 } from 'lucide-react';
 
@@ -114,7 +114,7 @@ export const InvoiceItemsTable: React.FC<InvoiceItemsTableProps> = ({
                   placeholder="Désignation de la prestation ou de l'article *"
                   value={it.description}
                   onChange={(e) => onUpdateItem(idx, 'description', e.target.value)}
-                  className="w-full min-h-[44px] px-3.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base font-semibold text-slate-900 dark:text-white placeholder:text-slate-400"
+                  className="w-full min-h-[44px] px-3.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base font-semibold text-slate-900 dark:text-white placeholder:text-slate-500"
                 />
               </div>
 
@@ -161,7 +161,7 @@ export const InvoiceItemsTable: React.FC<InvoiceItemsTableProps> = ({
                       className="w-full min-h-[44px] pl-2 pr-6 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base font-bold text-right text-slate-900 dark:text-white"
                       title="Prix unitaire en DT"
                     />
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500 pointer-events-none">
                       DT
                     </span>
                   </div>
@@ -169,10 +169,10 @@ export const InvoiceItemsTable: React.FC<InvoiceItemsTableProps> = ({
 
                 {/* Total Ligne */}
                 <div className="w-28 text-right pr-2 shrink-0">
-                  <span className="text-xs font-bold text-slate-400 block uppercase">Total</span>
+                  <span className="text-xs font-bold text-slate-500 block uppercase">Total</span>
                   <span className="text-base font-black text-slate-900 dark:text-white">
                     {Number(it.totalPrice || 0).toFixed(2)}{' '}
-                    <span className="text-xs text-slate-400">DT</span>
+                    <span className="text-xs text-slate-500">DT</span>
                   </span>
                 </div>
 

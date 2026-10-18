@@ -131,9 +131,11 @@ textarea {
   font-size: 16px !important;
 }
 
-/* All form labels must be readable */
+/* All form labels must be readable outdoor */
 label {
-  font-size: 12px;
+  font-size: 0.8125rem; /* 13px minimum */
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 /* Ensure all tap targets meet Apple/Google 44px minimum */
@@ -145,6 +147,47 @@ a,
   /* Removes the 300ms tap delay on Android */
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* --- TOKENS TYPOGRAPHIQUES SÉMANTIQUES (Outdoor & Mobile High-Legibility) --- */
+.badge-meta {
+  font-size: 0.8125rem !important; /* 13px */
+  font-weight: 900 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.label-form {
+  font-size: 0.875rem !important; /* 14px */
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #334155; /* slate-700 */
+}
+[data-theme='dark'] .label-form,
+.dark .label-form {
+  color: #E2E8F0; /* slate-200 */
+}
+
+.text-secondary {
+  font-size: 0.9375rem !important; /* 15px */
+  font-weight: 600 !important;
+  color: #475569; /* slate-600 : contraste outdoor certifié 7:1 (WCAG AAA) */
+}
+[data-theme='dark'] .text-secondary,
+.dark .text-secondary {
+  color: #CBD5E1; /* slate-300 */
+}
+
+.card-title-sm {
+  font-size: 1.03125rem !important; /* 16.5px */
+  font-weight: 900 !important;
+  letter-spacing: -0.01em;
+  color: #0F172A; /* slate-900 */
+}
+[data-theme='dark'] .card-title-sm,
+.dark .card-title-sm {
+  color: #FFFFFF;
 }
 
 /* Inline/icon-only buttons override (they can be smaller visually but wrapper stays 44px) */

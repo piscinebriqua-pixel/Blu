@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
@@ -132,11 +132,11 @@ const Chantiers: React.FC = () => {
         <div className="flex flex-col gap-4 w-full">
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
                 <div className="relative flex-1 min-w-0">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
                     <input
                         type="text"
                         placeholder="Rechercher un devis, numéro ou client..."
-                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-base font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200/50 dark:border-slate-700/50 text-base font-bold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -144,25 +144,25 @@ const Chantiers: React.FC = () => {
                 <div className="flex overflow-x-auto bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200/50 dark:border-slate-700/50 shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <button
                         onClick={() => setActiveFilter('all')}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${activeFilter === 'all' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-400'}`}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${activeFilter === 'all' ? 'bg-white dark:bg-slate-700 text-primary shadow-sm' : 'text-slate-500'}`}
                     >
                         Tous
                     </button>
                     <button
                         onClick={() => setActiveFilter('pending')}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${activeFilter === 'pending' ? 'bg-white dark:bg-slate-700 text-blue-500 shadow-sm' : 'text-slate-400'}`}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${activeFilter === 'pending' ? 'bg-white dark:bg-slate-700 text-blue-500 shadow-sm' : 'text-slate-500'}`}
                     >
                         En cours ({stats.pending})
                     </button>
                     <button
                         onClick={() => setActiveFilter('closed')}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${activeFilter === 'closed' ? 'bg-white dark:bg-slate-700 text-emerald-500 shadow-sm' : 'text-slate-400'}`}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${activeFilter === 'closed' ? 'bg-white dark:bg-slate-700 text-emerald-500 shadow-sm' : 'text-slate-500'}`}
                     >
                         Clôturés ({stats.closed})
                     </button>
                     <button
                         onClick={() => setActiveFilter('cancelled')}
-                        className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${activeFilter === 'cancelled' ? 'bg-white dark:bg-slate-700 text-rose-500 shadow-sm' : 'text-slate-400'}`}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${activeFilter === 'cancelled' ? 'bg-white dark:bg-slate-700 text-rose-500 shadow-sm' : 'text-slate-500'}`}
                     >
                         Annulés ({stats.cancelled})
                     </button>
@@ -176,7 +176,7 @@ const Chantiers: React.FC = () => {
             <PageLayout title="Gestion des Chantiers" subtitle="Chargement..." showBackButton={true}>
                 <div className="flex flex-col items-center justify-center py-20 animate-pulse">
                     <div className="w-12 h-12 rounded-full border-4 border-slate-200 border-t-primary animate-spin mb-4"></div>
-                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Récupération des devis...</p>
+                    <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Récupération des devis...</p>
                 </div>
             </PageLayout>
         );
@@ -193,7 +193,7 @@ const Chantiers: React.FC = () => {
                 {filteredDevis.length === 0 ? (
                     <div className="py-20 text-center bg-white dark:bg-slate-800/50 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-slate-700">
                         <FileText size={48} className="mx-auto text-slate-200 mb-4" />
-                        <h3 className="text-lg font-bold text-slate-400 uppercase tracking-widest">Aucun devis trouvé</h3>
+                        <h3 className="text-lg font-bold text-slate-500 uppercase tracking-widest">Aucun devis trouvé</h3>
                     </div>
                 ) : (
                     filteredDevis.map((item) => (
@@ -215,8 +215,8 @@ const Chantiers: React.FC = () => {
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{item.number}</span>
-                                            <span className={`text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md ${item.status === 'closed' ? 'bg-emerald-100 text-emerald-700' :
+                                            <span className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">{item.number}</span>
+                                            <span className={`text-xs font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md ${item.status === 'closed' ? 'bg-emerald-100 text-emerald-700' :
                                                 item.status === 'cancelled' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'
                                                 }`}>
                                                 {item.status === 'closed' ? 'Clôturé' : item.status === 'cancelled' ? 'Annulé' : 'En cours'}
@@ -226,12 +226,12 @@ const Chantiers: React.FC = () => {
                                             {item.title}
                                         </h3>
                                         <div className="flex flex-wrap items-center gap-3 mt-2">
-                                            <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                                                <User size={12} className="text-slate-400" />
+                                            <div className="flex items-center gap-1.5 text-xs font-black text-slate-500 uppercase tracking-widest">
+                                                <User size={12} className="text-slate-500" />
                                                 {item.client?.first_name} {item.client?.last_name}
                                             </div>
-                                            <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                                                <Calendar size={12} className="text-slate-400" />
+                                            <div className="flex items-center gap-1.5 text-xs font-black text-slate-500 uppercase tracking-widest">
+                                                <Calendar size={12} className="text-slate-500" />
                                                 {new Date(item.created_at).toLocaleDateString('fr-FR')}
                                             </div>
                                         </div>
@@ -240,10 +240,10 @@ const Chantiers: React.FC = () => {
 
                                 <div className="flex items-center justify-between md:flex-col md:items-end gap-2">
                                     <div className="flex flex-col items-end">
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Total Devis</span>
+                                        <span className="text-xs font-black text-slate-500 uppercase tracking-widest leading-none mb-1">Total Devis</span>
                                         <div className="flex items-baseline gap-1">
                                             <span className="text-xl font-black text-slate-900 dark:text-white leading-none">{item.total_amount.toFixed(0)}</span>
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase">DT</span>
+                                            <span className="text-xs font-bold text-slate-500 uppercase">DT</span>
                                         </div>
                                     </div>
 
@@ -269,7 +269,7 @@ const Chantiers: React.FC = () => {
                                         {item.status !== 'pending' && (
                                             <button
                                                 onClick={(e) => { e.stopPropagation(); handleStatusChange(item.id, 'pending'); }}
-                                                className="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:bg-slate-600 hover:text-white transition-all flex items-center justify-center"
+                                                className="w-8 h-8 rounded-full bg-slate-50 text-slate-500 hover:bg-slate-600 hover:text-white transition-all flex items-center justify-center"
                                                 title="Remettre en cours"
                                             >
                                                 <Clock size={16} />

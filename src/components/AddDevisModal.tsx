@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import ModalLayout from './ModalLayout';
 import { Plus, Trash2, Loader2, Upload, FileSignature, UserPlus, GripVertical, ClipboardCopy, Building2, ChevronDown } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -637,8 +637,8 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
             className="max-w-5xl"
             actions={
                 <div className="flex gap-4 w-full">
-                    <Button variant="secondary" onClick={onClose} className="flex-1 btn-flow font-black tracking-widest text-[11px] h-14">ANNULER</Button>
-                    <Button onClick={handleSubmit} loading={loading} className="flex-[2] btn-flow btn-primary font-black tracking-widest text-[11px] h-14">
+                    <Button variant="secondary" onClick={onClose} className="flex-1 btn-flow font-black tracking-widest text-xs h-14">ANNULER</Button>
+                    <Button onClick={handleSubmit} loading={loading} className="flex-[2] btn-flow btn-primary font-black tracking-widest text-xs h-14">
                         {devisId ? "METTRE À JOUR" : (isTemplate ? "ENREGISTRER LE MODÈLE" : "ENREGISTRER LE DEVIS")}
                     </Button>
                 </div>
@@ -658,7 +658,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 </div>
                                 <div className="flex flex-col">
                                     <h4 className="text-[14px] font-black text-blue-900 dark:text-white uppercase tracking-tight">Importer PDF</h4>
-                                    <p className="text-[10px] text-blue-500/80 font-black uppercase tracking-widest mt-0.5">Extraction IA</p>
+                                    <p className="text-xs text-blue-500/80 font-black uppercase tracking-widest mt-0.5">Extraction IA</p>
                                 </div>
                             </div>
                             <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".pdf" className="hidden" title="Sélectionner PDF" />
@@ -685,7 +685,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                             {showTemplatesDropdown && (
                                 <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[2rem] shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
                                     {availableTemplates.length === 0 ? (
-                                        <div className="p-6 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">Aucun modèle créé</div>
+                                        <div className="p-6 text-center text-xs font-bold text-slate-500 uppercase tracking-wider">Aucun modèle créé</div>
                                     ) : (
                                         <div className="max-h-60 overflow-y-auto no-scrollbar">
                                             {availableTemplates.map(tpl => (
@@ -718,7 +718,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                             <h3 className="font-black text-slate-800 dark:text-white uppercase tracking-tighter">Entête du Devis</h3>
                         </div>
                         {isTemplateMode && (
-                            <div className="px-4 py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                            <div className="px-4 py-1.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl text-xs font-black uppercase tracking-widest">
                                 Mode Modèle
                             </div>
                         )}
@@ -732,7 +732,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                     placeholder="Numéro de Devis (ex: DEV-001)"
                                     value={number}
                                     onChange={(e) => setNumber(e.target.value)}
-                                    className="w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-black px-4 text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all placeholder:text-slate-400"
+                                    className="w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-black px-4 text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all placeholder:text-slate-500"
                                 />
                             </div>
                         )}
@@ -755,13 +755,13 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 {extractedClientName && !selectedClientId && (
                                     <div className="mt-2 p-3 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 rounded-2xl flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-300">
                                         <div className="flex items-center gap-2 px-1">
-                                            <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Client PDF :</span>
-                                            <span className="text-[13px] font-black text-blue-600 dark:text-blue-400">{extractedClientName.first} {extractedClientName.last}</span>
+                                            <span className="text-xs font-black uppercase tracking-widest text-slate-500">Client PDF :</span>
+                                            <span className="text-xs font-black text-blue-600 dark:text-blue-400">{extractedClientName.first} {extractedClientName.last}</span>
                                         </div>
                                         <button
                                             type="button"
                                             onClick={() => setIsAddClientModalOpen(true)}
-                                            className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-[11px] font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest hover:border-blue-500 hover:text-blue-600 transition-all flex items-center justify-center gap-2 shadow-sm"
+                                            className="w-full h-12 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest hover:border-blue-500 hover:text-blue-600 transition-all flex items-center justify-center gap-2 shadow-sm"
                                         >
                                             <UserPlus size={16} />
                                             Créer ce client
@@ -770,7 +770,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 )}
                             </div>
                         ) : (
-                            <div className="md:col-span-1 border border-slate-200 dark:border-slate-700 rounded-2xl h-14 bg-slate-100 dark:bg-slate-800/50 p-4 font-bold text-slate-400 flex items-center text-base">
+                            <div className="md:col-span-1 border border-slate-200 dark:border-slate-700 rounded-2xl h-14 bg-slate-100 dark:bg-slate-800/50 p-4 font-bold text-slate-500 flex items-center text-base">
                                 Client Déjà Assigné
                             </div>
                         )}
@@ -795,7 +795,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 placeholder={isTemplate ? "Nom du modèle (ex: PACK FILTRATION)" : "Titre du projet (Ex: Rénovation Piscine)"}
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
-                                className="w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-black px-4 text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all placeholder:text-slate-400"
+                                className="w-full h-14 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-black px-4 text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all placeholder:text-slate-500"
                             />
                         </div>
 
@@ -804,11 +804,11 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <Building2 size={18} className="text-emerald-500" />
-                                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Coordonnées Société</span>
+                                    <span className="text-xs font-black text-slate-500 uppercase tracking-widest">Coordonnées Société</span>
                                 </div>
                                 <button
                                     onClick={fetchDefaultCompanyInfo}
-                                    className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest hover:underline"
+                                    className="text-xs font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest hover:underline"
                                 >
                                     Importer mes infos par défaut
                                 </button>
@@ -852,7 +852,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 placeholder="Texte d'introduction du devis (expliquer le projet, salutations...)"
                                 value={headerContent}
                                 onChange={(e) => setHeaderContent(e.target.value)}
-                                className="w-full p-6 bg-blue-50/30 dark:bg-blue-900/10 rounded-[2rem] border border-blue-100/50 dark:border-blue-900/20 font-bold text-sm text-slate-800 dark:text-white outline-none focus:border-blue-500 h-24 resize-none transition-all placeholder:text-slate-400"
+                                className="w-full p-6 bg-blue-50/30 dark:bg-blue-900/10 rounded-[2rem] border border-blue-100/50 dark:border-blue-900/20 font-bold text-sm text-slate-800 dark:text-white outline-none focus:border-blue-500 h-24 resize-none transition-all placeholder:text-slate-500"
                             />
                         </div>
 
@@ -862,7 +862,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 placeholder="Caractéristiques techniques : Dimensions, Volume, Matériaux..."
                                 value={poolDetails}
                                 onChange={(e) => setPoolDetails(e.target.value)}
-                                className="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-800 dark:text-white outline-none focus:border-blue-500 h-20 resize-none transition-all placeholder:text-slate-400"
+                                className="w-full p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-800 dark:text-white outline-none focus:border-blue-500 h-20 resize-none transition-all placeholder:text-slate-500"
                             />
                         </div>
                     </div>
@@ -874,13 +874,13 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                     <div className="flex items-center justify-between px-1">
                         <div className="flex items-center gap-2">
                             <FileSignature size={18} className="text-blue-500" />
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Détails des prestations</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-[0.2em]">Détails des prestations</span>
                         </div>
                         <div className="flex gap-4">
-                            <button onClick={addItem} className="flex-1 py-3 px-4 bg-slate-100 dark:bg-slate-800 rounded-2xl text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase flex items-center justify-center gap-2 hover:bg-slate-200 transition-all">
+                            <button onClick={addItem} className="flex-1 py-3 px-4 bg-slate-100 dark:bg-slate-800 rounded-2xl text-xs font-black text-slate-600 dark:text-slate-300 uppercase flex items-center justify-center gap-2 hover:bg-slate-200 transition-all">
                                 <Plus size={16} /> Ajouter un article
                             </button>
-                            <button onClick={addHeader} className="flex-1 py-3 px-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-[10px] font-black text-blue-600 dark:text-blue-300 uppercase flex items-center justify-center gap-2 hover:bg-blue-100 transition-all border border-blue-100 dark:border-blue-900/30">
+                            <button onClick={addHeader} className="flex-1 py-3 px-4 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-xs font-black text-blue-600 dark:text-blue-300 uppercase flex items-center justify-center gap-2 hover:bg-blue-100 transition-all border border-blue-100 dark:border-blue-900/30">
                                 <FileSignature size={16} /> Titre de section
                             </button>
                         </div>
@@ -896,7 +896,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 >
                                     {items.length === 0 && (
                                         <div className="py-10 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 rounded-[2rem]">
-                                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest">Aucune ligne saisie</p>
+                                            <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Aucune ligne saisie</p>
                                         </div>
                                     )}
                                     {items.map((item, index) => (
@@ -911,7 +911,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                                     <div className="flex items-start justify-between gap-3 w-full">
                                                         <div
                                                             {...provided.dragHandleProps}
-                                                            className="mt-1 cursor-grab active:cursor-grabbing text-slate-400 hover:text-blue-500 transition-colors p-1"
+                                                            className="mt-1 cursor-grab active:cursor-grabbing text-slate-500 hover:text-blue-500 transition-colors p-1"
                                                             title="Déplacer"
                                                         >
                                                             <GripVertical size={20} />
@@ -922,11 +922,11 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                                             value={item.designation}
                                                             onChange={(e) => updateItem(index, 'designation', e.target.value)}
                                                             rows={item.is_header ? 1 : 2}
-                                                            className={`flex-1 w-full bg-transparent border-none ${item.is_header ? 'font-black text-[15px] uppercase text-blue-900 dark:text-blue-100 mt-1' : 'font-medium text-[14px] text-slate-800 dark:text-white'} outline-none resize-y min-h-[40px] placeholder:text-slate-400 focus:ring-0`}
+                                                            className={`flex-1 w-full bg-transparent border-none ${item.is_header ? 'font-black text-[15px] uppercase text-blue-900 dark:text-blue-100 mt-1' : 'font-medium text-[14px] text-slate-800 dark:text-white'} outline-none resize-y min-h-[40px] placeholder:text-slate-500 focus:ring-0`}
                                                         />
                                                         <button
                                                             onClick={() => removeItem(index)}
-                                                            className="p-2.5 bg-white dark:bg-slate-800 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-slate-100 dark:border-slate-700 shadow-sm shrink-0 mt-1"
+                                                            className="p-2.5 bg-white dark:bg-slate-800 rounded-xl text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-slate-100 dark:border-slate-700 shadow-sm shrink-0 mt-1"
                                                             title="Supprimer la ligne"
                                                         >
                                                             <Trash2 size={16} />
@@ -943,9 +943,9 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                                                     placeholder="Qté"
                                                                     value={item.quantity}
                                                                     onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value))}
-                                                                    className="w-16 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-[13px] text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
+                                                                    className="w-16 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-xs text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
                                                                 />
-                                                                <span className="text-slate-400 text-sm font-bold">×</span>
+                                                                <span className="text-slate-500 text-sm font-bold">×</span>
                                                                 <div className="flex items-center gap-1">
                                                                     <input
                                                                         title="Prix Unitaire"
@@ -953,9 +953,9 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                                                         placeholder="PU"
                                                                         value={item.unit_price}
                                                                         onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value))}
-                                                                        className="w-24 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-[13px] text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
+                                                                        className="w-24 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-xs text-slate-800 dark:text-white outline-none focus:border-blue-500 transition-all"
                                                                     />
-                                                                    <span className="text-[10px] font-black text-slate-400">DT</span>
+                                                                    <span className="text-xs font-black text-slate-500">DT</span>
                                                                 </div>
                                                                 <div className="flex items-center gap-1 ml-auto md:ml-2">
                                                                     <input
@@ -963,17 +963,17 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                                                         placeholder="Unité (ex: Forfait)"
                                                                         value={item.unit || ''}
                                                                         onChange={(e) => updateItem(index, 'unit', e.target.value)}
-                                                                        className="w-20 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-[11px] text-slate-500 uppercase tracking-widest outline-none focus:border-blue-500 transition-all"
+                                                                        className="w-20 h-11 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-black text-xs text-slate-500 uppercase tracking-widest outline-none focus:border-blue-500 transition-all"
                                                                     />
                                                                 </div>
                                                             </div>
 
                                                             {/* Row Total Highlight */}
                                                             <div className="h-11 px-4 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800/50 rounded-xl flex items-center justify-center gap-1 ml-auto shrink-0 shadow-sm">
-                                                                <span className="text-[13px] font-black text-blue-700 dark:text-blue-400">
+                                                                <span className="text-xs font-black text-blue-700 dark:text-blue-400">
                                                                     {typeof item.quantity === 'number' && typeof item.unit_price === 'number' ? (item.quantity * item.unit_price).toFixed(2) : '0.00'}
                                                                 </span>
-                                                                <span className="text-[9px] font-black text-blue-400 uppercase">DT</span>
+                                                                <span className="text-xs font-black text-blue-400 uppercase">DT</span>
                                                             </div>
                                                         </div>
                                                     )}
@@ -994,7 +994,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 title="Pied de Page / Mentions Légales"
                                 value={footerContent}
                                 onChange={(e) => setFooterContent(e.target.value)}
-                                className="w-full p-6 bg-slate-900 text-white rounded-[2rem] border border-slate-800 font-bold text-[12px] outline-none focus:border-primary h-32 resize-none transition-all placeholder:text-slate-500"
+                                className="w-full p-6 bg-slate-900 text-white rounded-[2rem] border border-slate-800 font-bold text-xs outline-none focus:border-primary h-32 resize-none transition-all placeholder:text-slate-500"
                                 placeholder="Pied de page : Mentions légales, Validité de l'offre, Signature..."
                             />
                         </div>
@@ -1003,7 +1003,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 title="Modalités de Paiement"
                                 value={paymentTerms}
                                 onChange={(e) => setPaymentTerms(e.target.value)}
-                                className="w-full p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 font-bold text-[12px] text-slate-800 dark:text-white outline-none focus:border-blue-500 h-24 resize-none transition-all placeholder:text-slate-400"
+                                className="w-full p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 font-bold text-xs text-slate-800 dark:text-white outline-none focus:border-blue-500 h-24 resize-none transition-all placeholder:text-slate-500"
                                 placeholder="Modalités de Paiement (ex: 40% à la commande...)"
                             />
                         </div>
@@ -1012,7 +1012,7 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                                 title="Notes et Remarques"
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
-                                className="w-full p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 font-bold text-[12px] text-slate-800 dark:text-white outline-none focus:border-blue-500 h-24 resize-none transition-all placeholder:text-slate-400"
+                                className="w-full p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 font-bold text-xs text-slate-800 dark:text-white outline-none focus:border-blue-500 h-24 resize-none transition-all placeholder:text-slate-500"
                                 placeholder="Observations supplémentaires..."
                             />
                         </div>
@@ -1021,14 +1021,14 @@ const AddDevisModal: React.FC<AddDevisModalProps> = ({ clientId, devisId, isTemp
                     {/* TOTAL FOOTER */}
                     <div className="mt-8 flex justify-between items-center bg-slate-900 dark:bg-slate-950 text-white p-6 rounded-[2.5rem] shadow-2xl shadow-slate-900/20">
                         <div className="flex flex-col">
-                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 mb-1">Total Général</span>
+                            <span className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-1">Total Général</span>
                             <div className="flex items-baseline gap-2">
                                 <span className="text-4xl font-black tracking-tighter">{calculateTotal().toFixed(0)}</span>
                                 <span className="text-lg font-bold text-slate-500">DT</span>
                             </div>
                         </div>
                         <div className="flex flex-col items-end">
-                            <span className="text-[11px] font-black uppercase tracking-[0.3em] text-blue-400 mb-1">Articles</span>
+                            <span className="text-xs font-black uppercase tracking-[0.3em] text-blue-400 mb-1">Articles</span>
                             <span className="text-2xl font-black">{items.length}</span>
                         </div>
                     </div>

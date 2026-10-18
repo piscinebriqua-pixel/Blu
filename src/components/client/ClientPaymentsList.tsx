@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Wallet, Edit2, Trash2 } from "lucide-react";
 
 interface PaymentItem {
@@ -25,7 +25,7 @@ export const ClientPaymentsList: React.FC<ClientPaymentsListProps> = ({
   if (payments.length === 0) {
     return (
       <div className="text-center py-16 bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-slate-700">
-        <Wallet size={44} className="mx-auto text-slate-400 mb-3" />
+        <Wallet size={44} className="mx-auto text-slate-500 mb-3" />
         <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">
           Aucun mouvement financier
         </p>
