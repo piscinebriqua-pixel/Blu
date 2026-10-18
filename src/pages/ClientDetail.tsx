@@ -266,6 +266,7 @@ const ClientDetail: React.FC = () => {
         onOpenAssignPartner={() => setIsAssignPartnerOpen(true)}
         onSelectPartnerToUnassign={setPartnerToUnassign}
         onSelectInterventionForView={setSelectedInterventionForView}
+        onRefreshInterventions={fetchClientData}
         onSelectDevisForView={setSelectedDevisForView}
       />
 

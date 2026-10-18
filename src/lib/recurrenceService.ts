@@ -127,9 +127,9 @@ export async function handlePoolRecurrence(poolId: string, baseDate?: string, no
       .select('id')
       .eq('pool_id', poolId)
       .eq('scheduled_date', scheduledDateStr)
-      .maybeSingle();
+      .limit(1);
 
-    if (existingInter) {
+    if (existingInter && existingInter.length > 0) {
       console.log(`[Recurrence] Intervention déjà planifiée pour le ${scheduledDateStr}.`);
       return null;
     }
@@ -144,6 +144,7 @@ export async function handlePoolRecurrence(poolId: string, baseDate?: string, no
         technician_id: rule.technician_id,
         scheduled_date: scheduledDateStr,
         status: 'scheduled',
+        completed_date: null,
         notes: anchorTag,
         task_balai: rule.template?.task_balai || false,
         task_lavage: rule.template?.task_lavage || false,
@@ -159,7 +160,11 @@ export async function handlePoolRecurrence(poolId: string, baseDate?: string, no
       .select()
       .single();
 
-    if (interError) throw interError;
+    if (interError) {
+      // 23505 = doublon bloqué par l'index unique : situation normale, on ignore
+      if (interError.code === '23505') return null;
+      throw interError;
+    }
 
     // Mettre à jour last_generated_date sur la règle
     await supabase.from('recurrence_rules').update({
@@ -177,7 +182,24 @@ export async function handlePoolRecurrence(poolId: string, baseDate?: string, no
  * Synchronise et génère les tournées pour tous les contrats actifs qui n'ont pas
  * encore d'intervention planifiée pour le cycle en cours.
  */
-export async function syncActiveTours(technicianId?: string | null) {
+let syncInFlight: Promise<void> | null = null;
+let lastSyncAt = 0;
+const SYNC_MIN_INTERVAL_MS = 10 * 60 * 1000;
+
+export function syncActiveTours(technicianId?: string | null): Promise<void> {
+  // Un seul passage simultané (StrictMode, onglets, rechargements rapides)
+  if (syncInFlight) return syncInFlight;
+  // Limitation de fréquence : inutile de re-synchroniser à chaque affichage
+  if (Date.now() - lastSyncAt < SYNC_MIN_INTERVAL_MS) return Promise.resolve();
+
+  syncInFlight = runSyncActiveTours(technicianId).finally(() => {
+    lastSyncAt = Date.now();
+    syncInFlight = null;
+  });
+  return syncInFlight;
+}
+
+async function runSyncActiveTours(technicianId?: string | null): Promise<void> {
   try {
     let query = supabase
       .from('recurrence_rules')
@@ -542,6 +564,7 @@ export async function generateRecurringInterventionsBatch(
             technician_id: techId,
             scheduled_date: dateStr,
             status: 'scheduled',
+            completed_date: null,
             notes: `${anchorTag} Visite d'entretien récurrente`,
             task_balai: rule?.template?.task_balai ?? true,
             task_lavage: rule?.template?.task_lavage ?? true,
@@ -576,7 +599,14 @@ export async function generateRecurringInterventionsBatch(
       for (let i = 0; i < interventionsToInsert.length; i += 50) {
         const chunk = interventionsToInsert.slice(i, i + 50);
         const { error: insertError } = await supabase.from('interventions').insert(chunk);
-        if (insertError) throw insertError;
+        if (insertError) {
+          if (insertError.code !== '23505') throw insertError;
+          // Doublon détecté dans le lot : repli ligne par ligne en ignorant les conflits
+          for (const row of chunk) {
+            const { error: rowError } = await supabase.from('interventions').insert([row]);
+            if (rowError && rowError.code !== '23505') throw rowError;
+          }
+        }
       }
     }
 

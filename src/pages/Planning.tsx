@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
@@ -143,7 +143,11 @@ const Planning: React.FC = () => {
         }
     };
 
+    const generatingRef = useRef(false);
+
     const handleGenerateRecurrences = async (options: BatchGenerationOptions) => {
+        if (generatingRef.current) return;
+        generatingRef.current = true;
         try {
             setIsGenerating(true);
             const res = await generateRecurringInterventionsBatch(options);
@@ -162,6 +166,7 @@ const Planning: React.FC = () => {
             console.error('Erreur génération récurrences:', error);
             toast.error(error.message || "Erreur lors de la génération");
         } finally {
+            generatingRef.current = false;
             setIsGenerating(false);
         }
     };

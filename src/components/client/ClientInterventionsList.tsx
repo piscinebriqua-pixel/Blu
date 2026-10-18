@@ -139,7 +139,7 @@ export const ClientInterventionsList: React.FC<ClientInterventionsListProps> = (
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                          {new Date(inter.completed_date || inter.scheduled_date || inter.created_at).toLocaleDateString("fr-FR", {
+                          {new Date((inter.status === "completed" ? inter.completed_date : null) || inter.scheduled_date || inter.created_at).toLocaleDateString("fr-FR", {
                             day: "numeric",
                             month: "long",
                             year: "numeric",

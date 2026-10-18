@@ -15,37 +15,11 @@ import {
   Edit2,
   History as HistoryIcon,
   MessageCircle,
-  CheckCircle2,
-  Package,
   Receipt,
 } from "lucide-react";
 import { formatBalance } from "../../lib/formatters";
 import type { Client, Pool, Intervention, Devis, ActiveCategory } from "./types";
-
-type ChecklistKey =
-  | "task_balai"
-  | "task_lavage"
-  | "task_rincage"
-  | "task_test_chlore"
-  | "task_test_ph"
-  | "task_remplissage"
-  | "task_panier_prefiltre"
-  | "task_traitement"
-  | "task_verif_vanne"
-  | "task_temps_fonctionnement";
-
-const CHECKLIST_LABELS: Record<ChecklistKey, string> = {
-  task_balai: "Balai",
-  task_lavage: "Lavage filtre",
-  task_rincage: "Rinçage filtre",
-  task_test_chlore: "Test chlore",
-  task_test_ph: "Test pH",
-  task_remplissage: "Niveau eau",
-  task_panier_prefiltre: "Panier préfiltre",
-  task_traitement: "Traitement",
-  task_verif_vanne: "Vannes",
-  task_temps_fonctionnement: "Temps filtration",
-};
+import { ActivityTimeline } from "./ActivityTimeline";
 
 interface ClientBentoTilesProps {
   client: Client | null;
@@ -67,6 +41,7 @@ interface ClientBentoTilesProps {
   onOpenAssignPartner: () => void;
   onSelectPartnerToUnassign: (partner: any) => void;
   onSelectInterventionForView: (inter: Intervention) => void;
+  onRefreshInterventions: () => void;
   onSelectDevisForView: (d: Devis) => void;
 }
 
@@ -90,6 +65,7 @@ export const ClientBentoTiles: React.FC<ClientBentoTilesProps> = ({
   onOpenAssignPartner,
   onSelectPartnerToUnassign,
   onSelectInterventionForView,
+  onRefreshInterventions,
   onSelectDevisForView,
 }) => {
   const balanceDifference = totalPaymentsAmount - totalIntersAmount;
@@ -498,7 +474,7 @@ export const ClientBentoTiles: React.FC<ClientBentoTilesProps> = ({
       </div>
 
       {/* 3. Ligne Inférieure (Timeline Activité & Devis) */}
-      <div className={`mt-4 grid gap-4 ${devis.length > 0 ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}>
+      <div className="mt-4 grid gap-4 grid-cols-1">
         {/* Timeline Activité */}
         <div className="card-bento glass-morphism border-slate-200/50 dark:border-slate-700/50 p-6 min-h-[200px] flex flex-col shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -507,127 +483,11 @@ export const ClientBentoTiles: React.FC<ClientBentoTilesProps> = ({
           </div>
 
           <div className="flex-1">
-            {interventions.length > 0 ? (
-              <div className="space-y-3.5">
-                {interventions.slice(0, 3).map((inter) => {
-                  const techName = inter.technician?.full_name;
-                  const completedTasks = (Object.keys(CHECKLIST_LABELS) as ChecklistKey[])
-                    .filter((key) => Boolean(inter[key]))
-                    .map((key) => CHECKLIST_LABELS[key]);
-                  const serviceNames = inter.services?.map((s) => s.service?.name).filter(Boolean) as string[] || [];
-                  const allActions = [...serviceNames, ...completedTasks];
-
-                  return (
-                    <div
-                      key={inter.id}
-                      className="p-3.5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 hover:border-blue-500/50 hover:shadow-sm transition-all cursor-pointer group space-y-2.5"
-                      onClick={() => onSelectInterventionForView(inter)}
-                    >
-                      {/* En-tête : Nom du technicien (Titre), Bassin, Date & Statut */}
-                      <div className="flex justify-between items-start gap-2">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-lg bg-blue-50 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-                              <User size={14} strokeWidth={2.5} />
-                            </div>
-                            <h5 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                              {techName ? techName : "Technicien non assigné"}
-                            </h5>
-                          </div>
-                          <p className="text-xs font-bold text-slate-500 uppercase mt-1 pl-8">
-                            Bassin : <span className="text-blue-600 dark:text-blue-400 font-black">{inter.pool_name || "Piscine Principale"}</span>
-                          </p>
-                        </div>
-                        <div className="flex flex-col items-end gap-1 shrink-0">
-                          <span className="text-xs font-black text-slate-600 dark:text-slate-300">
-                            {new Date(inter.completed_date || inter.scheduled_date || inter.created_at).toLocaleDateString("fr-FR")}
-                          </span>
-                          <span
-                            className={`text-xs font-black px-2 py-0.5 rounded-md uppercase tracking-wider ${
-                              inter.status === "completed"
-                                ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300"
-                                : "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300"
-                            }`}
-                          >
-                            {inter.status === "completed" ? "Réalisée" : "Planifiée"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Actions effectuées (Checklist + Services) */}
-                      {allActions.length > 0 && (
-                        <div className="space-y-1">
-                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                            Actions réalisées :
-                          </span>
-                          <div className="flex flex-wrap gap-1.5">
-                            {allActions.map((action, idx) => (
-                              <span
-                                key={idx}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold border border-emerald-200/60 dark:border-emerald-800/40"
-                              >
-                                <CheckCircle2 size={11} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                {action}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Produits consommés (si présents) */}
-                      {inter.products && inter.products.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                            <Package size={11} /> Produits :
-                          </span>
-                          {inter.products.map((p, idx) => (
-                            <span
-                              key={idx}
-                              className="inline-flex items-center px-2 py-0.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 text-xs font-semibold border border-amber-200/50 dark:border-amber-800/40"
-                            >
-                              {p.product.name} ({p.quantity} {p.product.unit})
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Chimie de l'eau (si renseignée) */}
-                      {(inter.ph_level || inter.chlorine_level) && (
-                        <div className="flex items-center gap-4 text-xs font-bold text-slate-600 dark:text-slate-300 pt-0.5">
-                          {inter.ph_level && (
-                            <span>
-                              pH : <strong className="text-slate-900 dark:text-white font-black">{inter.ph_level}</strong>
-                            </span>
-                          )}
-                          {inter.chlorine_level && (
-                            <span>
-                              Chlore :{" "}
-                              <strong className="text-slate-900 dark:text-white font-black">
-                                {inter.chlorine_level} ppm
-                              </strong>
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Note / Observation (si présente) */}
-                      {inter.notes && (
-                        <p className="text-xs text-slate-600 dark:text-slate-400 italic line-clamp-2 pt-0.5 border-t border-slate-200/40 dark:border-slate-700/40">
-                          "{inter.notes}"
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-6 text-center">
-                <HistoryIcon size={28} className="mb-2 text-slate-400" />
-                <p className="text-xs font-black uppercase tracking-wider text-slate-500">
-                  Aucune activité enregistrée
-                </p>
-              </div>
-            )}
+            <ActivityTimeline
+              interventions={interventions}
+              onSelect={onSelectInterventionForView}
+              onRefresh={onRefreshInterventions}
+            />
           </div>
 
           <button
