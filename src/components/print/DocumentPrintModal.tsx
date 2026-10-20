@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import ModalLayout from '../ModalLayout';
 import PrintDocumentTemplate from './PrintDocumentTemplate';
 import type { PrintDocumentData, PrintCompanyInfo } from './types';
-import { Printer, Share2, Download, X } from 'lucide-react';
+import { Printer, Share2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { toast } from 'react-hot-toast';
+
+
+
 
 interface DocumentPrintModalProps {
   data: PrintDocumentData;
@@ -24,7 +26,10 @@ export const DocumentPrintModal: React.FC<DocumentPrintModalProps> = ({
     address: 'Tunis, Tunisie',
     tax_id: 'MF: 1548962/A/M/000',
     bank_rib: 'BIAT - RIB : 08 012 0001234567890 12',
+    website: 'www.blu-pool.tn',
+    rne: '1548962M',
   });
+
 
   useEffect(() => {
     const fetchCompanySettings = async () => {
@@ -100,13 +105,14 @@ export const DocumentPrintModal: React.FC<DocumentPrintModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-11 h-11 flex items-center justify-center bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-xl transition-all"
+              className="min-h-[44px] px-4 py-2 flex items-center justify-center bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-xl text-xs font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-sm"
               title="Fermer"
             >
-              <X size={18} />
+              <span>Fermer</span>
             </button>
           </div>
         </div>
+
 
         {/* CONTENEUR DE LA FEUILLE A4 (Scrollable sur petits écrans, immaculé à l'impression) */}
         <div className="p-2 sm:p-6 bg-slate-200/60 dark:bg-slate-950/80 overflow-x-auto print:p-0 print:bg-white print:overflow-visible">

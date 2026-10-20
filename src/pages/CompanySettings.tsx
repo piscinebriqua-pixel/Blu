@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PageLayout from '../components/PageLayout';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
-import { Save, Phone, Mail, MapPin, Hash, Loader2, Building2, Landmark } from 'lucide-react';
+import { Save, Phone, Mail, MapPin, Hash, Loader2, Building2, Landmark, Globe, FileText } from 'lucide-react';
 import Button from '../components/ui/Button';
 
 const CompanySettings: React.FC = () => {
@@ -14,9 +14,12 @@ const CompanySettings: React.FC = () => {
         email: '',
         address: '',
         tax_id: '',
+        rne: '',
+        website: '',
         bank_rib: '',
         default_footer: ''
     });
+
 
     useEffect(() => {
         fetchSettings();
@@ -151,6 +154,37 @@ const CompanySettings: React.FC = () => {
                                 />
                             </div>
                         </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">RNE / Registre de Commerce</label>
+                                <div className="relative">
+                                    <FileText className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                                    <input
+                                        type="text"
+                                        value={settings.rne || ''}
+                                        onChange={(e) => setSettings({ ...settings, rne: e.target.value })}
+                                        className="w-full h-16 pl-14 pr-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-primary transition-all text-base"
+                                        placeholder="Ex: 1548962M"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Site Web</label>
+                                <div className="relative">
+                                    <Globe className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                                    <input
+                                        type="text"
+                                        value={settings.website || ''}
+                                        onChange={(e) => setSettings({ ...settings, website: e.target.value })}
+                                        className="w-full h-16 pl-14 pr-6 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 font-bold outline-none focus:border-primary transition-all text-base"
+                                        placeholder="www.blu-pool.tn"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
 
                         <div className="flex flex-col gap-2">
                             <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-4">Coordonnées Bancaires & RIB (pour virement)</label>

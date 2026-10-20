@@ -446,8 +446,8 @@ body {
 /* --- FINTECH CARDS --- */
 .bento-card-luxe {
     background: var(--card-bg);
-    backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
     border: 1px solid var(--card-border);
     border-radius: 2rem;
     padding: 24px;

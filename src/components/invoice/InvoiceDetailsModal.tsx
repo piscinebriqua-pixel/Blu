@@ -252,8 +252,20 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
               Conditions de règlement : {invoice.payment_terms}
             </p>
           )}
+
+          {/* Bouton Fermer / Retour à la liste */}
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end print:hidden">
+            <button
+              type="button"
+              onClick={onClose}
+              className="min-h-[44px] px-6 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all active:scale-95 cursor-pointer shadow-sm"
+            >
+              <span>Fermer & Retour à la liste</span>
+            </button>
+          </div>
         </div>
       </ModalLayout>
+
 
       {/* Confirmation de suppression (Règle ConfirmModal avec Portal) */}
       <ConfirmModal

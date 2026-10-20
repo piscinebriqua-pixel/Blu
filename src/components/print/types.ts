@@ -16,6 +16,9 @@ export interface PrintCompanyInfo {
   address?: string;
   tax_id?: string;
   bank_rib?: string;
+  bank_name?: string;
+  website?: string;
+  rne?: string;
   default_footer?: string;
 }
 
@@ -26,10 +29,12 @@ export interface PrintDocumentData {
   date: string;
   dueDate?: string;
   validityDays?: number;
+  quoteReference?: string;
   status?: string;
 
   client: {
     name: string;
+    companyName?: string;
     phone?: string | null;
     email?: string | null;
     address?: string | null;
@@ -45,6 +50,8 @@ export interface PrintDocumentData {
   items: PrintDocumentItem[];
 
   subtotalHT: number;
+  discountRate?: number;
+  discountAmount?: number;
   taxRate?: number;
   taxAmount?: number;
   stampDuty?: number;
@@ -57,3 +64,4 @@ export interface PrintDocumentData {
   headerContent?: string;
   footerContent?: string;
 }
+

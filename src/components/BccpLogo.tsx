@@ -21,16 +21,18 @@ export const BccpLogo: React.FC<BccpLogoProps> = ({
     fillColor = 'original',
 }) => {
     const isWhite = fillColor === 'white';
+    const isDark = fillColor === 'dark';
 
     return (
         <img
             src="/logo.svg"
             width={width}
             height={height}
-            className={`${className} logo-img ${isWhite ? 'logo-white' : ''}`.trim()}
+            className={`${className} logo-img ${isWhite ? 'logo-white' : ''} ${isDark ? 'logo-dark' : ''}`.trim()}
             alt="BCCP Logo"
         />
     );
+
 };
 
 export default BccpLogo;

@@ -7,10 +7,10 @@ import {
   Clock, 
   CheckCircle2, 
   XCircle, 
-  Download, 
   Receipt,
   Printer
 } from 'lucide-react';
+
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { shareDevisViaWhatsApp, type ShareableDevisItem } from '../helpers/devisShareHelper';

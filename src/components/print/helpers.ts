@@ -1,5 +1,6 @@
-import type { PrintDocumentData, PrintDocumentItem } from './types';
+import type { PrintDocumentData } from './types';
 import type { InvoiceWithItems } from '../../services/invoiceService';
+
 import type { ShareableDevisItem } from '../../helpers/devisShareHelper';
 
 /**
@@ -14,12 +15,19 @@ export function getInvoicePrintData(invoice: InvoiceWithItems): PrintDocumentDat
   const paidAmount = Number(invoice.paid_amount) || 0;
   const balanceDue = Math.max(0, totalTTC - paidAmount);
 
+  // Détection éventuelle d'une référence devis dans les articles
+  const devisItem = (invoice.items || []).find((it) => it.origin_type === 'devis' && it.origin_id);
+  const quoteReference = devisItem?.origin_id ? `DEV-${devisItem.origin_id.slice(0, 8).toUpperCase()}` : undefined;
+
+  const clientFullName = `${invoice.client?.first_name || ''} ${invoice.client?.last_name || ''}`.trim() || 'Client';
+
   return {
     type: 'facture',
     title: 'FACTURE',
     documentNumber: invoice.number,
     date: invoice.invoice_date,
     dueDate: invoice.due_date || undefined,
+    quoteReference,
     status:
       invoice.status === 'paid'
         ? 'Payée'
@@ -27,9 +35,8 @@ export function getInvoicePrintData(invoice: InvoiceWithItems): PrintDocumentDat
         ? 'Annulée'
         : 'En attente',
     client: {
-      name:
-        `${invoice.client?.first_name || ''} ${invoice.client?.last_name || ''}`.trim() ||
-        'Client',
+      name: clientFullName,
+      companyName: invoice.client?.matricule_fiscal ? clientFullName : undefined,
       phone: invoice.client?.phone,
       address: invoice.client?.address,
       city: invoice.client?.city,
@@ -55,6 +62,7 @@ export function getInvoicePrintData(invoice: InvoiceWithItems): PrintDocumentDat
     notes: invoice.notes || undefined,
   };
 }
+
 
 /**
  * Prépare les données de devis pour le modèle d'impression officiel A4

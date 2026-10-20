@@ -1,22 +1,17 @@
-﻿import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import PageLayout from '../components/PageLayout';
-import { 
-  invoiceService, 
-  type InvoiceWithItems 
-} from '../services/invoiceService';
+import { invoiceService, type InvoiceWithItems } from '../services/invoiceService';
 import CreateInvoiceModal from '../components/invoice/CreateInvoiceModal';
 import InvoiceDetailsModal from '../components/invoice/InvoiceDetailsModal';
 import InvoiceSettingsModal from '../components/invoice/InvoiceSettingsModal';
-import { 
-  Receipt, 
-  Plus, 
-  Settings, 
-  Search, 
-  CheckCircle2, 
-  Clock, 
-  XCircle, 
-  ChevronRight,
-} from 'lucide-react';
+import DocumentPrintModal from '../components/print/DocumentPrintModal';
+import { getInvoicePrintData } from '../components/print/helpers';
+import ConfirmModal from '../components/ConfirmModal';
+import InvoiceKpiRibbon from '../components/invoice/InvoiceKpiRibbon';
+import InvoiceListItemCard from '../components/invoice/InvoiceListItemCard';
+import InvoiceDetailPanel from '../components/invoice/InvoiceDetailPanel';
+import { Plus, Settings, Search, Receipt } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 export const Invoices: React.FC = () => {
   const [invoices, setInvoices] = useState<InvoiceWithItems[]>([]);
@@ -24,10 +19,16 @@ export const Invoices: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'issued' | 'paid' | 'cancelled'>('all');
 
-  // Modales
+  // État de sélection pour Master-Detail (Desktop) & Modale (Mobile)
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceWithItems | null>(null);
+  const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
+
+  // Modales d'actions
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceWithItems | null>(null);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadInvoices();
@@ -38,6 +39,9 @@ export const Invoices: React.FC = () => {
       setLoading(true);
       const data = await invoiceService.fetchAllInvoices();
       setInvoices(data);
+      if (data.length > 0 && !selectedInvoice) {
+        setSelectedInvoice(data[0]);
+      }
     } finally {
       setLoading(false);
     }
@@ -67,20 +71,73 @@ export const Invoices: React.FC = () => {
     return { totalTtc, paidTtc, pendingTtc, count: invoices.length };
   }, [invoices]);
 
+  const handleCardClick = (inv: InvoiceWithItems) => {
+    setSelectedInvoice(inv);
+    // Sur smartphone ou tablette (< 1024px), ouvrir la modal de détail
+    if (window.innerWidth < 1024) {
+      setIsMobileModalOpen(true);
+    }
+  };
+
+  const handleStatusChange = async (newStatus: 'issued' | 'paid' | 'cancelled') => {
+    if (!selectedInvoice) return;
+    const ok = await invoiceService.updateInvoiceStatus(selectedInvoice.id, newStatus);
+    if (ok) {
+      loadInvoices();
+      setSelectedInvoice((prev) => (prev ? { ...prev, status: newStatus } : null));
+    }
+  };
+
+  const handleWhatsAppShare = () => {
+    if (!selectedInvoice?.client?.phone) {
+      toast.error('Aucun numéro de téléphone client disponible');
+      return;
+    }
+    const dateStr = new Date(selectedInvoice.invoice_date).toLocaleDateString('fr-FR');
+    let msg = `*FACTURE BCCP BLU N° ${selectedInvoice.number}*\n`;
+    msg += `📅 Date : ${dateStr}\n`;
+    msg += `👤 Client : ${selectedInvoice.client.first_name} ${selectedInvoice.client.last_name}\n`;
+    if (selectedInvoice.client.matricule_fiscal) {
+      msg += `🏢 M.F. Client : ${selectedInvoice.client.matricule_fiscal}\n`;
+    }
+    msg += `\n*TOTAL NET À PAYER : ${Number(selectedInvoice.total_ttc).toFixed(3)} DT*\n`;
+    msg += `_Statut : ${selectedInvoice.status === 'paid' ? 'Payée' : 'En attente'}_`;
+
+    const encoded = encodeURIComponent(msg);
+    const cleanPhone = selectedInvoice.client.phone.replace(/[^0-9]/g, '');
+    window.open(`https://wa.me/${cleanPhone}?text=${encoded}`, '_blank');
+  };
+
+  const handleDelete = async () => {
+    if (!selectedInvoice) return;
+    try {
+      setDeleting(true);
+      const ok = await invoiceService.deleteInvoice(selectedInvoice.id);
+      if (ok) {
+        setSelectedInvoice(null);
+        setIsMobileModalOpen(false);
+        loadInvoices();
+      }
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   const toolbar = (
     <div className="flex items-center gap-2">
       <button
         type="button"
         onClick={() => setIsSettingsModalOpen(true)}
-        className="min-h-[44px] min-w-[44px] px-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700 hover:bg-slate-200 active:scale-95 transition-all"
-        title="Paramètres du compteur"
+        className="min-h-[44px] min-w-[44px] px-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700 hover:bg-slate-200 active:scale-95 transition-all cursor-pointer"
+        title="Paramètres de numérotation"
       >
         <Settings size={18} />
       </button>
       <button
         type="button"
         onClick={() => setIsCreateModalOpen(true)}
-        className="min-h-[44px] px-4 rounded-2xl bg-primary text-white flex items-center gap-2 font-black text-xs uppercase tracking-wider shadow-lg shadow-blue-500/20 active:scale-95 transition-all"
+        className="min-h-[44px] px-4 rounded-2xl bg-primary text-white flex items-center gap-2 font-black text-xs uppercase tracking-wider shadow-lg shadow-blue-500/20 active:scale-95 transition-all cursor-pointer"
       >
         <Plus size={18} />
         <span>Nouvelle Facture</span>
@@ -96,69 +153,24 @@ export const Invoices: React.FC = () => {
       toolbar={toolbar}
       loading={loading}
     >
-      <div className="space-y-6">
-        {/* KPI CARDS (Bento Grid) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-            <span className="text-xs font-black uppercase tracking-wider text-slate-500">Volume Facturé</span>
-            <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-              {stats.totalTtc.toFixed(2)} <span className="text-xs text-slate-500 font-bold">DT</span>
-            </p>
-            <span className="text-xs font-bold text-slate-500 mt-1 block">{stats.count} facture(s) au total</span>
-          </div>
+      <div className="space-y-4">
+        {/* 1. RUBAN FINANCIER RESPONSIVE (48px sur smartphone, 3 cartes sur tablette/desktop) */}
+        <InvoiceKpiRibbon stats={stats} />
 
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-            <span className="text-xs font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Total Encaissé</span>
-            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-              {stats.paidTtc.toFixed(2)} <span className="text-xs text-slate-500 font-bold">DT</span>
-            </p>
-            <span className="text-xs font-bold text-slate-500 mt-1 block">Règlements reçus</span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-            <span className="text-xs font-black uppercase tracking-wider text-amber-500">En Attente</span>
-            <p className="text-2xl font-black text-amber-500 mt-1">
-              {stats.pendingTtc.toFixed(2)} <span className="text-xs text-slate-500 font-bold">DT</span>
-            </p>
-            <span className="text-xs font-bold text-slate-500 mt-1 block">À recouvrer</span>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-            <span className="text-xs font-black uppercase tracking-wider text-slate-500">Actions Rapides</span>
-            <div className="flex gap-2 mt-2">
-              <button
-                type="button"
-                onClick={() => setIsCreateModalOpen(true)}
-                className="flex-1 min-h-[44px] bg-blue-50 dark:bg-blue-950/40 text-primary rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 border border-blue-200/50 dark:border-blue-900/40"
-              >
-                <Plus size={16} /> Émettre
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsSettingsModalOpen(true)}
-                className="w-11 min-h-[44px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl flex items-center justify-center"
-                title="Régler le compteur"
-              >
-                <Settings size={18} />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* BARRE DE RECHERCHE & FILTRES */}
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        {/* 2. BARRE DE RECHERCHE & FILTRES COMPACTS */}
+        <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Rechercher par numéro, client ou téléphone..."
+              placeholder="Rechercher numéro, client, tél..."
               className="w-full min-h-[44px] pl-10 pr-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-base font-semibold text-slate-900 dark:text-white"
             />
           </div>
 
-          <div className="flex gap-1.5 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl overflow-x-auto">
+          <div className="flex gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl overflow-x-auto">
             {(
               [
                 { key: 'all', label: 'Toutes' },
@@ -171,9 +183,9 @@ export const Invoices: React.FC = () => {
                 key={f.key}
                 type="button"
                 onClick={() => setStatusFilter(f.key)}
-                className={`min-h-[44px] px-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+                className={`min-h-[40px] px-3.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
                   statusFilter === f.key
-                    ? 'bg-white dark:bg-slate-700 text-primary shadow-sm'
+                    ? 'bg-white dark:bg-slate-700 text-primary shadow-xs'
                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
@@ -183,12 +195,12 @@ export const Invoices: React.FC = () => {
           </div>
         </div>
 
-        {/* LISTE DES FACTURES */}
+        {/* 3. DISPOSITION MAÎTRE-DÉTAIL (DESKTOP) OU GRILLE/LISTE (MOBILE/TABLETTE) */}
         {filteredInvoices.length === 0 ? (
           <button
             type="button"
             onClick={() => setIsCreateModalOpen(true)}
-            className="w-full min-h-[52px] p-4 rounded-2xl border-2 border-dashed border-slate-200/90 dark:border-slate-800 hover:border-blue-500/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30 group transition-all active:scale-[0.99]"
+            className="w-full min-h-[52px] p-4 rounded-2xl border-2 border-dashed border-slate-200/90 dark:border-slate-800 hover:border-blue-500/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30 group transition-all active:scale-[0.99] cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-primary flex items-center justify-center">
@@ -208,98 +220,85 @@ export const Invoices: React.FC = () => {
             </div>
           </button>
         ) : (
-          <div className="space-y-2.5">
-            {filteredInvoices.map((inv) => {
-              const dateStr = new Date(inv.invoice_date).toLocaleDateString('fr-FR');
-              const clientFullName = inv.client
-                ? `${inv.client.first_name} ${inv.client.last_name}`
-                : 'Client Inconnu';
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+            {/* PANNEAU GAUCHE : LISTE (12 cols sur mobile/tablette, 5 cols sur grand écran) */}
+            <div className="lg:col-span-5 space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5">
+                {filteredInvoices.map((inv) => (
+                  <InvoiceListItemCard
+                    key={inv.id}
+                    invoice={inv}
+                    isSelected={selectedInvoice?.id === inv.id}
+                    onClick={() => handleCardClick(inv)}
+                  />
+                ))}
+              </div>
+            </div>
 
-              return (
-                <div
-                  key={inv.id}
-                  onClick={() => setSelectedInvoice(inv)}
-                  className="card-bento p-4 flex items-center justify-between gap-4 cursor-pointer hover:border-primary/50 transition-all border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm group"
-                >
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-11 h-11 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                      <Receipt size={20} />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                          {inv.number}
-                        </span>
-                        {inv.status === 'paid' ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md">
-                            <CheckCircle2 size={12} /> Payée
-                          </span>
-                        ) : inv.status === 'cancelled' ? (
-                          <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-rose-500 bg-rose-50 dark:bg-rose-950/40 px-2 py-0.5 rounded-md">
-                            <XCircle size={12} /> Annulée
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-xs font-black uppercase tracking-wider text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-md">
-                            <Clock size={12} /> Émise
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs font-semibold text-slate-500 truncate mt-0.5">
-                        {clientFullName} • {dateStr}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="text-right">
-                      <p className="text-base font-black text-slate-900 dark:text-white">
-                        {Number(inv.total_ttc).toFixed(3)} <span className="text-xs text-slate-500">DT</span>
-                      </p>
-                      <p className="text-xs font-semibold text-slate-500">
-                        HT: {Number(inv.subtotal_ht).toFixed(3)} DT
-                      </p>
-                    </div>
-                    <ChevronRight size={18} className="text-slate-500 group-hover:text-primary transition-colors" />
-                  </div>
-                </div>
-              );
-            })}
+            {/* PANNEAU DROIT : DÉTAIL EN TEMPS RÉEL (Caché sur mobile/tablette, 7 cols sur Desktop) */}
+            <div className="hidden lg:block lg:col-span-7 sticky top-20">
+              <InvoiceDetailPanel
+                invoice={selectedInvoice}
+                onStatusChange={handleStatusChange}
+                onWhatsAppShare={handleWhatsAppShare}
+                onPrint={() => setShowPrintModal(true)}
+                onDelete={() => setShowDeleteConfirm(true)}
+              />
+            </div>
           </div>
         )}
       </div>
 
-      {/* MODALE D'ÉMISSION DE FACTURE (MODE GLOBAL) */}
+      {/* MODALE DÉTAILS SMARTPHONE & TABLETTE (< 1024px) */}
+      {isMobileModalOpen && selectedInvoice && (
+        <InvoiceDetailsModal
+          invoice={selectedInvoice}
+          onClose={() => setIsMobileModalOpen(false)}
+          onRefresh={() => {
+            loadInvoices();
+            setIsMobileModalOpen(false);
+          }}
+        />
+      )}
+
+      {/* MODALE DE CRÉATION */}
       {isCreateModalOpen && (
         <CreateInvoiceModal
           onClose={() => setIsCreateModalOpen(false)}
-          onSuccess={() => {
-            loadInvoices();
-          }}
+          onSuccess={() => loadInvoices()}
         />
       )}
 
-      {/* MODALE DE CONFIGURATION DU COMPTEUR */}
+      {/* MODALE DE CONFIGURATION */}
       {isSettingsModalOpen && (
         <InvoiceSettingsModal
           onClose={() => setIsSettingsModalOpen(false)}
-          onSaved={() => {
-            loadInvoices();
-          }}
+          onSaved={() => loadInvoices()}
         />
       )}
 
-      {/* MODALE DÉTAILS / ACTIONS SUR LA FACTURE */}
-      {selectedInvoice && (
-        <InvoiceDetailsModal
-          invoice={selectedInvoice}
-          onClose={() => setSelectedInvoice(null)}
-          onRefresh={() => {
-            loadInvoices();
-            setSelectedInvoice(null);
-          }}
+      {/* MODALE D'IMPRESSION A4 OFFICIELLE */}
+      {showPrintModal && selectedInvoice && (
+        <DocumentPrintModal
+          data={getInvoicePrintData(selectedInvoice)}
+          onClose={() => setShowPrintModal(false)}
+          onWhatsAppShare={handleWhatsAppShare}
         />
       )}
+
+      {/* CONFIRMATION DE SUPPRESSION */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="Supprimer la Facture ?"
+        message={`La facture ${selectedInvoice?.number || ''} sera définitivement effacée et ses éléments libérés.`}
+        confirmLabel="SUPPRIMER"
+        variant="danger"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onClose={() => setShowDeleteConfirm(false)}
+      />
     </PageLayout>
   );
 };
+
 export default Invoices;

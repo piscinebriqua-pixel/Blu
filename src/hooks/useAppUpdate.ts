@@ -1,11 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 
+const STORAGE_KEY = 'blu_dismissed_update_version';
+
 export function useAppUpdate() {
   const [hasUpdate, setHasUpdate] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+  const [latestVersion, setLatestVersion] = useState<string | null>(null);
 
   const checkForUpdate = useCallback(async () => {
-    // Ne rien faire si l'environnement de build n'est pas défini
+    // 1. Désactiver en mode développement local pour ne pas polluer l'écran en continu
+    if (import.meta.env.DEV) {
+      setHasUpdate(false);
+      return;
+    }
+
+    // 2. Ne rien faire si l'environnement de build n'est pas injecté
     if (typeof __APP_BUILD_TIME__ === 'undefined') return;
 
     try {
@@ -22,9 +31,19 @@ export function useAppUpdate() {
 
       const data = await response.json();
       if (data?.version && typeof data.version === 'string') {
+        setLatestVersion(data.version);
+
         // Si la version sur le serveur est différente de la version actuellement en mémoire
         if (data.version !== __APP_BUILD_TIME__) {
+          // Vérifier si cette version spécifique a déjà été acquittée ou ignorée par l'utilisateur
+          const dismissedVersion = localStorage.getItem(STORAGE_KEY);
+          if (dismissedVersion === data.version) {
+            setHasUpdate(false);
+            return;
+          }
           setHasUpdate(true);
+        } else {
+          setHasUpdate(false);
         }
       }
     } catch {
@@ -33,17 +52,20 @@ export function useAppUpdate() {
   }, []);
 
   useEffect(() => {
-    // 1. Première vérification 3 secondes après le montage
+    // Ne pas démarrer de timers en environnement de développement
+    if (import.meta.env.DEV) return;
+
+    // 1. Première vérification 5 secondes après le chargement
     const initialTimer = setTimeout(() => {
       checkForUpdate();
-    }, 3000);
+    }, 5000);
 
-    // 2. Vérification périodique toutes les 3 minutes
+    // 2. Vérification périodique toutes les 5 minutes
     const intervalTimer = setInterval(() => {
       checkForUpdate();
-    }, 180000);
+    }, 300000);
 
-    // 3. Vérification au retour au premier plan (ex: switch d'application sur smartphone)
+    // 3. Vérification au retour au premier plan
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         checkForUpdate();
@@ -68,6 +90,10 @@ export function useAppUpdate() {
 
   const reloadApp = useCallback(async () => {
     try {
+      // Mémoriser la version acquittée pour ne pas réafficher le toast au rechargement
+      if (latestVersion) {
+        localStorage.setItem(STORAGE_KEY, latestVersion);
+      }
       // Vider les caches de CacheStorage si l'API est disponible
       if ('caches' in window) {
         const cacheKeys = await caches.keys();
@@ -78,11 +104,15 @@ export function useAppUpdate() {
     }
     // Rechargement forcé de la page
     window.location.reload();
-  }, []);
+  }, [latestVersion]);
 
   const dismissUpdate = useCallback(() => {
+    if (latestVersion) {
+      localStorage.setItem(STORAGE_KEY, latestVersion);
+    }
     setIsDismissed(true);
-  }, []);
+    setHasUpdate(false);
+  }, [latestVersion]);
 
   return {
     hasUpdate: hasUpdate && !isDismissed,
@@ -91,3 +121,5 @@ export function useAppUpdate() {
     checkForUpdate,
   };
 }
+
+export default useAppUpdate;
