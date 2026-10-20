@@ -10,14 +10,33 @@ import ConfirmModal from '../components/ConfirmModal';
 import InvoiceKpiRibbon from '../components/invoice/InvoiceKpiRibbon';
 import InvoiceListItemCard from '../components/invoice/InvoiceListItemCard';
 import InvoiceDetailPanel from '../components/invoice/InvoiceDetailPanel';
+import SortSelector, { type SortOption } from '../components/ui/SortSelector';
 import { Plus, Settings, Search, Receipt } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+
+export type InvoiceSortOption =
+  | 'date-desc'
+  | 'date-asc'
+  | 'amount-desc'
+  | 'amount-asc'
+  | 'number-desc'
+  | 'client-asc';
+
+const INVOICE_SORT_OPTIONS: SortOption<InvoiceSortOption>[] = [
+  { value: 'date-desc', label: 'Date (Plus récentes)' },
+  { value: 'date-asc', label: 'Date (Plus anciennes)' },
+  { value: 'amount-desc', label: 'Montant (Décroissant)' },
+  { value: 'amount-asc', label: 'Montant (Croissant)' },
+  { value: 'number-desc', label: 'N° Facture (Récent)' },
+  { value: 'client-asc', label: 'Client (A → Z)' },
+];
 
 export const Invoices: React.FC = () => {
   const [invoices, setInvoices] = useState<InvoiceWithItems[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'issued' | 'paid' | 'cancelled'>('all');
+  const [sortBy, setSortBy] = useState<InvoiceSortOption>('date-desc');
 
   // État de sélection pour Master-Detail (Desktop) & Modale (Mobile)
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceWithItems | null>(null);
@@ -47,9 +66,9 @@ export const Invoices: React.FC = () => {
     }
   };
 
-  // Filtrage et recherche
+  // Filtrage, recherche et tri
   const filteredInvoices = useMemo(() => {
-    return invoices.filter((inv) => {
+    const list = invoices.filter((inv) => {
       const matchStatus = statusFilter === 'all' || inv.status === statusFilter;
       const clientName = `${inv.client?.first_name || ''} ${inv.client?.last_name || ''}`.toLowerCase();
       const phone = inv.client?.phone || '';
@@ -59,7 +78,28 @@ export const Invoices: React.FC = () => {
       const matchSearch = !q || clientName.includes(q) || number.includes(q) || phone.includes(q);
       return matchStatus && matchSearch;
     });
-  }, [invoices, statusFilter, searchTerm]);
+
+    return [...list].sort((a, b) => {
+      switch (sortBy) {
+        case 'date-asc':
+          return new Date(a.invoice_date).getTime() - new Date(b.invoice_date).getTime();
+        case 'amount-desc':
+          return (Number(b.total_ttc) || 0) - (Number(a.total_ttc) || 0);
+        case 'amount-asc':
+          return (Number(a.total_ttc) || 0) - (Number(b.total_ttc) || 0);
+        case 'number-desc':
+          return (b.number || '').localeCompare(a.number || '', undefined, { numeric: true });
+        case 'client-asc': {
+          const nameA = `${a.client?.first_name || ''} ${a.client?.last_name || ''}`.trim();
+          const nameB = `${b.client?.first_name || ''} ${b.client?.last_name || ''}`.trim();
+          return nameA.localeCompare(nameB);
+        }
+        case 'date-desc':
+        default:
+          return new Date(b.invoice_date).getTime() - new Date(a.invoice_date).getTime();
+      }
+    });
+  }, [invoices, statusFilter, searchTerm, sortBy]);
 
   // Statistiques financières
   const stats = useMemo(() => {
@@ -157,20 +197,28 @@ export const Invoices: React.FC = () => {
         {/* 1. RUBAN FINANCIER RESPONSIVE (48px sur smartphone, 3 cartes sur tablette/desktop) */}
         <InvoiceKpiRibbon stats={stats} />
 
-        {/* 2. BARRE DE RECHERCHE & FILTRES COMPACTS */}
-        <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Rechercher numéro, client, tél..."
-              className="w-full min-h-[44px] pl-10 pr-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-base font-semibold text-slate-900 dark:text-white"
+        {/* 2. BARRE DE RECHERCHE, FILTRES & TRI */}
+        <div className="flex flex-col lg:flex-row gap-2.5 items-stretch lg:items-center justify-between">
+          <div className="flex flex-col sm:flex-row gap-2.5 flex-1">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Rechercher numéro, client, tél..."
+                className="w-full min-h-[44px] pl-10 pr-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-base font-semibold text-slate-900 dark:text-white"
+              />
+            </div>
+            <SortSelector<InvoiceSortOption>
+              value={sortBy}
+              onChange={setSortBy}
+              options={INVOICE_SORT_OPTIONS}
+              className="shrink-0"
             />
           </div>
 
-          <div className="flex gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl overflow-x-auto">
+          <div className="flex gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-2xl overflow-x-auto shrink-0">
             {(
               [
                 { key: 'all', label: 'Toutes' },

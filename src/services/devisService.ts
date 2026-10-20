@@ -97,6 +97,29 @@ class DevisService {
   }
 
   /**
+   * Récupère les articles liés à un devis spécifique, triés par position.
+   */
+  async fetchDevisItems(devisId: string): Promise<DevisItem[]> {
+    try {
+      const { data, error } = await supabase
+        .from('devis_items')
+        .select('*')
+        .eq('devis_id', devisId)
+        .order('position', { ascending: true })
+        .order('id', { ascending: true });
+
+      if (error) {
+        console.error('Erreur fetchDevisItems:', error);
+        return [];
+      }
+      return data || [];
+    } catch (err) {
+      console.error('Erreur inattendue fetchDevisItems:', err);
+      return [];
+    }
+  }
+
+  /**
    * Met à jour le statut d'un devis (pending, closed, cancelled).
    */
   async updateStatus(devisId: string, status: 'pending' | 'closed' | 'cancelled'): Promise<boolean> {

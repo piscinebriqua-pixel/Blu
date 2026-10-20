@@ -1,8 +1,6 @@
 import type { PrintDocumentData } from './types';
 import type { InvoiceWithItems } from '../../services/invoiceService';
 
-import type { ShareableDevisItem } from '../../helpers/devisShareHelper';
-
 /**
  * Prépare les données de facture pour le modèle d'impression officiel A4
  */
@@ -65,9 +63,22 @@ export function getInvoicePrintData(invoice: InvoiceWithItems): PrintDocumentDat
 
 
 /**
+ * Type d'élément de devis compatible pour l'impression
+ */
+export interface PrintableDevisItem {
+  id?: string;
+  designation: string;
+  quantity: number;
+  unit_price: number;
+  unit?: string;
+  is_header?: boolean;
+  position?: number;
+}
+
+/**
  * Prépare les données de devis pour le modèle d'impression officiel A4
  */
-export function getDevisPrintData(devis: any, items: ShareableDevisItem[]): PrintDocumentData {
+export function getDevisPrintData(devis: any, items: PrintableDevisItem[]): PrintDocumentData {
   const subtotalHT = Number(devis.total_amount) || 0;
 
   return {
@@ -98,7 +109,7 @@ export function getDevisPrintData(devis: any, items: ShareableDevisItem[]): Prin
         }
       : null,
     items: items.map((it, idx) => ({
-      id: it.id,
+      id: it.id || `item-${idx + 1}`,
       position: idx + 1,
       description: it.designation,
       quantity: Number(it.quantity) || 1,
