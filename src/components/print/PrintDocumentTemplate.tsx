@@ -19,18 +19,23 @@ export const PrintDocumentTemplate: React.FC<PrintDocumentTemplateProps> = ({
   companyInfo,
 }) => {
   return (
-    <div className="bg-white text-slate-900 font-sans p-4 sm:p-6 max-w-[210mm] mx-auto flex flex-col justify-between print:block print:p-0 print:m-0 print:max-w-none print:w-full print:bg-white print:text-black">
-      {/* 1. EN-TÊTE ÉMETTEUR & DESTINATAIRE */}
-      <PrintHeader data={data} companyInfo={companyInfo} />
+    <div className="bg-white text-slate-900 font-sans p-4 sm:p-5 max-w-[210mm] mx-auto a4-print-canvas shadow-xl print:shadow-none print:p-0 print:m-0 print:max-w-none print:w-full print:bg-white print:text-black">
+      {/* 1. CORPS DU DOCUMENT (EN-TÊTE + TABLEAU + RÉCAPITULATIF FINANCIER) */}
+      <div className="flex-1 flex flex-col justify-start">
+        {/* En-tête émetteur & client */}
+        <PrintHeader data={data} companyInfo={companyInfo} />
 
-      {/* 2. TABLEAU DÉTAILLÉ DES PRESTATIONS */}
-      <PrintItemsTable items={data.items} />
+        {/* Tableau détaillé des prestations */}
+        <PrintItemsTable items={data.items} />
 
-      {/* 3. RÉCAPITULATIF FINANCIER, CONDITIONS & SIGNATURE */}
-      <PrintFinancialSummary data={data} companyInfo={companyInfo} />
+        {/* Récapitulatif financier & 2 Cards horizontales (Règlement & Virement) */}
+        <PrintFinancialSummary data={data} companyInfo={companyInfo} />
+      </div>
 
-      {/* 4. GRAND BANDEAU DE PIED DE PAGE CORPORATE */}
-      <PrintFooter companyInfo={companyInfo} />
+      {/* 2. PIED DE PAGE CORPORATE — TOUJOURS POSITIONNÉ TOUT EN BAS DE LA FEUILLE A4 */}
+      <div className="mt-auto pt-3 break-inside-avoid print:pt-1">
+        <PrintFooter companyInfo={companyInfo} />
+      </div>
     </div>
   );
 };

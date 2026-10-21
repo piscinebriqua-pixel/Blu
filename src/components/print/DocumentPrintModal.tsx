@@ -126,7 +126,7 @@ export const DocumentPrintModal: React.FC<DocumentPrintModalProps> = ({
 
         {/* CONTENEUR DE LA FEUILLE A4 (Scrollable sur petits écrans, immaculé à l'impression) */}
         <div className="p-2 sm:p-6 bg-slate-200/60 dark:bg-slate-950/80 overflow-x-auto print:p-0 print:bg-white print:overflow-visible">
-          <div className="shadow-2xl rounded-2xl overflow-hidden print:shadow-none print:rounded-none">
+          <div className="flex justify-center print:block print:w-full">
             <PrintDocumentTemplate data={data} companyInfo={companyInfo} />
           </div>
         </div>

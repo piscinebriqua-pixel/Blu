@@ -16,32 +16,32 @@ export const PrintFooter: React.FC<PrintFooterProps> = ({ companyInfo }) => {
   const rne = companyInfo.rne || '';
 
   return (
-    <div className="w-full mt-3 break-inside-avoid">
+    <div className="w-full mt-2 break-inside-avoid">
       {/* GRAND BANDEAU PLEIN BLEU NUIT COMPACT */}
-      <div className="bg-[#0b192c] text-white py-2.5 px-4 rounded-lg space-y-2 shadow-sm">
+      <div className="bg-[#0b192c] text-white py-2 px-3 rounded-lg space-y-1.5 shadow-sm">
         {/* CAPSULES DE CONTACT HORIZONTALES */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 text-xs font-bold">
+        <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold">
           {/* Capsule Téléphone */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700/60">
-            <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
-              <Phone size={14} strokeWidth={2.5} />
+          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/60">
+            <div className="w-4 h-4 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
+              <Phone size={12} strokeWidth={2.5} />
             </div>
             <span>{companyPhone}</span>
           </div>
 
           {/* Capsule Email */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700/60">
-            <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
-              <Mail size={14} strokeWidth={2.5} />
+          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/60">
+            <div className="w-4 h-4 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
+              <Mail size={12} strokeWidth={2.5} />
             </div>
             <span>{companyEmail}</span>
           </div>
 
           {/* Capsule Site Web */}
           {website && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700/60">
-              <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
-                <Globe size={14} strokeWidth={2.5} />
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/60">
+              <div className="w-4 h-4 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
+                <Globe size={12} strokeWidth={2.5} />
               </div>
               <span>{website}</span>
             </div>
@@ -49,7 +49,7 @@ export const PrintFooter: React.FC<PrintFooterProps> = ({ companyInfo }) => {
         </div>
 
         {/* LIGNE DE MENTIONS LÉGALES & IDENTIFICATION FISCALE */}
-        <div className="text-center text-xs font-medium text-slate-400 border-t border-slate-800/80 pt-1.5 space-y-0.5">
+        <div className="text-center text-xs font-medium text-slate-400 border-t border-slate-800/80 pt-1 space-y-0.5">
           <p>
             <strong className="text-slate-200">{companyName}</strong>
             {companyTaxId && <> • Matricule Fiscal : <strong className="text-slate-200">{companyTaxId}</strong></>}

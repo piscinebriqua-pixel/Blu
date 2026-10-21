@@ -825,11 +825,26 @@ a,
     page-break-inside: avoid !important;
   }
 
+  /* Feuille A4 stricte : Footer toujours ancré en bas de page */
+  .a4-print-canvas {
+    min-height: calc(297mm - 16mm) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+  }
+
   /* Forcer les couleurs des headers d'articles */
   .bg-blue-500 {
     background-color: #3b82f6 !important;
     color: white !important;
   }
+}
+
+.a4-print-canvas {
+  min-height: 297mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 /* --- MODERN MOBILE FLOW STYLES (UNIFIED DESIGN SYSTEM) --- */
