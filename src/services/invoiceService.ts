@@ -1,5 +1,6 @@
 import { supabase, type InvoiceRow, type InvoiceItemRow } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
+import { referenceCache } from '../lib/referenceCache';
 
 export interface UnbilledIntervention {
   id: string;
@@ -240,13 +241,13 @@ export const invoiceService = {
    */
   async fetchCatalogue(): Promise<{ services: any[]; products: any[] }> {
     try {
-      const [servicesRes, productsRes] = await Promise.all([
-        supabase.from('services').select('id, name, price').order('name'),
-        supabase.from('products').select('id, name, unit, price_per_unit').order('name'),
+      const [services, products] = await Promise.all([
+        referenceCache.getServices(),
+        referenceCache.getProducts(),
       ]);
       return {
-        services: servicesRes.data || [],
-        products: productsRes.data || [],
+        services: services || [],
+        products: products || [],
       };
     } catch (err: any) {
       console.error('Erreur fetchCatalogue:', err);
@@ -263,7 +264,7 @@ export const invoiceService = {
         .from('invoices')
         .select(`
           *,
-          client:clients(*),
+          client:clients(id, first_name, last_name, phone, address, city, matricule_fiscal),
           items:invoice_items(*)
         `)
         .order('invoice_date', { ascending: false })

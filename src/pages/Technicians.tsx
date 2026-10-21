@@ -1,10 +1,11 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Search as SearchIcon, Plus, ChevronRight, Edit3 } from 'lucide-react';
 import TechnicianModal from '../components/TechnicianModal';
 import PageLayout from '../components/PageLayout';
 import { toast } from 'react-hot-toast';
+import { referenceCache } from '../lib/referenceCache';
 
 interface Technician {
     id: string;
@@ -169,6 +170,7 @@ const Technicians: React.FC = () => {
                         e.preventDefault();
                         const { error } = await supabase.from('technicians').insert([data]);
                         if (!error) {
+                            referenceCache.invalidate('technicians');
                             setIsAddModalOpen(false);
                             fetchTechnicians();
                         }
@@ -195,6 +197,7 @@ const Technicians: React.FC = () => {
                                 .eq('id', selectedTechnician.id);
 
                             if (error) throw error;
+                            referenceCache.invalidate('technicians');
                             toast.success("Technicien mis à jour");
                             setIsEditModalOpen(false);
                             setSelectedTechnician(null);

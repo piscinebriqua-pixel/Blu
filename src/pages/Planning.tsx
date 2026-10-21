@@ -23,6 +23,7 @@ import { toast } from 'react-hot-toast';
 import PageLayout from '../components/PageLayout';
 import Combobox from '../components/ui/Combobox';
 import { generateRecurringInterventionsBatch, type BatchGenerationOptions } from '../lib/recurrenceService';
+import { referenceCache } from '../lib/referenceCache';
 import { GenerateRecurrencesModal } from '../components/planning/GenerateRecurrencesModal';
 import { TechnicianSelectDropdown } from '../components/planning/TechnicianSelectDropdown';
 
@@ -66,6 +67,8 @@ const Planning: React.FC = () => {
     const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
 
+    const currentMonthKey = `${currentDate.getFullYear()}-${currentDate.getMonth()}-${viewMode}`;
+
     const fetchInterventions = useCallback(async () => {
         try {
             setLoading(true);
@@ -95,6 +98,17 @@ const Planning: React.FC = () => {
                 .in('status', ['scheduled', 'completed', 'in_progress', 'pending', 'unvisited', 'cancelled'])
                 .order('scheduled_date', { ascending: false });
 
+            // Optimisation : Fenêtre glissante de 3 mois pour la vue active (évite de charger tout l'historique)
+            if (viewMode !== 'all') {
+                const windowStart = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+                const windowEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0, 23, 59, 59);
+                query = query
+                    .gte('scheduled_date', windowStart.toISOString())
+                    .lte('scheduled_date', windowEnd.toISOString());
+            } else {
+                query = query.limit(300);
+            }
+
             if (profile?.role !== 'admin' && profile?.technician_id) {
                 query = query.eq('technician_id', profile.technician_id);
             } else if (profile?.role !== 'admin' && !profile?.technician_id) {
@@ -113,11 +127,15 @@ const Planning: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [currentMonthKey]);
 
     const fetchTechnicians = useCallback(async () => {
-        const { data } = await supabase.from('technicians').select('id, full_name').eq('active', true).order('full_name');
-        setTechnicians(data || []);
+        try {
+            const data = await referenceCache.getTechnicians();
+            setTechnicians(data || []);
+        } catch (e) {
+            console.warn('Erreur chargement techniciens:', e);
+        }
     }, []);
 
     const handleDeleteIntervention = async () => {

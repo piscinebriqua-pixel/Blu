@@ -1,9 +1,7 @@
-﻿import React from 'react';
+import React from 'react';
 import ModalLayout from './ModalLayout';
 import Button from './ui/Button';
 import { FileText, Download, X, Printer, Share2 } from 'lucide-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { toast } from 'react-hot-toast';
 
 interface Partner {
@@ -48,7 +46,12 @@ const PartnerPDFPreviewModal: React.FC<PartnerPDFPreviewModalProps> = ({
 }) => {
     const partnerName = `${partner.first_name} ${partner.last_name}`.trim() || partner.company;
 
-    const generatePDF = (shouldDownload = true) => {
+    const generatePDF = async (shouldDownload = true) => {
+        const [{ default: jsPDF }, autoTableModule] = await Promise.all([
+            import('jspdf'),
+            import('jspdf-autotable')
+        ]);
+        const autoTable = (autoTableModule as any).default || autoTableModule;
         const doc = new jsPDF();
 
         // Header

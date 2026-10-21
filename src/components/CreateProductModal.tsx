@@ -1,8 +1,9 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { Loader2, Package, Wallet, Tag } from 'lucide-react';
 import ModalLayout from './ModalLayout';
+import { referenceCache } from '../lib/referenceCache';
 
 interface CreateProductModalProps {
     onClose: () => void;
@@ -30,6 +31,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({ onClose, onSucc
 
             if (error) throw error;
 
+            referenceCache.invalidate('inventory_products');
             toast.success('Produit ajouté au catalogue ✓');
             onSuccess(data);
             onClose();

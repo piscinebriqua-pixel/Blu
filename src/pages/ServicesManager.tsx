@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageLayout from '../components/PageLayout';
 import { supabase } from '../lib/supabase';
@@ -17,6 +17,7 @@ import {
     ClipboardList
 } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
+import { referenceCache } from '../lib/referenceCache';
 
 interface Service {
     id: string;
@@ -87,6 +88,7 @@ const ServicesManager: React.FC = () => {
                 await supabase.from('services').insert([payload]);
             }
             setIsServiceModalOpen(false);
+            referenceCache.invalidate('services');
             toast.success(editingService ? 'Service mis à jour ✓' : 'Service ajouté ✓');
             fetchServices();
         } catch (error: any) { toast.error(error.message); }
@@ -98,6 +100,7 @@ const ServicesManager: React.FC = () => {
         setIsDeletingService(true);
         try {
             await supabase.from('services').delete().eq('id', serviceToDelete.id);
+            referenceCache.invalidate('services');
             toast.success('Service supprimé');
             setServiceToDelete(null);
             fetchServices();
@@ -140,6 +143,7 @@ const ServicesManager: React.FC = () => {
                 await supabase.from('inventory_products').insert([payload]);
             }
             setIsProductModalOpen(false);
+            referenceCache.invalidate('inventory_products');
             toast.success(editingProduct ? 'Produit mis à jour ✓' : 'Produit ajouté ✓');
             fetchProducts();
         } catch (error: any) { toast.error(error.message); }
@@ -151,6 +155,7 @@ const ServicesManager: React.FC = () => {
         setIsDeletingProduct(true);
         try {
             await supabase.from('inventory_products').delete().eq('id', productToDelete.id);
+            referenceCache.invalidate('inventory_products');
             toast.success('Produit supprimé');
             setProductToDelete(null);
             fetchProducts();

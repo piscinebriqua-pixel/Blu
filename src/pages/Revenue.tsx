@@ -1,9 +1,7 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import PageLayout from '../components/PageLayout';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import {
     Wallet,
     TrendingUp,
@@ -166,7 +164,12 @@ const Revenue: React.FC = () => {
         }
     };
 
-    const handleExportPDF = () => {
+    const handleExportPDF = async () => {
+        const [{ jsPDF }, autoTableModule] = await Promise.all([
+            import('jspdf'),
+            import('jspdf-autotable')
+        ]);
+        const autoTable = (autoTableModule as any).default || autoTableModule;
         const doc = new jsPDF();
         const now = new Date().toLocaleDateString('fr-FR');
 

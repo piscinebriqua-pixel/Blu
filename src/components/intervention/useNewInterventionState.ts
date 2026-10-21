@@ -3,6 +3,7 @@ import { supabase } from "../../lib/supabase";
 import { toast } from "react-hot-toast";
 import { recalculateVentilation } from "../../lib/paymentService";
 import { handlePoolRecurrence } from "../../lib/recurrenceService";
+import { referenceCache } from "../../lib/referenceCache";
 import type {
   Service,
   Technician,
@@ -103,37 +104,41 @@ export function useNewInterventionState({
 
   // Initial data loading
   const fetchInitialData = useCallback(async () => {
-    const [sv, tc, pr, cl, session] = await Promise.all([
-      supabase.from("services").select("*").order("name"),
-      supabase.from("technicians").select("id, full_name, email").eq("active", true).order("full_name"),
-      supabase.from("inventory_products").select("*").order("name"),
-      supabase.from("clients").select("id, first_name, last_name, city").order("last_name"),
-      supabase.auth.getSession(),
-    ]);
+    try {
+      const [svData, tcData, prData, clData, session] = await Promise.all([
+        referenceCache.getServices(),
+        referenceCache.getTechnicians(),
+        referenceCache.getProducts(),
+        referenceCache.getClientsLight(),
+        supabase.auth.getSession(),
+      ]);
 
-    if (sv.data) setDbServices(sv.data);
-    if (tc.data) setDbTechnicians(tc.data);
-    if (pr.data) setDbProducts(pr.data);
-    if (cl.data) setDbClients(cl.data);
+      if (svData) setDbServices(svData);
+      if (tcData) setDbTechnicians(tcData);
+      if (prData) setDbProducts(prData);
+      if (clData) setDbClients(clData);
 
-    if (session.data?.session?.user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", session.data.session.user.id)
-        .single();
-      setIsAdmin(profile?.role === "admin");
+      if (session.data?.session?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", session.data.session.user.id)
+          .single();
+        setIsAdmin(profile?.role === "admin");
 
-      if (session.data.session.user.email) {
-        const tech = tc.data?.find((t: Technician) => t.email === session.data?.session?.user?.email);
-        if (tech) {
-          setFormData((prev) => ({
-            ...prev,
-            technician_id: tech.id,
-            payment_technician_id: tech.id,
-          }));
+        if (session.data.session.user.email) {
+          const tech = tcData?.find((t: Technician) => t.email === session.data?.session?.user?.email);
+          if (tech) {
+            setFormData((prev) => ({
+              ...prev,
+              technician_id: tech.id,
+              payment_technician_id: tech.id,
+            }));
+          }
         }
       }
+    } catch (e) {
+      console.warn("fetchInitialData failed:", e);
     }
   }, []);
 

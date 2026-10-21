@@ -1,8 +1,9 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'react-hot-toast';
 import { Loader2, Wrench, Wallet } from 'lucide-react';
 import ModalLayout from './ModalLayout';
+import { referenceCache } from '../lib/referenceCache';
 
 interface CreateServiceModalProps {
     onClose: () => void;
@@ -29,6 +30,7 @@ const CreateServiceModal: React.FC<CreateServiceModalProps> = ({ onClose, onSucc
 
             if (error) throw error;
 
+            referenceCache.invalidate('services');
             toast.success('Service ajouté au catalogue ✓');
             onSuccess(data);
             onClose();

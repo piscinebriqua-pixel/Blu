@@ -66,124 +66,162 @@ export const useDashboardStats = () => {
                 }
             }
 
-            let clientCount = 0;
-            let techCount = 0;
-            let interventionCount = 0;
-            let scheduledCount = 0;
-            let devisCount = 0;
-            let devisPendingAmt = 0;
-            let invCount = 0;
-            let invPendingAmt = 0;
-
+            // --- TENTATIVE D'EXÉCUTION RPC HAUTE PERFORMANCE (Postgres direct) ---
+            let rpcSucceeded = false;
             try {
-                const [clientsRes, techRes, intRes, schedRes] = await Promise.all([
-                    supabase.from('clients').select('id', { count: 'exact', head: true }),
-                    supabase.from('technicians').select('id', { count: 'exact', head: true }).eq('active', true),
-                    supabase.from('interventions').select('id', { count: 'exact', head: true }),
-                    supabase.from('interventions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled')
-                ]);
-                clientCount = clientsRes.count ?? 0;
-                techCount = techRes.count ?? 0;
-                interventionCount = intRes.count ?? 0;
-                scheduledCount = schedRes.count ?? 0;
+                const currentYear = new Date().getFullYear();
+                const { data: rpcData, error: rpcError } = await supabase.rpc('get_dashboard_analytics', {
+                    target_year: currentYear
+                });
 
-                const [devisRes, invoicesRes] = await Promise.all([
-                    supabase
-                        .from('devis')
-                        .select('id, status, total_amount, is_template')
-                        .or('is_template.is.null,is_template.eq.false'),
-                    supabase
-                        .from('invoices')
-                        .select('id, status, total_ttc, paid_amount')
-                ]);
-
-                if (devisRes.data) {
-                    const pendingDevis = devisRes.data.filter(d => d.status === 'pending' || !d.status);
-                    devisCount = pendingDevis.length;
-                    devisPendingAmt = pendingDevis.reduce((sum, d) => sum + (Number(d.total_amount) || 0), 0);
+                if (!rpcError && rpcData) {
+                    const isAdminUser = currentProfile?.role === 'admin';
+                    setCounts({
+                        clients: Number(rpcData.clients) || 0,
+                        technicians: Number(rpcData.technicians) || 0,
+                        interventions: Number(rpcData.interventions) || 0,
+                        scheduled: Number(rpcData.scheduled) || 0,
+                        devis: Number(rpcData.devis) || 0,
+                        devisPendingAmount: Number(rpcData.devisPendingAmount) || 0,
+                        invoicesCount: Number(rpcData.invoicesCount) || 0,
+                        invoicesPendingAmount: Number(rpcData.invoicesPendingAmount) || 0,
+                        // Masquer les métriques financières si non-admin
+                        revenue: isAdminUser ? (Number(rpcData.revenue) || 0) : 0,
+                        lastMonthRevenue: isAdminUser ? (Number(rpcData.lastMonthRevenue) || 0) : 0,
+                        rollingRevenue: isAdminUser ? (Number(rpcData.rollingRevenue) || 0) : 0,
+                        annualRevenue: isAdminUser ? (Number(rpcData.annualRevenue) || 0) : 0,
+                        monthlyBreakdown: isAdminUser && Array.isArray(rpcData.monthlyBreakdown)
+                            ? rpcData.monthlyBreakdown.map(Number)
+                            : Array(12).fill(0)
+                    });
+                    rpcSucceeded = true;
                 }
-
-                if (invoicesRes.data) {
-                    invCount = invoicesRes.data.length;
-                    const unpaidInvoices = invoicesRes.data.filter(i => i.status === 'issued' || i.status === 'partially_paid');
-                    invPendingAmt = unpaidInvoices.reduce((sum, i) => {
-                        const due = (Number(i.total_ttc) || 0) - (Number(i.paid_amount) || 0);
-                        return sum + Math.max(0, due);
-                    }, 0);
-                }
-            } catch (e) {
-                console.warn('Counts fetch failed:', e);
+            } catch (err) {
+                // RPC pas encore déployée ou erreur réseau : fallback automatique
+                rpcSucceeded = false;
             }
 
-            let monthlyRevenue = 0;
-            let lastMonthRevenue = 0;
-            let rollingRevenue = 0;
-            let annualRevenue = 0;
-            const monthlyBreakdown = Array(12).fill(0);
+            // --- FALLBACK CLIENT-SIDE (si RPC non disponible) ---
+            if (!rpcSucceeded) {
+                let clientCount = 0;
+                let techCount = 0;
+                let interventionCount = 0;
+                let scheduledCount = 0;
+                let devisCount = 0;
+                let devisPendingAmt = 0;
+                let invCount = 0;
+                let invPendingAmt = 0;
 
-            if (currentProfile?.role === 'admin') {
                 try {
-                    const now = new Date();
-                    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-                    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
-                    const rolling30d = new Date();
-                    rolling30d.setDate(now.getDate() - 30);
-                    const startOfYear = new Date(now.getFullYear(), 0, 1);
-                    const currentYear = now.getFullYear();
+                    const [clientsRes, techRes, intRes, schedRes] = await Promise.all([
+                        supabase.from('clients').select('id', { count: 'exact', head: true }),
+                        supabase.from('technicians').select('id', { count: 'exact', head: true }).eq('active', true),
+                        supabase.from('interventions').select('id', { count: 'exact', head: true }),
+                        supabase.from('interventions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled')
+                    ]);
+                    clientCount = clientsRes.count ?? 0;
+                    techCount = techRes.count ?? 0;
+                    interventionCount = intRes.count ?? 0;
+                    scheduledCount = schedRes.count ?? 0;
 
-                    const earliestDate = startOfLastMonth < startOfYear ? startOfLastMonth : startOfYear;
-                    const { data: paymentsData } = await supabase
-                        .from('payments')
-                        .select('amount, payment_date')
-                        .neq('method', 'remise')
-                        .gte('payment_date', earliestDate.toISOString());
+                    const [devisRes, invoicesRes] = await Promise.all([
+                        supabase
+                            .from('devis')
+                            .select('id, status, total_amount, is_template')
+                            .or('is_template.is.null,is_template.eq.false'),
+                        supabase
+                            .from('invoices')
+                            .select('id, status, total_ttc, paid_amount')
+                    ]);
 
-                    if (paymentsData) {
-                        const startOfMonthTime = startOfMonth.getTime();
-                        const startOfLastMonthTime = startOfLastMonth.getTime();
-                        const endOfLastMonthTime = endOfLastMonth.getTime();
-                        const rolling30dTime = rolling30d.getTime();
-                        const startOfYearTime = startOfYear.getTime();
+                    if (devisRes.data) {
+                        const pendingDevis = devisRes.data.filter(d => d.status === 'pending' || !d.status);
+                        devisCount = pendingDevis.length;
+                        devisPendingAmt = pendingDevis.reduce((sum, d) => sum + (Number(d.total_amount) || 0), 0);
+                    }
 
-                        paymentsData.forEach(p => {
-                            const amt = Number(p.amount) || 0;
-                            const pDate = new Date(p.payment_date);
-                            const pTime = pDate.getTime();
-
-                            if (pTime >= startOfMonthTime) monthlyRevenue += amt;
-                            if (pTime >= startOfLastMonthTime && pTime <= endOfLastMonthTime) lastMonthRevenue += amt;
-                            if (pTime >= rolling30dTime) rollingRevenue += amt;
-                            if (pTime >= startOfYearTime) annualRevenue += amt;
-
-                            if (pDate.getFullYear() === currentYear) {
-                                const m = pDate.getMonth();
-                                if (m >= 0 && m < 12) {
-                                    monthlyBreakdown[m] += amt;
-                                }
-                            }
-                        });
+                    if (invoicesRes.data) {
+                        invCount = invoicesRes.data.length;
+                        const unpaidInvoices = invoicesRes.data.filter(i => i.status === 'issued' || i.status === 'partially_paid');
+                        invPendingAmt = unpaidInvoices.reduce((sum, i) => {
+                            const due = (Number(i.total_ttc) || 0) - (Number(i.paid_amount) || 0);
+                            return sum + Math.max(0, due);
+                        }, 0);
                     }
                 } catch (e) {
-                    console.warn('Revenue fetch failed:', e);
+                    console.warn('Counts fetch failed:', e);
                 }
-            }
 
-            setCounts({
-                clients: clientCount,
-                technicians: techCount,
-                interventions: interventionCount,
-                scheduled: scheduledCount,
-                revenue: monthlyRevenue,
-                lastMonthRevenue: lastMonthRevenue,
-                rollingRevenue: rollingRevenue,
-                annualRevenue: annualRevenue,
-                monthlyBreakdown: monthlyBreakdown,
-                devis: devisCount,
-                devisPendingAmount: devisPendingAmt,
-                invoicesCount: invCount,
-                invoicesPendingAmount: invPendingAmt
-            });
+                let monthlyRevenue = 0;
+                let lastMonthRevenue = 0;
+                let rollingRevenue = 0;
+                let annualRevenue = 0;
+                const monthlyBreakdown = Array(12).fill(0);
+
+                if (currentProfile?.role === 'admin') {
+                    try {
+                        const now = new Date();
+                        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+                        const rolling30d = new Date();
+                        rolling30d.setDate(now.getDate() - 30);
+                        const startOfYear = new Date(now.getFullYear(), 0, 1);
+                        const currentYear = now.getFullYear();
+
+                        const earliestDate = startOfLastMonth < startOfYear ? startOfLastMonth : startOfYear;
+                        const { data: paymentsData } = await supabase
+                            .from('payments')
+                            .select('amount, payment_date')
+                            .neq('method', 'remise')
+                            .gte('payment_date', earliestDate.toISOString());
+
+                        if (paymentsData) {
+                            const startOfMonthTime = startOfMonth.getTime();
+                            const startOfLastMonthTime = startOfLastMonth.getTime();
+                            const endOfLastMonthTime = endOfLastMonth.getTime();
+                            const rolling30dTime = rolling30d.getTime();
+                            const startOfYearTime = startOfYear.getTime();
+
+                            paymentsData.forEach(p => {
+                                const amt = Number(p.amount) || 0;
+                                const pDate = new Date(p.payment_date);
+                                const pTime = pDate.getTime();
+
+                                if (pTime >= startOfMonthTime) monthlyRevenue += amt;
+                                if (pTime >= startOfLastMonthTime && pTime <= endOfLastMonthTime) lastMonthRevenue += amt;
+                                if (pTime >= rolling30dTime) rollingRevenue += amt;
+                                if (pTime >= startOfYearTime) annualRevenue += amt;
+
+                                if (pDate.getFullYear() === currentYear) {
+                                    const m = pDate.getMonth();
+                                    if (m >= 0 && m < 12) {
+                                        monthlyBreakdown[m] += amt;
+                                    }
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.warn('Revenue fetch failed:', e);
+                    }
+                }
+
+                setCounts({
+                    clients: clientCount,
+                    technicians: techCount,
+                    interventions: interventionCount,
+                    scheduled: scheduledCount,
+                    revenue: monthlyRevenue,
+                    lastMonthRevenue: lastMonthRevenue,
+                    rollingRevenue: rollingRevenue,
+                    annualRevenue: annualRevenue,
+                    monthlyBreakdown: monthlyBreakdown,
+                    devis: devisCount,
+                    devisPendingAmount: devisPendingAmt,
+                    invoicesCount: invCount,
+                    invoicesPendingAmount: invPendingAmt
+                });
+            }
 
             try {
                 const { data: interventions } = await supabase

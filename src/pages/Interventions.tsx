@@ -1,269 +1,183 @@
-﻿import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
 import PageLayout from "../components/PageLayout";
 import NewIntervention from "../components/NewIntervention";
 import InterventionDetailsModal from "../components/InterventionDetailsModal";
 import ConfirmModal from "../components/ConfirmModal";
+import { InterventionsToolbar, type InterventionTab, type InterventionFilterType } from "../components/intervention/InterventionsToolbar";
+import { InterventionListItem, type InterventionItemData } from "../components/intervention/InterventionListItem";
 import { supabase } from "../lib/supabase";
-import {
-  Search,
-  ChevronRight,
-  FileText,
-  Clock,
-  Plus,
-  Calendar,
-  User
-} from "lucide-react";
+import { Clock, Plus, ArrowDown } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-interface Intervention {
-  id: string;
-  pool_id: string;
-  completed_date: string | null;
-  created_at: string;
-  ph_level: number;
-  chlorine_level: number;
-  water_temp: number;
-  notes: string;
-  status: "pending" | "scheduled" | "in_progress" | "completed" | "cancelled";
-  scheduled_date: string;
-  devis_id?: string | null;
-  technician: { full_name: string };
-  pool?: {
-    name: string;
-    client?: {
-      id: string;
-      first_name: string;
-      last_name: string;
-      balance: number;
-      phone?: string;
-    };
-  };
-  services: { price_at_time: number; service: { name: string } }[];
-  products: {
-    total_price: number;
-    quantity: number;
-    product: { name: string; unit: string };
-  }[];
-  photo_before_url?: string;
-  photo_after_url?: string;
-}
+import { referenceCache } from "../lib/referenceCache";
+
+const PAGE_SIZE = 50;
 
 const Interventions: React.FC = () => {
-  const navigate = useNavigate();
-  const [interventions, setInterventions] = useState<Intervention[]>([]);
+  const [interventions, setInterventions] = useState<InterventionItemData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"planifie" | "termine" | "annule">(
-    "planifie",
-  );
-  const [selectedIntervention, setSelectedIntervention] =
-    useState<Intervention | null>(null);
+  const [activeTab, setActiveTab] = useState<InterventionTab>("planifie");
+  const [selectedTech, setSelectedTech] = useState<string>("all");
+  const [selectedType, setSelectedType] = useState<InterventionFilterType>("all");
+  const [technicians, setTechnicians] = useState<string[]>([]);
+  const [limit, setLimit] = useState(PAGE_SIZE);
+  const [hasMore, setHasMore] = useState(false);
+
+  // Modals state
+  const [selectedIntervention, setSelectedIntervention] = useState<any | null>(null);
   const [interventionToDelete, setInterventionToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editingId, setEditingId] = useState<string | undefined>(undefined);
-  const [isNewInterventionModalOpen, setIsNewInterventionModalOpen] =
-    useState(false);
-  const [selClient, setSelClient] = useState<{
-    id: string;
-    first_name: string;
-    last_name: string;
-    balance: number;
-  } | null>(null);
-  const [selPoolId, setSelPoolId] = useState<string | null>(null);
-  const [selectedTech, setSelectedTech] = useState<string>("all");
-  const [selectedType, setSelectedType] = useState<"all" | "classique" | "chantier">("all");
+  const [isNewInterventionModalOpen, setIsNewInterventionModalOpen] = useState(false);
   const [startMode, setStartMode] = useState(false);
 
+  // Charger la liste des techniciens depuis le cache mémoire (instantané)
   useEffect(() => {
-    fetchInterventions();
+    const fetchTechs = async () => {
+      try {
+        const data = await referenceCache.getTechnicians();
+        if (data) {
+          setTechnicians(data.map((t: any) => t.full_name).filter(Boolean));
+        }
+      } catch (e) {
+        console.warn("Erreur chargement techniciens:", e);
+      }
+    };
+    fetchTechs();
   }, []);
 
-  const fetchInterventions = async () => {
+  // Réinitialiser la pagination lors d'un changement d'onglet ou de filtre type
+  useEffect(() => {
+    setLimit(PAGE_SIZE);
+  }, [activeTab, selectedType]);
+
+  const fetchInterventions = useCallback(async (currentLimit = limit) => {
     try {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return;
 
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('role, technician_id')
-        .eq('id', session.user.id)
+        .from("profiles")
+        .select("role, technician_id")
+        .eq("id", session.user.id)
         .single();
 
-      let query = supabase
-        .from("interventions")
-        .select(
-          `
-                    *,
-                    technician:technicians!technician_id(full_name),
-                    pool:pools!pool_id(
-                        name,
-                        client:clients(id, first_name, last_name, balance, phone)
-                    ),
-                    services:intervention_services(price_at_time, service:services(name)),
-                    products:intervention_products(quantity, total_price, product:inventory_products(name, unit))
-                `,
-        );
+      let query = supabase.from("interventions").select(`
+        *,
+        technician:technicians!technician_id(full_name),
+        pool:pools!pool_id(
+          name,
+          client:clients(id, first_name, last_name, balance, phone)
+        ),
+        services:intervention_services(price_at_time, service:services(name)),
+        products:intervention_products(quantity, total_price, product:inventory_products(name, unit))
+      `);
 
-      if (profile?.role !== 'admin' && profile?.technician_id) {
-        query = query.eq('technician_id', profile.technician_id);
-      } else if (profile?.role !== 'admin' && !profile?.technician_id) {
+      if (profile?.role !== "admin" && profile?.technician_id) {
+        query = query.eq("technician_id", profile.technician_id);
+      } else if (profile?.role !== "admin" && !profile?.technician_id) {
         setInterventions([]);
         setLoading(false);
         return;
       }
 
-      const { data, error } = await query
-        .order("created_at", { ascending: false });
+      // Filtrage direct au niveau SQL selon l'onglet actif (évite le scan de toute la table)
+      if (activeTab === "planifie") {
+        query = query
+          .in("status", ["pending", "scheduled", "in_progress"])
+          .order("scheduled_date", { ascending: true });
+      } else if (activeTab === "termine") {
+        query = query
+          .eq("status", "completed")
+          .order("completed_date", { ascending: false });
+      } else if (activeTab === "annule") {
+        query = query
+          .eq("status", "cancelled")
+          .order("created_at", { ascending: false });
+      }
 
+      // Filtrage par type
+      if (selectedType === "classique") {
+        query = query.is("devis_id", null);
+      } else if (selectedType === "chantier") {
+        query = query.not("devis_id", "is", null);
+      }
+
+      // Limiter la volumétrie demandée
+      query = query.limit(currentLimit);
+
+      const { data, error } = await query;
       if (error) throw error;
-      setInterventions(data || []);
+
+      const rows = (data || []) as InterventionItemData[];
+      setInterventions(rows);
+      setHasMore(rows.length === currentLimit);
     } catch (error: any) {
       console.error("Erreur Supabase:", error);
       toast.error("Impossible de récupérer les entretiens");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  }, [activeTab, selectedType, limit]);
+
+  useEffect(() => {
+    fetchInterventions(limit);
+  }, [fetchInterventions, limit]);
+
+  const handleLoadMore = () => {
+    setLoadingMore(true);
+    setLimit((prev) => prev + PAGE_SIZE);
   };
 
   const handleDeleteIntervention = async () => {
     if (!interventionToDelete) return;
     try {
       setIsDeleting(true);
-      const { error } = await supabase.from('interventions').delete().eq('id', interventionToDelete);
+      const { error } = await supabase.from("interventions").delete().eq("id", interventionToDelete);
       if (error) throw error;
       toast.success("Entretien supprimé");
       setInterventionToDelete(null);
       fetchInterventions();
     } catch (error: any) {
       console.error(error);
-      toast.error("Erreur lors de la suppression: " + (error.message || ''));
+      toast.error("Erreur lors de la suppression: " + (error.message || ""));
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const filteredInterventions = interventions
-    .filter((i) => {
-      const clientName =
-        `${i.pool?.client?.first_name} ${i.pool?.client?.last_name}`.toLowerCase();
-      const techName = i.technician?.full_name?.toLowerCase() || "";
+  // Filtrage local immédiat (recherche texte & technicien) sur les données chargées
+  const filteredInterventions = interventions.filter((i) => {
+    const clientName = `${i.pool?.client?.first_name || ""} ${i.pool?.client?.last_name || ""}`.toLowerCase();
+    const techName = i.technician?.full_name?.toLowerCase() || "";
+    const search = searchTerm.toLowerCase();
 
-      let isCorrectTab = false;
-      if (activeTab === "planifie") {
-        isCorrectTab = ["pending", "scheduled", "in_progress"].includes(i.status);
-      } else if (activeTab === "termine") {
-        isCorrectTab = i.status === "completed";
-      } else if (activeTab === "annule") {
-        isCorrectTab = i.status === "cancelled";
-      }
+    const matchesSearch = clientName.includes(search) || techName.includes(search);
+    if (!matchesSearch) return false;
 
-      if (!isCorrectTab) return false;
+    if (selectedTech !== "all" && i.technician?.full_name !== selectedTech) {
+      return false;
+    }
 
-      // Filter by Search
-      const matchesSearch =
-        clientName.includes(searchTerm.toLowerCase()) ||
-        techName.includes(searchTerm.toLowerCase());
-      if (!matchesSearch) return false;
-
-      // Filter by Technician
-      if (selectedTech !== "all" && i.technician?.full_name !== selectedTech) {
-        return false;
-      }
-
-      // Filter by Type
-      if (selectedType === "classique" && i.devis_id) return false;
-      if (selectedType === "chantier" && !i.devis_id) return false;
-
-      return true;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(activeTab === 'planifie' ? (a.scheduled_date || a.created_at) : (a.completed_date || a.scheduled_date || a.created_at)).getTime();
-      const dateB = new Date(activeTab === 'planifie' ? (b.scheduled_date || b.created_at) : (b.completed_date || b.scheduled_date || b.created_at)).getTime();
-      return dateB - dateA;
-    });
-
-  const uniqueTechnicians = Array.from(new Set(interventions.map(i => i.technician?.full_name).filter(Boolean))) as string[];
+    return true;
+  });
 
   const toolbar = (
-    <div className="flex flex-col gap-4">
-      {/* Search & View Switcher */}
-      <div className="flex gap-3">
-        <div className="relative flex-1 group">
-          <Search
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary transition-colors"
-            size={18}
-          />
-          <input
-            type="text"
-            placeholder="Rechercher client, tech..."
-            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-white/5 text-sm font-bold shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <button
-          onClick={() => navigate('/planning')}
-          className="flex items-center justify-center w-12 h-12 bg-white dark:bg-slate-800 rounded-2xl text-slate-500 border border-slate-100 dark:border-white/5 shadow-sm active:scale-90 transition-all"
-          title="Vue Calendrier"
-        >
-          <Calendar size={22} />
-        </button>
-      </div>
-
-      {/* Filters Row */}
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <select
-            aria-label="Type"
-            value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value as any)}
-            className="w-full min-h-[44px] p-3 pl-4 pr-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-md rounded-xl border border-slate-200 dark:border-white/10 text-base font-bold text-slate-800 dark:text-white appearance-none outline-none focus:border-primary/50"
-          >
-            <option value="all">Tous Types</option>
-            <option value="classique">Visite</option>
-            <option value="chantier">Chantier</option>
-          </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-            <Clock size={16} />
-          </div>
-        </div>
-
-        <div className="relative flex-1">
-          <select
-            aria-label="Technicien"
-            value={selectedTech}
-            onChange={(e) => setSelectedTech(e.target.value)}
-            className="w-full min-h-[44px] p-3 pl-4 pr-10 bg-white/70 dark:bg-slate-800/70 backdrop-blur-md rounded-xl border border-slate-200 dark:border-white/10 text-base font-bold text-slate-800 dark:text-white appearance-none outline-none focus:border-primary/50"
-          >
-            <option value="all">Tous Techs</option>
-            {uniqueTechnicians.map(tech => (
-              <option key={tech} value={tech}>{tech}</option>
-            ))}
-          </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-40">
-            <User size={16} />
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl border border-slate-200/50 dark:border-white/5">
-        {(['planifie', 'termine', 'annule'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-2.5 rounded-xl text-xs font-black uppercase tracking-[0.2em] transition-all ${activeTab === tab
-                ? "bg-white dark:bg-slate-700 text-primary shadow-lg ring-1 ring-black/5"
-                : "text-slate-500 hover:text-slate-600 dark:hover:text-slate-200"
-              }`}
-          >
-            {tab === 'planifie' ? 'À faire' : tab === 'termine' ? 'Terminé' : 'Annulé'}
-          </button>
-        ))}
-      </div>
-    </div>
+    <InterventionsToolbar
+      searchTerm={searchTerm}
+      onSearchChange={setSearchTerm}
+      selectedType={selectedType}
+      onTypeChange={setSelectedType}
+      selectedTech={selectedTech}
+      onTechChange={setSelectedTech}
+      technicians={technicians}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+    />
   );
 
   return (
@@ -277,53 +191,27 @@ const Interventions: React.FC = () => {
     >
       <div className="flex flex-col gap-3 pb-32 px-4">
         {filteredInterventions.length > 0 ? (
-          filteredInterventions.map((i) => (
-            <div
-              key={i.id}
-              onClick={() => setSelectedIntervention(i)}
-              className={`group p-4 rounded-[2.5rem] bg-white dark:bg-slate-800 border border-slate-100 dark:border-white/5 shadow-sm active:scale-[0.98] transition-all flex items-center gap-4 ${i.status === 'cancelled' ? 'opacity-60' : ''
-                }`}
-            >
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${i.status === 'completed'
-                  ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600'
-                  : i.status === 'cancelled'
-                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                    : 'bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white'
-                }`}>
-                {i.status === 'completed' ? <FileText size={24} /> : <Clock size={24} />}
-              </div>
+          <>
+            {filteredInterventions.map((i) => (
+              <InterventionListItem
+                key={i.id}
+                intervention={i}
+                activeTab={activeTab}
+                onClick={() => setSelectedIntervention(i)}
+              />
+            ))}
 
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start mb-0.5">
-                  <h3 className={`text-base font-black uppercase tracking-tight truncate ${i.status === 'cancelled' ? 'text-slate-500 line-through' : 'text-slate-900 dark:text-white'
-                    }`}>
-                    {i.pool?.client?.first_name} {i.pool?.client?.last_name}
-                  </h3>
-                  <div className={`px-2 py-0.5 rounded-lg text-xs font-black uppercase ${i.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
-                      i.status === 'cancelled' ? 'bg-slate-100 text-slate-500' :
-                        'bg-primary/10 text-primary'
-                    }`}>
-                    {activeTab === 'termine'
-                      ? new Date(i.completed_date || i.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
-                      : new Date(i.scheduled_date || i.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })
-                    }
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs font-bold uppercase tracking-widest ${i.status === 'cancelled' ? 'text-slate-500' : 'text-slate-500'}`}>
-                    {i.pool?.name || 'Piscine'}
-                  </span>
-                  <div className="w-1 h-1 rounded-full bg-slate-200"></div>
-                  <span className={`text-xs font-black uppercase ${i.status === 'cancelled' ? 'text-slate-500' : 'text-slate-500'}`}>
-                    {i.technician?.full_name}
-                  </span>
-                </div>
-              </div>
-
-              <ChevronRight size={20} className="text-slate-300 group-hover:text-primary transition-colors" />
-            </div>
-          ))
+            {hasMore && (
+              <button
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="mt-3 flex items-center justify-center gap-2 w-full min-h-[48px] py-3 px-4 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-primary/50 text-slate-700 dark:text-slate-200 text-xs font-black uppercase tracking-wider rounded-2xl shadow-sm active:scale-[0.99] transition-all"
+              >
+                <ArrowDown size={16} className={loadingMore ? "animate-bounce" : ""} />
+                {loadingMore ? "Chargement..." : "Afficher 50 entretiens supplémentaires"}
+              </button>
+            )}
+          </>
         ) : (
           <div className="py-24 flex flex-col items-center justify-center opacity-40">
             <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
@@ -360,7 +248,7 @@ const Interventions: React.FC = () => {
             setInterventionToDelete(inter.id);
             setSelectedIntervention(null);
           }}
-          onStatusChange={fetchInterventions}
+          onStatusChange={() => fetchInterventions(limit)}
         />
       )}
 
@@ -377,19 +265,11 @@ const Interventions: React.FC = () => {
 
       {isNewInterventionModalOpen && (
         <NewIntervention
-          clientId={selClient?.id}
-          poolId={selPoolId || undefined}
           type="scheduled"
-          onClose={() => {
-            setIsNewInterventionModalOpen(false);
-            setSelClient(null);
-            setSelPoolId(null);
-          }}
+          onClose={() => setIsNewInterventionModalOpen(false)}
           onSuccess={() => {
             setIsNewInterventionModalOpen(false);
-            setSelClient(null);
-            setSelPoolId(null);
-            fetchInterventions();
+            fetchInterventions(limit);
           }}
         />
       )}
@@ -397,7 +277,7 @@ const Interventions: React.FC = () => {
       {editingId && (
         <NewIntervention
           interventionId={editingId}
-          type={startMode ? 'direct' : 'scheduled'}
+          type={startMode ? "direct" : "scheduled"}
           onClose={() => {
             setEditingId(undefined);
             setStartMode(false);
@@ -405,7 +285,7 @@ const Interventions: React.FC = () => {
           onSuccess={() => {
             setEditingId(undefined);
             setStartMode(false);
-            fetchInterventions();
+            fetchInterventions(limit);
           }}
         />
       )}
