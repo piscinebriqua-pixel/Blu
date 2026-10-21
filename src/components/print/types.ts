@@ -11,12 +11,15 @@ export interface PrintDocumentItem {
 
 export interface PrintCompanyInfo {
   company_name?: string;
+  activity_title?: string;
   phone?: string;
+  phone2?: string;
   email?: string;
   address?: string;
   tax_id?: string;
-  bank_rib?: string;
   bank_name?: string;
+  bank_rib?: string;
+  bank_iban?: string;
   website?: string;
   rne?: string;
   default_footer?: string;

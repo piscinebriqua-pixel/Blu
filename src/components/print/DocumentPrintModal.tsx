@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ModalLayout from '../ModalLayout';
 import PrintDocumentTemplate from './PrintDocumentTemplate';
 import type { PrintDocumentData, PrintCompanyInfo } from './types';
-import { Printer, Share2 } from 'lucide-react';
+import { Printer, Share2, Building2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 
@@ -80,6 +80,16 @@ export const DocumentPrintModal: React.FC<DocumentPrintModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => window.open('/settings/company', '_blank')}
+              className="min-h-[44px] px-3 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 rounded-xl text-xs font-black uppercase flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+              title="Configurer les coordonnées, MF, banque et logo de la société"
+            >
+              <Building2 size={16} />
+              <span className="hidden md:inline">Coordonnées Société</span>
+            </button>
+
             {onWhatsAppShare && (
               <button
                 type="button"

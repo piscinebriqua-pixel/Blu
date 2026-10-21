@@ -12,9 +12,11 @@ export const PrintFinancialSummary: React.FC<PrintFinancialSummaryProps> = ({
   companyInfo,
 }) => {
   const isInvoice = data.type === 'facture';
-  const bankRib = companyInfo.bank_rib || 'BIAT - RIB : 08 012 0001234567890 12';
-  const companyPhone = companyInfo.phone || '+216 98 123 456';
-  const companyEmail = companyInfo.email || 'contact@blu-pool.tn';
+  const displayBankName = companyInfo.bank_name || '';
+  const displayBankRib = companyInfo.bank_rib || 'RIB disponible sur demande';
+  const displayBankIban = companyInfo.bank_iban || '';
+  const companyPhone = companyInfo.phone || '+216 58 790 185';
+  const companyEmail = companyInfo.email || 'contact@cleanandcleanpool.com';
   const amountWords = amountInWordsDT(data.totalTTC);
 
   return (
@@ -54,8 +56,13 @@ export const PrintFinancialSummary: React.FC<PrintFinancialSummaryProps> = ({
             </p>
             <div className="p-2 rounded bg-slate-50 border border-slate-200">
               <p className="font-mono font-bold text-slate-900 text-[11px]">
-                {bankRib}
+                {displayBankName ? `${displayBankName} • ` : ''}RIB : {displayBankRib}
               </p>
+              {displayBankIban && (
+                <p className="font-mono text-[10px] text-slate-600 font-bold">
+                  IBAN : {displayBankIban}
+                </p>
+              )}
               <p className="text-[10px] font-medium text-slate-500 italic pt-0.5">
                 Merci de mentionner la référence {data.documentNumber} lors du virement.
               </p>

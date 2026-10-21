@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Phone, MapPin, User, Mail, Globe, FileText } from 'lucide-react';
 import ModalLayout from './ModalLayout';
@@ -53,9 +53,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess, ini
                 balance: 0
             };
 
-            if (formData.matricule_fiscal.trim()) {
-                clientPayload.matricule_fiscal = formData.matricule_fiscal.trim();
-            }
+            clientPayload.matricule_fiscal = formData.matricule_fiscal.trim() || null;
 
             const { error: clientError } = await supabase
                 .from('clients')
@@ -65,7 +63,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess, ini
                 delete clientPayload.matricule_fiscal;
                 const retry = await supabase.from('clients').insert([clientPayload]);
                 if (retry.error) throw retry.error;
-                toast.success("Client ajouté (exécutez setup_matricule_fiscal.sql pour enregistrer le MF)");
+                toast.success("Client ajouté (colonne MF non trouvée en base)");
             } else if (clientError) {
                 throw clientError;
             } else {
