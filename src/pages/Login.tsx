@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Lock, Loader2, AlertCircle, User } from 'lucide-react';
@@ -72,7 +72,8 @@ const Login: React.FC = () => {
                 {/* Header / Logo */}
                 <div className="flex items-center gap-5 justify-center -mb-4">
                     <BccpLogo
-                        width={80}
+                        variant="emblem"
+                        width={68}
                         fillColor="white"
                         className="drop-shadow-2xl"
                     />

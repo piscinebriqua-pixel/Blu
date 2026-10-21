@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Phone, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
@@ -57,7 +57,8 @@ const ClientLogin: React.FC = () => {
                 
                 <div className="flex items-center gap-4 justify-center -mb-4">
                     <BccpLogo 
-                        width={80} 
+                        variant="emblem"
+                        width={64} 
                         fillColor="white" 
                         className="drop-shadow-2xl" 
                     />

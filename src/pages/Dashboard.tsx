@@ -47,7 +47,7 @@ const Dashboard: React.FC = () => {
     const leftContent = (
         <div onClick={() => navigate('/')} className="flex items-center gap-3 cursor-pointer group">
             <div className="w-12 h-12 flex items-center justify-center bg-white/20 backdrop-blur-md rounded-xl shadow-lg border border-white/10 group-hover:bg-white/30 transition-all shrink-0">
-                <BccpLogo fillColor="white" className="logo-adaptive transition-all duration-300" />
+                <BccpLogo variant="emblem" fillColor="white" className="w-8 h-auto transition-all duration-300 group-hover:scale-110 drop-shadow-sm" />
             </div>
             <div className="flex flex-col">
                 <h1 className="text-3xl font-black text-white tracking-tighter leading-none">BCCP</h1>
