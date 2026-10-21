@@ -44,23 +44,23 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
             </p>
           </div>
 
-          {/* Cartouche Métadonnées Document (Dates et Références) */}
-          <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-2 space-y-1 text-xs">
-            <div className="flex justify-between items-baseline gap-4">
-              <span className="text-slate-500 font-bold text-xs">Date :</span>
+          {/* Cartouche Métadonnées Document (Dates et Références Rapprochées) */}
+          <div className="w-fit bg-slate-50 border border-slate-200/90 rounded-xl p-2 px-3 space-y-1 text-xs">
+            <div className="flex items-baseline gap-2.5">
+              <span className="text-slate-500 font-bold text-xs min-w-[72px]">Date :</span>
               <span className="font-black text-slate-900 text-xs">{formattedDate}</span>
             </div>
 
             {isInvoice && formattedDueDate && (
-              <div className="flex justify-between items-baseline gap-4 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-xs">Échéance :</span>
+              <div className="flex items-baseline gap-2.5 border-t border-slate-200/60 pt-1">
+                <span className="text-slate-500 font-bold text-xs min-w-[72px]">Échéance :</span>
                 <span className="font-black text-slate-900 text-xs">{formattedDueDate}</span>
               </div>
             )}
 
             {!isInvoice && (
-              <div className="flex justify-between items-baseline gap-4 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-xs">Validité :</span>
+              <div className="flex items-baseline gap-2.5 border-t border-slate-200/60 pt-1">
+                <span className="text-slate-500 font-bold text-xs min-w-[72px]">Validité :</span>
                 <span className="font-black text-slate-900 text-xs">
                   {data.validityDays ? `${data.validityDays} jours` : '30 jours'}
                 </span>
@@ -68,15 +68,15 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
             )}
 
             {data.quoteReference && (
-              <div className="flex justify-between items-baseline gap-4 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-xs">Réf. Devis :</span>
+              <div className="flex items-baseline gap-2.5 border-t border-slate-200/60 pt-1">
+                <span className="text-slate-500 font-bold text-xs min-w-[72px]">Réf. Devis :</span>
                 <span className="font-mono font-bold text-slate-700 text-xs">{data.quoteReference}</span>
               </div>
             )}
 
             {data.poolInfo?.name && (
-              <div className="flex justify-between items-baseline gap-4 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-xs">Site / Bassin :</span>
+              <div className="flex items-baseline gap-2.5 border-t border-slate-200/60 pt-1">
+                <span className="text-slate-500 font-bold text-xs min-w-[72px]">Site / Bassin :</span>
                 <span className="font-black text-slate-900 uppercase text-xs">
                   {data.poolInfo.name}
                 </span>
