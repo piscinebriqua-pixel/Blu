@@ -9,6 +9,7 @@ import Combobox from './ui/Combobox';
 import MapPicker from './MapPicker';
 import { TUNISIAN_CITIES } from '../lib/constants';
 import { PhoneCountryBadge } from './PhoneCountryBadge';
+import { formatTunisianTaxId } from '../helpers/taxIdHelper';
 
 interface AddClientModalProps {
     onClose: () => void;
@@ -192,7 +193,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({ onClose, onSuccess, ini
                         icon={FileText}
                         placeholder="Ex: 1234567/A/M/000"
                         value={formData.matricule_fiscal}
-                        onChange={e => setFormData({ ...formData, matricule_fiscal: e.target.value.toUpperCase() })}
+                        onChange={e => setFormData({ ...formData, matricule_fiscal: formatTunisianTaxId(e.target.value) })}
                     />
                 </div>
 

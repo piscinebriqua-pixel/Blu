@@ -9,7 +9,6 @@ interface PrintHeaderProps {
 
 export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) => {
   const isInvoice = data.type === 'facture';
-  const companyName = companyInfo.company_name || 'BLU POOL MANAGEMENT';
   const companyActivity = companyInfo.activity_title || 'Ingénierie & Services Aquatiques';
   const companyTaxId = companyInfo.tax_id || '';
   const companyPhone = companyInfo.phone || '+216 58 790 185';
@@ -37,19 +36,16 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
         <div className="space-y-2 max-w-xs sm:max-w-sm flex-1">
           {/* Titre Document */}
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase leading-none">
+            <h1 className="text-3xl font-black tracking-tight text-blue-600 uppercase leading-none">
               {isInvoice ? 'FACTURE' : 'DEVIS'}
             </h1>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mt-1">
-              Document Officiel • Format A4
-            </p>
           </div>
 
-          {/* Cartouche Métadonnées Document (Remonté selon flèches de l'utilisateur) */}
-          <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 space-y-1 text-xs">
+          {/* Cartouche Métadonnées Document */}
+          <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 space-y-1.5 text-xs">
             <div className="flex justify-between items-baseline gap-4">
-              <span className="text-slate-500 font-bold uppercase tracking-wider text-[11px]">
-                {isInvoice ? 'Facture N° :' : 'Devis N° :'}
+              <span className="text-slate-500 font-bold uppercase tracking-wider text-xs">
+                N° :
               </span>
               <span className="text-xs font-black text-slate-900 font-mono">
                 {data.documentNumber}
@@ -57,20 +53,20 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
             </div>
 
             <div className="flex justify-between items-baseline gap-4 border-t border-slate-200/60 pt-1">
-              <span className="text-slate-500 font-bold text-[11px]">Date :</span>
+              <span className="text-slate-500 font-bold text-xs">Date :</span>
               <span className="font-black text-slate-900 text-xs">{formattedDate}</span>
             </div>
 
             {isInvoice && formattedDueDate && (
               <div className="flex justify-between items-baseline gap-4 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-[11px]">Échéance :</span>
+                <span className="text-slate-500 font-bold text-xs">Échéance :</span>
                 <span className="font-black text-slate-900 text-xs">{formattedDueDate}</span>
               </div>
             )}
 
             {!isInvoice && (
               <div className="flex justify-between items-baseline gap-4 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-[11px]">Validité :</span>
+                <span className="text-slate-500 font-bold text-xs">Validité :</span>
                 <span className="font-black text-slate-900 text-xs">
                   {data.validityDays ? `${data.validityDays} jours` : '30 jours'}
                 </span>
@@ -79,14 +75,14 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
 
             {data.quoteReference && (
               <div className="flex justify-between items-baseline gap-4 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-[11px]">Réf. Devis :</span>
+                <span className="text-slate-500 font-bold text-xs">Réf. Devis :</span>
                 <span className="font-mono font-bold text-slate-700 text-xs">{data.quoteReference}</span>
               </div>
             )}
 
             {data.poolInfo?.name && (
               <div className="flex justify-between items-baseline gap-4 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-[11px]">Site / Bassin :</span>
+                <span className="text-slate-500 font-bold text-xs">Site / Bassin :</span>
                 <span className="font-black text-slate-900 uppercase text-xs">
                   {data.poolInfo.name}
                 </span>
@@ -95,18 +91,15 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
           </div>
         </div>
 
-        {/* Côté Droit : Logo Blu/BCCP et Raison Sociale Émettrice */}
+        {/* Côté Droit : Logo BCCP en bleu et Coordonnées Émettrice */}
         <div className="text-right flex flex-col items-end max-w-xs space-y-1">
-          <div className="flex items-center justify-end mb-0.5">
-            <BccpLogo width={115} height="auto" fillColor="dark" />
+          <div className="flex items-center justify-end mb-1">
+            <BccpLogo width={85} height="auto" fillColor="blue" />
           </div>
-          <p className="text-xs font-black uppercase tracking-wider text-slate-900 leading-tight">
-            {companyName}
-          </p>
-          <p className="text-[10px] font-bold tracking-wider uppercase text-blue-700">
+          <p className="text-xs font-black tracking-wider uppercase text-blue-600">
             {companyActivity}
           </p>
-          <div className="text-[10px] font-semibold text-slate-600 space-y-0.5 pt-0.5 leading-tight">
+          <div className="text-xs font-semibold text-slate-600 space-y-0.5 pt-0.5 leading-tight">
             {companyTaxId && (
               <p className="font-bold text-slate-800">M.F. : {companyTaxId}</p>
             )}
@@ -115,15 +108,15 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
             )}
             <p>{companyAddress}</p>
             <p>{companyPhone} • {companyEmail}</p>
-            {companyInfo.website && <p className="text-blue-600">{companyInfo.website}</p>}
+            {companyInfo.website && <p className="text-blue-600 font-bold">{companyInfo.website}</p>}
           </div>
         </div>
       </div>
 
       {/* 2. BLOC DESTINATAIRE (CLIENT) */}
       <div className="pt-0.5">
-        <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/70 space-y-1 text-xs">
-          <p className="text-[11px] font-black uppercase tracking-wider text-slate-500">
+        <div className="p-3.5 rounded-2xl bg-slate-50/70 border border-slate-200/70 space-y-1.5 text-xs">
+          <p className="text-xs font-black uppercase tracking-wider text-slate-500">
             {isInvoice ? 'Facturé à :' : 'Destinataire :'}
           </p>
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -133,19 +126,19 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
 
             {/* Matricule Fiscal Client */}
             {data.client.matricule_fiscal ? (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white text-slate-900 font-bold border border-slate-300 text-[11px] shadow-2xs">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white text-slate-900 font-bold border border-slate-300 text-xs shadow-2xs">
                 <span className="text-slate-500 font-black">M.F. :</span>
                 <span className="font-mono">{data.client.matricule_fiscal}</span>
               </div>
             ) : (
-              <p className="text-[11px] font-semibold text-slate-500 italic">
+              <p className="text-xs font-semibold text-slate-500 italic">
                 Client Particulier
               </p>
             )}
           </div>
 
           {/* Coordonnées Client */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 pt-1 text-[11px] text-slate-600 font-medium">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs text-slate-600 font-medium">
             {(data.client.address || data.client.city) && (
               <p className="font-semibold text-slate-700">
                 📍 {[data.client.address, data.client.city].filter(Boolean).join(', ')}

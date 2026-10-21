@@ -225,6 +225,10 @@ a,
   filter: brightness(0);
 }
 
+.logo-blue {
+  filter: brightness(0) saturate(100%) invert(32%) sepia(87%) saturate(2250%) hue-rotate(205deg) brightness(96%) contrast(101%);
+}
+
 .modal-header .btn-icon {
   background: rgba(15, 23, 42, 0.08);
   color: #0f172a;
