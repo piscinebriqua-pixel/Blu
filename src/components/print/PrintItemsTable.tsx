@@ -54,22 +54,22 @@ export const PrintItemsTable: React.FC<PrintItemsTableProps> = ({ items }) => {
                 </td>
 
                 {/* Colonne Prix Unitaire HT */}
-                <td className="py-1.5 px-3 text-right font-bold text-slate-800 font-mono whitespace-nowrap">
+                <td className="py-2 px-3 text-right font-bold text-slate-800 font-mono text-base whitespace-nowrap">
                   {Number(item.unitPrice).toFixed(3)}
                 </td>
 
                 {/* Colonne Quantité */}
-                <td className="py-1.5 px-2.5 text-center font-black text-slate-900 whitespace-nowrap">
+                <td className="py-2 px-2.5 text-center font-black text-slate-900 text-base whitespace-nowrap">
                   {item.quantity}
                 </td>
 
                 {/* Colonne Unité */}
-                <td className="py-1.5 px-2.5 text-center text-slate-600 font-semibold whitespace-nowrap">
+                <td className="py-2 px-2.5 text-center text-slate-600 font-semibold text-sm whitespace-nowrap">
                   {item.unit || 'u'}
                 </td>
 
                 {/* Colonne Total HT */}
-                <td className="py-1.5 px-3 text-right font-black text-slate-950 font-mono whitespace-nowrap">
+                <td className="py-2 px-3 text-right font-black text-slate-950 font-mono text-base sm:text-lg whitespace-nowrap">
                   {Number(item.totalPrice).toFixed(3)}
                 </td>
               </tr>
