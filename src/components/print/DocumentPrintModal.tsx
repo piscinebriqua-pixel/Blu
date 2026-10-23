@@ -112,20 +112,12 @@ export const DocumentPrintModal: React.FC<DocumentPrintModalProps> = ({
               <span>Imprimer / PDF</span>
             </button>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="min-h-[44px] px-4 py-2 flex items-center justify-center bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 rounded-xl text-xs font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer shadow-sm"
-              title="Fermer"
-            >
-              <span>Fermer</span>
-            </button>
           </div>
         </div>
 
 
         {/* CONTENEUR DE LA FEUILLE A4 (Scrollable sur petits écrans, immaculé à l'impression) */}
-        <div className="p-2 sm:p-6 bg-slate-200/60 dark:bg-slate-950/80 overflow-x-auto print:p-0 print:bg-white print:overflow-visible">
+        <div className="p-4 sm:p-8 bg-slate-200/60 dark:bg-slate-950/80 overflow-x-auto print:p-0 print:bg-white print:overflow-visible">
           <div className="flex justify-center print:block print:w-full">
             <PrintDocumentTemplate data={data} companyInfo={companyInfo} />
           </div>

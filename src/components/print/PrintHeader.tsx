@@ -81,27 +81,29 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
 
         {/* 2. COLONNE DROITE : MÉTADONNÉES DOCUMENT & CLIENT */}
         <div className="space-y-2 max-w-sm flex-1 text-right">
-          {/* Métadonnées de Facturation */}
-          <div className="space-y-0.5 pb-1 border-b border-slate-200/70">
-            <p className="text-sm font-black tracking-tight text-slate-900">
-              <span className="font-bold text-slate-700">
-                {isInvoice ? 'Numéro de facture :' : 'Numéro de devis :'}
-              </span>{' '}
-              <span className="font-mono text-blue-600 font-black">{data.documentNumber}</span>
+          {/* Grand Titre Document (FACTURE / DEVIS) & Numéro */}
+          <div className="space-y-1 pb-1.5 border-b border-slate-200/80">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-blue-600 uppercase leading-none">
+              {isInvoice ? 'FACTURE' : 'DEVIS'}
+            </h1>
+            <p className="text-lg font-black text-slate-900 font-mono tracking-tight">
+              {data.documentNumber}
             </p>
-            <p className="text-xs font-semibold text-slate-700">
-              <span className="font-bold text-slate-800">Date :</span> {formattedDate}
-            </p>
-            {isInvoice && formattedDueDate && (
-              <p className="text-xs font-semibold text-slate-700">
-                <span className="font-bold text-slate-800">Échéance :</span> {formattedDueDate}
+            <div className="pt-0.5 text-xs font-semibold text-slate-700 space-y-0.5">
+              <p>
+                <span className="font-bold text-slate-800">Date :</span> {formattedDate}
               </p>
-            )}
-            {!isInvoice && data.validityDays && (
-              <p className="text-xs font-semibold text-slate-700">
-                <span className="font-bold text-slate-800">Validité :</span> {data.validityDays} jours
-              </p>
-            )}
+              {isInvoice && formattedDueDate && (
+                <p>
+                  <span className="font-bold text-slate-800">Échéance :</span> {formattedDueDate}
+                </p>
+              )}
+              {!isInvoice && data.validityDays && (
+                <p>
+                  <span className="font-bold text-slate-800">Validité :</span> {data.validityDays} jours
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Coordonnées Client */}
