@@ -36,6 +36,7 @@ export function getInvoicePrintData(invoice: InvoiceWithItems): PrintDocumentDat
       name: clientFullName,
       companyName: invoice.client?.matricule_fiscal ? clientFullName : undefined,
       phone: invoice.client?.phone,
+      email: (invoice.client as any)?.email || null,
       address: invoice.client?.address,
       city: invoice.client?.city,
       matricule_fiscal: invoice.client?.matricule_fiscal,
@@ -97,7 +98,11 @@ export function getDevisPrintData(devis: any, items: PrintableDevisItem[]): Prin
       name:
         `${devis.client?.first_name || ''} ${devis.client?.last_name || ''}`.trim() ||
         'Client',
+      companyName: devis.client?.matricule_fiscal
+        ? `${devis.client?.first_name || ''} ${devis.client?.last_name || ''}`.trim()
+        : undefined,
       phone: devis.client?.phone,
+      email: (devis.client as any)?.email || null,
       address: devis.client?.address,
       city: devis.client?.city,
       matricule_fiscal: devis.client?.matricule_fiscal,

@@ -162,6 +162,9 @@ export const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
               {invoice.client?.phone && (
                 <p className="text-xs font-bold text-slate-500">Tél : {invoice.client.phone}</p>
               )}
+              {(invoice.client as any)?.email && (
+                <p className="text-xs font-bold text-slate-500">Email : {(invoice.client as any).email}</p>
+              )}
               {(invoice.client?.address || invoice.client?.city) && (
                 <p className="text-xs font-medium text-slate-500">
                   {[invoice.client.address, invoice.client.city].filter(Boolean).join(', ')}

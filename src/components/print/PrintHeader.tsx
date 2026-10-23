@@ -9,6 +9,7 @@ interface PrintHeaderProps {
 
 export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) => {
   const isInvoice = data.type === 'facture';
+  const companyName = companyInfo.company_name || 'STE BCCP';
   const companyActivity = companyInfo.activity_title || 'Ingénierie & Services Aquatiques';
   const companyTaxId = companyInfo.tax_id || '';
   const companyPhone = companyInfo.phone || '+216 58 790 185';
@@ -28,118 +29,126 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
   const formattedDate = formatDate(data.date);
   const formattedDueDate = formatDate(data.dueDate);
 
+  // Adresse client complète
+  const clientAddress = [data.client.address, data.client.city].filter(Boolean).join(', ');
+
   return (
-    <div className="space-y-2 break-inside-avoid">
-      {/* 1. EN-TÊTE SUPÉRIEUR : TITRE & MÉTADONNÉES À GAUCHE / LOGO & COORDONNÉES ÉMETTEUR À DROITE */}
-      <div className="flex items-start justify-between gap-6 pb-2.5 border-b border-slate-200/80">
-        {/* Côté Gauche : Grand Titre Document + Numéro en grand dessous + Cartouche Métadonnées */}
-        <div className="space-y-1.5 max-w-xs sm:max-w-sm flex-1">
-          {/* Titre Document & Numéro directement en-dessous sans N° */}
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-blue-600 uppercase leading-none">
-              {isInvoice ? 'FACTURE' : 'DEVIS'}
-            </h1>
-            <p className="text-xl font-black tracking-tight text-slate-900 font-mono mt-1">
-              {data.documentNumber}
-            </p>
-          </div>
-
-          {/* Cartouche Métadonnées Document (Dates et Références Rapprochées) */}
-          <div className="w-fit bg-slate-50 border border-slate-200/90 rounded-xl p-2 px-3 space-y-1 text-xs">
-            <div className="flex items-baseline gap-2.5">
-              <span className="text-slate-500 font-bold text-xs min-w-[72px]">Date :</span>
-              <span className="font-black text-slate-900 text-xs">{formattedDate}</span>
-            </div>
-
-            {isInvoice && formattedDueDate && (
-              <div className="flex items-baseline gap-2.5 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-xs min-w-[72px]">Échéance :</span>
-                <span className="font-black text-slate-900 text-xs">{formattedDueDate}</span>
-              </div>
-            )}
-
-            {!isInvoice && (
-              <div className="flex items-baseline gap-2.5 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-xs min-w-[72px]">Validité :</span>
-                <span className="font-black text-slate-900 text-xs">
-                  {data.validityDays ? `${data.validityDays} jours` : '30 jours'}
-                </span>
-              </div>
-            )}
-
-            {data.quoteReference && (
-              <div className="flex items-baseline gap-2.5 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-xs min-w-[72px]">Réf. Devis :</span>
-                <span className="font-mono font-bold text-slate-700 text-xs">{data.quoteReference}</span>
-              </div>
-            )}
-
-            {data.poolInfo?.name && (
-              <div className="flex items-baseline gap-2.5 border-t border-slate-200/60 pt-1">
-                <span className="text-slate-500 font-bold text-xs min-w-[72px]">Site / Bassin :</span>
-                <span className="font-black text-slate-900 uppercase text-xs">
-                  {data.poolInfo.name}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Côté Droit : Logo BCCP en bleu et Coordonnées Émettrice */}
-        <div className="text-right flex flex-col items-end max-w-xs space-y-1">
-          <div className="flex items-center justify-end mb-1">
+    <div className="pb-3 mb-2 border-b border-slate-200/90 break-inside-avoid">
+      {/* GRILLE 2 COLONNES : ÉMETTEUR (GAUCHE) & DOCUMENT + CLIENT (DROITE) */}
+      <div className="flex items-start justify-between gap-8">
+        {/* 1. COLONNE GAUCHE : ÉMETTEUR (Logo, Société, Adresse, Téléphone, Email, MF) */}
+        <div className="space-y-1 max-w-sm flex-1">
+          <div className="flex items-center mb-1.5">
             <BccpLogo width={85} height="auto" fillColor="blue" />
           </div>
-          <p className="text-xs font-black tracking-wider uppercase text-blue-600">
-            {companyActivity}
-          </p>
-          <div className="text-xs font-semibold text-slate-600 space-y-0.5 pt-0.5 leading-tight">
+
+          <div>
+            <h2 className="text-sm font-black uppercase tracking-tight text-slate-900 leading-tight">
+              {companyName}
+            </h2>
+            {companyActivity && (
+              <p className="text-xs font-bold text-blue-600 uppercase tracking-wide">
+                {companyActivity}
+              </p>
+            )}
+          </div>
+
+          <div className="text-xs font-medium text-slate-700 space-y-0.5 leading-snug pt-0.5">
+            {companyAddress && <p>{companyAddress}</p>}
+            {companyPhone && (
+              <p>
+                <span className="font-bold text-slate-900">Téléphone :</span> {companyPhone}
+              </p>
+            )}
+            {companyEmail && (
+              <p>
+                <span className="font-bold text-slate-900">Email :</span> {companyEmail}
+              </p>
+            )}
             {companyTaxId && (
-              <p className="font-bold text-slate-800">M.F. : {companyTaxId}</p>
+              <p className="pt-0.5">
+                <span className="font-bold text-slate-900">Matricule fiscal :</span>{' '}
+                <span className="font-mono font-bold text-slate-900">{companyTaxId}</span>
+              </p>
             )}
             {companyInfo.rne && (
-              <p className="font-bold text-slate-700">RNE : {companyInfo.rne}</p>
+              <p className="text-slate-600">
+                <span className="font-bold text-slate-800">RNE :</span> {companyInfo.rne}
+              </p>
             )}
-            <p>{companyAddress}</p>
-            <p>{companyPhone} • {companyEmail}</p>
-            {companyInfo.website && <p className="text-blue-600 font-bold">{companyInfo.website}</p>}
           </div>
         </div>
-      </div>
 
-      {/* 2. BLOC DESTINATAIRE (CLIENT) */}
-      <div className="pt-0.5">
-        <div className="p-2.5 rounded-xl bg-slate-50/70 border border-slate-200/70 space-y-1 text-xs">
-          <p className="text-xs font-black uppercase tracking-wider text-slate-500">
-            {isInvoice ? 'Facturé à :' : 'Destinataire :'}
-          </p>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm font-black text-slate-900 uppercase tracking-tight">
-              {data.client.companyName || data.client.name}
+        {/* 2. COLONNE DROITE : MÉTADONNÉES DOCUMENT & CLIENT */}
+        <div className="space-y-2 max-w-sm flex-1 text-right">
+          {/* Métadonnées de Facturation */}
+          <div className="space-y-0.5 pb-1 border-b border-slate-200/70">
+            <p className="text-sm font-black tracking-tight text-slate-900">
+              <span className="font-bold text-slate-700">
+                {isInvoice ? 'Numéro de facture :' : 'Numéro de devis :'}
+              </span>{' '}
+              <span className="font-mono text-blue-600 font-black">{data.documentNumber}</span>
             </p>
-
-            {/* Matricule Fiscal Client */}
-            {data.client.matricule_fiscal ? (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white text-slate-900 font-bold border border-slate-300 text-xs shadow-2xs">
-                <span className="text-slate-500 font-black">M.F. :</span>
-                <span className="font-mono">{data.client.matricule_fiscal}</span>
-              </div>
-            ) : (
-              <p className="text-xs font-semibold text-slate-500 italic">
-                Client Particulier
+            <p className="text-xs font-semibold text-slate-700">
+              <span className="font-bold text-slate-800">Date :</span> {formattedDate}
+            </p>
+            {isInvoice && formattedDueDate && (
+              <p className="text-xs font-semibold text-slate-700">
+                <span className="font-bold text-slate-800">Échéance :</span> {formattedDueDate}
+              </p>
+            )}
+            {!isInvoice && data.validityDays && (
+              <p className="text-xs font-semibold text-slate-700">
+                <span className="font-bold text-slate-800">Validité :</span> {data.validityDays} jours
               </p>
             )}
           </div>
 
           {/* Coordonnées Client */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 pt-0.5 text-xs text-slate-600 font-medium">
-            {(data.client.address || data.client.city) && (
-              <p className="font-semibold text-slate-700">
-                📍 {[data.client.address, data.client.city].filter(Boolean).join(', ')}
+          <div className="text-xs font-medium text-slate-700 space-y-0.5 leading-snug">
+            <p className="text-xs font-black text-slate-900 uppercase">
+              <span className="font-bold normal-case text-slate-700">Client :</span>{' '}
+              {data.client.companyName || data.client.name}
+            </p>
+
+            {clientAddress && (
+              <p>
+                <span className="font-bold text-slate-800">Adresse :</span> {clientAddress}
               </p>
             )}
-            {data.client.phone && <p>📞 {data.client.phone}</p>}
-            {data.client.email && <p>✉️ {data.client.email}</p>}
+
+            {data.client.phone && (
+              <p>
+                <span className="font-bold text-slate-800">Téléphone :</span> {data.client.phone}
+              </p>
+            )}
+
+            {data.client.email && (
+              <p>
+                <span className="font-bold text-slate-800">Email :</span> {data.client.email}
+              </p>
+            )}
+
+            {data.client.matricule_fiscal && (
+              <p className="pt-0.5">
+                <span className="font-bold text-slate-900">Matricule fiscal :</span>{' '}
+                <span className="font-mono font-bold text-slate-900">{data.client.matricule_fiscal}</span>
+              </p>
+            )}
+
+            {data.quoteReference && (
+              <p className="text-xs pt-0.5">
+                <span className="font-bold text-slate-700">Réf. Devis :</span>{' '}
+                <span className="font-mono text-slate-600">{data.quoteReference}</span>
+              </p>
+            )}
+
+            {data.poolInfo?.name && (
+              <p className="text-xs pt-0.5">
+                <span className="font-bold text-slate-700">Site / Bassin :</span>{' '}
+                <span className="font-black text-slate-900 uppercase">{data.poolInfo.name}</span>
+              </p>
+            )}
           </div>
         </div>
       </div>
