@@ -67,7 +67,7 @@ export const DocumentPrintModal: React.FC<DocumentPrintModalProps> = ({
     <ModalLayout
       title={`Aperçu ${data.type === 'facture' ? 'Facture' : 'Devis'} ${data.documentNumber}`}
       onClose={onClose}
-      className="print-clean-modal max-w-4xl !p-0 overflow-hidden"
+      className="print-clean-modal !max-w-5xl !w-full !p-0 overflow-hidden"
       bodyClassName="!p-0"
     >
       <div className="flex flex-col">

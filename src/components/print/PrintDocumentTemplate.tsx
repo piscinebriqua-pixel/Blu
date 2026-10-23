@@ -19,7 +19,7 @@ export const PrintDocumentTemplate: React.FC<PrintDocumentTemplateProps> = ({
   companyInfo,
 }) => {
   return (
-    <div className="bg-white text-slate-900 font-sans p-6 sm:p-8 md:p-10 max-w-[210mm] mx-auto a4-print-canvas shadow-xl print:shadow-none print:p-8 print:m-0 print:max-w-none print:w-full print:bg-white print:text-black">
+    <div className="bg-white text-slate-900 font-sans p-6 sm:p-8 max-w-[210mm] mx-auto a4-print-canvas shadow-xl print:shadow-none print:p-0 print:m-0 print:max-w-none print:w-full print:bg-white print:text-black">
       {/* 1. CORPS DU DOCUMENT (EN-TÊTE + TABLEAU + RÉCAPITULATIF FINANCIER) */}
       <div className="flex-1 flex flex-col justify-start">
         {/* En-tête émetteur & client */}

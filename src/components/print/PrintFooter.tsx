@@ -20,30 +20,30 @@ export const PrintFooter: React.FC<PrintFooterProps> = ({ companyInfo }) => {
       {/* GRAND BANDEAU PLEIN BLEU NUIT COMPACT */}
       <div className="bg-[#0b192c] text-white py-2 px-3 rounded-lg space-y-1.5 shadow-sm">
         {/* CAPSULES DE CONTACT HORIZONTALES */}
-        <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-bold">
+        <div className="flex flex-wrap items-center justify-center gap-2.5 text-sm font-bold">
           {/* Capsule Téléphone */}
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/60">
-            <div className="w-4 h-4 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
-              <Phone size={12} strokeWidth={2.5} />
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/90 border border-slate-700">
+            <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
+              <Phone size={14} strokeWidth={2.5} />
             </div>
-            <span>{companyPhone}</span>
+            <span className="text-white">{companyPhone}</span>
           </div>
 
           {/* Capsule Email */}
-          <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/60">
-            <div className="w-4 h-4 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
-              <Mail size={12} strokeWidth={2.5} />
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/90 border border-slate-700">
+            <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
+              <Mail size={14} strokeWidth={2.5} />
             </div>
-            <span>{companyEmail}</span>
+            <span className="text-white">{companyEmail}</span>
           </div>
 
           {/* Capsule Site Web */}
           {website && (
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/60">
-              <div className="w-4 h-4 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
-                <Globe size={12} strokeWidth={2.5} />
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/90 border border-slate-700">
+              <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center">
+                <Globe size={14} strokeWidth={2.5} />
               </div>
-              <span>{website}</span>
+              <span className="text-white">{website}</span>
             </div>
           )}
         </div>

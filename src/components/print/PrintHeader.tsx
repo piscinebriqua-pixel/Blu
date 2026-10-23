@@ -33,27 +33,27 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
   const clientAddress = [data.client.address, data.client.city].filter(Boolean).join(', ');
 
   return (
-    <div className="pb-3 mb-2 border-b border-slate-200/90 break-inside-avoid">
+    <div className="pb-4 mb-3 border-b-2 border-slate-200/90 break-inside-avoid">
       {/* GRILLE 2 COLONNES : ÉMETTEUR (GAUCHE) & DOCUMENT + CLIENT (DROITE) */}
       <div className="flex items-start justify-between gap-8">
         {/* 1. COLONNE GAUCHE : ÉMETTEUR (Logo, Société, Adresse, Téléphone, Email, MF) */}
-        <div className="space-y-1 max-w-sm flex-1">
-          <div className="flex items-center mb-1.5">
-            <BccpLogo width={85} height="auto" fillColor="blue" />
+        <div className="space-y-1.5 max-w-sm flex-1">
+          <div className="flex items-center mb-2">
+            <BccpLogo width={95} height="auto" fillColor="blue" />
           </div>
 
           <div>
-            <h2 className="text-sm font-black uppercase tracking-tight text-slate-900 leading-tight">
+            <h2 className="text-base sm:text-lg font-black uppercase tracking-tight text-slate-900 leading-tight">
               {companyName}
             </h2>
             {companyActivity && (
-              <p className="text-xs font-bold text-blue-600 uppercase tracking-wide">
+              <p className="text-sm font-bold text-blue-600 uppercase tracking-wide mt-0.5">
                 {companyActivity}
               </p>
             )}
           </div>
 
-          <div className="text-xs font-medium text-slate-700 space-y-0.5 leading-snug pt-0.5">
+          <div className="text-sm font-medium text-slate-700 space-y-1 leading-snug pt-1">
             {companyAddress && <p>{companyAddress}</p>}
             {companyPhone && (
               <p>
@@ -68,87 +68,87 @@ export const PrintHeader: React.FC<PrintHeaderProps> = ({ data, companyInfo }) =
             {companyTaxId && (
               <p className="pt-0.5">
                 <span className="font-bold text-slate-900">Matricule fiscal :</span>{' '}
-                <span className="font-mono font-bold text-slate-900">{companyTaxId}</span>
+                <span className="font-mono font-bold text-slate-950">{companyTaxId}</span>
               </p>
             )}
             {companyInfo.rne && (
-              <p className="text-slate-600">
-                <span className="font-bold text-slate-800">RNE :</span> {companyInfo.rne}
+              <p className="text-slate-700">
+                <span className="font-bold text-slate-900">RNE :</span> {companyInfo.rne}
               </p>
             )}
           </div>
         </div>
 
         {/* 2. COLONNE DROITE : MÉTADONNÉES DOCUMENT & CLIENT */}
-        <div className="space-y-2 max-w-sm flex-1 text-right">
+        <div className="space-y-2.5 max-w-sm flex-1 text-right">
           {/* Grand Titre Document (FACTURE / DEVIS) & Numéro */}
-          <div className="space-y-1 pb-1.5 border-b border-slate-200/80">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-blue-600 uppercase leading-none">
+          <div className="space-y-1 pb-2 border-b-2 border-slate-200/90">
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-blue-600 uppercase leading-none">
               {isInvoice ? 'FACTURE' : 'DEVIS'}
             </h1>
-            <p className="text-lg font-black text-slate-900 font-mono tracking-tight">
+            <p className="text-xl font-black text-slate-950 font-mono tracking-tight mt-1">
               {data.documentNumber}
             </p>
-            <div className="pt-0.5 text-xs font-semibold text-slate-700 space-y-0.5">
+            <div className="pt-1 text-sm font-semibold text-slate-700 space-y-0.5">
               <p>
-                <span className="font-bold text-slate-800">Date :</span> {formattedDate}
+                <span className="font-bold text-slate-900">Date :</span> {formattedDate}
               </p>
               {isInvoice && formattedDueDate && (
                 <p>
-                  <span className="font-bold text-slate-800">Échéance :</span> {formattedDueDate}
+                  <span className="font-bold text-slate-900">Échéance :</span> {formattedDueDate}
                 </p>
               )}
               {!isInvoice && data.validityDays && (
                 <p>
-                  <span className="font-bold text-slate-800">Validité :</span> {data.validityDays} jours
+                  <span className="font-bold text-slate-900">Validité :</span> {data.validityDays} jours
                 </p>
               )}
             </div>
           </div>
 
           {/* Coordonnées Client */}
-          <div className="text-xs font-medium text-slate-700 space-y-0.5 leading-snug">
-            <p className="text-xs font-black text-slate-900 uppercase">
+          <div className="text-sm font-medium text-slate-700 space-y-1 leading-snug">
+            <p className="text-base font-black text-slate-950 uppercase">
               <span className="font-bold normal-case text-slate-700">Client :</span>{' '}
               {data.client.companyName || data.client.name}
             </p>
 
             {clientAddress && (
               <p>
-                <span className="font-bold text-slate-800">Adresse :</span> {clientAddress}
+                <span className="font-bold text-slate-900">Adresse :</span> {clientAddress}
               </p>
             )}
 
             {data.client.phone && (
               <p>
-                <span className="font-bold text-slate-800">Téléphone :</span> {data.client.phone}
+                <span className="font-bold text-slate-900">Téléphone :</span> {data.client.phone}
               </p>
             )}
 
             {data.client.email && (
               <p>
-                <span className="font-bold text-slate-800">Email :</span> {data.client.email}
+                <span className="font-bold text-slate-900">Email :</span> {data.client.email}
               </p>
             )}
 
             {data.client.matricule_fiscal && (
               <p className="pt-0.5">
                 <span className="font-bold text-slate-900">Matricule fiscal :</span>{' '}
-                <span className="font-mono font-bold text-slate-900">{data.client.matricule_fiscal}</span>
+                <span className="font-mono font-bold text-slate-950">{data.client.matricule_fiscal}</span>
               </p>
             )}
 
             {data.quoteReference && (
-              <p className="text-xs pt-0.5">
-                <span className="font-bold text-slate-700">Réf. Devis :</span>{' '}
-                <span className="font-mono text-slate-600">{data.quoteReference}</span>
+              <p className="text-sm pt-0.5">
+                <span className="font-bold text-slate-800">Réf. Devis :</span>{' '}
+                <span className="font-mono font-bold text-slate-700">{data.quoteReference}</span>
               </p>
             )}
 
             {data.poolInfo?.name && (
-              <p className="text-xs pt-0.5">
-                <span className="font-bold text-slate-700">Site / Bassin :</span>{' '}
-                <span className="font-black text-slate-900 uppercase">{data.poolInfo.name}</span>
+              <p className="text-sm pt-0.5">
+                <span className="font-bold text-slate-800">Site / Bassin :</span>{' '}
+                <span className="font-black text-slate-950 uppercase">{data.poolInfo.name}</span>
               </p>
             )}
           </div>

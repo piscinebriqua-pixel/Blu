@@ -18,19 +18,19 @@ export const PrintFinancialSummary: React.FC<PrintFinancialSummaryProps> = ({
   const amountWords = amountInWordsDT(data.totalTTC);
 
   return (
-    <div className="space-y-1.5 break-inside-avoid">
+    <div className="space-y-2 break-inside-avoid">
       {/* GRILLE 2 COLONNES PRINCIPALES : 2 CARDS HORIZONTALES À GAUCHE / TOTAUX & SIGNATURE À DROITE */}
-      <div className="grid grid-cols-12 gap-3 items-start pt-0.5">
+      <div className="grid grid-cols-12 gap-3 items-start pt-1">
         {/* COLONNE GAUCHE (7/12) : 2 CARDS HORIZONTALES */}
-        <div className="col-span-7 space-y-1.5 text-xs">
+        <div className="col-span-7 space-y-2 text-sm">
           {/* GRILLE DES 2 CARDS HORIZONTALES */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2.5">
             {/* CARD 1 : MODALITÉS DE RÈGLEMENT */}
-            <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/90 flex flex-col justify-start shadow-2xs">
-              <p className="font-black uppercase tracking-wider text-slate-800 text-xs">
+            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-start shadow-2xs">
+              <p className="font-black uppercase tracking-wider text-slate-900 text-xs">
                 Conditions & Modalités
               </p>
-              <p className="font-semibold text-slate-700 text-xs mt-1 leading-snug">
+              <p className="font-semibold text-slate-800 text-sm mt-1 leading-snug">
                 {data.paymentTerms ||
                   (isInvoice
                     ? 'Paiement à réception de facture.'
@@ -39,11 +39,11 @@ export const PrintFinancialSummary: React.FC<PrintFinancialSummaryProps> = ({
             </div>
 
             {/* CARD 2 : COORDONNÉES DE VIREMENT */}
-            <div className="p-2 rounded-xl bg-slate-50 border border-slate-200/90 flex flex-col justify-start shadow-2xs">
-              <p className="font-black uppercase tracking-wider text-slate-800 text-xs">
+            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-start shadow-2xs">
+              <p className="font-black uppercase tracking-wider text-slate-900 text-xs">
                 Coordonnées Virement
               </p>
-              <p className="font-mono font-bold text-slate-900 text-xs mt-1 leading-snug">
+              <p className="font-mono font-bold text-slate-900 text-sm mt-1 leading-snug">
                 {displayBankName ? `${displayBankName} • ` : ''}RIB : {displayBankRib}
               </p>
               {displayBankIban && (
@@ -56,18 +56,18 @@ export const PrintFinancialSummary: React.FC<PrintFinancialSummaryProps> = ({
         </div>
 
         {/* COLONNE DROITE (5/12) : DÉCOMPTE CHIFFRÉ & CARTOUCHE TOTAL TTC */}
-        <div className="col-span-5 space-y-1 text-xs">
+        <div className="col-span-5 space-y-1.5 text-sm">
           {/* Sous-total HT */}
-          <div className="flex justify-between items-center text-slate-600 font-semibold text-xs">
+          <div className="flex justify-between items-center text-slate-700 font-semibold text-sm">
             <span>Sous-total HT :</span>
-            <span className="font-black text-slate-900 font-mono text-xs">
+            <span className="font-black text-slate-950 font-mono text-sm">
               {Number(data.subtotalHT).toFixed(3)} DT
             </span>
           </div>
 
           {/* Remise éventuelle */}
           {Number(data.discountAmount) > 0 && (
-            <div className="flex justify-between items-center text-emerald-700 font-semibold text-xs">
+            <div className="flex justify-between items-center text-emerald-700 font-semibold text-sm">
               <span>Remise commerciale :</span>
               <span className="font-black font-mono">
                 - {Number(data.discountAmount).toFixed(3)} DT
@@ -77,9 +77,9 @@ export const PrintFinancialSummary: React.FC<PrintFinancialSummaryProps> = ({
 
           {/* TVA */}
           {Number(data.taxRate) > 0 && (
-            <div className="flex justify-between items-center text-slate-600 font-semibold text-xs">
+            <div className="flex justify-between items-center text-slate-700 font-semibold text-sm">
               <span>TVA ({data.taxRate}%) :</span>
-              <span className="font-black text-slate-900 font-mono">
+              <span className="font-black text-slate-950 font-mono">
                 {Number(data.taxAmount || 0).toFixed(3)} DT
               </span>
             </div>
@@ -87,34 +87,34 @@ export const PrintFinancialSummary: React.FC<PrintFinancialSummaryProps> = ({
 
           {/* Timbre fiscal (uniquement sur facture) */}
           {isInvoice && Number(data.stampDuty) > 0 && (
-            <div className="flex justify-between items-center text-slate-600 font-semibold text-xs">
+            <div className="flex justify-between items-center text-slate-700 font-semibold text-sm">
               <span>Timbre Fiscal :</span>
-              <span className="font-black text-slate-900 font-mono">
+              <span className="font-black text-slate-950 font-mono">
                 {Number(data.stampDuty).toFixed(3)} DT
               </span>
             </div>
           )}
 
           {/* BANDEAU PLEIN BLEU NUIT POUR LE TOTAL NET TTC */}
-          <div className="bg-[#0b192c] text-white py-1.5 px-3 rounded-lg flex justify-between items-center shadow-sm">
-            <span className="font-black uppercase tracking-wider text-xs">
+          <div className="bg-[#0b192c] text-white py-2 px-3.5 rounded-lg flex justify-between items-center shadow-sm">
+            <span className="font-black uppercase tracking-wider text-sm">
               {isInvoice ? 'TOTAL NET TTC' : 'TOTAL ESTIMÉ TTC'}
             </span>
-            <span className="font-black text-sm font-mono tracking-tight text-white">
+            <span className="font-black text-lg font-mono tracking-tight text-white">
               {Number(data.totalTTC).toFixed(3)} DT
             </span>
           </div>
 
           {/* Acompte et reste dû si facture */}
           {isInvoice && Number(data.paidAmount) > 0 && (
-            <div className="pt-0.5 border-t border-slate-200 space-y-0.5 font-semibold text-xs">
+            <div className="pt-0.5 border-t border-slate-200 space-y-0.5 font-semibold text-sm">
               <div className="flex justify-between text-emerald-700">
                 <span>Acompte déjà versé :</span>
                 <span className="font-mono font-bold">
                   - {Number(data.paidAmount).toFixed(3)} DT
                 </span>
               </div>
-              <div className="flex justify-between font-black text-slate-900 text-xs pt-0.5">
+              <div className="flex justify-between font-black text-slate-900 text-sm pt-0.5">
                 <span>Net restant dû :</span>
                 <span className="font-mono text-blue-700">
                   {Number(data.balanceDue || 0).toFixed(3)} DT
@@ -124,9 +124,9 @@ export const PrintFinancialSummary: React.FC<PrintFinancialSummaryProps> = ({
           )}
 
           {/* ZONE DE SIGNATURE AUTORISÉE (Ligne fine & Titre) */}
-          <div className="pt-1.5 space-y-0.5">
-            <div className="border-b border-slate-300 w-full h-4" />
-            <p className="text-right text-xs font-black uppercase tracking-wider text-slate-600">
+          <div className="pt-2 space-y-0.5">
+            <div className="border-b-2 border-slate-300 w-full h-5" />
+            <p className="text-right text-xs font-black uppercase tracking-wider text-slate-700">
               {isInvoice
                 ? 'Cachet & Signature Autorisée'
                 : 'Bon pour accord - Date & Signature'}
@@ -136,12 +136,12 @@ export const PrintFinancialSummary: React.FC<PrintFinancialSummaryProps> = ({
       </div>
 
       {/* 2. BANDEAU PLEINE LARGEUR (100%) : MONTANT EN TOUTES LETTRES SUR UNE SEULE LIGNE (ZÉRO CÉSURE) */}
-      <div className="w-full p-1.5 px-3 rounded-lg bg-slate-50 border border-slate-200/90 text-xs overflow-hidden">
-        <p className="font-bold text-slate-800 text-xs leading-none whitespace-nowrap">
-          <span className="text-slate-500 font-black uppercase text-xs">
+      <div className="w-full p-2 px-3.5 rounded-lg bg-slate-50 border border-slate-200 text-sm overflow-hidden">
+        <p className="font-bold text-slate-800 text-sm leading-none whitespace-nowrap">
+          <span className="text-slate-600 font-black uppercase text-xs">
             Arrêtée la présente {isInvoice ? 'facture' : 'offre'} à la somme de :
           </span>{' '}
-          <span className="text-slate-950 font-black">{amountWords}</span>
+          <span className="text-slate-950 font-black text-sm">{amountWords}</span>
         </p>
       </div>
     </div>
