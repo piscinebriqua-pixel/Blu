@@ -114,3 +114,64 @@ export interface ReclamationRow {
   };
 }
 
+// --- Types Dépenses & Notes de Frais ---
+export type ExpensePaymentMethod = 
+  | 'cash_technician' 
+  | 'company_card' 
+  | 'company_transfer' 
+  | 'cash_company' 
+  | 'check';
+
+export type ExpenseStatus = 'pending' | 'validated' | 'rejected';
+
+export interface ExpenseCategoryRow {
+  id: string;
+  name: string;
+  icon: string | null;
+  requires_vehicle?: boolean;
+  created_at: string;
+}
+
+export interface ExpenseRow {
+  id: string;
+  technician_id: string | null;
+  category_id: string;
+  amount: number;
+  expense_date: string;
+  payment_method: ExpensePaymentMethod;
+  supplier: string | null;
+  description: string | null;
+  receipt_url: string | null;
+  vat_rate: number;
+  tax_amount: number;
+  client_id: string | null;
+  vehicle_id: string | null;
+  kilometers: number | null;
+  liters: number | null;
+  status: ExpenseStatus;
+  validated_by: string | null;
+  validated_at: string | null;
+  created_at: string;
+  updated_at?: string;
+  technician?: {
+    id: string;
+    full_name: string;
+  } | null;
+  category?: {
+    id: string;
+    name: string;
+    icon: string | null;
+  } | null;
+  client?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+  } | null;
+  vehicle?: {
+    id: string;
+    name: string;
+    plate: string | null;
+  } | null;
+}
+
+

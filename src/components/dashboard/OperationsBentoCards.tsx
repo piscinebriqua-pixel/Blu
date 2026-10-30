@@ -1,6 +1,6 @@
-﻿import React from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wallet, Users, FileText, QrCode, Settings, Activity, Briefcase } from 'lucide-react';
+import { Wallet, Users, FileText, QrCode, Settings, Activity, Briefcase, Receipt } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { formatRevenue } from '../../lib/formatters';
 import type { DashboardCounts, UserProfile } from '../../hooks/useDashboardStats';
@@ -126,6 +126,25 @@ export const OperationsBentoCards: React.FC<OperationsBentoCardsProps> = ({
                     <div className="flex flex-col gap-1 min-w-0 mt-auto">
                         <p className="text-xs font-black text-slate-500 uppercase tracking-widest truncate">Actions Requises</p>
                         <p className="text-2xl 2xl:text-3xl font-black text-white tracking-tight truncate leading-none">FINANCES</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Dépenses & Frais Admin */}
+            {profile?.role === 'admin' && (
+                <div onClick={() => navigate('/expenses')} className="bento-card-luxe bento-col-3 group cursor-pointer !bg-indigo-950 border-none">
+                    <div className="flex items-center justify-between gap-3 mb-5">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center ring-1 ring-indigo-500/30 shrink-0">
+                                <Receipt size={24} />
+                            </div>
+                            <h3 className="text-sm 2xl:text-base font-black text-white uppercase tracking-wider leading-tight truncate">Dépenses & Frais</h3>
+                        </div>
+                        <span className="bg-indigo-500/90 px-2 py-0.5 rounded text-xs font-black text-white shrink-0 tracking-wider">ADMIN</span>
+                    </div>
+                    <div className="flex flex-col gap-1 min-w-0 mt-auto">
+                        <p className="text-xs font-black text-indigo-300/70 uppercase tracking-widest truncate">Achats & Flotte</p>
+                        <p className="text-2xl 2xl:text-3xl font-black text-white tracking-tight truncate leading-none">DÉPENSES</p>
                     </div>
                 </div>
             )}

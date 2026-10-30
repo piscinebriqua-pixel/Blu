@@ -1,4 +1,4 @@
-﻿import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom';
 import React, { Suspense, Component } from 'react';
 import type { ReactNode } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -40,6 +40,7 @@ const PartnerDetail = React.lazy(() => import('./pages/PartnerDetail'));
 const PoolCatalogue = React.lazy(() => import('./pages/PoolCatalogue'));
 const Invoices = React.lazy(() => import('./pages/Invoices'));
 const Devis = React.lazy(() => import('./pages/Devis'));
+const Expenses = React.lazy(() => import('./pages/Expenses'));
 
 const ClientRedirect = () => {
   const { id } = useParams();
@@ -290,6 +291,13 @@ function AppContent() {
                 <div className="app-container"><AdminFinance /></div>
               </ProtectedRoute>
             } />
+
+            <Route path="/expenses" element={
+              <ProtectedRoute requireAdmin={true}>
+                <div className="app-container"><Expenses /></div>
+              </ProtectedRoute>
+            } />
+            <Route path="/depenses" element={<Navigate to="/expenses" replace />} />
 
             <Route path="/technician-portal" element={
               <ProtectedRoute>

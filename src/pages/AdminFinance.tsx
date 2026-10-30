@@ -1,4 +1,5 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import PageLayout from '../components/PageLayout';
 import ModalLayout from '../components/ModalLayout';
@@ -38,6 +39,7 @@ interface FinanceItem {
 }
 
 const AdminFinance: React.FC = () => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [tab, setTab] = useState<'pending' | 'technicians' | 'recettes' | 'expenses' | 'advances' | 'history' | 'vehicles'>('pending');
     const [items, setItems] = useState<FinanceItem[]>([]);
@@ -776,24 +778,33 @@ const AdminFinance: React.FC = () => {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex flex-wrap gap-2 p-1.5 bg-slate-100 dark:bg-slate-900/50 rounded-2xl">
-                    {[
-                        { id: 'pending', label: 'En attente' },
-                        { id: 'technicians', label: 'Techs' },
-                        { id: 'recettes', label: 'Recettes' },
-                        { id: 'expenses', label: 'Dépenses' },
-                        { id: 'advances', label: 'Avances' },
-                        { id: 'history', label: 'Journal' },
-                        { id: 'vehicles', label: '🚐 Véhicules' }
-                    ].map(t => (
-                        <button 
-                            key={t.id}
-                            onClick={() => setTab(t.id as any)}
-                            className={`px-3 h-10 rounded-xl text-xs font-black uppercase tracking-tight transition-all ${tab === t.id ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                        >
-                            {t.label}
-                        </button>
-                    ))}
+                <div className="flex flex-wrap items-center justify-between gap-2 p-1.5 bg-slate-100 dark:bg-slate-900/50 rounded-2xl">
+                    <div className="flex flex-wrap gap-2">
+                        {[
+                            { id: 'pending', label: 'En attente' },
+                            { id: 'technicians', label: 'Techs' },
+                            { id: 'recettes', label: 'Recettes' },
+                            { id: 'expenses', label: 'Dépenses' },
+                            { id: 'advances', label: 'Avances' },
+                            { id: 'history', label: 'Journal' },
+                            { id: 'vehicles', label: '🚐 Véhicules' }
+                        ].map(t => (
+                            <button 
+                                key={t.id}
+                                onClick={() => setTab(t.id as any)}
+                                className={`px-3 h-10 rounded-xl text-xs font-black uppercase tracking-tight transition-all ${tab === t.id ? 'bg-white dark:bg-slate-800 text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                            >
+                                {t.label}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/expenses')}
+                        className="px-3.5 h-10 rounded-xl text-xs font-black uppercase tracking-tight bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-sm transition-all ml-auto"
+                    >
+                        <span>Module Dépenses & Frais ➔</span>
+                    </button>
                 </div>
 
                 {/* Time Range Filter */}
