@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wallet, Users, FileText, QrCode, Settings, Activity, Briefcase, Receipt } from 'lucide-react';
+import { Wallet, Users, FileText, QrCode, Settings, Activity, Briefcase, Receipt, Wrench } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { formatRevenue } from '../../lib/formatters';
 import type { DashboardCounts, UserProfile } from '../../hooks/useDashboardStats';
@@ -51,6 +51,28 @@ export const OperationsBentoCards: React.FC<OperationsBentoCardsProps> = ({
                     <div className="avatar-stack-item bg-slate-900 ring-2 ring-white dark:ring-[#020617] text-blue-400">+{counts.clients > 4 ? counts.clients - 4 : 2}</div>
                 </div>
                 <p className="text-xs font-bold text-slate-600 dark:text-slate-400 leading-tight truncate">Mohamed Name, Conne, Wahran...</p>
+            </div>
+
+            {/* Techniciens Terrain */}
+            <div onClick={() => navigate('/technicians')} className="bento-card-luxe bento-col-3 group cursor-pointer hover:border-blue-500/40 transition-all">
+                <div className="flex items-center gap-3.5 mb-5">
+                    <div className="w-12 h-12 rounded-2xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center shrink-0">
+                        <Wrench size={24} />
+                    </div>
+                    <div className="min-w-0">
+                        <h3 className="text-sm 2xl:text-base font-black text-slate-800 dark:text-white uppercase tracking-wider leading-tight truncate">Techniciens</h3>
+                        <p className="text-xs font-semibold text-slate-500 truncate">Équipe Terrain</p>
+                    </div>
+                </div>
+                <div className="flex flex-col gap-1 min-w-0 mt-auto">
+                    <p className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest truncate">Actifs sur le terrain</p>
+                    <p className="text-2xl 2xl:text-3xl font-black text-slate-900 dark:text-white tracking-tight truncate leading-none">
+                        {counts.technicians} <span className="text-xs font-bold text-slate-500 uppercase tracking-normal">membres</span>
+                    </p>
+                    <p className="text-blue-600 dark:text-blue-400 text-xs font-bold mt-1 flex items-center gap-1 truncate">
+                        Fiches, PIN & Tournées ➔
+                    </p>
+                </div>
             </div>
 
             {/* Paiements */}
@@ -183,24 +205,6 @@ export const OperationsBentoCards: React.FC<OperationsBentoCardsProps> = ({
                 <div className="space-y-1.5 min-w-0">
                     <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">Project Name A</p>
                     <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">Project Name B</p>
-                </div>
-            </div>
-
-            {/* Équipe */}
-            <div onClick={() => navigate('/technicians')} className="bento-card-luxe bento-col-3 group cursor-pointer">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
-                        <Users size={24} />
-                    </div>
-                    <h3 className="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider leading-tight truncate">Équipe</h3>
-                </div>
-                <div className="flex-1 bg-slate-100 dark:bg-slate-900/50 rounded-2xl p-2 relative overflow-hidden flex items-center justify-center">
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px]" />
-                    <div className="relative z-10 text-center">
-                        <p className="text-2xl font-black text-slate-900 dark:text-white">{counts.technicians}</p>
-                        <p className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Membres</p>
-                    </div>
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 border-2 border-primary/20 rounded-full animate-ping" />
                 </div>
             </div>
 

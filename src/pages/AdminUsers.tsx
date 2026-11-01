@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
@@ -346,11 +346,11 @@ const AdminUsers: React.FC = () => {
             )}
           </div>
 
-          {/* Role Filter Pills */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none items-center">
+          {/* Role Filter Pills - Mobile Touch-Friendly with shrink-0 */}
+          <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar touch-pan-x items-center">
             <button
               onClick={() => setActiveFilter('all')}
-              className={`min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 border ${
+              className={`min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 border shrink-0 ${
                 activeFilter === 'all'
                   ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-transparent shadow-md'
                   : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-50'
@@ -362,7 +362,7 @@ const AdminUsers: React.FC = () => {
 
             <button
               onClick={() => setActiveFilter('pending')}
-              className={`min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 border ${
+              className={`min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 border shrink-0 ${
                 activeFilter === 'pending'
                   ? 'bg-amber-500 text-white border-transparent shadow-md shadow-amber-500/20'
                   : counts.pending > 0
@@ -376,31 +376,31 @@ const AdminUsers: React.FC = () => {
 
             <button
               onClick={() => setActiveFilter('technician')}
-              className={`min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 border ${
+              className={`min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 border shrink-0 ${
                 activeFilter === 'technician'
                   ? 'bg-blue-600 text-white border-transparent shadow-md shadow-blue-600/20'
                   : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-50'
               }`}
             >
               <Wrench size={16} />
-              Techniciens <span className="opacity-75">({counts.technician})</span>
+              Comptes Techs <span className="opacity-75">({counts.technician})</span>
             </button>
 
             <button
               onClick={() => setActiveFilter('client')}
-              className={`min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 border ${
+              className={`min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 border shrink-0 ${
                 activeFilter === 'client'
                   ? 'bg-emerald-600 text-white border-transparent shadow-md shadow-emerald-600/20'
                   : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-50'
               }`}
             >
               <UserCheck size={16} />
-              Clients <span className="opacity-75">({counts.client})</span>
+              Comptes Clients <span className="opacity-75">({counts.client})</span>
             </button>
 
             <button
               onClick={() => setActiveFilter('admin')}
-              className={`min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 border ${
+              className={`min-h-[44px] px-4 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all flex items-center gap-2 border shrink-0 ${
                 activeFilter === 'admin'
                   ? 'bg-indigo-600 text-white border-transparent shadow-md shadow-indigo-600/20'
                   : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/60 hover:bg-slate-50'
@@ -410,6 +410,56 @@ const AdminUsers: React.FC = () => {
               Admins <span className="opacity-75">({counts.admin})</span>
             </button>
           </div>
+
+          {/* Passerelle explicative : Techniciens Terrain */}
+          {activeFilter === 'technician' && (
+            <div className="p-3.5 rounded-2xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                  <Wrench size={20} />
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase text-blue-900 dark:text-blue-200">
+                    Comptes d'accès Techniciens ({counts.technician})
+                  </p>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Pour consulter ou modifier l'annuaire complet de l'équipe terrain (coordonnées, PIN, tournées) :
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/technicians')}
+                className="min-h-[44px] px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-sm transition-all shrink-0 active:scale-95"
+              >
+                <span>Annuaire Techniciens Terrain ➔</span>
+              </button>
+            </div>
+          )}
+
+          {/* Passerelle explicative : Clients Commerciaux */}
+          {activeFilter === 'client' && (
+            <div className="p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                  <UserCheck size={20} />
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase text-emerald-900 dark:text-emerald-200">
+                    Espace Client en Ligne ({counts.client})
+                  </p>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                    Pour consulter l'intégralité de vos clients (piscines, devis, factures) :
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigate('/clients')}
+                className="min-h-[44px] px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-wider flex items-center gap-2 shadow-sm transition-all shrink-0 active:scale-95"
+              >
+                <span>Répertoire Clients ({clients.length}) ➔</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* User Cards List */}
